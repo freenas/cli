@@ -33,6 +33,9 @@ import icu
 import enum
 import string
 from threading import Lock
+import contextlib
+import StringIO
+import pydoc
 
 
 output_lock = Lock()
@@ -216,3 +219,25 @@ def output_msg(message, fmt=None, **kwargs):
 
 def output_is_ascii():
     return config.instance.variables.get('output-format') == 'ascii'
+
+
+# The following solution to implement `LESS(1)` style output is a combination
+# of snippets taken from the following stackoverflow answers:
+#   1. http://stackoverflow.com/questions/14197009/how-can-i-redirect-print-output-of-a-function-in-python#answer-14197079
+#   2. http://stackoverflow.com/questions/6728661/paging-output-from-python#answer-18234081
+@contextlib.contextmanager
+def stdout_redirect(where):
+    sys.stdout = where
+    try:
+        yield where
+    finally:
+        sys.stdout = sys.__stdout__
+
+def output_less(output_call_list):
+    with stdout_redirect(StringIO.StringIO()) as new_stdout:
+        for output_func_call in output_call_list:
+            output_func_call()
+
+    new_stdout.seek(0)
+    pydoc.pager(new_stdout.read())
+

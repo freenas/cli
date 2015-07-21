@@ -54,9 +54,12 @@ class Namespace(object):
         return self.name
 
     def commands(self):
+        # lazy import to avoid circular import hell
+        # TODO: can this be avoided? If so please!
+        from commands import HelpCommand
         return {
             '?': IndexCommand(self),
-            'help': IndexCommand(self),
+            'help': HelpCommand(),
         }
 
     def namespaces(self):
@@ -86,6 +89,17 @@ class CommandException(Exception):
 
 @description("Provides list of commands in this namespace")
 class IndexCommand(Command):
+    """
+    Usage: ?
+
+    Lists all the possible commands and EntityNamespaces accessible form the
+    current namespace or the one supplied in the arguments. It also always lists
+    the globally avaible builtin set of commands.
+
+    Example:
+    ?
+    volumes ?
+    """
     def __init__(self, target):
         self.target = target
 

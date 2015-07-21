@@ -575,6 +575,15 @@ def main():
     logging.basicConfig(
         filename='/var/tmp/freenascli.{0}.log'.format(str(os.getpid())),
         level=logging.DEBUG)
+    # create symlink to latest created cli log
+    # but first check if previous exists and nuke it
+    try:
+        os.unlink('/var/tmp/freenascli.latest.log')
+    except OSError:
+        # not there no probs move on
+        pass
+    os.symlink('/var/tmp/freenascli.{0}.log'.format(str(os.getpid())),
+               '/var/tmp/freenascli.latest.log')
     parser = argparse.ArgumentParser()
     parser.add_argument('hostname', metavar='HOSTNAME', nargs='?',
                         default='127.0.0.1')

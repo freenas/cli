@@ -34,12 +34,12 @@ import select
 import sandbox
 import icu
 from namespace import Command, CommandException, description
-from output import (
-    Column, output_value, output_dict, format_value, output_msg, output_list
-)
+from output import (Column, output_value, output_dict, ValueType, output_less,
+                    format_value, output_msg, output_list, output_table)
 from dispatcher.shell import ShellClient
 
-t = icu.Transliterator.createInstance("Any-Accents", icu.UTransDirection.FORWARD)
+t = icu.Transliterator.createInstance("Any-Accents",
+                                      icu.UTransDirection.FORWARD)
 _ = t.transliterate
 
 
@@ -215,6 +215,51 @@ class HelpCommand(Command):
     """
     def run(self, context, args, kwargs, opargs):
         obj = context.ml.get_relative_object(context.ml.path[-1], args)
+        bases = map(lambda x: x.__name__, obj.__class__.__bases__)
 
-        if obj.__doc__:
+        if 'Command' in bases and obj.__doc__:
             output_msg(inspect.getdoc(obj))
+
+        if any(i in ['Namespace', 'EntityNamespace'] for i in bases):
+            # First listing the Current Namespace's commands
+            cmd_dict_list = []
+            ns_cmds = obj.commands()
+            for key, value in ns_cmds.iteritems():
+                cmd_dict = {
+                    'cmd': key,
+                    'description': value.description,
+                }
+                cmd_dict_list.append(cmd_dict)
+
+            # Then listing the namespaces available form this namespace
+            namespaces_dict_list = []
+            for nss in obj.namespaces():
+                namespace_dict= {
+                    'name': nss.name,
+                    'description': nss.description,
+                }
+                namespaces_dict_list.append(namespace_dict)
+
+            # Finally listing the builtin cmds
+            builtin_cmd_dict_list = []
+            for key, value in context.ml.builtin_commands.iteritems():
+                builtin_cmd_dict = {
+                    'cmd': key,
+                    'description': value.description,
+                }
+                builtin_cmd_dict_list.append(builtin_cmd_dict)
+
+            # Finally printing all this out in unix `LESS(1)` pager style
+            a = lambda: output_table(cmd_dict_list, [
+                Column('Command', 'cmd', ValueType.STRING),
+                Column('Description', 'description', ValueType.STRING),
+            ])
+            b = lambda: output_table(namespaces_dict_list, [
+                Column('Namespace', 'name', ValueType.STRING),
+                Column('Description', 'description', ValueType.STRING),
+            ])
+            c = lambda: output_table(builtin_cmd_dict_list, [
+                Column('Builtin Command', 'cmd', ValueType.STRING),
+                Column('Description', 'description', ValueType.STRING),
+            ])
+            output_less([a,b,c])

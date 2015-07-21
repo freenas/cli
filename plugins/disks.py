@@ -88,13 +88,18 @@ class DisksNamespace(RpcBasedLoadMixin, EntityNamespace):
 
 @description("Formats given disk")
 class FormatDiskCommand(Command):
+    """
+    Usage: format
+    
+    Formats the current disk.
+    """
     def __init__(self, parent):
-        self.disk = parent.entity
+        self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
         fstype = kwargs.pop('fstype', 'freebsd-zfs')
         swapsize = kwargs.pop('swapsize', '2048M')
-        context.submit_task('disk.format.gpt', self.disk['path'], fstype)
+        context.submit_task('disk.format.gpt', self.parent.entity['path'], fstype)
 
 
 @description("Erases all data on disk safely")

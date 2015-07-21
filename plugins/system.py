@@ -35,6 +35,11 @@ from utils import parse_query_args
 
 @description("Provides status information about the server")
 class StatusCommand(Command):
+    """
+    Usage: status
+
+    Displays status information about the server.
+    """
     def run(self, context, args, kwargs, opargs):
         output_dict(context.call_sync('management.status'))
 
@@ -43,6 +48,8 @@ class StatusCommand(Command):
 class InfoCommand(Command):
     """
     Usage: info
+
+    Displays information about the system's hardware.
     """
     def run(self, context, args, kwargs, opargs):
         output_dict(context.call_sync('system.info.hardware'))
@@ -52,6 +59,8 @@ class InfoCommand(Command):
 class VersionCommand(Command):
     """
     Usage: version
+
+    Displays FreeNAS version information.
     """
     def run(self, context, args, kwargs, opargs):
         output_object(

@@ -31,7 +31,16 @@ from namespace import ConfigNamespace, EntityNamespace, RpcBasedLoadMixin, Comma
 from output import ValueType
 
 
+@description("Start/stop/restart/reload a service")
 class ServiceManageCommand(Command):
+    """
+    Usage: start, stop, restart, reload
+
+    start - starts a service
+    stop - stops a service
+    restart - restarts a service
+    reload - gracefully restarts a service
+    """
     def __init__(self, parent, action):
         self.parent = parent
         self.action = action

@@ -41,7 +41,13 @@ class InterfaceCreateCommand(Command):
         pass
 
 
+@description("Enables or disables a network interface")
 class InterfaceManageCommand(Command):
+    """
+    Usage: up, down
+
+    Enables or disables a network interface.
+    """
     def __init__(self, parent, up):
         self.parent = parent
         self.up = up

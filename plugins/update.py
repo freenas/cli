@@ -35,18 +35,33 @@ from utils import parse_query_args
 
 @description("Prints current Update Train")
 class CurrentTrainCommand(Command):
+    """
+    Usage: current_train
+
+    Displays the current update train.
+    """
     def run(self, context, args, kwargs, opargs):
         output_msg(context.connection.call_sync('update.get_current_train'))
 
 
 @description("Checks for New Updates")
 class CheckNowCommand(Command):
+    """
+    Usge: check_now
+
+    Checks for updates.
+    """
     def run(self, context, args, kwargs, opargs):
         output_msg(context.connection.call_sync('update.check'))
 
 
 @description("Updates the system and reboot it")
 class UpdateNowCommand(Command):
+    """
+    Usage: update_now
+
+    Installs updates if they are available and restarts the system if necessary.
+    """
     def run(self, context, args, kwargs, opargs):
         output_msg("System going for an update now...")
         context.submit_task('update.update')

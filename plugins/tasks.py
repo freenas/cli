@@ -67,6 +67,14 @@ class ListCommand(Command):
 
 @description("Submits new task")
 class SubmitCommand(Command):
+    """
+    Usage: submit <task>
+
+    Submits a task to the dispatcher for execution
+
+    Examples:
+        submit update.check
+    """
     def run(self, context, args, kwargs, opargs):
         name = args.pop(0)
         context.submit_task(name, *args)

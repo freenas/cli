@@ -260,19 +260,25 @@ class HelpCommand(Command):
                 builtin_cmd_dict_list.append(builtin_cmd_dict)
 
             # Finally printing all this out in unix `LESS(1)` pager style
-            a = lambda: output_table(cmd_dict_list, [
-                Column('Command', 'cmd', ValueType.STRING),
-                Column('Description', 'description', ValueType.STRING),
-            ])
-            b = lambda: output_table(namespaces_dict_list, [
-                Column('Namespace', 'name', ValueType.STRING),
-                Column('Description', 'description', ValueType.STRING),
-            ])
-            c = lambda: output_table(builtin_cmd_dict_list, [
-                Column('Builtin Command', 'cmd', ValueType.STRING),
-                Column('Description', 'description', ValueType.STRING),
-            ])
-            output_less([a,b,c])
+            output_call_list = []
+            if cmd_dict_list:
+                output_call_list.append(lambda: output_table(cmd_dict_list, [
+                    Column('Command', 'cmd', ValueType.STRING),
+                    Column('Description', 'description', ValueType.STRING)]))
+            if namespaces_dict_list:
+                output_call_list.append(
+                    lambda: output_table(namespaces_dict_list, [
+                        Column('Namespace', 'name', ValueType.STRING),
+                        Column('Description', 'description', ValueType.STRING)
+                        ]))
+            # Only display the help on builtin commands if in the RootNamespace
+            if obj.__class__.__name__ == 'RootNamespace':
+                output_call_list.append(
+                    lambda: output_table(builtin_cmd_dict_list, [
+                        Column('Builtin Command', 'cmd', ValueType.STRING),
+                        Column('Description', 'description', ValueType.STRING)
+                    ]))
+            output_less(output_call_list)
 
 
 @description("Sends the user to the top level")
@@ -284,4 +290,3 @@ class TopCommand(Command):
     """
     def run(self, context, args, kwargs, opargs):
         context.ml.path = [context.root_ns]
-

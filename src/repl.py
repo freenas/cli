@@ -58,7 +58,7 @@ from fnutils.query import wrap
 from commands import (
     ExitCommand, PrintenvCommand, SetenvCommand, ShellCommand, ShutdownCommand,
     RebootCommand, EvalCommand, HelpCommand, ShowUrlsCommand, ShowIpsCommand,
-    TopCommand, ClearCommand
+    TopCommand, ClearCommand, HistoryCommand
 )
 
 if platform.system() == 'Darwin':
@@ -355,7 +355,8 @@ class MainLoop(object):
         'top': TopCommand(),
         'showips': ShowIpsCommand(),
         'showurls': ShowUrlsCommand(),
-        'clear': ClearCommand()
+        'clear': ClearCommand(),
+        'history': HistoryCommand()
     }
 
     def __init__(self, context):

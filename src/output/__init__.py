@@ -93,9 +93,6 @@ class ProgressBar(object):
         sys.stdout.write('\n')
 
 
-
-
-
 def get_terminal_size(fd=1):
     """
     Returns height and width of current terminal. First tries to get
@@ -235,6 +232,21 @@ def stdout_redirect(where):
 
 
 def output_less(output_call_list):
+    # First check if its either a list or a func (if not then raise TypeError)
+    if hasattr(output_call_list, '__call__'):
+        # It is a single func so just wrap it in a list and the below code
+        # will DTRT
+        output_call_list = [output_call_list]
+    elif type(output_call_list) is list:
+        for x in output_call_list:
+            if not hasattr(x, '__call__'):
+                raise TypeError('One of the items provided in the ' +
+                                'output_call_list was not a function')
+    else:
+        raise TypeError('Input to `output_less` must either be a function or' +
+                        ' a list of functions. Instead the following type ' +
+                        'was received: {0}'.format(type(output_call_list)))
+
     with stdout_redirect(StringIO.StringIO()) as new_stdout:
         for output_func_call in output_call_list:
             output_func_call()

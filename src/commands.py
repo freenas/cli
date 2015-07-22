@@ -32,9 +32,10 @@ import termios
 import sys
 import select
 import sandbox
+import readline
 import icu
 from namespace import Command, CommandException, description
-from output import (Column, output_value, output_dict, ValueType, 
+from output import (Column, output_value, output_dict, ValueType,
                     format_value, output_msg, output_list, output_table,
                     output_lock, output_less)
 from dispatcher.shell import ShellClient
@@ -245,7 +246,7 @@ class HelpCommand(Command):
             # Then listing the namespaces available form this namespace
             namespaces_dict_list = []
             for nss in obj.namespaces():
-                namespace_dict= {
+                namespace_dict = {
                     'name': nss.name,
                     'description': nss.description,
                 }
@@ -304,3 +305,16 @@ class ClearCommand(Command):
         output_lock.acquire()
         os.system('cls' if os.name == 'nt' else 'clear')
         output_lock.release()
+
+
+@description("Shows the CLI command history")
+class HistoryCommand(Command):
+    """
+    Usage: history
+
+    Lists the list commands previously executed in this CLI instance.
+    """
+    def run(self, context, args, kwargs, opargs):
+        histroy_range = readline.get_current_history_length()
+        history = [readline.get_history_item(i) for i in range(histroy_range)]
+        output_less(lambda: output_list(history, label="Command History"))

@@ -57,7 +57,8 @@ from dispatcher.rpc import RpcException
 from fnutils.query import wrap
 from commands import (
     ExitCommand, PrintenvCommand, SetenvCommand, ShellCommand, ShutdownCommand,
-    RebootCommand, EvalCommand, HelpCommand, ShowUrlsCommand, ShowIpsCommand
+    RebootCommand, EvalCommand, HelpCommand, ShowUrlsCommand, ShowIpsCommand,
+    TopCommand
 )
 
 if platform.system() == 'Darwin':
@@ -351,6 +352,7 @@ class MainLoop(object):
         'shutdown': ShutdownCommand(),
         'reboot': RebootCommand(),
         'help': HelpCommand(),
+        'top': TopCommand(),
         'showips': ShowIpsCommand(),
         'showurls': ShowUrlsCommand()
     }

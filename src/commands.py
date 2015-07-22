@@ -137,6 +137,8 @@ class PrintenvCommand(Command):
 class ShutdownCommand(Command):
     """
     Usage: shutdown
+
+    Shuts the system down.
     """
     def run(self, context, args, kwargs, opargs):
         output_msg(_("System going for a shutdown..."))
@@ -147,16 +149,20 @@ class ShutdownCommand(Command):
 class RebootCommand(Command):
     """
     Usage: reboot
+
+    Reboots the system.
     """
     def run(self, context, args, kwargs, opargs):
         output_msg(_("System going for a reboot..."))
         context.submit_task('system.reboot')
 
 
-@description("Displays the active ips from all configured network interface")
+@description("Displays the active IP addresses from all configured network interface")
 class ShowIpsCommand(Command):
     """
     Usage: showips
+
+    Displays the active IP addresses from all configured network interfaces.
     """
     def run(self, context, args, kwargs, opargs):
         output_msg(_("These are the active ips from all the configured"
@@ -168,7 +174,9 @@ class ShowIpsCommand(Command):
 @description("Displays the URLs to access the web GUI from")
 class ShowUrlsCommand(Command):
     """
-    Usage: showips
+    Usage: showurls
+
+    Displays the URLs to access the web GUI from.
     """
     def run(self, context, args, kwargs, opargs):
         output_msg(_("You may try the following URLs to access"
@@ -194,6 +202,8 @@ class ShowUrlsCommand(Command):
 class ExitCommand(Command):
     """
     Usage: exit
+
+    Exits from the CLI.
     """
     def run(self, context, args, kwargs, opargs):
         sys.exit(0)

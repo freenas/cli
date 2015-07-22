@@ -268,9 +268,9 @@ class HelpCommand(Command):
 @description("Sends the user to the top level")
 class TopCommand(Command):
     """
-    Usage: top
+    Usage: top, /
 
-    Sends you back to the top level of the command tree
+    Sends you back to the top level of the command tree.
     """
     def run(self, context, args, kwargs, opargs):
         context.ml.path = [context.root_ns]

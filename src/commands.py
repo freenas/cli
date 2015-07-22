@@ -34,8 +34,9 @@ import select
 import sandbox
 import icu
 from namespace import Command, CommandException, description
-from output import (Column, output_value, output_dict, ValueType, output_less,
-                    format_value, output_msg, output_list, output_table)
+from output import (Column, output_value, output_dict, ValueType, 
+                    format_value, output_msg, output_list, output_table,
+                    output_lock, output_less)
 from dispatcher.shell import ShellClient
 
 t = icu.Transliterator.createInstance("Any-Accents",
@@ -290,3 +291,16 @@ class TopCommand(Command):
     """
     def run(self, context, args, kwargs, opargs):
         context.ml.path = [context.root_ns]
+
+
+@description("Clears the cli stdout")
+class ClearCommand(Command):
+    """
+    Usage: clear
+
+    Clears the CLI's stdout. Works exactly the same as its shell counterpart.
+    """
+    def run(self, context, args, kwargs, opargs):
+        output_lock.acquire()
+        os.system('cls' if os.name == 'nt' else 'clear')
+        output_lock.release()

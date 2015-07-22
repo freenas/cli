@@ -151,6 +151,38 @@ class InterfacesNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
             list=True
         )
 
+        self.add_property(
+            descr='Parent interface',
+            name='vlan-parent',
+            get='vlan.parent',
+            type=ValueType.STRING,
+            condition=lambda e: e['type'] == 'VLAN'
+        )
+
+        self.add_property(
+            descr='VLAN tag',
+            name='vlan-tag',
+            get='vlan.tag',
+            type=ValueType.NUMBER,
+            condition=lambda e: e['type'] == 'VLAN'
+        )
+
+        self.add_property(
+            descr='Aggregation protocol',
+            name='protocol',
+            get='lagg.protocol',
+            type=ValueType.STRING,
+            condition=lambda e: e['type'] == 'LAGG'
+        )
+
+        self.add_property(
+            descr='Member interfaces',
+            name='members',
+            get='lagg.ports',
+            type=ValueType.SET,
+            condition=lambda e: e['type'] == 'LAGG'
+        )
+
         self.primary_key = self.get_mapping('name')
         self.entity_commands = lambda this: {
             'up': InterfaceManageCommand(this, True),
@@ -176,7 +208,7 @@ class InterfacesNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
 
     def save(self, this, new=False):
         if new:
-            self.context.submit_task('network.interface.create', this.entity['id'], this.entity['type'])
+            self.context.submit_task('network.interface.create', this.entity['type'])
             this.modified = False
             return
 
@@ -240,6 +272,13 @@ class AliasesNamespace(EntityNamespace):
         self.parent.entity['aliases'] = filter(lambda a: a['address'] != address, self.parent.entity['aliases'])
         self.parent.parent.save(self.parent)
         self.parent.load()
+
+
+class MembersNamespace(EntityNamespace):
+    def __init__(self, name, context, parent):
+        pass
+
+
 
 @description("Static host names database")
 class HostsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):

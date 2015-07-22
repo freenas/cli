@@ -29,7 +29,7 @@
 import copy
 import collections
 from texttable import Texttable
-from fnutils.query import QueryDict, QueryList
+from fnutils.query import wrap
 from output import (Column, ValueType, output_object, output_table, output_list,
                     output_msg, output_is_ascii, read_value, format_value)
 
@@ -136,6 +136,7 @@ class PropertyMapping(object):
         self.set = kwargs.pop('set', None) if 'set' in kwargs else self.get
         self.list = kwargs.pop('list', True)
         self.type = kwargs.pop('type', ValueType.STRING)
+        self.condition = kwargs.pop('condition', None)
 
     def do_get(self, obj):
         if callable(self.get):
@@ -185,6 +186,10 @@ class ItemNamespace(Namespace):
             for mapping in self.parent.property_mappings:
                 if not mapping.get:
                     continue
+
+                if mapping.condition:
+                    if not mapping.condition(entity):
+                        continue
 
                 values.append((
                     mapping.descr,
@@ -567,12 +572,12 @@ class RpcBasedLoadMixin(object):
         self.primary_key_name = 'id'
 
     def query(self, params, options):
-        return QueryList(self.context.connection.call_sync(
+        return wrap(self.context.connection.call_sync(
             self.query_call,
             params, options))
 
     def get_one(self, name):
-        return QueryDict(self.context.connection.call_sync(
+        return wrap(self.context.connection.call_sync(
             self.query_call,
             [(self.primary_key_name, '=', name)],
             {'single': True}))

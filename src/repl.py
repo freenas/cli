@@ -363,6 +363,7 @@ class MainLoop(object):
         self.context = context
         self.root_path = [self.context.root_ns]
         self.path = self.root_path[:]
+        self.prev_path = self.path[:]
         self.namespaces = []
         self.connection = None
 
@@ -456,13 +457,21 @@ class MainLoop(object):
             return
 
         if line[0] == '/':
+            self.prev_path = self.path[:]
             self.path = self.root_path[:]
             line = line[1:]
 
         if line == '..':
             if len(self.path) > 1:
+                self.prev_path = self.path[:]
                 self.cd_up()
                 return
+
+        if line == '-':
+            prev = self.prev_path[:]
+            self.prev_path = self.path[:]
+            self.path = prev
+            return
 
         tokens, kwargs, opargs = self.tokenize(line)
         oldpath = self.path[:]
@@ -510,6 +519,10 @@ class MainLoop(object):
 
                 if cmdfound:
                     self.path = oldpath
+                    break
+
+                if nsfound:
+                    self.prev_path = oldpath
                     break
 
     def get_relative_object(self, ns, tokens):

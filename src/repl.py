@@ -523,7 +523,6 @@ class MainLoop(object):
 
                 if nsfound:
                     self.prev_path = oldpath
-                    break
 
     def get_relative_object(self, ns, tokens):
         ptr = ns

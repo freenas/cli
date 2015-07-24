@@ -62,6 +62,48 @@ class SetenvCommand(Command):
         return [k for k, foo in context.variables.get_all()]
 
 
+@description("Prints variable value")
+class PrintenvCommand(Command):
+    """
+    Usage: printenv [variable]
+
+    Prints a list of environment variables and their values (if called without
+    arguments) or value of single environment variable (if called with single
+    positional argument - variable name)
+    """
+    def run(self, context, args, kwargs, opargs):
+        if len(args) == 0:
+            output_dict(dict(context.variables.get_all_printable()))
+
+        if len(args) == 1:
+            output_value(context.variables.get(args[0]))
+            return
+
+
+@description("Saves the Environment Variables to cli config file")
+class SaveenvCommand(Command):
+    """
+    Usage: saveenv filename(Optional)
+
+    Saves the current set of environment variables to the cli config
+    file. If not specified then this defaults to "~/.freenascli.conf".
+    If the cli was run with the config option (i.e. `cli -c path_to_file)
+    and that file existed and was a legitimate config file for the cli and was
+    loaded whilst initialization of the cli, then that file is used to dump
+    the current environment variables.
+    """
+    def run(self, context, args, kwargs, opargs):
+        if len(args) == 0:
+            context.variables.save()
+            output_msg(
+                'Environment Variables Saved to file: {0}'.format(
+                    context.variables.save_to_file))
+        if len(args) == 1:
+            context.variables.save(args[0])
+            output_msg(
+                'Environment Variables Saved to file: {0}'.format(args[0]))
+
+
 @description("Evaluates Python code")
 class EvalCommand(Command):
     """
@@ -115,24 +157,6 @@ class ShellCommand(Command):
                 shell.write(ch)
 
         termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-
-
-@description("Prints variable value")
-class PrintenvCommand(Command):
-    """
-    Usage: printenv [variable]
-
-    Prints a list of environment variables and their values (if called without
-    arguments) or value of single environment variable (if called with single
-    positional argument - variable name)
-    """
-    def run(self, context, args, kwargs, opargs):
-        if len(args) == 0:
-            output_dict(dict(context.variables.get_all_printable()))
-
-        if len(args) == 1:
-            output_value(context.variables.get(args[0]))
-            return
 
 
 @description("Shuts the system down")

@@ -45,7 +45,6 @@ import icu
 import getpass
 import traceback
 import Queue
-import threading
 from descriptions import events
 from namespace import Namespace, RootNamespace, Command
 from output import (
@@ -58,7 +57,7 @@ from fnutils.query import wrap
 from commands import (
     ExitCommand, PrintenvCommand, SetenvCommand, ShellCommand, ShutdownCommand,
     RebootCommand, EvalCommand, HelpCommand, ShowUrlsCommand, ShowIpsCommand,
-    TopCommand, ClearCommand, HistoryCommand
+    TopCommand, ClearCommand, HistoryCommand, SaveenvCommand
 )
 
 if platform.system() == 'Darwin':
@@ -67,9 +66,10 @@ else:
     import readline
 
 
-DEFAULT_CONFIGFILE = '/usr/local/etc/middleware.conf'
-DEFAULT_RC = os.path.expanduser('~/.freenascli.conf')
-t = icu.Transliterator.createInstance("Any-Accents", icu.UTransDirection.FORWARD)
+DEFAULT_MIDDLEWARE_CONFIGFILE = '/usr/local/etc/middleware.conf'
+DEFAULT_CLI_CONFIGFILE = os.path.expanduser('~/.freenascli.conf')
+t = icu.Transliterator.createInstance("Any-Accents",
+                                      icu.UTransDirection.FORWARD)
 _ = t.transliterate
 
 
@@ -97,7 +97,8 @@ class VariableStore(object):
         def set(self, value):
             value = read_value(value, self.type)
             if self.choices is not None and value not in self.choices:
-                raise ValueError(_("Value not on the list of possible choices"))
+                raise ValueError(
+                    _("Value not on the list of possible choices"))
 
             self.value = value
 
@@ -105,10 +106,13 @@ class VariableStore(object):
             return format_value(self.value, self.type)
 
     def __init__(self):
+        self.save_to_file = DEFAULT_CLI_CONFIGFILE
         self.variables = {
-            'output-format': self.Variable('ascii', ValueType.STRING, ['ascii', 'json', 'table']),
+            'output-format': self.Variable('ascii', ValueType.STRING,
+                                           ['ascii', 'json', 'table']),
             'datetime-format': self.Variable('natural', ValueType.STRING),
-            'language': self.Variable(os.getenv('LANG', 'C'), ValueType.STRING),
+            'language': self.Variable(os.getenv('LANG', 'C'),
+                                      ValueType.STRING),
             'prompt': self.Variable('{host}:{path}>', ValueType.STRING),
             'timeout': self.Variable(10, ValueType.NUMBER),
             'tasks-blocking': self.Variable(False, ValueType.BOOLEAN),
@@ -117,10 +121,48 @@ class VariableStore(object):
         }
 
     def load(self, filename):
-        pass
+        try:
+            with open(filename, 'r') as f:
+                data = json.load(f)
+        except IOError:
+            # The file does not exist lets just default to default env settings
+            # TODO: Should I report this to the user somehow?
+            return
+        except ValueError:
+            # If the data being deserialized is not a valid JSON document,
+            # a ValueError will be raised.
+            output_msg(
+                _("WARNING: The CLI config file: {0} has ".format(filename) +
+                  "improper format. Please check the file for errors. " +
+                  "Resorting to Default set of Environment Variables."))
+            return
+        # Now that we know that this file is legit and that it may be different
+        # than the default (DEFAULT_CLI_CONFIGFILE) lets just set this class's
+        # 'save_to_file' variable to this file.
+        self.save_to_file = filename
+        for name, setting in data.iteritems():
+            self.set(name, setting['value'],
+                     ValueType(setting['type']), setting['default'],
+                     setting['choices'])
 
-    def save(self, filename):
-        pass
+    def save(self, filename=None):
+        env_settings = {}
+        for key, variable in self.variables.iteritems():
+            env_settings[key] = {
+                'default': variable.default,
+                'type': variable.type.value,
+                'choices': variable.choices,
+                'value': variable.value
+            }
+        try:
+            with open(filename or self.save_to_file, 'w') as f:
+                json.dump(env_settings, f)
+        except IOError:
+            raise
+        except ValueError, err:
+            raise ValueError(
+                _("Could not save environemnet to file. Following error " +
+                  "occured: {0}".format(str(err))))
 
     def get(self, name):
         return self.variables[name].value
@@ -132,9 +174,10 @@ class VariableStore(object):
         for name, var in self.variables.items():
             yield (name, str(var))
 
-    def set(self, name, value):
+    def set(self, name, value, vtype=ValueType.STRING,
+            default='', choices=None):
         if name not in self.variables:
-            self.variables[name] = self.Variable('', ValueType.STRING)
+            self.variables[name] = self.Variable(default, vtype, choices)
 
         self.variables[name].set(value)
 
@@ -186,7 +229,7 @@ class Context(object):
         if self.connection.opened:
             self.connection.call_sync('management.ping')
 
-    def read_config_file(self, file):
+    def read_middleware_config_file(self, file):
         try:
             f = open(file, 'r')
             data = json.load(f)
@@ -235,7 +278,7 @@ class Context(object):
         output_lock.acquire()
         self.ml.blank_readline()
 
-        output_msg('Connection lost! Trying to reconnect...')
+        output_msg(_('Connection lost! Trying to reconnect...'))
         retries = 0
         while True:
             retries += 1
@@ -246,11 +289,13 @@ class Context(object):
                     self.connection.login_token(self.connection.token)
                     self.connection.subscribe_events(*EVENT_MASKS)
                 except RpcException:
-                    output_msg(_("Reauthentication using token failed (most likely token expired or server was restarted)"))
+                    output_msg(
+                        _("Reauthentication using token failed (most likely \
+                          token expired or server was restarted)"))
                     sys.exit(1)
                 break
             except Exception, e:
-                output_msg('Cannot reconnect: {0}'.format(str(e)))
+                output_msg(_('Cannot reconnect: {0}'.format(str(e))))
 
         self.ml.restore_readline()
         output_lock.release()
@@ -347,6 +392,7 @@ class MainLoop(object):
         'exit': ExitCommand(),
         'setenv': SetenvCommand(),
         'printenv': PrintenvCommand(),
+        'saveenv': SaveenvCommand(),
         'shell': ShellCommand(),
         'eval': EvalCommand(),
         'shutdown': ShutdownCommand(),
@@ -375,8 +421,9 @@ class MainLoop(object):
         return self.context.variables.get('prompt').format(**variables)
 
     def greet(self):
-        print _("Welcome to FreeNAS CLI! Type '?' for help at any point.")
-        print
+        output_msg(
+            _("Welcome to FreeNAS CLI! Type '?' for help at any point."))
+        output_msg("")
 
     def cd(self, ns):
         if not self.cwd.on_leave():
@@ -583,7 +630,8 @@ class MainLoop(object):
         sys.stdout.write('\x1b[0G')
 
     def restore_readline(self):
-        sys.stdout.write(self.__get_prompt() + readline.get_line_buffer().rstrip())
+        sys.stdout.write(
+            self.__get_prompt() + readline.get_line_buffer().rstrip())
         sys.stdout.flush()
 
 
@@ -603,7 +651,9 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('hostname', metavar='HOSTNAME', nargs='?',
                         default='127.0.0.1')
-    parser.add_argument('-c', metavar='CONFIG', default=DEFAULT_CONFIGFILE)
+    parser.add_argument('-m', metavar='MIDDLEWARECONFIG',
+                        default=DEFAULT_MIDDLEWARE_CONFIGFILE)
+    parser.add_argument('-c', metavar='CONFIG', default=DEFAULT_CLI_CONFIGFILE)
     parser.add_argument('-e', metavar='COMMANDS')
     parser.add_argument('-f', metavar='INPUT')
     parser.add_argument('-l', metavar='LOGIN')
@@ -612,7 +662,8 @@ def main():
     args = parser.parse_args()
     context = Context()
     context.hostname = args.hostname
-    context.read_config_file(args.c)
+    context.read_middleware_config_file(args.m)
+    context.variables.load(args.c)
     context.start()
 
     ml = MainLoop(context)

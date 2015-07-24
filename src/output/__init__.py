@@ -39,7 +39,8 @@ import pydoc
 
 
 output_lock = Lock()
-t = icu.Transliterator.createInstance("Any-Accents", icu.UTransDirection.FORWARD)
+t = icu.Transliterator.createInstance("Any-Accents",
+                                      icu.UTransDirection.FORWARD)
 _ = t.transliterate
 
 
@@ -134,10 +135,12 @@ def read_value(value, tv=ValueType.STRING):
         return int(value)
 
     if tv == ValueType.BOOLEAN:
-        if value in ('true', 'yes', 'YES', '1'):
+        if type(value) is bool:
+            return value
+        if value in ('true', 'True', 'yes', 'YES', '1'):
             return True
 
-        if value in ('false', 'no', 'NO', '0'):
+        if value in ('false', 'False', 'no', 'NO', '0'):
             return False
 
     if tv == ValueType.SIZE:

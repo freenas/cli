@@ -28,7 +28,7 @@
 
 import os
 from namespace import Namespace, EntityNamespace, Command, RpcBasedLoadMixin, description
-from output import ValueType, output_msg, output_table
+from output import ValueType, output_msg, output_table, read_value
 
 
 @description("Provides information about installed disks")
@@ -104,9 +104,18 @@ class FormatDiskCommand(Command):
 
 @description("Erases all data on disk safely")
 class EraseDiskCommand(Command):
-    def __init__(self, parent):
-        pass
+    """
+    Usage: erase
+           erase wipe=yes
 
+    Erases the partitions from the current disk and optionally wipes it.
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        erase_data = read_value(kwargs.pop('wipe', 'no'), ValueType.BOOLEAN)
+        context.submit_task('disk.erase', self.parent.entity['path'], erase_data)
 
 
 def _init(context):

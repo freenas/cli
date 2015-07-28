@@ -421,7 +421,7 @@ class EntityNamespace(Namespace):
     @description("Lists items")
     class ListCommand(Command):
         """
-        Usage: show [<field> <operator> <value> ...] [limit=<n>] [sort=<field>] [dir=<asc|desc>]
+        Usage: show [<field> <operator> <value> ...] [limit=<n>] [sort=<field>,-<field2>]
 
         Lists items in current namespace, optinally doing filtering and sorting.
 
@@ -429,7 +429,7 @@ class EntityNamespace(Namespace):
             show
             show username=root
             show uid>1000
-            show fullname~="John" sort=fullname dir=asc
+            show fullname~="John" sort=fullname
         """
         def __init__(self, parent):
             self.parent = parent
@@ -445,11 +445,7 @@ class EntityNamespace(Namespace):
                     continue
 
                 if k == 'sort':
-                    options['sort'] = v
-                    continue
-
-                if k == 'dir':
-                    options['dir'] = v
+                    options['sort'] = v.split(',')
                     continue
 
                 if not self.parent.has_property(k):

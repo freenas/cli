@@ -86,7 +86,7 @@ class LoginCommand(Command):
 @description("Prints session history")
 class SessionsCommand(Command):
     """
-    Usage: sessions [<field> <operator> <value> ...] [limit=<n>] [sort=<field>] [dir=<asc|desc>]
+    Usage: sessions [<field> <operator> <value> ...] [limit=<n>] [sort=<field>,-<field2>]
     """
     def run(self, context, args, kwargs, opargs):
         items = context.call_sync('sessions.query', *parse_query_args(args, kwargs))
@@ -102,7 +102,7 @@ class SessionsCommand(Command):
 @description("Prints event history")
 class EventsCommand(Command):
     """
-    Usage: events [<field> <operator> <value> ...] [limit=<n>] [sort=<field>] [dir=<asc|desc>]
+    Usage: events [<field> <operator> <value> ...] [limit=<n>] [sort=<field>,-<field2>]
     """
     def run(self, context, args, kwargs, opargs):
         items = context.call_sync('sessions.query', *parse_query_args(args, kwargs))

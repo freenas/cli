@@ -342,3 +342,27 @@ class HistoryCommand(Command):
         histroy_range = readline.get_current_history_length()
         history = [readline.get_history_item(i) for i in range(histroy_range)]
         output_less(lambda: output_list(history, label="Command History"))
+
+@description("Imports a script for parsing")
+class SourceCommand(Command):
+    """
+    Usage: source <filename>
+
+    Imports a script of cli commands for parsing
+    """
+
+    def run(self, context, args, kwargs, opargs):
+        if len(args) == 0:
+            output_msg(_("Usage: source <filename>"))
+        else:
+            if os.path.isfile(args[0]):
+                path = context.ml.path[:]
+                try:
+                    with open(args[0], 'r') as f:
+                        for line in f:
+                            context.ml.process(line)
+                except UnicodeDecodeError:
+                    output_msg(_("Incorrect filetype, cannot parse file"))
+                context.ml.path = path
+            else:
+                output_msg(_("File " + args[0] + " does not exist."))

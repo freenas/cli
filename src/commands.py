@@ -357,6 +357,7 @@ class SourceCommand(Command):
         else:
             if os.path.isfile(args[0]):
                 path = context.ml.path[:]
+                context.ml.path = [context.root_ns]
                 try:
                     with open(args[0], 'r') as f:
                         for line in f:

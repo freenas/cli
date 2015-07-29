@@ -347,23 +347,26 @@ class HistoryCommand(Command):
 class SourceCommand(Command):
     """
     Usage: source <filename>
+           source <filename1> <filename2> <filename3>
 
-    Imports a script of cli commands for parsing
+    Imports scripts of cli commands for parsing.
     """
 
     def run(self, context, args, kwargs, opargs):
         if len(args) == 0:
             output_msg(_("Usage: source <filename>"))
         else:
-            if os.path.isfile(args[0]):
-                path = context.ml.path[:]
-                context.ml.path = [context.root_ns]
-                try:
-                    with open(args[0], 'r') as f:
-                        for line in f:
-                            context.ml.process(line)
-                except UnicodeDecodeError:
-                    output_msg(_("Incorrect filetype, cannot parse file"))
-                context.ml.path = path
-            else:
-                output_msg(_("File " + args[0] + " does not exist."))
+            for arg in args:
+                if os.path.isfile(arg):
+                    path = context.ml.path[:]
+                    context.ml.path = [context.root_ns]
+                    try:
+                        with open(arg, 'r') as f:
+                            for line in f:
+                                context.ml.process(line)
+                    except UnicodeDecodeError, e:
+                        output_msg(_("Incorrect filetype, cannot parse file: {0}".format(str(e))))
+                    finally:
+                        context.ml.path = path
+                else:
+                    output_msg(_("File " + arg + " does not exist."))

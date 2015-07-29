@@ -36,3 +36,19 @@ def parse_query_args(args, kwargs):
     return filters, params
 
 
+def list_split(lst, delimiter):
+    """
+    Simple helper function to split list by the specified delimiter (e.g: '\n')
+    This function returns two lists. The first contains the sublist from the
+    beginning of the supplied list to the very fist occurence of the delimiter.
+    The second contains the the later half of the supplied list. (delimiter
+    not included).
+
+    In the event of the delimiter not being found it returns the first list
+    as is and the second as an empty list ([])
+    """
+    try:
+        idx = lst.index(delimiter)
+        return lst[:idx], lst[idx+1:]
+    except ValueError:
+        return lst, []

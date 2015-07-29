@@ -34,6 +34,7 @@ import select
 import sandbox
 import readline
 import icu
+import re
 from namespace import Command, CommandException, description
 from output import (Column, output_value, output_dict, ValueType,
                     format_value, output_msg, output_list, output_table,
@@ -76,7 +77,14 @@ class PrintenvCommand(Command):
             output_dict(dict(context.variables.get_all_printable()))
 
         if len(args) == 1:
-            output_value(context.variables.get(args[0]))
+            try:
+                # Yes, the manual call to __str__() is needed as the output_msg
+                # in some formatters (ascii) replies on cprint instead of print
+                # thus making it a no-go to rely directly on __str__ to be
+                # invoked!
+                output_msg(context.variables.variables[args[0]].__str__())
+            except KeyError:
+                output_msg(_("No such Environment Variable exists"))
             return
 
 
@@ -343,6 +351,7 @@ class HistoryCommand(Command):
         history = [readline.get_history_item(i) for i in range(histroy_range)]
         output_less(lambda: output_list(history, label="Command History"))
 
+
 @description("Imports a script for parsing")
 class SourceCommand(Command):
     """
@@ -370,3 +379,58 @@ class SourceCommand(Command):
                         context.ml.path = path
                 else:
                     output_msg(_("File " + arg + " does not exist."))
+
+
+@description("Prints the provided message to the output")
+class EchoCommand(Command):
+    """
+    Usage: echo string_to_display
+
+    The echo utility writes any specified operands, separated by single blank
+    (` ') characters and followed by a newline (`\n') character, to the
+    standard output. It also has the ability to expand and substitute
+    environment variables in place using the '$' or '${variable_name}' syntax/
+
+    Examples:
+    echo Have a nice Day!
+    output: Have a nice Day!
+
+    echo Hey \n how are you?
+    output: Hey
+    how are you?
+
+    echo Hello the current cli session timeout is $timeout seconds
+    output: Hello the current cli session timeout is 10 seconds
+
+    echo Hi there, you are using ${language}lang
+    output Hi there, you are using Clang
+    """
+    def run(sef, context, args, kwargs, opargs):
+        if len(args) == 0:
+            output_msg("")
+        else:
+            curly_regex = "\$\{([\w]+)\}"
+            echo_output_list = ' '.join(args)
+            echo_output_list = echo_output_list.split('\\n')
+            for x, lst in enumerate(echo_output_list):
+                tmp_lst = lst.split(' ')
+                for y, word in enumerate(tmp_lst):
+                    occurences = re.findall(curly_regex, word)
+                    for r in occurences:
+                        try:
+                            value = context.variables.variables[r].__str__()
+                        except:
+                            output_msg(r + " " +_("No such Environment Variable exists"))
+                            return
+                        rep = "\$\{" + r + "\}"
+                        word = re.sub(rep, value, word)
+                    tmp_lst[y] = word
+                    if word.startswith('$'):
+                        try:
+                            tmp_lst[y] = context.variables.variables[word.strip()[1:]].__str__()
+                        except KeyError:
+                            output_msg(word[1:]+ " " +_("No such Environment Variable exists"))
+                            return
+
+                echo_output_list[x] = ' '.join(tmp_lst)
+            map(output_msg, echo_output_list)

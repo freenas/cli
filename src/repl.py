@@ -57,7 +57,7 @@ from fnutils.query import wrap
 from commands import (
     ExitCommand, PrintenvCommand, SetenvCommand, ShellCommand, ShutdownCommand,
     RebootCommand, EvalCommand, HelpCommand, ShowUrlsCommand, ShowIpsCommand,
-    TopCommand, ClearCommand, HistoryCommand, SaveenvCommand, SourceCommand
+    TopCommand, ClearCommand, HistoryCommand, SaveenvCommand, EchoCommand, SourceCommand
 )
 
 if platform.system() == 'Darwin':
@@ -403,7 +403,8 @@ class MainLoop(object):
         'showurls': ShowUrlsCommand(),
         'source': SourceCommand(),
         'clear': ClearCommand(),
-        'history': HistoryCommand()
+        'history': HistoryCommand(),
+        'echo': EchoCommand()
     }
 
     def __init__(self, context):

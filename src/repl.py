@@ -49,7 +49,7 @@ from descriptions import events
 from namespace import Namespace, RootNamespace, Command
 from output import (
     ValueType, ProgressBar, output_lock, output_msg, read_value, format_value,
-    output_list
+    output_list, stdout_redirect
 )
 from dispatcher.client import Client, ClientError
 from dispatcher.rpc import RpcException
@@ -496,35 +496,8 @@ class MainLoop(object):
 
             self.process(line)
 
-    def process(self, line):
-        if len(line) == 0:
-            return
-
-        if line[0] == '!':
-            self.builtin_commands['shell'].run(
-                self.context, [line[1:]], {}, {})
-            return
-
-        if line[0] == '/':
-            self.prev_path = self.path[:]
-            self.path = self.root_path[:]
-            line = line[1:]
-
-        if line == '..':
-            if len(self.path) > 1:
-                self.prev_path = self.path[:]
-                self.cd_up()
-                return
-
-        if line == '-':
-            prev = self.prev_path[:]
-            self.prev_path = self.path[:]
-            self.path = prev
-            return
-
-        tokens, kwargs, opargs = self.tokenize(line)
+    def execute(self, tokens, kwargs, opargs):
         oldpath = self.path[:]
-
         while tokens:
             token = tokens.pop(0)
             nsfound = False
@@ -572,6 +545,39 @@ class MainLoop(object):
 
                 if nsfound:
                     self.prev_path = oldpath
+
+    def process(self, line):
+        if len(line) == 0:
+            return
+
+        if line[0] == '!':
+            self.builtin_commands['shell'].run(
+                self.context, [line[1:]], {}, {})
+            return
+
+        if line[0] == '/':
+            self.prev_path = self.path[:]
+            self.path = self.root_path[:]
+            line = line[1:]
+
+        if line == '..':
+            if len(self.path) > 1:
+                self.prev_path = self.path[:]
+                self.cd_up()
+                return
+
+        if line == '-':
+            prev = self.prev_path[:]
+            self.prev_path = self.path[:]
+            self.path = prev
+            return
+
+        # Handling pipe
+        # if '|' in line:
+        #     line_list = line.split('|')
+
+        tokens, kwargs, opargs = self.tokenize(line)
+        self.execute(tokens, kwargs, opargs)
 
     def get_relative_object(self, ns, tokens):
         ptr = ns

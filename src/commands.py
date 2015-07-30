@@ -387,7 +387,7 @@ class EchoCommand(Command):
     Usage: echo string_to_display
 
     The echo utility writes any specified operands, separated by single blank
-    (` ') characters and followed by a newline (`\n') character, to the
+    (` ') characters and followed by a newline (`\\n') character, to the
     standard output. It also has the ability to expand and substitute
     environment variables in place using the '$' or '${variable_name}' syntax/
 
@@ -395,7 +395,7 @@ class EchoCommand(Command):
     echo Have a nice Day!
     output: Have a nice Day!
 
-    echo Hey \n how are you?
+    echo Hey \\n how are you?
     output: Hey
     how are you?
 
@@ -420,7 +420,7 @@ class EchoCommand(Command):
                         try:
                             value = context.variables.variables[r].__str__()
                         except:
-                            output_msg(r + " " +_("No such Environment Variable exists"))
+                            output_msg(r + " " + _("No such Environment Variable exists"))
                             return
                         rep = "\$\{" + r + "\}"
                         word = re.sub(rep, value, word)
@@ -429,7 +429,7 @@ class EchoCommand(Command):
                         try:
                             tmp_lst[y] = context.variables.variables[word.strip()[1:]].__str__()
                         except KeyError:
-                            output_msg(word[1:]+ " " +_("No such Environment Variable exists"))
+                            output_msg(word[1:] + " " + _("No such Environment Variable exists"))
                             return
 
                 echo_output_list[x] = ' '.join(tmp_lst)

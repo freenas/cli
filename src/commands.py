@@ -434,3 +434,13 @@ class EchoCommand(Command):
 
                 echo_output_list[x] = ' '.join(tmp_lst)
             map(output_msg, echo_output_list)
+
+@description("Allows the user to scroll through output")
+class LessCommand(Command):
+    def run(self, context, args, kwargs, opargs):
+        if len(args) == 0:
+            output_msg("")
+        else:
+            less_output_list = ' '.join(args).split('\\n')
+            output_less(lambda: output_list(less_output_list))
+            return

@@ -437,6 +437,14 @@ class EchoCommand(Command):
 
 @description("Allows the user to scroll through output")
 class LessCommand(Command):
+    """
+    Usage: less <really long string of text>
+           <command> | less
+
+    Examples: task list | less
+
+    Allows paging and scrolling through long outputs of text.
+    """
     def run(self, context, args, kwargs, opargs):
         if len(args) == 0:
             output_msg("")

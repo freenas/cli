@@ -441,6 +441,5 @@ class LessCommand(Command):
         if len(args) == 0:
             output_msg("")
         else:
-            less_output_list = ' '.join(args).split('\\n')
-            output_less(lambda: output_list(less_output_list))
-            return
+            less_output = ' '.join(args)
+            output_less(lambda: output_msg(less_output))

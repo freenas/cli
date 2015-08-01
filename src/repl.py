@@ -45,7 +45,6 @@ import icu
 import getpass
 import traceback
 import Queue
-import StringIO
 from descriptions import events
 from namespace import Namespace, RootNamespace, Command
 from output import (
@@ -86,9 +85,6 @@ EVENT_MASKS = [
     'service.started',
     'volume.created',
 ]
-# These commands require special handling since their
-# arguments do not need to FULLY tokenized
-OPLESS_CMDS = ['less', 'echo', 'tail', 'grep']
 
 
 class VariableStore(object):
@@ -457,11 +453,7 @@ class MainLoop(object):
         opargs = []
         kwargs = {}
         tokens = shlex.split(line, posix=False)
-        # The two lines below are hacky! if you can find
-        # a better solution to echo et all PLEASE DO.
-        if tokens[0] in OPLESS_CMDS:
-            args = [tokens[0], line[len(tokens[0]):].strip()]
-            return args, kwargs, opargs
+
         for t in tokens:
             found = False
 
@@ -532,7 +524,8 @@ class MainLoop(object):
                         try:
                             cmd.run(self.context, tokens, kwargs, opargs)
                         except Exception, e:
-                            output_msg(_('Command {0} failed: {1}'.format(name, str(e))))
+                            output_msg(
+                                'Command {0} failed: {1}'.format(name, str(e)))
                             if self.context.variables.get('debug'):
                                 traceback.print_exc()
 
@@ -541,12 +534,12 @@ class MainLoop(object):
                         break
 
             except Exception, err:
-                output_msg(_('Error: {0}'.format(str(err))))
+                print 'Error: {0}'.format(str(err))
                 traceback.print_exc()
                 break
             else:
                 if not nsfound and not cmdfound:
-                    output_msg(_("Command not found! Type \"?\" for help."))
+                    print _("Command not found! Type \"?\" for help.")
                     break
 
                 if cmdfound:
@@ -583,20 +576,11 @@ class MainLoop(object):
             return
 
         # Handling pipe
-        line_list = [line]
-        if '|' in line:
-            line_list = line.split('|')
-        prev_stdout = None
-        for lst in line_list:
-            if prev_stdout is not None:
-                lst += " " + prev_stdout
-            with stdout_redirect(StringIO.StringIO()) as next_stdout:
-                tokens, kwargs, opargs = self.tokenize(lst.strip())
-                self.execute(tokens, kwargs, opargs)
-            next_stdout.seek(0)
-            prev_stdout = next_stdout.read()
-        # Now we just print the last output from the last pipe
-        print prev_stdout.strip()
+        # if '|' in line:
+        #     line_list = line.split('|')
+
+        tokens, kwargs, opargs = self.tokenize(line)
+        self.execute(tokens, kwargs, opargs)
 
     def get_relative_object(self, ns, tokens):
         ptr = ns
@@ -620,7 +604,7 @@ class MainLoop(object):
         return ptr
 
     def complete(self, text, state):
-        tokens = shlex.split(readline.get_line_buffer().split('|')[-1].strip(), posix=False)
+        tokens = shlex.split(readline.get_line_buffer(), posix=False)
         obj = self.get_relative_object(self.cwd, tokens)
 
         if issubclass(type(obj), Namespace):

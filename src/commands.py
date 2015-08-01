@@ -435,6 +435,7 @@ class EchoCommand(Command):
                 echo_output_list[x] = ' '.join(tmp_lst)
             map(output_msg, echo_output_list)
 
+
 @description("Allows the user to scroll through output")
 class LessCommand(Command):
     """
@@ -451,3 +452,39 @@ class LessCommand(Command):
         else:
             less_output = ' '.join(args)
             output_less(lambda: output_msg(less_output))
+
+
+@description("Shows the user the last few lines of output")
+class TailCommand(Command):
+    """
+    Usage : <command> | tail
+            <command> | tail -n <number>
+
+    Examples: tasks list | tail
+              tasks list | tail -n 10
+
+    Displays the last lines of output.
+    """
+    def run(self, context, args, kwargs, opargs):
+        if len(args) == 0:
+            output_msg("")
+        else:
+            numlines = 5
+            tail_output = ""
+            tail_input_list = ' '.join(args).split('\n')
+            tailargs = tail_input_list[0].strip().split(' ')[0:2]
+            if tailargs[0] == '-n':
+                try:
+                    numlines = int(tailargs[1])
+                    # strip off the first "-n <number>" from the input
+                    tail_input_list[0] = re.sub("-n\s*\d*", '', tail_input_list[0], 1).lstrip()
+                except:
+                    pass
+            tail_length = len(tail_input_list)
+            if tail_length < numlines:
+                numlines = tail_length
+            for i in range(tail_length - numlines, tail_length):
+                tail_output += tail_input_list[i]
+                if i < tail_length - 1:
+                    tail_output += '\n'
+            output_msg(tail_output);

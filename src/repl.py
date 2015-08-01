@@ -59,7 +59,7 @@ from commands import (
     ExitCommand, PrintenvCommand, SetenvCommand, ShellCommand, ShutdownCommand,
     RebootCommand, EvalCommand, HelpCommand, ShowUrlsCommand, ShowIpsCommand,
     TopCommand, ClearCommand, HistoryCommand, SaveenvCommand, EchoCommand,
-    SourceCommand, LessCommand
+    SourceCommand, LessCommand, TailCommand
 )
 
 if platform.system() == 'Darwin':
@@ -408,6 +408,7 @@ class MainLoop(object):
         'showurls': ShowUrlsCommand(),
         'source': SourceCommand(),
         'less': LessCommand(),
+        'tail': TailCommand(),
         'clear': ClearCommand(),
         'history': HistoryCommand(),
         'echo': EchoCommand()

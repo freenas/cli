@@ -47,7 +47,6 @@ import traceback
 import Queue
 from descriptions import events
 from namespace import Namespace, RootNamespace, Command, FilteringCommand, CommandException
-from scheme import ExecutionContext
 from parser import parse, Symbol, CommandExpansion, Literal, BinaryExpr, PipeExpr
 from output import (
     ValueType, Object, Table, ProgressBar, output_lock, output_msg, read_value, format_value,
@@ -441,7 +440,6 @@ class MainLoop(object):
         self.path = self.root_path[:]
         self.prev_path = self.path[:]
         self.namespaces = []
-        self.execution_context = ExecutionContext(self)
         self.connection = None
 
     def __get_prompt(self):

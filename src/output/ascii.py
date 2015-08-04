@@ -88,26 +88,19 @@ class AsciiOutputFormatter(object):
         sys.stdout.flush()
 
     @staticmethod
-    def output_table(data, columns):
+    def output_table(tab):
         table = Texttable(max_width=get_terminal_size()[1])
-        table.set_cols_dtype('t' * len(columns))
         table.set_deco(0)
-        table.header([i.label for i in columns])
-        table.add_rows([[AsciiOutputFormatter.format_value(resolve_cell(row, i.accessor), i.vt) for i in columns] for row in data], False)
+        table.header([i.label for i in tab.columns])
+        table.add_rows([[AsciiOutputFormatter.format_value(resolve_cell(row, i.accessor), i.vt) for i in tab.columns] for row in tab.data], False)
         print table.draw()
 
     @staticmethod
-    def output_object(items):
+    def output_object(obj):
         table = Texttable(max_width=get_terminal_size()[1])
         table.set_deco(0)
-        for i in items:
-            if len(i) == 3:
-                descr, name, value = i
-                table.add_row(['{0} ({1})'.format(descr, name), AsciiOutputFormatter.format_value(value, ValueType.STRING)])
-
-            if len(i) == 4:
-                descr, name, value, vt = i
-                table.add_row(['{0} ({1})'.format(descr, name), AsciiOutputFormatter.format_value(value, vt)])
+        for item in obj:
+            table.add_row(['{0} ({1})'.format(item.descr, item.name), AsciiOutputFormatter.format_value(item.value, item.vt)])
 
         print table.draw()
 
@@ -125,7 +118,7 @@ class AsciiOutputFormatter(object):
 
     @staticmethod
     def output_msg(message, **kwargs):
-        cprint(message, attrs=kwargs.pop('attrs', None))
+        cprint(str(message), attrs=kwargs.pop('attrs', None))
 
 
 def _formatter():

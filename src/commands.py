@@ -35,8 +35,8 @@ import sandbox
 import readline
 import icu
 import re
-from namespace import Command, CommandException, description
-from output import (Column, output_value, output_dict, ValueType,
+from namespace import Command, PipeCommand, CommandException, description
+from output import (Table, Object, output_value, output_dict, ValueType,
                     format_value, output_msg, output_list, output_table,
                     output_lock, output_less)
 from dispatcher.shell import ShellClient
@@ -82,10 +82,9 @@ class PrintenvCommand(Command):
                 # in some formatters (ascii) replies on cprint instead of print
                 # thus making it a no-go to rely directly on __str__ to be
                 # invoked!
-                output_msg(context.variables.variables[args[0]].__str__())
+                return context.variables.variables[args[0]].value
             except KeyError:
-                output_msg(_("No such Environment Variable exists"))
-            return
+                raise CommandException(_("No such Environment Variable exists"))
 
 
 @description("Saves the Environment Variables to cli config file")
@@ -275,7 +274,7 @@ class HelpCommand(Command):
                 }
                 cmd_dict_list.append(cmd_dict)
 
-            # Then listing the namespaces available form this namespace
+            # Then listing the namespaces available from this namespace
             namespaces_dict_list = []
             for nss in obj.namespaces():
                 namespace_dict = {
@@ -297,20 +296,20 @@ class HelpCommand(Command):
             output_call_list = []
             if cmd_dict_list:
                 output_call_list.append(lambda: output_table(cmd_dict_list, [
-                    Column('Command', 'cmd', ValueType.STRING),
-                    Column('Description', 'description', ValueType.STRING)]))
+                    Table.Column('Command', 'cmd', ValueType.STRING),
+                    Table.Column('Description', 'description', ValueType.STRING)]))
             if namespaces_dict_list:
                 output_call_list.append(
                     lambda: output_table(namespaces_dict_list, [
-                        Column('Namespace', 'name', ValueType.STRING),
-                        Column('Description', 'description', ValueType.STRING)
+                        Table.Column('Namespace', 'name', ValueType.STRING),
+                        Table.Column('Description', 'description', ValueType.STRING)
                         ]))
             # Only display the help on builtin commands if in the RootNamespace
             if obj.__class__.__name__ == 'RootNamespace':
                 output_call_list.append(
                     lambda: output_table(builtin_cmd_dict_list, [
-                        Column('Builtin Command', 'cmd', ValueType.STRING),
-                        Column('Description', 'description', ValueType.STRING)
+                        Table.Column('Builtin Command', 'cmd', ValueType.STRING),
+                        Table.Column('Description', 'description', ValueType.STRING)
                     ]))
             output_less(output_call_list)
 
@@ -454,37 +453,64 @@ class LessCommand(Command):
             output_less(lambda: output_msg(less_output))
 
 
-@description("Shows the user the last few lines of output")
-class TailCommand(Command):
+@description("Filters result set basing on specified conditions")
+class SearchPipeCommand(PipeCommand):
     """
-    Usage : <command> | tail
-            <command> | tail -n <number>
-
-    Examples: tasks list | tail
-              tasks list | tail -n 10
-
-    Displays the last lines of output.
+    Usage: <command> | search <key> [<op> <value> [...]]
     """
-    def run(self, context, args, kwargs, opargs):
-        if len(args) == 0:
-            output_msg("")
-        else:
-            numlines = 5
-            tail_output = ""
-            tail_input_list = ' '.join(args).split('\n')
-            tailargs = tail_input_list[0].strip().split(' ')[0:2]
-            if tailargs[0] == '-n':
-                try:
-                    numlines = int(tailargs[1])
-                    # strip off the first "-n <number>" from the input
-                    tail_input_list[0] = re.sub("-n\s*\d*", '', tail_input_list[0], 1).lstrip()
-                except:
-                    pass
-            tail_length = len(tail_input_list)
-            if tail_length < numlines:
-                numlines = tail_length
-            for i in range(tail_length - numlines, tail_length):
-                tail_output += tail_input_list[i]
-                if i < tail_length - 1:
-                    tail_output += '\n'
-            output_msg(tail_output);
+    def run(self, context, args, kwargs, opargs, input=None):
+        if isinstance(input, Table):
+            pass
+
+        if isinstance(input, Object):
+            pass
+
+    def serialize_filter(self, context, args, kwargs, opargs):
+        return {"filter": opargs}
+
+
+@description("Excludes certain results from result set basing on specified conditions")
+class ExcludePipeCommand(PipeCommand):
+    """
+    Usage: <command> | exclude <key> <op> <value> [...]
+    """
+    def run(self, context, args, kwargs, opargs, input=None):
+        pass
+
+    def serialize_filter(self, context, args, kwargs, opargs):
+        result = []
+        for i in opargs:
+            result.append(('nor', (i,)))
+
+        return {"filter": result}
+
+
+@description("Sorts result set")
+class SortPipeCommand(PipeCommand):
+    """
+    Usage: <command> | sort <field> [<-field> ...]
+    """
+    def serialize_filter(self, context, args, kwargs, opargs):
+        return {"params": {"sort": args}}
+
+
+@description("Limits output to <n> items")
+class LimitPipeCommand(PipeCommand):
+    """
+    Usage: <command> | limit <n>
+    """
+    def serialize_filter(self, context, args, kwargs, opargs):
+        return {"params": {"limit": args[0]}}
+
+
+class SelectPipeCommand(PipeCommand):
+    """
+    Usage: <command> | select <field>
+    """
+    def run(self, context, args, kwargs, opargs, input=None):
+        field = args[0]
+        if isinstance(input, Table):
+            input.data = map(lambda x: {'result': x.get(field)}, input.data)
+            input.columns = [Table.Column('Result', 'result')]
+
+            return input

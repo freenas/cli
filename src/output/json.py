@@ -48,7 +48,7 @@ class JsonOutputFormatter(object):
         print json.dumps(dict(data), indent=4)
 
     @staticmethod
-    def output_table(data, columns):
+    def output_table(table):
         print json.dumps(list(data), indent=4)
 
     @staticmethod

@@ -30,7 +30,7 @@ import copy
 import collections
 from texttable import Texttable
 from fnutils.query import wrap
-from output import (Column, ValueType, output_object, output_table, output_list,
+from output import (ValueType, Object, Table, output_object, output_table, output_list,
                     output_msg, output_is_ascii, read_value, format_value)
 
 
@@ -81,6 +81,19 @@ class Command(object):
 
     def complete(self, context, tokens):
         return []
+
+
+class FilteringCommand(Command):
+    def run(self, context, args, kwargs, opargs, filtering=None):
+        raise NotImplementedError()
+
+
+class PipeCommand(Command):
+    def run(self, context, args, kwargs, opargs, input=None):
+        pass
+
+    def serialize_filter(self, context, args, kwargs, opargs):
+        raise NotImplementedError()
 
 
 class CommandException(Exception):
@@ -177,10 +190,9 @@ class ItemNamespace(Namespace):
 
         def run(self, context, args, kwargs, opargs):
             if len(args) != 0:
-                output_msg('Wrong arguments count')
-                return
+                raise CommandException('Wrong arguments count')
 
-            values = []
+            values = Object()
             entity = self.parent.entity
 
             for mapping in self.parent.property_mappings:
@@ -191,14 +203,14 @@ class ItemNamespace(Namespace):
                     if not mapping.condition(entity):
                         continue
 
-                values.append((
+                values.append(Object.Item(
                     mapping.descr,
                     mapping.name,
                     mapping.do_get(entity),
                     mapping.type
                 ))
 
-            output_object(*values)
+            return values
 
     @description("Prints single item value")
     class GetEntityCommand(Command):
@@ -218,7 +230,7 @@ class ItemNamespace(Namespace):
                 return
 
             entity = self.parent.entity
-            output_msg(self.parent.get_property(args[0], entity))
+            return self.parent.get_property(args[0], entity)
 
         def complete(self, context, tokens):
             return [x.name for x in self.parent.property_mappings]
@@ -419,7 +431,7 @@ class EntityNamespace(Namespace):
         self.delete_command = self.DeleteEntityCommand
 
     @description("Lists items")
-    class ListCommand(Command):
+    class ListCommand(FilteringCommand):
         """
         Usage: show [<field> <operator> <value> ...] [limit=<n>] [sort=<field>,-<field2>]
 
@@ -434,36 +446,46 @@ class EntityNamespace(Namespace):
         def __init__(self, parent):
             self.parent = parent
 
-        def run(self, context, args, kwargs, opargs):
+        def __map_filter_properties(self, expr):
+            for i in expr:
+                if len(i) == 2:
+                    op, l = i
+                    yield op, list(self.__map_filter_properties(l))
+
+                if len(i) == 3:
+                    k, op, v = i
+                    if op == '==': op = '='
+                    if op == '~=': op = '~'
+
+                    prop = self.parent.get_mapping(k)
+                    yield prop.get, op, v
+
+        def run(self, context, args, kwargs, opargs, filtering=None):
             cols = []
             params = []
             options = {}
 
-            for k, v in kwargs.items():
-                if k == 'limit':
-                    options['limit'] = int(v)
-                    continue
+            if filtering:
+                for k, v in filtering['params'].items():
+                    if k == 'limit':
+                        options['limit'] = int(v)
+                        continue
 
-                if k == 'sort':
-                    options['sort'] = v.split(',')
-                    continue
+                    if k == 'sort':
+                        for sortkey in v:
+                            prop = self.parent.get_mapping(sortkey)
+                            options.setdefault('sort', []).append(prop.get)
+                        continue
 
-                if not self.parent.has_property(k):
-                    raise CommandException('Unknown field {0}'.format(k))
+                    if not self.parent.has_property(k):
+                        raise CommandException('Unknown field {0}'.format(k))
 
-                prop = self.parent.get_mapping(k)
-                v = read_value(v, prop.type)
-                params.append((k, '=', v))
-
-            for k, op, v in opargs:
-                prop = self.parent.get_mapping(k)
-                v = read_value(v, prop.type)
-                params.append((k, '~' if op == '~=' else op, v))
+                params = list(self.__map_filter_properties(filtering['filter']))
 
             for col in filter(lambda x: x.list, self.parent.property_mappings):
-                cols.append(Column(col.descr, col.get, col.type))
+                cols.append(Table.Column(col.descr, col.get, col.type))
 
-            output_table(self.parent.query(params, options), cols)
+            return Table(self.parent.query(params, options), cols)
 
     @description("Creates new item")
     class CreateEntityCommand(Command):

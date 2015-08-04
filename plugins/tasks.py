@@ -29,7 +29,7 @@
 import icu 
 from descriptions import tasks
 from namespace import Namespace, IndexCommand, Command, description
-from output import Column, ValueType, output_table
+from output import Table, ValueType, output_table
 
 
 t = icu.Transliterator.createInstance("Any-Accents", icu.UTransDirection.FORWARD)
@@ -41,12 +41,12 @@ class ListCommand(Command):
     def run(self, context, args, kwargs, opargs):
         self.context = context
         tasks = context.connection.call_sync('task.query')
-        output_table(tasks, [
-            Column('ID', 'id'),
-            Column('Started at', 'started_at', ValueType.TIME),
-            Column('Finished at', 'finished_at', ValueType.TIME),
-            Column('Description', self.describe_task),
-            Column('State', self.describe_state)
+        return Table(tasks, [
+            Table.Column('ID', 'id'),
+            Table.Column('Started at', 'started_at', ValueType.TIME),
+            Table.Column('Finished at', 'finished_at', ValueType.TIME),
+            Table.Column('Description', self.describe_task),
+            Table.Column('State', self.describe_state)
         ])
 
     def describe_state(self, task):

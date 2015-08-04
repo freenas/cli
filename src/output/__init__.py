@@ -54,11 +54,41 @@ class ValueType(enum.Enum):
     SET = 7
 
 
-class Column(object):
-    def __init__(self, label, accessor, vt=ValueType.STRING):
-        self.label = label
-        self.accessor = accessor
-        self.vt = vt
+class Object(list):
+    class Item(object):
+        def __init__(self, descr, name, value, vt=ValueType.STRING):
+            self.descr = descr
+            self.name = name
+            self.value = value
+            self.vt = vt
+
+    def append(self, p_object):
+        if not isinstance(p_object, self.Item):
+            raise ValueError('Can only add Object.Item instances')
+
+        super(Object, self).append(p_object)
+
+    def __setitem__(self, key, value):
+        if not isinstance(value, self.Item):
+            raise ValueError('Can only add Object.Item instances')
+
+        super(Object, self).__setitem__(key, value)
+
+    def __init__(self, *args):
+        for i in args:
+            self.append(i)
+
+
+class Table(object):
+    class Column(object):
+        def __init__(self, label, accessor, vt=ValueType.STRING):
+            self.label = label
+            self.accessor = accessor
+            self.vt = vt
+
+    def __init__(self, data, columns):
+        self.data = data
+        self.columns = columns
 
 
 class ProgressBar(object):
@@ -191,15 +221,15 @@ def output_dict(data, key_label=_("Key"), value_label=_("Value"), fmt=None):
     return get_formatter(fmt).output_dict(data, key_label, value_label)
 
 
-def output_table(data, columns, fmt=None):
+def output_table(table, fmt=None):
     fmt = fmt or config.instance.variables.get('output-format')
-    return get_formatter(fmt).output_table(data, columns)
+    return get_formatter(fmt).output_table(table)
 
 
-def output_object(*items, **kwargs):
+def output_object(item, **kwargs):
     fmt = kwargs.pop('fmt', None)
     fmt = fmt or config.instance.variables.get('output-format')
-    return get_formatter(fmt).output_object(items)
+    return get_formatter(fmt).output_object(item)
 
 
 def output_tree(tree, children, label, fmt=None):

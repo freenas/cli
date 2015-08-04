@@ -28,7 +28,7 @@
 
 import copy
 from namespace import Namespace, ConfigNamespace, Command, IndexCommand, description
-from output import Column, ValueType, output_dict, output_table, output_object
+from output import Table, Object, ValueType, output_dict, output_table
 from descriptions import events
 from utils import parse_query_args
 
@@ -63,9 +63,9 @@ class VersionCommand(Command):
     Displays FreeNAS version information.
     """
     def run(self, context, args, kwargs, opargs):
-        output_object(
-            ('FreeNAS version', 'freenas_version', context.call_sync('system.info.version')),
-            ('System version', 'system_version', context.call_sync('system.info.uname_full'))
+        return Object(
+            Object.Item('FreeNAS version', 'freenas_version', context.call_sync('system.info.version')),
+            Object.Item('System version', 'system_version', ' '.join(context.call_sync('system.info.uname_full')))
         )
 
     def complete(self, context, tokens):
@@ -90,12 +90,12 @@ class SessionsCommand(Command):
     """
     def run(self, context, args, kwargs, opargs):
         items = context.call_sync('sessions.query', *parse_query_args(args, kwargs))
-        output_table(items, [
-            Column('Session ID', 'id', ValueType.NUMBER),
-            Column('IP address', 'address', ValueType.STRING),
-            Column('User name', 'username', ValueType.STRING),
-            Column('Started at', 'started-at', ValueType.TIME),
-            Column('Ended at', 'ended-at', ValueType.TIME)
+        return Table(items, [
+            Table.Column('Session ID', 'id', ValueType.NUMBER),
+            Table.Column('IP address', 'address', ValueType.STRING),
+            Table.Column('User name', 'username', ValueType.STRING),
+            Table.Column('Started at', 'started-at', ValueType.TIME),
+            Table.Column('Ended at', 'ended-at', ValueType.TIME)
         ])
 
 
@@ -105,10 +105,10 @@ class EventsCommand(Command):
     Usage: events [<field> <operator> <value> ...] [limit=<n>] [sort=<field>,-<field2>]
     """
     def run(self, context, args, kwargs, opargs):
-        items = context.call_sync('sessions.query', *parse_query_args(args, kwargs))
-        output_table(items, [
-            Column('Event name', lambda t: events.translate(context, t['name'], t['args'])),
-            Column('Time', 'timestamp', ValueType.TIME)
+        items = context.call_sync('event.query', *parse_query_args(args, kwargs))
+        return Table(items, [
+            Table.Column('Event name', lambda t: events.translate(context, t['name'], t['args'])),
+            Table.Column('Time', 'timestamp', ValueType.TIME)
         ])
 
 

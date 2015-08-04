@@ -46,10 +46,12 @@ import getpass
 import traceback
 import Queue
 from descriptions import events
-from namespace import Namespace, RootNamespace, Command
+from namespace import Namespace, RootNamespace, Command, FilteringCommand, CommandException
+from scheme import ExecutionContext
+from parser import parse, Symbol, CommandExpansion, Literal, BinaryExpr, PipeExpr
 from output import (
-    ValueType, ProgressBar, output_lock, output_msg, read_value, format_value,
-    output_list, stdout_redirect
+    ValueType, Object, Table, ProgressBar, output_lock, output_msg, read_value, format_value,
+    output_list, stdout_redirect, output_object, output_table
 )
 from dispatcher.client import Client, ClientError
 from dispatcher.rpc import RpcException
@@ -58,7 +60,8 @@ from commands import (
     ExitCommand, PrintenvCommand, SetenvCommand, ShellCommand, ShutdownCommand,
     RebootCommand, EvalCommand, HelpCommand, ShowUrlsCommand, ShowIpsCommand,
     TopCommand, ClearCommand, HistoryCommand, SaveenvCommand, EchoCommand,
-    SourceCommand, LessCommand, TailCommand
+    SourceCommand, LessCommand, SearchPipeCommand, ExcludePipeCommand,
+    SortPipeCommand, LimitPipeCommand, SelectPipeCommand
 )
 
 if platform.system() == 'Darwin':
@@ -69,13 +72,13 @@ else:
 
 DEFAULT_MIDDLEWARE_CONFIGFILE = '/usr/local/etc/middleware.conf'
 DEFAULT_CLI_CONFIGFILE = os.path.expanduser('~/.freenascli.conf')
-t = icu.Transliterator.createInstance("Any-Accents",
-                                      icu.UTransDirection.FORWARD)
+t = icu.Transliterator.createInstance(
+    "Any-Accents",
+    icu.UTransDirection.FORWARD)
 _ = t.transliterate
 
 
 PROGRESS_CHARS = ['-', '\\', '|', '/']
-OPERATORS = ['<=', '>=', '!=', '+=', '-=', '~=', '=', '<', '>']
 EVENT_MASKS = [
     'client.logged',
     'task.created',
@@ -85,6 +88,24 @@ EVENT_MASKS = [
     'service.started',
     'volume.created',
 ]
+
+
+def sort_args(args):
+    positional = []
+    kwargs = {}
+    opargs = []
+
+    for i in args:
+        if type(i) is tuple:
+            if i[1] == '=':
+                kwargs[i[0]] = i[2]
+            else:
+                opargs.append(i)
+            continue
+
+        positional.append(i)
+
+    return positional, kwargs, opargs
 
 
 class VariableStore(object):
@@ -404,10 +425,14 @@ class MainLoop(object):
         'showurls': ShowUrlsCommand(),
         'source': SourceCommand(),
         'less': LessCommand(),
-        'tail': TailCommand(),
         'clear': ClearCommand(),
         'history': HistoryCommand(),
-        'echo': EchoCommand()
+        'echo': EchoCommand(),
+        'search': SearchPipeCommand(),
+        'exclude': ExcludePipeCommand(),
+        'sort': SortPipeCommand(),
+        'limit': LimitPipeCommand(),
+        'select': SelectPipeCommand()
     }
 
     def __init__(self, context):
@@ -416,6 +441,7 @@ class MainLoop(object):
         self.path = self.root_path[:]
         self.prev_path = self.path[:]
         self.namespaces = []
+        self.execution_context = ExecutionContext(self)
         self.connection = None
 
     def __get_prompt(self):
@@ -448,40 +474,6 @@ class MainLoop(object):
     def cwd(self):
         return self.path[-1]
 
-    def tokenize(self, line):
-        args = []
-        opargs = []
-        kwargs = {}
-        tokens = shlex.split(line, posix=False)
-
-        for t in tokens:
-            found = False
-
-            if t[0] == '"' and t[-1] == '"':
-                t = t[1:-1]
-                args.append(t)
-                continue
-
-            for op in OPERATORS:
-                if op in t:
-                    key, eq, value = t.partition(op)
-                    if value[0] == '"' and value[-1] == '"':
-                        value = value[1:-1]
-
-                    if op == '=':
-                        kwargs[key] = value
-                        found = True
-                        break
-
-                    opargs.append((key, op, value))
-                    found = True
-                    break
-
-            if not found:
-                args.append(t)
-
-        return args, kwargs, opargs
-
     def repl(self):
         readline.parse_and_bind('tab: complete')
         readline.set_completer(self.complete)
@@ -499,55 +491,148 @@ class MainLoop(object):
 
             self.process(line)
 
-    def execute(self, tokens, kwargs, opargs):
+    def find_in_scope(self, token):
+        if token in self.builtin_commands.keys():
+            return self.builtin_commands[token]
+
+        for ns in self.cwd.namespaces():
+            if token == ns.get_name():
+                return ns
+
+        for name, cmd in self.cwd.commands().items():
+            if token == name:
+                return cmd
+
+        return None
+
+    def convert_literals(self, tokens):
+        for i in tokens:
+            if isinstance(i, Symbol):
+                # Convert symbol to string
+                yield i.name
+
+            if isinstance(i, Literal):
+                yield i.value
+
+            if isinstance(i, BinaryExpr):
+                if isinstance(i.right, Literal):
+                    yield (i.left, i.op, i.right.value)
+
+                if isinstance(i.right, Symbol):
+                    # Convert symbol to string
+                    yield (i.left, i.op, i.right.name)
+
+                if isinstance(i.right, CommandExpansion):
+                    yield (i.left, i.op, self.eval(i.right.expr))
+
+    def format_output(self, object):
+        if isinstance(object, Object):
+            output_object(object)
+
+        if isinstance(object, Table):
+            output_table(object)
+
+        if isinstance(object, (basestring, int, long, bool)):
+            output_msg(object)
+
+    def eval(self, tokens):
         oldpath = self.path[:]
+        command = None
+        pipe_stack = []
+        args = []
+
         while tokens:
             token = tokens.pop(0)
-            nsfound = False
-            cmdfound = False
 
-            try:
-                if token in self.builtin_commands.keys():
-                    self.builtin_commands[token].run(
-                        self.context, tokens, kwargs, opargs)
-                    break
+            if isinstance(token, Symbol):
+                item = self.find_in_scope(token.name)
 
-                for ns in self.cwd.namespaces():
-                    if token == ns.get_name():
-                        self.cd(ns)
-                        nsfound = True
-                        break
+                if command:
+                    args.append(token)
+                    continue
 
-                for name, cmd in self.cwd.commands().items():
-                    if token == name:
-                        output_lock.acquire()
-                        try:
-                            cmd.run(self.context, tokens, kwargs, opargs)
-                        except Exception, e:
-                            output_msg(
-                                'Command {0} failed: {1}'.format(name, str(e)))
-                            if self.context.variables.get('debug'):
-                                traceback.print_exc()
+                if isinstance(item, Namespace):
+                    self.cd(item)
+                    continue
 
-                        cmdfound = True
-                        output_lock.release()
-                        break
+                if isinstance(item, Command):
+                    command = item
+                    continue
 
-            except Exception, err:
-                print 'Error: {0}'.format(str(err))
-                traceback.print_exc()
-                break
-            else:
-                if not nsfound and not cmdfound:
-                    print _("Command not found! Type \"?\" for help.")
-                    break
+                raise SyntaxError("Command or namespace {0} not found".format(token.name))
 
-                if cmdfound:
-                    self.path = oldpath
-                    break
+            if isinstance(token, CommandExpansion):
+                if not command:
+                    raise SyntaxError("Command expansion cannot replace command or namespace name")
 
-                if nsfound:
-                    self.prev_path = oldpath
+                result = self.eval(token.expr)
+                if not isinstance(result, basestring):
+                    raise SyntaxError("Can only use command expansion with commands returning single value")
+
+                args.append(Literal(result, type(result)))
+                continue
+
+            if isinstance(token, (Literal, BinaryExpr)):
+                args.append(token)
+                continue
+
+            if isinstance(token, PipeExpr):
+                pipe_stack.append(token.right)
+                tokens += token.left
+
+        args = list(self.convert_literals(args))
+        args, kwargs, opargs = sort_args(args)
+        filter_ops = []
+        filter_params = {}
+
+        if not command:
+            if len(args) > 0:
+                raise SyntaxError('No command specified')
+
+            return
+
+        tmpath = self.path[:]
+
+        if isinstance(command, FilteringCommand):
+            for p in pipe_stack[:]:
+                pipe_cmd = self.find_in_scope(p[0].name)
+                if not pipe_cmd:
+                    raise SyntaxError("Pipe command {0} not found".format(p[0].name))
+
+                pipe_args = self.convert_literals(p[1:])
+                try:
+                    ret = pipe_cmd.serialize_filter(self.context, *sort_args(pipe_args))
+
+                    if 'filter' in ret:
+                        filter_ops += ret['filter']
+
+                    if 'params' in ret:
+                        filter_params.update(ret['params'])
+
+                except NotImplementedError:
+                    continue
+
+                # If serializing filter succeeded, remove it from pipe stack
+                pipe_stack.remove(p)
+
+            ret = command.run(self.context, args, kwargs, opargs, filtering={
+                'filter': filter_ops,
+                'params': filter_params
+            })
+        else:
+            ret = command.run(self.context, args, kwargs, opargs)
+
+        for i in pipe_stack:
+            pipe_cmd = self.find_in_scope(i[0].name)
+            pipe_args = self.convert_literals(i[1:])
+            ret = pipe_cmd.run(self.context, *sort_args(pipe_args), input=ret)
+
+        if self.path != tmpath:
+            # Command must have modified the path
+            return ret
+
+        self.path = oldpath
+        return ret
 
     def process(self, line):
         if len(line) == 0:
@@ -575,12 +660,13 @@ class MainLoop(object):
             self.path = prev
             return
 
-        # Handling pipe
-        # if '|' in line:
-        #     line_list = line.split('|')
-
-        tokens, kwargs, opargs = self.tokenize(line)
-        self.execute(tokens, kwargs, opargs)
+        try:
+            i = parse(line)
+            self.format_output(self.eval(i))
+        except SyntaxError, e:
+            output_msg('Syntax error: {0}'.format(str(e)))
+        except CommandException, e:
+            output_msg('Error: {0}'.format(str(e)))
 
     def get_relative_object(self, ns, tokens):
         ptr = ns

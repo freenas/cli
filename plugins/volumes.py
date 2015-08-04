@@ -28,7 +28,7 @@
 
 import icu 
 from namespace import EntityNamespace, Command, CommandException, RpcBasedLoadMixin, TaskBasedSaveMixin, description
-from output import Column, output_table, output_tree
+from output import Table, output_table, output_tree
 from fnutils import first_or_default
 
 
@@ -127,10 +127,10 @@ class FindVolumesCommand(Command):
     """
     def run(self, context, args, kwargs, opargs):
         vols = context.connection.call_sync('volumes.find')
-        output_table(vols, [
-            Column('ID', 'id'),
-            Column('Volume name', 'name'),
-            Column('Status', 'status')
+        return Table(vols, [
+            Table.Column('ID', 'id'),
+            Table.Column('Volume name', 'name'),
+            Table.Column('Status', 'status')
         ])
 
 

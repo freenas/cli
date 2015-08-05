@@ -140,7 +140,7 @@ t_LT = r'<'
 t_LE = r'<'
 t_REGEX = r'~='
 t_UP = r'\.\.'
-t_ATOM = r'[a-zA-Z_\-\?]+'
+t_ATOM = r'[a-zA-Z_][a-zA-Z0-9\-\?]*'
 
 
 def t_error(t):

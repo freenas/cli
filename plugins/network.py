@@ -151,37 +151,37 @@ class InterfacesNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
             list=True
         )
 
-        self.add_property(
-            descr='Parent interface',
-            name='vlan-parent',
-            get='vlan.parent',
-            type=ValueType.STRING,
-            condition=lambda e: e['type'] == 'VLAN'
-        )
+        # self.add_property(
+        #     descr='Parent interface',
+        #     name='vlan-parent',
+        #     get='vlan.parent',
+        #     type=ValueType.STRING,
+        #     condition=lambda e: e['type'] == 'VLAN'
+        # )
 
-        self.add_property(
-            descr='VLAN tag',
-            name='vlan-tag',
-            get='vlan.tag',
-            type=ValueType.NUMBER,
-            condition=lambda e: e['type'] == 'VLAN'
-        )
+        # self.add_property(
+        #     descr='VLAN tag',
+        #     name='vlan-tag',
+        #     get='vlan.tag',
+        #     type=ValueType.NUMBER,
+        #     condition=lambda e: e['type'] == 'VLAN'
+        # )
 
-        self.add_property(
-            descr='Aggregation protocol',
-            name='protocol',
-            get='lagg.protocol',
-            type=ValueType.STRING,
-            condition=lambda e: e['type'] == 'LAGG'
-        )
+        # self.add_property(
+        #     descr='Aggregation protocol',
+        #     name='protocol',
+        #     get='lagg.protocol',
+        #     type=ValueType.STRING,
+        #     condition=lambda e: e['type'] == 'LAGG'
+        # )
 
-        self.add_property(
-            descr='Member interfaces',
-            name='members',
-            get='lagg.ports',
-            type=ValueType.SET,
-            condition=lambda e: e['type'] == 'LAGG'
-        )
+        # self.add_property(
+        #     descr='Member interfaces',
+        #     name='members',
+        #     get='lagg.ports',
+        #     type=ValueType.SET,
+        #     condition=lambda e: e['type'] == 'LAGG'
+        # )
 
         self.primary_key = self.get_mapping('name')
         self.entity_commands = lambda this: {
@@ -194,7 +194,7 @@ class InterfacesNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
         ]
 
     def get_link_state(self, entity):
-        return self.link_states[entity['status.link-state']]
+        return self.link_states[entity['status.link_state']]
 
     def get_iface_state(self, entity):
         return _("up") if 'UP' in entity['status.flags'] else _("down")

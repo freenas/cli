@@ -623,7 +623,12 @@ class MainLoop(object):
         for i in pipe_stack:
             pipe_cmd = self.find_in_scope(i[0].name)
             pipe_args = self.convert_literals(i[1:])
-            ret = pipe_cmd.run(self.context, *sort_args(pipe_args), input=ret)
+            try:
+                ret = pipe_cmd.run(self.context, *sort_args(pipe_args), input=ret)
+            except CommandException:
+                raise
+            except Exception as e:
+                raise CommandException(_('Unexpected Error: {0}'.format(str(e))))
 
         if self.path != tmpath:
             # Command must have modified the path
@@ -662,9 +667,18 @@ class MainLoop(object):
             i = parse(line)
             self.format_output(self.eval(i))
         except SyntaxError, e:
-            output_msg('Syntax error: {0}'.format(str(e)))
+            output_msg(_('Syntax error: {0}'.format(str(e))))
         except CommandException, e:
-            output_msg('Error: {0}'.format(str(e)))
+            output_msg(_('Error: {0}'.format(str(e))))
+            if self.context.variables.get('debug'):
+                output_msg(e.stackstrace)
+        except SystemExit:
+            # We do not want to catch a user entered `exit` so...
+            raise
+        except Exception as e:
+            output_msg(_('Unexpected Error: {0}'.format(str(e))))
+            if self.context.variables.get('debug'):
+                output_msg(traceback.format_exc())
 
     def get_relative_object(self, ns, tokens):
         ptr = ns

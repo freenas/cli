@@ -27,6 +27,8 @@
 
 
 import copy
+import traceback
+import errno
 import collections
 from texttable import Texttable
 from fnutils.query import wrap
@@ -97,7 +99,17 @@ class PipeCommand(Command):
 
 
 class CommandException(Exception):
-    pass
+    def __init__(self, message, code=None, extra=None):
+        self.code = code
+        self.message = message
+        self.extra = extra
+        self.stacktrace = traceback.format_exc()
+
+    def __str__(self):
+        if self.code is None:
+            return '{0}'.format(self.message)
+        else:
+            return '{0}: {1}'.format(errno.errorcode[self.code], self.message)
 
 
 @description("Provides list of commands in this namespace")
@@ -199,7 +211,7 @@ class ItemNamespace(Namespace):
                 if not mapping.get:
                     continue
 
-                if mapping.condition:
+                if mapping.condition is not None:
                     if not mapping.condition(entity):
                         continue
 

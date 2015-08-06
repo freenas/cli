@@ -38,7 +38,7 @@ import re
 from namespace import Command, PipeCommand, CommandException, description
 from output import (Table, Object, output_value, output_dict, ValueType,
                     format_value, output_msg, output_list, output_table,
-                    output_lock, output_less)
+                    output_lock, output_less, output_table_list)
 from dispatcher.shell import ShellClient
 
 t = icu.Transliterator.createInstance("Any-Accents",
@@ -295,23 +295,24 @@ class HelpCommand(Command):
             # Finally printing all this out in unix `LESS(1)` pager style
             output_call_list = []
             if cmd_dict_list:
-                output_call_list.append(lambda: output_table(cmd_dict_list, [
-                    Table.Column('Command', 'cmd', ValueType.STRING),
-                    Table.Column('Description', 'description', ValueType.STRING)]))
+                output_call_list.append(
+                    Table(cmd_dict_list, [
+                        Table.Column('Command', 'cmd', ValueType.STRING),
+                        Table.Column('Description', 'description', ValueType.STRING)]))
             if namespaces_dict_list:
                 output_call_list.append(
-                    lambda: output_table(namespaces_dict_list, [
+                    Table(namespaces_dict_list, [
                         Table.Column('Namespace', 'name', ValueType.STRING),
                         Table.Column('Description', 'description', ValueType.STRING)
                         ]))
             # Only display the help on builtin commands if in the RootNamespace
             if obj.__class__.__name__ == 'RootNamespace':
                 output_call_list.append(
-                    lambda: output_table(builtin_cmd_dict_list, [
+                    Table(builtin_cmd_dict_list, [
                         Table.Column('Builtin Command', 'cmd', ValueType.STRING),
                         Table.Column('Description', 'description', ValueType.STRING)
                     ]))
-            output_less(output_call_list)
+            output_less(lambda: output_table_list(output_call_list))
 
 
 @description("Sends the user to the top level")

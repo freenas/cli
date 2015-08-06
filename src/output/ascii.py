@@ -96,6 +96,28 @@ class AsciiOutputFormatter(object):
         print table.draw()
 
     @staticmethod
+    def output_table_list(tables):
+        widths = []
+        for tab in tables:
+            for i in range(0, len(tab.columns)):
+                if len(widths) < i + 1:
+                    widths.insert(i, len(tab.columns[i].label))
+                elif widths[i] < len(tab.columns[i].label):
+                    widths[i] = len(tab.columns[i].label)
+
+        for tab in tables:
+            for i in range(0, len(tab.columns)):
+                while (len(tab.columns[i].label) < widths[i]):
+                    tab.columns[i].label += " "
+
+        for tab in tables:
+            table = Texttable(max_width=get_terminal_size()[1])
+            table.set_deco(0)
+            table.header([i.label for i in tab.columns])
+            table.add_rows([[AsciiOutputFormatter.format_value(resolve_cell(row, i.accessor), i.vt) for i in tab.columns] for row in tab.data], False)
+            print table.draw() + "\n"
+
+    @staticmethod
     def output_object(obj):
         table = Texttable(max_width=get_terminal_size()[1])
         table.set_deco(0)

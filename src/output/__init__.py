@@ -226,6 +226,11 @@ def output_table(table, fmt=None):
     return get_formatter(fmt).output_table(table)
 
 
+def output_table_list(tables, fmt=None):
+    fmt = fmt or config.instance.variables.get('output-format')
+    return get_formatter(fmt).output_table_list(tables)
+
+
 def output_object(item, **kwargs):
     fmt = kwargs.pop('fmt', None)
     fmt = fmt or config.instance.variables.get('output-format')

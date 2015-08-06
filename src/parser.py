@@ -92,7 +92,7 @@ class CommandExpansion(object):
 tokens = [
     'NEWLINE', 'ATOM', 'NUMBER', 'HEXNUMBER', 'BINNUMBER', 'OCTNUMBER', 'STRING',
     'ASSIGN', 'EOPEN', 'ECLOSE', 'EQ', 'NE', 'GT', 'GE', 'LT', 'LE', 'REGEX', 'UP',
-    'PIPE'
+    'ROOT', 'PIPE'
 ]
 
 
@@ -140,6 +140,7 @@ t_LT = r'<'
 t_LE = r'<'
 t_REGEX = r'~='
 t_UP = r'\.\.'
+t_ROOT = r'\/'
 t_ATOM = r'[a-zA-Z_\?][a-zA-Z0-9\-\?]*'
 
 

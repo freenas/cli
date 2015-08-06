@@ -439,6 +439,7 @@ class MainLoop(object):
         self.root_path = [self.context.root_ns]
         self.path = self.root_path[:]
         self.prev_path = self.path[:]
+        self.start_from_root = False
         self.namespaces = []
         self.connection = None
 
@@ -535,6 +536,9 @@ class MainLoop(object):
 
     def eval(self, tokens):
         oldpath = self.path[:]
+        if self.start_from_root:
+            self.path = self.root_path[:]
+            self.start_from_root = False
         command = None
         pipe_stack = []
         args = []
@@ -557,15 +561,24 @@ class MainLoop(object):
                     command = item
                     continue
 
-                raise SyntaxError("Command or namespace {0} not found".format(token.name))
+                try:
+                    raise SyntaxError("Command or namespace {0} not found".format(token.name))
+                finally:
+                    self.path = oldpath
 
             if isinstance(token, CommandExpansion):
                 if not command:
-                    raise SyntaxError("Command expansion cannot replace command or namespace name")
+                    try:
+                        raise SyntaxError("Command expansion cannot replace command or namespace name")
+                    finally:
+                        self.path = oldpath
 
                 result = self.eval(token.expr)
                 if not isinstance(result, basestring):
-                    raise SyntaxError("Can only use command expansion with commands returning single value")
+                    try:
+                        raise SyntaxError("Can only use command expansion with commands returning single value")
+                    finally:
+                        self.path = oldpath
 
                 args.append(Literal(result, type(result)))
                 continue
@@ -595,7 +608,10 @@ class MainLoop(object):
             for p in pipe_stack[:]:
                 pipe_cmd = self.find_in_scope(p[0].name)
                 if not pipe_cmd:
-                    raise SyntaxError("Pipe command {0} not found".format(p[0].name))
+                    try:
+                        raise SyntaxError("Pipe command {0} not found".format(p[0].name))
+                    finally:
+                        self.path = oldpath
 
                 pipe_args = self.convert_literals(p[1:])
                 try:
@@ -618,6 +634,7 @@ class MainLoop(object):
                 'params': filter_params
             })
         else:
+            self.path = oldpath
             ret = command.run(self.context, args, kwargs, opargs)
 
         for i in pipe_stack:
@@ -629,6 +646,8 @@ class MainLoop(object):
                 raise
             except Exception as e:
                 raise CommandException(_('Unexpected Error: {0}'.format(str(e))))
+            finally:
+                self.path = oldpath
 
         if self.path != tmpath:
             # Command must have modified the path
@@ -647,9 +666,13 @@ class MainLoop(object):
             return
 
         if line[0] == '/':
-            self.prev_path = self.path[:]
-            self.path = self.root_path[:]
-            line = line[1:]
+            if line.strip() == '/':
+                self.prev_path = self.path[:]
+                self.path = self.root_path[:]
+                return
+            else:
+                self.start_from_root = True
+                line = line[1:]
 
         if line == '..':
             if len(self.path) > 1:

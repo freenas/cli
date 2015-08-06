@@ -503,9 +503,12 @@ class LimitPipeCommand(PipeCommand):
         return {"params": {"limit": args[0]}}
 
 
+@description("Displays the output for a specific field")
 class SelectPipeCommand(PipeCommand):
     """
     Usage: <command> | select <field>
+
+    Example: account users show | select username
     """
     def run(self, context, args, kwargs, opargs, input=None):
         field = args[0]

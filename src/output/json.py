@@ -28,14 +28,21 @@
 
 from __future__ import absolute_import
 import json
+from texttable import Texttable
 from output import ValueType, get_terminal_size, resolve_cell
 
 
 class JsonOutputFormatter(object):
     @staticmethod
     def format_value(value, vt):
+        if value is None:
+            return "none"
+
         if vt == ValueType.BOOLEAN:
             value = bool(value)
+
+        if vt == ValueType.STRING:
+            return str(value)
 
         return json.dumps(value)
 
@@ -49,11 +56,37 @@ class JsonOutputFormatter(object):
 
     @staticmethod
     def output_table(table):
-        print json.dumps(list(data), indent=4)
+        output = []
+        for row in table.data:
+            rowdata = {}
+            for col in table.columns:
+                rowdata.update({col.label:
+                    JsonOutputFormatter.format_value(resolve_cell(row, col.accessor), col.vt)})
+            output.append(rowdata)
+
+        print json.dumps(output, indent=4)
+
+    @staticmethod
+    def output_table_list(tables):
+        output = []
+        for table in tables:
+            output.append(JsonOutputFormatter.output_table(table))
+        print output
 
     @staticmethod
     def output_tree(data, children, label):
         print json.dumps(list(data), indent=4)
+
+    @staticmethod
+    def output_msg(data, **kwargs):
+        print json.dumps(data, indent=4)
+
+    @staticmethod
+    def output_object(obj):
+        output = {}
+        for item in obj:
+            output[item.name] = JsonOutputFormatter.format_value(item.value, item.vt)
+        print json.dumps(output, indent=4)
 
 
 def _formatter():

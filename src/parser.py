@@ -90,9 +90,9 @@ class CommandExpansion(object):
 
 
 tokens = [
-    'NEWLINE', 'ATOM', 'NUMBER', 'HEXNUMBER', 'BINNUMBER', 'OCTNUMBER', 'STRING',
-    'ASSIGN', 'EOPEN', 'ECLOSE', 'EQ', 'NE', 'GT', 'GE', 'LT', 'LE', 'REGEX', 'UP',
-    'ROOT', 'PIPE'
+    'ATOM', 'NUMBER', 'HEXNUMBER', 'BINNUMBER', 'OCTNUMBER', 'STRING',
+    'ASSIGN', 'EOPEN', 'ECLOSE', 'EQ', 'NE', 'GT', 'GE', 'LT', 'LE',
+    'REGEX', 'UP', 'ROOT', 'PIPE'
 ]
 
 
@@ -127,7 +127,6 @@ def t_STRING(t):
 
 
 t_ignore = ' \t'
-t_NEWLINE = r'\n'
 t_PIPE = r'\|'
 t_EOPEN = r'\$\('
 t_ECLOSE = r'\)'

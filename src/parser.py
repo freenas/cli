@@ -218,6 +218,8 @@ def p_binary(p):
 def p_symbol(p):
     """
     symbol : ATOM
+    symbol : UP
+    symbol : ROOT
     """
     p[0] = Symbol(p[1])
 

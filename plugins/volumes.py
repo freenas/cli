@@ -107,8 +107,11 @@ class DeleteVdevCommand(Command):
 @description("Creates new volume in simple way")
 class VolumeCreateCommand(Command):
     """
-    Usage: create-auto <disk> [...]
-           create-auto alldisks
+    Usage: create-auto <volume> <disk> [...]
+           create-auto <volume> alldisks
+
+    Examples: create-auto tank ada1 ada2
+              create-auto tank alldisks
     """
     def run(self, context, args, kwargs, opargs):
         name = args.pop(0)
@@ -124,6 +127,8 @@ class VolumeCreateCommand(Command):
 class FindVolumesCommand(Command):
     """
     Usage: find
+
+    Finds volumes that can be imported.
     """
     def run(self, context, args, kwargs, opargs):
         vols = context.connection.call_sync('volumes.find')
@@ -138,6 +143,10 @@ class FindVolumesCommand(Command):
 class ImportVolumeCommand(Command):
     """
     Usage: import <name|id> [newname=<new-name>]
+
+    Example: import tank
+
+    Imports a detached volume.
     """
     def run(self, context, args, kwargs, opargs):
         if len(args) < 1:
@@ -162,6 +171,10 @@ class ImportVolumeCommand(Command):
 class DetachVolumeCommand(Command):
     """
     Usage: detach <name>
+
+    Example: detach tank
+
+    Detaches a volume.
     """
     def run(self, context, args, kwargs, opargs):
         if len(args) < 1:
@@ -174,6 +187,8 @@ class DetachVolumeCommand(Command):
 class ShowTopologyCommand(Command):
     """
     Usage: show-topology
+
+    Shows the volume topology.
     """
     def __init__(self, parent):
         self.parent = parent
@@ -194,6 +209,8 @@ class ShowTopologyCommand(Command):
 class ShowDisksCommand(Command):
     """
     Usage: show-disks
+
+    Shows disk status for the volume.
     """
     def __init__(self, parent):
         self.parent = parent
@@ -201,9 +218,9 @@ class ShowDisksCommand(Command):
     def run(self, context, args, kwargs, opargs):
         volume = self.parent.entity
         result = list(iterate_vdevs(volume['topology']))
-        output_table(result, [
-            Column('Name', 'path'),
-            Column('Status', 'status')
+        return Table(result, [
+            Table.Column('Name', 'path'),
+            Table.Column('Status', 'status')
         ])
 
 
@@ -211,6 +228,10 @@ class ShowDisksCommand(Command):
 class ScrubCommand(Command):
     """
     Usage: scrub <name>
+
+    Example: scrub tank
+
+    Scrubs the volume
     """
     def __init__(self, parent):
         self.parent = parent

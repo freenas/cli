@@ -92,30 +92,30 @@ class CommandExpansion(object):
 tokens = [
     'ATOM', 'NUMBER', 'HEXNUMBER', 'BINNUMBER', 'OCTNUMBER', 'STRING',
     'ASSIGN', 'EOPEN', 'ECLOSE', 'EQ', 'NE', 'GT', 'GE', 'LT', 'LE',
-    'REGEX', 'UP', 'ROOT', 'PIPE'
+    'REGEX', 'UP', 'ROOT', 'PIPE', 'LIST'
 ]
 
 
 def t_HEXNUMBER(t):
-    r'0x[0-9a-fA-F]+'
+    r'0x[0-9a-fA-F]+$'
     t.value = int(t.value, 16)
     return t
 
 
 def t_OCTNUMBER(t):
-    r'0o[0-7]+'
+    r'0o[0-7]+$'
     t.value = int(t.value, 8)
     return t
 
 
 def t_BINNUMBER(t):
-    r'0b[01]+'
+    r'0b[01]+$'
     t.value = int(t.value, 2)
     return t
 
 
 def t_NUMBER(t):
-    r'\d+'
+    r'\d+$'
     t.value = int(t.value)
     return t
 
@@ -140,7 +140,9 @@ t_LE = r'<'
 t_REGEX = r'~='
 t_UP = r'\.\.'
 t_ROOT = r'\/'
-t_ATOM = r'[a-zA-Z_\?\$][a-zA-Z0-9\-\?]*'
+t_LIST = r'\?'
+t_ATOM = r'[0-9a-zA-Z_\$][0-9a-zA-Z_\_\-\.]*'
+
 
 
 def t_error(t):
@@ -219,6 +221,7 @@ def p_symbol(p):
     symbol : ATOM
     symbol : UP
     symbol : ROOT
+    symbol : LIST
     """
     p[0] = Symbol(p[1])
 

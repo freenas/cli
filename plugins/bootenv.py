@@ -50,7 +50,7 @@ class BootEnvironmentNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityName
             descr='Boot Environment ID',
             name='id',
             get='id',
-            set=None,
+            set='id',
             list=True
             )
         
@@ -110,6 +110,14 @@ class BootEnvironmentNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityName
                     self.query_call,
                     'id',
                     {'single': True})
+
+    def delete(self, name):
+        self.context.submit_task('boot.environments.delete', name)
+
+    def save(self, this, new=False):
+        if new:
+            self.context.submit_task('boot.environments.create', this.entity['id'])
+            return
 
 
 @description("Renames a boot environment")

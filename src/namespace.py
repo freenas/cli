@@ -132,8 +132,11 @@ class IndexCommand(Command):
         nss = self.target.namespaces()
         cmds = self.target.commands()
 
-        output_msg('Builtin items:', attrs=['bold'])
-        output_list(context.ml.builtin_commands.keys())
+        # Only display builtin items if in the RootNamespace
+        obj = context.ml.get_relative_object(context.ml.path[-1], args)
+        if obj.__class__.__name__ == 'RootNamespace':
+            output_msg('Builtin items:', attrs=['bold'])
+            output_list(context.ml.builtin_commands.keys())
 
         output_msg('Current namespace items:', attrs=['bold'])
         out = cmds.keys()

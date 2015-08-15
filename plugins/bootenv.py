@@ -41,7 +41,7 @@ class BootEnvironmentNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityName
         self.query_call = 'boot.environments.query'
         self.primary_key_name = 'name'
 
-        self.skeleton_entry = {
+        self.skeleton_entity = {
             'name': None,
             'realname': None
         }

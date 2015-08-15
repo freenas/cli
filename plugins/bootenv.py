@@ -106,10 +106,10 @@ class BootEnvironmentNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityName
         }
 
     def get_one(self, name):
-            return self.context.connection.call_sync(
-                    self.query_call,
-                    'id',
-                    {'single': True})
+        return self.context.connection.call_sync(
+            self.query_call,
+            [('id', '=', name)],
+            {'single': True})
 
     def delete(self, name):
         self.context.submit_task('boot.environments.delete', name)

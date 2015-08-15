@@ -39,18 +39,18 @@ class BootEnvironmentNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityName
         self.create_task = 'boot.environments.create'
         self.delete_task = 'boot.environments.delete'
         self.query_call = 'boot.environments.query'
-        self.primary_key_name = 'id'
+        self.primary_key_name = 'name'
 
         self.skeleton_entry = {
-            'id': None,
+            'name': None,
             'realname': None
         }
 
         self.add_property(
             descr='Boot Environment ID',
-            name='id',
+            name='name',
             get='id',
-            set='id',
+            set='name',
             list=True
             )
         
@@ -98,7 +98,7 @@ class BootEnvironmentNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityName
             list=True
             )
 
-        self.primary_key = self.get_mapping('id')
+        self.primary_key = self.get_mapping('name')
 
         self.extra_commands = {
             'activate' : ActivateBootEnvCommand(),
@@ -116,7 +116,7 @@ class BootEnvironmentNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityName
 
     def save(self, this, new=False):
         if new:
-            self.context.submit_task('boot.environments.create', this.entity['id'])
+            self.context.submit_task('boot.environments.create', this.entity['name'])
             return
 
 

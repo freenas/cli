@@ -458,6 +458,10 @@ class LessCommand(Command):
 class SearchPipeCommand(PipeCommand):
     """
     Usage: <command> | search <key> [<op> <value> [...]]
+
+    Example: show | search name==foo
+
+    Returns an element in a list that matches the given key value.
     """
     def run(self, context, args, kwargs, opargs, input=None):
         if isinstance(input, Table):
@@ -474,6 +478,10 @@ class SearchPipeCommand(PipeCommand):
 class ExcludePipeCommand(PipeCommand):
     """
     Usage: <command> | exclude <key> <op> <value> [...]
+
+    Example: show | exclude name==foo
+
+    Returns all the elements of a list that do not match the given key value.
     """
     def run(self, context, args, kwargs, opargs, input=None):
         pass
@@ -490,6 +498,10 @@ class ExcludePipeCommand(PipeCommand):
 class SortPipeCommand(PipeCommand):
     """
     Usage: <command> | sort <field> [<-field> ...]
+
+    Example: show | sort name
+
+    Sorts the elements of a list by the given key.
     """
     def serialize_filter(self, context, args, kwargs, opargs):
         return {"params": {"sort": args}}
@@ -499,6 +511,10 @@ class SortPipeCommand(PipeCommand):
 class LimitPipeCommand(PipeCommand):
     """
     Usage: <command> | limit <n>
+
+    Example: show | limit 10
+
+    Returns only the n elements of a list.
     """
     def serialize_filter(self, context, args, kwargs, opargs):
         return {"params": {"limit": args[0]}}
@@ -510,6 +526,8 @@ class SelectPipeCommand(PipeCommand):
     Usage: <command> | select <field>
 
     Example: account users show | select username
+
+    Returns only the output of the specific field for a list.
     """
     def run(self, context, args, kwargs, opargs, input=None):
         field = args[0]

@@ -260,7 +260,7 @@ class HelpCommand(Command):
         obj = context.ml.get_relative_object(context.ml.path[-1], args)
         bases = map(lambda x: x.__name__, obj.__class__.__bases__)
 
-        if 'Command' in bases and obj.__doc__:
+        if 'Command' or 'PipeCommand' in bases and obj.__doc__:
             output_msg(inspect.getdoc(obj))
 
         if any(i in ['Namespace', 'EntityNamespace'] for i in bases):

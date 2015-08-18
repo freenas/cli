@@ -35,7 +35,7 @@ import sandbox
 import readline
 import icu
 import re
-from namespace import Command, PipeCommand, CommandException, description
+from namespace import Command, PipeCommand, CommandException, description, EntityNamespace
 from output import (Table, Object, output_value, output_dict, ValueType,
                     format_value, output_msg, output_list, output_table,
                     output_lock, output_less, output_table_list)
@@ -280,11 +280,12 @@ class HelpCommand(Command):
             # Then listing the namespaces available from this namespace
             namespaces_dict_list = []
             for nss in obj.namespaces():
-                namespace_dict = {
-                    'name': nss.name,
-                    'description': nss.description,
-                }
-                namespaces_dict_list.append(namespace_dict)
+                if not isinstance(nss, EntityNamespace.SingleItemNamespace):
+                    namespace_dict = {
+                        'name': nss.name,
+                        'description': nss.description,
+                    }
+                    namespaces_dict_list.append(namespace_dict)
 
             # Finally listing the builtin cmds
             builtin_cmd_dict_list = []

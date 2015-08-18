@@ -1,4 +1,4 @@
-#+
+# +
 # Copyright 2014 iXsystems, Inc.
 # All rights reserved
 #
@@ -26,14 +26,14 @@
 #####################################################################
 
 
-import os
-from namespace import Namespace, EntityNamespace, Command, RpcBasedLoadMixin, TaskBasedSaveMixin, description
-from output import ValueType, output_msg, output_table, read_value
-from fnutils import first_or_default
+from namespace import EntityNamespace, Command, RpcBasedLoadMixin
+from namespace import TaskBasedSaveMixin, description
+from output import ValueType
 
 
 @description("Boot Environment Namespace")
-class BootEnvironmentNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
+class BootEnvironmentNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin,
+                               EntityNamespace):
     def __init__(self, name, context):
         super(BootEnvironmentNamespace, self).__init__(name, context)
         self.create_task = 'boot.environments.create'
@@ -53,7 +53,7 @@ class BootEnvironmentNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityName
             set='id',
             list=True
             )
-        
+
         self.add_property(
             descr='Boot Environment Name',
             name='realname',
@@ -150,4 +150,3 @@ class ActivateBootEnvCommand(Command):
 
 def _init(context):
     context.attach_namespace('/', BootEnvironmentNamespace('bootenv', context))
-

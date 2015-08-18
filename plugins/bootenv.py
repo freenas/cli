@@ -50,7 +50,7 @@ class BootEnvironmentNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityName
             descr='Boot Environment ID',
             name='name',
             get='id',
-            set='name',
+            set='id',
             list=True
             )
         
@@ -102,7 +102,6 @@ class BootEnvironmentNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityName
 
         self.extra_commands = {
             'activate' : ActivateBootEnvCommand(),
-            'rename' : RenameBootEnvCommand(),
         }
 
     def get_one(self, name):
@@ -116,20 +115,22 @@ class BootEnvironmentNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityName
 
     def save(self, this, new=False):
         if new:
-            self.context.submit_task('boot.environments.create', this.entity['name'])
+            self.context.submit_task('boot.environments.create',
+                                     this.entity['id'])
+            return
+        else:
+            if this.entity['id'] != this.orig_entity['id']:
+                self.context.submit_task('boot.environments.rename',
+                                         this.orig_entity['id'],
+                                         this.entity['id'],
+                                         callback=lambda s:
+                                         self.post_save(this, s))
             return
 
-
-@description("Renames a boot environment")
-class RenameBootEnvCommand(Command):
-    """
-    Usage: rename <newname>
-
-    Example: rename steve
-    """
-    def run(self, context, args, kwargs, opargs):
-        # to be implemented
-        return
+    def post_save(self, this, status):
+        if status == 'FINISHED':
+            this.modified = False
+            this.saved = True
 
 
 @description("Activates a boot environment")

@@ -100,8 +100,8 @@ class BootEnvironmentNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityName
 
         self.primary_key = self.get_mapping('name')
 
-        self.extra_commands = {
-            'activate' : ActivateBootEnvCommand(),
+        self.entity_commands = lambda this: {
+            'activate': ActivateBootEnvCommand(this),
         }
 
     def get_one(self, name):
@@ -140,9 +140,12 @@ class ActivateBootEnvCommand(Command):
 
     Activates the current boot environment
     """
+    def __init__(self, parent):
+        self.parent = parent
+
     def run(self, context, args, kwargs, opargs):
-        # to be implemented
-        return
+        context.submit_task('boot.environments.activate',
+                            self.parent.entity['id'])
 
 
 def _init(context):

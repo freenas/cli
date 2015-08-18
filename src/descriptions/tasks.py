@@ -48,7 +48,7 @@ tasks = {
     'volume.create': (_("Create volume"), lambda c, a: _("Create volume {0}".format(a[0]['name']))),
     'volume.create_auto': (_("Create volume"), lambda c, a: _("Create volume {0}".format(a[0]))),
     'volume.destroy': (_("Destroy volume"), lambda c, a: _("Destroy volume {0}".format(a[0]))),
-    'disk.format.gpt': (_("Format disk"), lambda c, a: _("Format disk {0}".format(a[0]))),
+    'disks.format.gpt': (_("Format disk"), lambda c, a: _("Format disk {0}".format(a[0]))),
     'zfs.pool.create': (_("Create ZFS pool"), lambda c, a: _("Create ZFS pool {0}".format(a[0]))),
     'zfs.pool.destroy': (_("Destroy ZFS pool"), lambda c, a: _("Destroy ZFS pool {0}".format(a[0]))),
     'zfs.mount': (_("Mount ZFS dataset"), lambda c, a: _("Mount ZFS dataset {0}".format(a[0]))),

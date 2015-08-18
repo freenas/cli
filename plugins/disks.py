@@ -99,7 +99,7 @@ class FormatDiskCommand(Command):
     def run(self, context, args, kwargs, opargs):
         fstype = kwargs.pop('fstype', 'freebsd-zfs')
         swapsize = kwargs.pop('swapsize', '2048M')
-        context.submit_task('disk.format.gpt', self.parent.entity['path'], fstype)
+        context.submit_task('disks.format.gpt', self.parent.entity['path'], fstype)
 
 
 @description("Erases all data on disk safely")
@@ -115,7 +115,7 @@ class EraseDiskCommand(Command):
 
     def run(self, context, args, kwargs, opargs):
         erase_data = read_value(kwargs.pop('wipe', 'no'), ValueType.BOOLEAN)
-        context.submit_task('disk.erase', self.parent.entity['path'], erase_data)
+        context.submit_task('disks.erase', self.parent.entity['path'], erase_data)
 
 
 def _init(context):

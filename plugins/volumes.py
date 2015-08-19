@@ -29,6 +29,7 @@
 import icu 
 from namespace import EntityNamespace, Command, CommandException, RpcBasedLoadMixin, TaskBasedSaveMixin, description
 from output import Table, output_table, output_tree
+from utils import post_save
 from fnutils import first_or_default
 
 
@@ -246,10 +247,24 @@ class DatasetsNamespace(EntityNamespace):
         super(DatasetsNamespace, self).__init__(name, context)
         self.parent = parent
         self.path = name
+
         self.add_property(
             descr='Name',
             name='name',
             get='name',
+            list=True)
+
+        self.add_property(
+            descr='Share type',
+            name='share_type',
+            get='share_type',
+            list=True)
+
+        self.add_property(
+            descr='Compression',
+            name='compression',
+            get='properties.compression.value',
+            set='properties.compression.value',
             list=True)
 
         self.add_property(
@@ -273,6 +288,57 @@ class DatasetsNamespace(EntityNamespace):
             set=None,
             list=True)
 
+        self.add_property(
+            descr='Mountpoint',
+            name='mountpoint',
+            get='properties.mountpoint.value',
+            set=None,
+            list=True)
+
+        self.add_property(
+            descr='Access time',
+            name='atime',
+            get='properties.atime.value',
+            set='properties.atime.value',
+            list=False)
+
+        self.add_property(
+            descr='Deduplication',
+            name='dedup',
+            get='properties.dedup.value',
+            set='properties.dedup.value',
+            list=False)
+
+        self.add_property(
+            descr='Quota',
+            name='refquota',
+            get='properties.refquota.value',
+            set='properties.refquota.value',
+            list=False)
+
+        self.add_property(
+            descr='Recrusive quota',
+            name='quota',
+            get='properties.quota.value',
+            set='properties.quota.value',
+            list=False)
+
+        self.add_property(
+            descr='Space reservation',
+            name='refreservation',
+            get='properties.refreservation.value',
+            set='properties.refreservation.value',
+            list=False)
+
+        self.add_property(
+            descr='Recrusive space reservation',
+            name='reservation',
+            get='properties.reservation.value',
+            set='properties.reservation.value',
+            list=False)
+
+
+
         self.primary_key = self.get_mapping('name')
         self.entity_namespaces = lambda this: [
             PropertiesNamespace('properties', context, this)
@@ -291,8 +357,21 @@ class DatasetsNamespace(EntityNamespace):
 
     def save(self, this, new=False):
         if new:
-            self.context.submit_task('volume.dataset.create', self.parent.entity['name'], this.entity['name'])
+            self.context.submit_task(
+                'volume.dataset.create',
+                self.parent.entity['name'],
+                this.entity['name'],
+                callback=lambda s: post_save(this, s)
+            )
             return
+
+        self.context.submit_task(
+            'volume.dataset.update',
+            self.parent.entity['name'],
+            this.entity['name'],
+            this.get_diff(),
+            callback=lambda s: post_save(this, s)
+        )
 
 
 @description("Properties")

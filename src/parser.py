@@ -92,7 +92,7 @@ class CommandExpansion(object):
 tokens = [
     'ATOM', 'NUMBER', 'HEXNUMBER', 'BINNUMBER', 'OCTNUMBER', 'STRING',
     'ASSIGN', 'EOPEN', 'ECLOSE', 'EQ', 'NE', 'GT', 'GE', 'LT', 'LE',
-    'REGEX', 'UP', 'ROOT', 'PIPE', 'LIST'
+    'REGEX', 'UP', 'PIPE', 'LIST'
 ]
 
 
@@ -139,9 +139,8 @@ t_LT = r'<'
 t_LE = r'<'
 t_REGEX = r'~='
 t_UP = r'\.\.'
-t_ROOT = r'\/'
 t_LIST = r'\?'
-t_ATOM = r'[0-9a-zA-Z_\$][0-9a-zA-Z_\_\-\.]*'
+t_ATOM = r'[0-9a-zA-Z_\$\/][0-9a-zA-Z_\_\-\.\/]*'
 
 
 
@@ -220,7 +219,6 @@ def p_symbol(p):
     """
     symbol : ATOM
     symbol : UP
-    symbol : ROOT
     symbol : LIST
     """
     p[0] = Symbol(p[1])

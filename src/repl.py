@@ -304,15 +304,17 @@ class Context(object):
         while True:
             retries += 1
             try:
-                time.sleep(5)
+                time.sleep(2)
                 self.connect()
                 try:
-                    self.connection.login_token(self.connection.token)
+                    if self.hostname == '127.0.0.1':
+                        self.connection.login_user(getpass.getuser(), '')
+                    else:
+                        self.connection.login_token(self.connection.token)
+
                     self.connection.subscribe_events(*EVENT_MASKS)
                 except RpcException:
-                    output_msg(
-                        _("Reauthentication using token failed (most likely \
-                          token expired or server was restarted)"))
+                    output_msg(_("Reauthentication failed (most likely token expired or server was restarted)"))
                     sys.exit(1)
                 break
             except Exception, e:

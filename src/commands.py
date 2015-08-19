@@ -35,6 +35,7 @@ import sandbox
 import readline
 import icu
 import re
+import textwrap
 from namespace import Command, PipeCommand, CommandException, description, EntityNamespace
 from output import (Table, Object, output_value, output_dict, ValueType,
                     format_value, output_msg, output_list, output_table,
@@ -261,7 +262,10 @@ class HelpCommand(Command):
         bases = map(lambda x: x.__name__, obj.__class__.__bases__)
 
         if 'Command' in bases and obj.__doc__:
-            output_msg(inspect.getdoc(obj))
+            if obj.__class__.__name__ in obj.parent.localdoc:
+                output_msg(textwrap.dedent(obj.parent.localdoc[obj.__class__.__name__]))
+            else:
+                output_msg(inspect.getdoc(obj))
 
         if 'PipeCommand' in bases and obj.__doc__:
             output_msg(inspect.getdoc(obj))

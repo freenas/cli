@@ -444,6 +444,7 @@ class EntityNamespace(Namespace):
         self.skeleton_entity = {}
         self.create_command = self.CreateEntityCommand
         self.delete_command = self.DeleteEntityCommand
+        self.localdoc = {}
 
     @description("Lists items")
     class ListCommand(FilteringCommand):

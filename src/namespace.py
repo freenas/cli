@@ -512,8 +512,8 @@ class EntityNamespace(Namespace):
 
         def run(self, context, args, kwargs, opargs):
             ns = EntityNamespace.SingleItemNamespace(None, self.parent)
-            ns.orig_entity = copy.deepcopy(self.parent.skeleton_entity)
-            ns.entity = copy.deepcopy(self.parent.skeleton_entity)
+            ns.orig_entity = wrap(copy.deepcopy(self.parent.skeleton_entity))
+            ns.entity = wrap(copy.deepcopy(self.parent.skeleton_entity))
 
             if not args and not kwargs:
                 context.ml.cd(ns)

@@ -30,7 +30,7 @@ import icu
 from namespace import EntityNamespace, Command, CommandException, RpcBasedLoadMixin, TaskBasedSaveMixin, description
 from output import Table, output_table, output_tree
 from utils import post_save
-from fnutils import first_or_default
+from fnutils import first_or_default, exclude
 
 
 t = icu.Transliterator.createInstance("Any-Accents", icu.UTransDirection.FORWARD)
@@ -248,6 +248,11 @@ class DatasetsNamespace(EntityNamespace):
         self.parent = parent
         self.path = name
 
+        self.skeleton_entity = {
+            'type': 'FILESYSTEM',
+            'properties': {}
+        }
+
         self.add_property(
             descr='Name',
             name='name',
@@ -255,10 +260,17 @@ class DatasetsNamespace(EntityNamespace):
             list=True)
 
         self.add_property(
+            descr='Type',
+            name='type',
+            get='type',
+            list=True)
+
+        self.add_property(
             descr='Share type',
             name='share_type',
             get='share_type',
-            list=True)
+            list=False,
+            condition=lambda o: o['type'] == 'filesystem')
 
         self.add_property(
             descr='Compression',
@@ -286,21 +298,16 @@ class DatasetsNamespace(EntityNamespace):
             name='mountpoint',
             get='properties.mountpoint.value',
             set=None,
-            list=True)
-
-        self.add_property(
-            descr='Mountpoint',
-            name='mountpoint',
-            get='properties.mountpoint.value',
-            set=None,
-            list=True)
+            list=True,
+            condition=lambda o: o['type'] == 'filesystem')
 
         self.add_property(
             descr='Access time',
             name='atime',
             get='properties.atime.value',
             set='properties.atime.value',
-            list=False)
+            list=False,
+            condition=lambda o: o['type'] == 'filesystem')
 
         self.add_property(
             descr='Deduplication',
@@ -314,30 +321,48 @@ class DatasetsNamespace(EntityNamespace):
             name='refquota',
             get='properties.refquota.value',
             set='properties.refquota.value',
-            list=False)
+            list=False,
+            condition=lambda o: o['type'] == 'filesystem')
 
         self.add_property(
             descr='Recrusive quota',
             name='quota',
             get='properties.quota.value',
             set='properties.quota.value',
-            list=False)
+            list=False,
+            condition=lambda o: o['type'] == 'filesystem')
 
         self.add_property(
             descr='Space reservation',
             name='refreservation',
             get='properties.refreservation.value',
             set='properties.refreservation.value',
-            list=False)
+            list=False,
+            condition=lambda o: o['type'] == 'filesystem')
 
         self.add_property(
             descr='Recrusive space reservation',
             name='reservation',
             get='properties.reservation.value',
             set='properties.reservation.value',
-            list=False)
+            list=False,
+            condition=lambda o: o['type'] == 'filesystem')
 
+        self.add_property(
+            descr='Volume size',
+            name='volsize',
+            get='properties.volsize.value',
+            set='properties.volsize.value',
+            list=False,
+            condition=lambda o: o['type'] == 'volume')
 
+        self.add_property(
+            descr='Block size',
+            name='blocksize',
+            get='properties.volblocksize.value',
+            set='properties.volblocksize.value',
+            list=False,
+            condition=lambda o: o['type'] == 'volume')
 
         self.primary_key = self.get_mapping('name')
         self.entity_namespaces = lambda this: [
@@ -361,6 +386,8 @@ class DatasetsNamespace(EntityNamespace):
                 'volume.dataset.create',
                 self.parent.entity['name'],
                 this.entity['name'],
+                this.entity['type'],
+                exclude(this.entity, 'name', 'type'),
                 callback=lambda s: post_save(this, s)
             )
             return

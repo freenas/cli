@@ -294,14 +294,6 @@ class DatasetsNamespace(EntityNamespace):
             list=True)
 
         self.add_property(
-            descr='Mountpoint',
-            name='mountpoint',
-            get='properties.mountpoint.value',
-            set=None,
-            list=True,
-            condition=lambda o: o['type'] == 'filesystem')
-
-        self.add_property(
             descr='Access time',
             name='atime',
             get='properties.atime.value',

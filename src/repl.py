@@ -487,6 +487,9 @@ class MainLoop(object):
             except EOFError:
                 print
                 return
+            except KeyboardInterrupt:
+                print
+                continue
 
             self.process(line)
 

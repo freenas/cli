@@ -52,3 +52,12 @@ def list_split(lst, delimiter):
         return lst[:idx], lst[idx+1:]
     except ValueError:
         return lst, []
+
+
+def post_save(this, status):
+    """
+    Generic post-save callback for EntityNamespaces
+    """
+    if status == 'FINISHED':
+        this.modified = False
+        this.saved = True

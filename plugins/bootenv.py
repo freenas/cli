@@ -48,6 +48,13 @@ class BootEnvironmentNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin,
 
             Creates a boot Environment""")
 
+        self.entity_localdoc['SetEntityCommand'] = ("""\
+            Usage: set name=<newname>
+
+            Example: set name=foo
+
+            Set the name of a boot environment""")
+
         self.skeleton_entity = {
             'name': None,
             'realname': None

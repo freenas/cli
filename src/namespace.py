@@ -404,6 +404,7 @@ class EntityNamespace(Namespace):
             self.parent = parent
             self.saved = name is not None
             self.property_mappings = parent.property_mappings
+            self.localdoc = parent.entity_localdoc
 
             if parent.entity_commands:
                 self.subcommands = parent.entity_commands(self)
@@ -445,6 +446,7 @@ class EntityNamespace(Namespace):
         self.create_command = self.CreateEntityCommand
         self.delete_command = self.DeleteEntityCommand
         self.localdoc = {}
+        self.entity_localdoc = {}
 
     @description("Lists items")
     class ListCommand(FilteringCommand):

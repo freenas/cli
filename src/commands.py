@@ -262,8 +262,11 @@ class HelpCommand(Command):
         bases = map(lambda x: x.__name__, obj.__class__.__bases__)
 
         if 'Command' in bases and obj.__doc__:
-            if obj.__class__.__name__ in obj.parent.localdoc:
-                output_msg(textwrap.dedent(obj.parent.localdoc[obj.__class__.__name__]))
+            if hasattr(obj, 'parent'):
+                if obj.__class__.__name__ in obj.parent.localdoc:
+                    output_msg(textwrap.dedent(obj.parent.localdoc[obj.__class__.__name__]))
+                else:
+                    output_msg(inspect.getdoc(obj))
             else:
                 output_msg(inspect.getdoc(obj))
 

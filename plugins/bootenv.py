@@ -125,7 +125,7 @@ class BootEnvironmentNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin,
             {'single': True})
 
     def delete(self, name):
-        self.context.submit_task('boot.environments.delete', name)
+        self.context.submit_task('boot.environments.delete', [name])
 
     def save(self, this, new=False):
         if new:

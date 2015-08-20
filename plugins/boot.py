@@ -27,7 +27,7 @@
 
 
 from namespace import EntityNamespace, Command, RpcBasedLoadMixin
-from namespace import TaskBasedSaveMixin, description
+from namespace import TaskBasedSaveMixin, Namespace, IndexCommand, description
 from output import ValueType
 
 
@@ -162,5 +162,77 @@ class ActivateBootEnvCommand(Command):
                             self.parent.entity['id'])
 
 
+@description("Boot pool namespace")
+class BootPoolNamespace(Namespace):
+    def __init__(self, name, context):
+        super(BootPoolNamespace, self).__init__(name)
+
+    def commands(self):
+        return {
+            '?': IndexCommand(self),
+            'show-disks': BootPoolShowDisksCommand(),
+            'attach-disk': BootPoolAttachDiskCommand(),
+            'detach-disk': BootPoolDetachDiskCommand(),
+        }
+
+
+@description("Shows the disks in the boot pool")
+class BootPoolShowDisksCommand(Command):
+    """
+    Usage: show-disks
+
+    Shows the disks in the boot pool
+    """
+    def run(self, context, args, kwargs, opargs):
+        # to be implemented
+        return
+
+
+@description("Attaches a disk to the boot pool")
+class BootPoolAttachDiskCommand(Command):
+    """
+    Usage: attach-disk <disk>
+
+    Example: attach-disk ada1
+
+    Attaches a disk to the boot pool.
+    """
+    def run(self, context, args, kwargs, opargs):
+        # to be implemented
+        return
+
+
+@description("Detaches a disk from the boot pool")
+class BootPoolDetachDiskCommand(Command):
+    """
+    Usage: detach-disk <disk>
+
+    Example: detach-disk ada1
+
+    Detaches a disk from the boot pool.
+    """
+    def run(self, context, args, kwargs, opargs):
+        # to be implemented
+        return
+
+
+@description("Boot namespace")
+class BootNamespace(Namespace):
+    def __init__(self, name, context):
+        super(BootNamespace, self).__init__(name)
+        self.context = context
+
+    def commands(self):
+        return {
+            '?': IndexCommand(self)
+        }
+
+    def namespaces(self):
+        return [
+            BootPoolNamespace('pool', self.context),
+            BootEnvironmentNamespace('env', self.context)
+        ]
+
+        
 def _init(context):
-    context.attach_namespace('/', BootEnvironmentNamespace('bootenv', context))
+    context.attach_namespace('/', BootNamespace('boot', context))

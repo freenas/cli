@@ -645,5 +645,8 @@ class TaskBasedSaveMixin(object):
 
     def delete(self, name):
         entity = self.get_one(name)
-        self.context.submit_task(self.delete_task, entity[self.save_key_name])
+        if entity:
+            self.context.submit_task(self.delete_task, entity[self.save_key_name])
+        else:
+            output_msg("Cannot delete {0}, item does not exist".format(name))
 

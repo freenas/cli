@@ -97,21 +97,22 @@ class AsciiOutputFormatter(object):
 
     @staticmethod
     def output_table_list(tables):
+        terminal_size = get_terminal_size()[1]
         widths = []
         for tab in tables:
             for i in range(0, len(tab.columns)):
+                current_width = len(tab.columns[i].label)
                 if len(widths) < i + 1:
-                    widths.insert(i, len(tab.columns[i].label))
-                elif widths[i] < len(tab.columns[i].label):
-                    widths[i] = len(tab.columns[i].label)
+                    widths.insert(i, current_width)
+                elif widths[i] < current_width:
+                    widths[i] = current_width
+
+        if sum(widths) < terminal_size:
+            widths[-1] = terminal_size - sum(widths[:-1]) - len(widths) * 3
 
         for tab in tables:
-            for i in range(0, len(tab.columns)):
-                while (len(tab.columns[i].label) < widths[i]):
-                    tab.columns[i].label += " "
-
-        for tab in tables:
-            table = Texttable(max_width=get_terminal_size()[1])
+            table = Texttable(max_width=terminal_size)
+            table.set_cols_width(widths)
             table.set_deco(0)
             table.header([i.label for i in tab.columns])
             table.add_rows([[AsciiOutputFormatter.format_value(resolve_cell(row, i.accessor), i.vt) for i in tab.columns] for row in tab.data], False)

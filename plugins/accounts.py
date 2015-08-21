@@ -48,6 +48,13 @@ class UsersNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
         self.update_task = 'users.update'
         self.delete_task = 'users.delete'
 
+        self.localdoc['CreateEntityCommand'] = ("""\
+            Usage: create username=<name> group=<group> password=<passwd>...
+
+            Examples: create username=foo group=foo password=bar home=/tank/foo
+
+            Creates a user account.""")
+
         self.skeleton_entity = {
             'username': None,
             'group': None
@@ -94,7 +101,7 @@ class UsersNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
             descr='Password',
             name='password',
             get=None,
-            set=self.set_unixhash,
+            set='password',
             list=False
         )
 
@@ -129,9 +136,6 @@ class UsersNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
         )
 
         self.primary_key = self.get_mapping('username')
-
-    def set_unixhash(self, obj, value):
-        obj['unixhash'] = crypt.crypt(value, '$6${0}$'.format(os.urandom(16).encode('hex')))
 
     def display_group(self, entity):
         group = self.context.connection.call_sync('groups.query', [('id', '=', entity['group'])], {'single': True})

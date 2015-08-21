@@ -372,6 +372,10 @@ class Context(object):
         translation = events.translate(self, event, data)
         if translation:
             output_msg(translation)
+            if data['state'] == 'FAILED':
+                status = self.connection.call_sync('task.status', data['id'])
+                output_msg("Task #{0} error: {1}".format(data['id'],
+                           status['error']['message']))
 
         sys.stdout.flush()
         self.ml.restore_readline()

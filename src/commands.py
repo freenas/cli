@@ -256,10 +256,34 @@ class HelpCommand(Command):
         help
         help printenv
         help account users show
+
+    The help properties command will provide you with a list of properties
+    for the items within a namespace.
+        
+        help properties 
     """
     def run(self, context, args, kwargs, opargs):
+        display_props = False
+        if "properties" in args:
+            display_props = True
         obj = context.ml.get_relative_object(context.ml.path[-1], args)
         bases = map(lambda x: x.__name__, obj.__class__.__bases__)
+
+        if display_props:
+            if hasattr(obj, 'property_mappings'):
+                prop_dict_list = []
+                for prop in obj.property_mappings:
+                    prop_dict = {
+                            'propname': prop.name,
+                            'propdescr': prop.descr
+                    }
+                    prop_dict_list.append(prop_dict)
+                return Table(prop_dict_list, [
+                    Table.Column('Property', 'propname', ValueType.STRING),
+                    Table.Column('Description', 'propdescr', ValueType.STRING)])
+            else:
+                output_msg("The current namespace does not have any properties.")
+            return
 
         if 'Command' in bases and obj.__doc__:
             if hasattr(obj, 'parent'):

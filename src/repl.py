@@ -410,6 +410,10 @@ class Context(object):
                         progress.finish()
                         break
 
+                    if data['state'] == 'FAILED':
+                        print
+                        break
+
         self.event_divert = False
         return tid
 

@@ -25,10 +25,11 @@
 #
 #####################################################################
 
-
-import icu 
+import re
+import icu
+import inspect
 from namespace import EntityNamespace, Command, CommandException, RpcBasedLoadMixin, TaskBasedSaveMixin, description
-from output import Table, output_table, output_tree
+from output import Table, output_table, output_tree, output_msg
 from utils import post_save
 from fnutils import first_or_default, exclude
 
@@ -115,11 +116,33 @@ class VolumeCreateCommand(Command):
               create-auto tank alldisks
     """
     def run(self, context, args, kwargs, opargs):
+        if not args:
+            output_msg("create-auto requires more arguments.\n" +
+                       inspect.getdoc(self))
+            return
         name = args.pop(0)
         disks = args
+        if len(disks) == 0:
+            output_msg("create-auto requires more arguments.\n" +
+                       inspect.getdoc(self))
+            return
 
+        # The all_disks below is a temporary fix, use this after "select" is working
+        # all_disks = context.connection.call_sync('disks.query', [], {"select":"path"})
+        all_disks = [disk["path"] for disk in context.connection.call_sync("disks.query")]
+        available_disks = context.connection.call_sync('volumes.get_available_disks')
         if 'alldisks' in disks:
-            disks = context.connection.call_sync('volumes.get_available_disks')
+            disks = available_disks
+        else:
+            for disk in disks:
+                if not re.match("^\/dev\/", disk):
+                    disk = "/dev/" + disk
+                if disk not in all_disks:
+                    output_msg("Disk " + disk + " does not exist.")
+                    return
+                if disk not in available_disks:
+                    output_msg("Disk " + disk + " is not usable.")
+                    return
 
         context.submit_task('volume.create_auto', name, 'zfs', disks)
 

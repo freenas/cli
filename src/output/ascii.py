@@ -106,8 +106,12 @@ class AsciiOutputFormatter(object):
                     widths.insert(i, current_width)
                 elif widths[i] < current_width:
                     widths[i] = current_width
+                for row in tab.data:
+                    current_width = len(resolve_cell(row, tab.columns[i].accessor))
+                    if current_width > widths[i]:
+                        widths[i] = current_width
 
-        if sum(widths) < terminal_size:
+        if sum(widths) <> terminal_size:
             widths[-1] = terminal_size - sum(widths[:-1]) - len(widths) * 3
 
         for tab in tables:

@@ -28,7 +28,7 @@
 
 from namespace import (Namespace, ConfigNamespace, Command, IndexCommand,
                        description)
-from output import output_msg
+from output import output_msg, ValueType
 from descriptions import events
 from utils import parse_query_args
 
@@ -67,6 +67,39 @@ class UpdateNowCommand(Command):
         context.submit_task('update.update')
 
 
+@description("Update configuration namespace")
+class UpdateConfigNamespace(ConfigNamespace):
+    def __init__(self, name, context):
+        super(UpdateConfigNamespace, self).__init__(name, context)
+        self.context = context
+
+        self.add_property(
+            descr='Current Train',
+            name='train',
+            get='train',
+            type=ValueType.STRING
+        )
+
+        self.add_property(
+            descr='Auto check',
+            name='check_auto',
+            get='check_auto',
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
+            descr='Update server',
+            name='update_server',
+            get='update_server',
+        )
+
+    def load(self):
+        self.entity = self.context.call_sync('update.get_config')
+
+    def save(self):
+        return self.context.submit_task('update.configure', self.entity)
+
+
 @description("Update namespace")
 class UpdateNamespace(Namespace):
     def __init__(self, name, context):
@@ -81,6 +114,11 @@ class UpdateNamespace(Namespace):
             # uncmment above when freenas-pkgtools get updated by sef
             'update_now': UpdateNowCommand(),
         }
+
+    def namespaces(self):
+        return [
+            UpdateConfigNamespace('config', self.context)
+        ]
 
 
 def _init(context):

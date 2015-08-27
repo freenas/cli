@@ -26,9 +26,10 @@
 #####################################################################
 
 
-from namespace import EntityNamespace, Command, RpcBasedLoadMixin
+from namespace import EntityNamespace, Command, RpcBasedLoadMixin, ConfigNamespace
 from namespace import TaskBasedSaveMixin, Namespace, IndexCommand, description
-from output import ValueType
+from volumes import iterate_vdevs
+from output import ValueType, Table
 
 
 @description("Boot Environment Namespace")
@@ -183,10 +184,14 @@ class BootPoolShowDisksCommand(Command):
 
     Shows the disks in the boot pool
     """
-    def run(self, context, args, kwargs, opargs):
-        # to be implemented
-        return
 
+    def run(self, context, args, kwargs, opargs):
+        volume = context.call_sync('zfs.pool.get_boot_pool')
+        result = list(iterate_vdevs(volume['groups']))
+        return Table(result, [
+            Table.Column('Name', 'path'),
+            Table.Column('Status', 'status')
+        ])
 
 @description("Attaches a disk to the boot pool")
 class BootPoolAttachDiskCommand(Command):
@@ -198,7 +203,8 @@ class BootPoolAttachDiskCommand(Command):
     Attaches a disk to the boot pool.
     """
     def run(self, context, args, kwargs, opargs):
-        # to be implemented
+        disk = args.pop(0)
+        context.submit_task('boot.attach_disk', [], disk)
         return
 
 
@@ -212,7 +218,8 @@ class BootPoolDetachDiskCommand(Command):
     Detaches a disk from the boot pool.
     """
     def run(self, context, args, kwargs, opargs):
-        # to be implemented
+        disk = args.pop(0)
+        context.submit_task('boot.detach_disk', [], disk)
         return
 
 

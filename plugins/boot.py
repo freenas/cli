@@ -28,7 +28,7 @@
 
 from namespace import EntityNamespace, Command, RpcBasedLoadMixin, ConfigNamespace
 from namespace import TaskBasedSaveMixin, Namespace, IndexCommand, description
-from volumes import iterate_vdevs
+from utils import iterate_vdevs
 from output import ValueType, Table
 
 

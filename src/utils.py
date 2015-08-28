@@ -54,6 +54,17 @@ def list_split(lst, delimiter):
         return lst, []
 
 
+def iterate_vdevs(topology):
+    for group in topology.values():
+        for vdev in group:
+            if vdev['type'] == 'disk':
+                yield vdev
+            elif 'children' in vdev:
+                for subvdev in vdev['children']:
+                    yield subvdev
+
+
+
 def post_save(this, status):
     """
     Generic post-save callback for EntityNamespaces

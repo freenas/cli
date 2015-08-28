@@ -30,7 +30,7 @@ import icu
 import inspect
 from namespace import EntityNamespace, Command, CommandException, RpcBasedLoadMixin, TaskBasedSaveMixin, description
 from output import Table, output_table, output_tree, output_msg
-from utils import post_save
+from utils import post_save, iterate_vdevs
 from fnutils import first_or_default, exclude
 
 
@@ -547,16 +547,6 @@ class VolumesNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
             DatasetsNamespace('datasets', self.context, this),
             PropertiesNamespace('properties', self.context, this)
         ]
-
-
-def iterate_vdevs(topology):
-    for group in topology.values():
-        for vdev in group:
-            if vdev['type'] == 'disk':
-                yield vdev
-            elif 'children' in vdev:
-                for subvdev in vdev['children']:
-                    yield subvdev
 
 
 def _init(context):

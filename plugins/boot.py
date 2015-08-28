@@ -26,10 +26,11 @@
 #####################################################################
 
 
+import re
 from namespace import EntityNamespace, Command, RpcBasedLoadMixin, ConfigNamespace
 from namespace import TaskBasedSaveMixin, Namespace, IndexCommand, description
 from utils import iterate_vdevs
-from output import ValueType, Table
+from output import ValueType, Table, output_msg
 
 
 @description("Boot Environment Namespace")
@@ -203,8 +204,26 @@ class BootPoolAttachDiskCommand(Command):
     Attaches a disk to the boot pool.
     """
     def run(self, context, args, kwargs, opargs):
+        if not args:
+            output_msg("attach-disk requires more arguments.\n" +
+                       inspect.getdoc(self))
+            return
         disk = args.pop(0)
-        context.submit_task('boot.attach_disk', [], disk)
+        # The all_disks below is a temporary fix, use this after "select" is working
+        # all_disks = context.connection.call_sync('disks.query', [], {"select":"path"})
+        all_disks = [d["path"] for d in context.connection.call_sync("disks.query")]
+        available_disks = context.connection.call_sync('volumes.get_available_disks')
+        if not re.match("^\/dev\/", disk):
+            disk = "/dev/" + disk
+        if disk not in all_disks:
+            output_msg("Disk " + disk + " does not exist.")
+            return
+        if disk not in available_disks:
+            output_msg("Disk " + disk + " is not usable.")
+            return
+        volume = context.call_sync('zfs.pool.get_boot_pool')
+        context.submit_task('boot.attach_disk',
+                volume['groups']['data'][0]['guid'], disk)
         return
 
 

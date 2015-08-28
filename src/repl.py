@@ -386,6 +386,9 @@ class Context(object):
     def call_sync(self, name, *args, **kwargs):
         return wrap(self.connection.call_sync(name, *args, **kwargs))
 
+    def call_task_sync(self, name, *args, **kwargs):
+        return wrap(self.connection.call_task_sync(name, *args))
+
     def submit_task(self, name, *args, **kwargs):
         callback = kwargs.pop('callback', None)
 

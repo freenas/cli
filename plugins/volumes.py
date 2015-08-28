@@ -163,6 +163,21 @@ class FindVolumesCommand(Command):
         ])
 
 
+@description("Finds connected media that can be used to import data from")
+class FindMediaCommand(Command):
+    """
+    Usage: find-media
+    """
+    def run(self, context, args, kwargs, opargs):
+        media = context.connection.call_sync('volumes.find_media')
+        return Table(media, [
+            Table.Column('Path', 'path'),
+            Table.Column('Label', 'label'),
+            Table.Column('Size', 'size'),
+            Table.Column('Filesystem type', 'fstype')
+        ])
+
+
 @description("Imports given volume")
 class ImportVolumeCommand(Command):
     """
@@ -531,6 +546,7 @@ class VolumesNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
         self.extra_commands = {
             'create-auto': VolumeCreateCommand(),
             'find': FindVolumesCommand(),
+            'find-media': FindMediaCommand(),
             'import': ImportVolumeCommand(),
             'detach': DetachVolumeCommand(),
         }

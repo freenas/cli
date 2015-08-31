@@ -257,11 +257,6 @@ class HelpCommand(Command):
         help
         help printenv
         help account users show
-
-    The help properties command will provide you with a list of properties
-    for the items within a namespace.
-        
-        help properties 
     """
     def run(self, context, args, kwargs, opargs):
         obj = context.ml.get_relative_object(context.ml.path[-1], args)

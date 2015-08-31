@@ -36,7 +36,8 @@ import readline
 import icu
 import re
 import textwrap
-from namespace import Command, PipeCommand, CommandException, description, EntityNamespace
+from namespace import (Command, PipeCommand, CommandException, description, 
+                       EntityNamespace, Namespace)
 from output import (Table, Object, output_value, output_dict, ValueType,
                     format_value, output_msg, output_list, output_table,
                     output_lock, output_less, output_table_list)
@@ -263,27 +264,10 @@ class HelpCommand(Command):
         help properties 
     """
     def run(self, context, args, kwargs, opargs):
-        display_props = False
-        if "properties" in args:
-            display_props = True
         obj = context.ml.get_relative_object(context.ml.path[-1], args)
         bases = map(lambda x: x.__name__, obj.__class__.__bases__)
 
-        if display_props:
-            if hasattr(obj, 'property_mappings'):
-                prop_dict_list = []
-                for prop in obj.property_mappings:
-                    prop_dict = {
-                            'propname': prop.name,
-                            'propdescr': prop.descr
-                    }
-                    prop_dict_list.append(prop_dict)
-                return Table(prop_dict_list, [
-                    Table.Column('Property', 'propname', ValueType.STRING),
-                    Table.Column('Description', 'propdescr', ValueType.STRING)])
-            else:
-                output_msg("The current namespace does not have any properties.")
-            return
+
 
         if 'Command' in bases and obj.__doc__:
             if hasattr(obj, 'parent'):
@@ -297,7 +281,7 @@ class HelpCommand(Command):
         if 'PipeCommand' in bases and obj.__doc__:
             output_msg(inspect.getdoc(obj))
 
-        if any(i in ['Namespace', 'EntityNamespace'] for i in bases):
+        if isinstance(obj, Namespace):
             # First listing the Current Namespace's commands
             cmd_dict_list = []
             ns_cmds = obj.commands()
@@ -347,6 +331,18 @@ class HelpCommand(Command):
                         Table.Column('Builtin Command', 'cmd', ValueType.STRING),
                         Table.Column('Description', 'description', ValueType.STRING)
                     ]))
+            # If the namespace has properties, display a list of the available properties
+            if hasattr(obj, 'property_mappings'):
+                prop_dict_list = []
+                for prop in obj.property_mappings:
+                    prop_dict = {
+                            'propname': prop.name,
+                            'propdescr': prop.descr
+                    }
+                    prop_dict_list.append(prop_dict)
+                output_call_list.append(Table(prop_dict_list, [
+                    Table.Column('Property', 'propname', ValueType.STRING),
+                    Table.Column('Description', 'propdescr', ValueType.STRING)]))
             output_less(lambda: output_table_list(output_call_list))
 
 

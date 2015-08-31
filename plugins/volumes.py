@@ -114,6 +114,8 @@ class VolumeCreateCommand(Command):
 
     Examples: create-auto tank ada1 ada2
               create-auto tank alldisks
+
+    Creates a new volume in a simple way.
     """
     def run(self, context, args, kwargs, opargs):
         if not args:

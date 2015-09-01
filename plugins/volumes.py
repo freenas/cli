@@ -433,45 +433,47 @@ class DatasetsNamespace(EntityNamespace):
         )
 
 
-@description("Properties")
-class PropertiesNamespace(EntityNamespace):
+@description("Snapshots")
+class SnapshotsNamespace(EntityNamespace):
     def __init__(self, name, context, parent):
-        super(PropertiesNamespace, self).__init__(name, context)
+        super(SnapshotsNamespace, self).__init__(name, context)
         self.parent = parent
 
         self.add_property(
-            descr='Property name',
+            descr='Dataset name',
+            name='dataset',
+            get='dataset',
+            list=True)
+
+        self.add_property(
+            descr='Snapshot name',
             name='name',
             get='name',
             list=True)
 
         self.add_property(
-            descr='Value',
-            name='value',
-            get='value',
+            descr='Compression',
+            name='compression',
+            get='properties.compression.value',
+            set='properties.compression.value',
+            list=True)
+
+        self.add_property(
+            descr='Used',
+            name='used',
+            get='properties.used.value',
             set=None,
             list=True)
 
         self.add_property(
-            descr='Source',
-            name='source',
-            get='source',
+            descr='Available',
+            name='available',
+            get='properties.available.value',
             set=None,
             list=True)
 
     def query(self, params, options):
-        return self.parent.entity['properties']
-
-    def get_one(self, name):
-        return first_or_default(lambda d: d['name'] == name, self.parent.entity['properties'])
-
-    def delete(self, name):
-        self.context.submit_task('volume.dataset.delete', self.parent.entity['name'], name)
-
-    def save(self, this, new=False):
-        if new:
-            self.context.submit_task('volume.dataset.create', self.parent.entity['name'], this.entity['name'])
-            return
+        return self.context.call_sync('volumes.snapshots.query', [('pool', '=', self.parent.name)])
 
 
 @description("Filesystem contents")
@@ -485,6 +487,7 @@ class FilesystemNamespace(EntityNamespace):
             name='name',
             get='name'
         )
+
 
 @description("Volumes namespace")
 class VolumesNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
@@ -563,7 +566,7 @@ class VolumesNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
 
         self.entity_namespaces = lambda this: [
             DatasetsNamespace('datasets', self.context, this),
-            PropertiesNamespace('properties', self.context, this)
+            SnapshotsNamespace('snapshots', self.context, this)
         ]
 
 

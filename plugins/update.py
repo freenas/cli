@@ -28,7 +28,7 @@
 
 from namespace import (Namespace, ConfigNamespace, Command, IndexCommand,
                        description)
-from output import output_msg, ValueType
+from output import output_msg, ValueType, Table
 from descriptions import events
 from utils import parse_query_args
 
@@ -52,7 +52,19 @@ class CheckNowCommand(Command):
     Checks for updates.
     """
     def run(self, context, args, kwargs, opargs):
-        output_msg(context.connection.call_sync('update.check'))
+        updates = context.connection.call_sync('update.check')
+        if updates:
+            for update in updates:
+                update['previous_version'] = '-'.join(update['previous_version'].split('-')[:2])
+                update['new_version'] = '-'.join(update['new_version'].split('-')[:2])
+            return Table(updates, [
+                Table.Column('Name','new_name'),
+                Table.Column('Operation', 'operation'),
+                Table.Column('Current Version','previous_version'),
+                Table.Column('New Version','new_version')
+                ])
+        else:
+            output_msg("No new updates available.")
 
 
 @description("Updates the system and reboot it")
@@ -110,8 +122,7 @@ class UpdateNamespace(Namespace):
         return {
             '?': IndexCommand(self),
             'current_train': CurrentTrainCommand(),
-            # 'check_now': CheckNowCommand(),
-            # uncmment above when freenas-pkgtools get updated by sef
+            'check_now': CheckNowCommand(),
             'update_now': UpdateNowCommand(),
         }
 

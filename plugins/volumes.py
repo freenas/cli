@@ -397,9 +397,6 @@ class DatasetsNamespace(EntityNamespace):
             condition=lambda o: o['type'] == 'volume')
 
         self.primary_key = self.get_mapping('name')
-        self.entity_namespaces = lambda this: [
-            PropertiesNamespace('properties', context, this)
-        ]
 
     def query(self, params, options):
         self.parent.load()

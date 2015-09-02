@@ -744,7 +744,13 @@ class MainLoop(object):
 
     def complete(self, text, state):
         tokens = shlex.split(readline.get_line_buffer(), posix=False)
-        obj = self.get_relative_object(self.cwd, tokens)
+
+        if tokens[0] == '/':
+            cwd = self.root_path[0]
+        else:
+            cwd = self.cwd
+
+        obj = self.get_relative_object(cwd, tokens)
 
         if issubclass(type(obj), Namespace):
             choices = [x.get_name() for x in obj.namespaces()] + \

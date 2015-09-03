@@ -109,6 +109,7 @@ class UpdateConfigNamespace(ConfigNamespace):
         self.entity = self.context.call_sync('update.get_config')
 
     def save(self):
+        self.modified = False
         return self.context.submit_task('update.configure', self.entity)
 
 

@@ -396,6 +396,11 @@ class ConfigNamespace(ItemNamespace):
         self.context = context
         self.property_mappings = []
 
+    def get_name(self):
+        name = self.name
+
+        return name if not self.modified else '[{0}]'.format(name)
+
 
 class EntityNamespace(Namespace):
     class SingleItemNamespace(ItemNamespace):

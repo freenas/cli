@@ -220,7 +220,7 @@ class ShowUrlsCommand(Command):
         my_protocols = context.connection.call_sync(
             'system.ui.get_config')
         urls = []
-        for proto in my_protocols['webui_procotol']:
+        for proto in my_protocols['webui_protocol']:
             proto_port = my_protocols['webui_{0}_port'.format(proto.lower())]
             if proto_port is not None:
                 if proto_port in [80, 443]:

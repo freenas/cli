@@ -323,7 +323,7 @@ class HelpCommand(Command):
             if obj.__class__.__name__ == 'RootNamespace':
                 output_call_list.append(
                     Table(builtin_cmd_dict_list, [
-                        Table.Column('Builtin Command', 'cmd', ValueType.STRING),
+                        Table.Column('Global Command', 'cmd', ValueType.STRING),
                         Table.Column('Description', 'description', ValueType.STRING)
                     ]))
             # If the namespace has properties, display a list of the available properties

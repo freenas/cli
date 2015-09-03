@@ -241,7 +241,7 @@ class Context(object):
         except RpcException, e:
             if e.code == errno.EACCES:
                 self.connection.disconnect()
-                output_msg(_("Wrong username od password"))
+                output_msg(_("Wrong username or password"))
                 sys.exit(1)
 
         self.login_plugins()

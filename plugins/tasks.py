@@ -36,7 +36,7 @@ t = icu.Transliterator.createInstance("Any-Accents", icu.UTransDirection.FORWARD
 _ = t.transliterate
 
 
-@description("Lists system services")
+@description("Lists system tasks")
 class ListCommand(Command):
     def run(self, context, args, kwargs, opargs):
         self.context = context
@@ -80,7 +80,7 @@ class SubmitCommand(Command):
         context.submit_task(name, *args)
 
 
-@description("Service namespace")
+@description("Tasks namespace")
 class TasksNamespace(Namespace):
     def __init__(self, name, context):
         super(TasksNamespace, self).__init__(name)

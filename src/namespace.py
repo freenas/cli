@@ -417,6 +417,9 @@ class EntityNamespace(Namespace):
             if parent.entity_namespaces:
                 self.nslist = parent.entity_namespaces(self)
 
+            if hasattr(parent, 'allow_edit'):
+                self.allow_edit = parent.allow_edit
+
         @property
         def primary_key(self):
             return self.parent.primary_key.do_get(self.entity)

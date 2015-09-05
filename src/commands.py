@@ -330,7 +330,7 @@ class HelpCommand(Command):
             # Finally printing all this out in unix `LESS(1)` pager style
             output_call_list = []
             navigation_command_list=[{"cmd":"/","description":"Root namespace"},
-                                     {"cmd":"..","description":"Back one namespace"},
+                                     {"cmd":"..","description":"Go up one namespace"},
                                      {"cmd":"-","description":"Go back to previous namespace"}]
             output_call_list.append(Table(navigation_command_list, [
                                     Table.Column('Navigation Command',

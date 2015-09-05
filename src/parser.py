@@ -140,7 +140,7 @@ t_LE = r'<'
 t_REGEX = r'~='
 t_UP = r'\.\.'
 t_LIST = r'\?'
-t_ATOM = r'[0-9a-zA-Z_\$\/][0-9a-zA-Z_\_\-\.\/]*'
+t_ATOM = r'[0-9a-zA-Z_\$\/-][0-9a-zA-Z_\_\-\.\/]*'
 
 
 

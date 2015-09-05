@@ -259,10 +259,31 @@ class HelpCommand(Command):
         help account users show
     """
     def run(self, context, args, kwargs, opargs):
+        if args:
+            if args[0] == "/":
+                output_msg(textwrap.dedent("""\
+                    Usage: /
+                    / <namespace>
+                    / <namespace> <command>
+
+                    Allows you to navigate or execute commands starting \
+                    from the root namespace"""))
+                return
+            elif args[0] == "..":
+                output_msg(textwrap.dedent("""\
+                    Usage: ..
+
+                    Goes up one level of namespace"""))
+                return
+            elif args[0] == "-":
+                output_msg(textwrap.dedent("""\
+                    Usage: -
+
+                    Goes back to the previous namespace"""))
+                return
+
         obj = context.ml.get_relative_object(context.ml.path[-1], args)
         bases = map(lambda x: x.__name__, obj.__class__.__bases__)
-
-
 
         if 'Command' in bases and obj.__doc__:
             if hasattr(obj, 'parent'):
@@ -308,6 +329,15 @@ class HelpCommand(Command):
 
             # Finally printing all this out in unix `LESS(1)` pager style
             output_call_list = []
+            navigation_command_list=[{"cmd":"/","description":"Root namespace"},
+                                     {"cmd":"..","description":"Back one namespace"},
+                                     {"cmd":"-","description":"Go back to previous namespace"}]
+            output_call_list.append(Table(navigation_command_list, [
+                                    Table.Column('Navigation Command',
+                                                 'cmd', ValueType.STRING),
+                                    Table.Column(
+                                                 'Descrption', 'description',
+                                                 ValueType.STRING)]))
             if cmd_dict_list:
                 output_call_list.append(
                     Table(cmd_dict_list, [
@@ -344,7 +374,7 @@ class HelpCommand(Command):
 @description("Sends the user to the top level")
 class TopCommand(Command):
     """
-    Usage: top, /
+    Usage: top
 
     Sends you back to the top level of the command tree.
     """

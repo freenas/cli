@@ -64,7 +64,6 @@ def iterate_vdevs(topology):
                     yield subvdev
 
 
-
 def post_save(this, status):
     """
     Generic post-save callback for EntityNamespaces

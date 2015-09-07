@@ -206,13 +206,21 @@ class InterfacesNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
 
             yield '{0}/{1}'.format(i['address'], i['netmask'])
 
-    def save(self, this, new=False):
+    def save(self, this, new=False, callback=None):
         if new:
-            self.context.submit_task('network.interface.create', this.entity['type'])
+            self.context.submit_task(
+                'network.interface.create',
+                this.entity['type'],
+                callback=callback
+            )
             this.modified = False
             return
 
-        self.context.submit_task('network.interface.configure', this.entity['id'], this.get_diff())
+        self.context.submit_task(
+            'network.interface.configure',
+            this.entity['id'], this.get_diff(),
+            callback=callback
+        )
         this.modified = False
 
 
@@ -260,24 +268,42 @@ class AliasesNamespace(EntityNamespace):
     def query(self, params, options):
         return self.parent.entity.get('aliases', [])
 
+    def my_post_save(self, this, status):
+        if status == 'FINISHED':
+            this.modified = False
+            this.saved = True
+            self.parent.load()
+
+    def my_post_delete(self, status):
+        if status == 'FINISHED':
+            self.parent.load()
+
     def save(self, this, new=False):
         if 'aliases' not in self.parent.entity:
             self.parent.entity['aliases'] = []
 
         self.parent.entity['aliases'].append(this.entity)
-        self.parent.parent.save(self.parent)
-        self.parent.load()
+        self.parent.parent.save(
+            self.parent,
+            callback=lambda s: self.my_post_save(this, s)
+        )
+        # self.parent.load()
 
     def delete(self, address):
-        self.parent.entity['aliases'] = filter(lambda a: a['address'] != address, self.parent.entity['aliases'])
-        self.parent.parent.save(self.parent)
-        self.parent.load()
+        self.parent.entity['aliases'] = filter(
+            lambda a: a['address'] != address,
+            self.parent.entity['aliases']
+        )
+        self.parent.parent.save(
+            self.parent,
+            callback=lambda s: self.my_post_delete(s)
+        )
+        # self.parent.load()
 
 
 class MembersNamespace(EntityNamespace):
     def __init__(self, name, context, parent):
         pass
-
 
 
 @description("Static host names database")

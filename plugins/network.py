@@ -249,7 +249,8 @@ class AliasesNamespace(EntityNamespace):
             descr='Netmask',
             name='netmask',
             get='netmask',
-            list=True
+            list=True,
+            type=ValueType.NUMBER
         )
 
         self.add_property(

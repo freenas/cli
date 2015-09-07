@@ -614,16 +614,17 @@ class RpcBasedLoadMixin(object):
     def __init__(self, *args, **kwargs):
         super(RpcBasedLoadMixin, self).__init__(*args, **kwargs)
         self.primary_key_name = 'id'
+        self.extra_query_params = []
 
     def query(self, params, options):
         return wrap(self.context.connection.call_sync(
             self.query_call,
-            params, options))
+            self.extra_query_params + params, options))
 
     def get_one(self, name):
         return wrap(self.context.connection.call_sync(
             self.query_call,
-            [(self.primary_key_name, '=', name)],
+            self.extra_query_params + [(self.primary_key_name, '=', name)],
             {'single': True}))
 
 

@@ -28,7 +28,7 @@
 import re
 import icu
 import inspect
-from namespace import EntityNamespace, Command, CommandException, RpcBasedLoadMixin, TaskBasedSaveMixin, description
+from namespace import EntityNamespace, ConfigNamespace, Command, CommandException, RpcBasedLoadMixin, TaskBasedSaveMixin, description
 from output import Table, output_table, output_tree, output_msg
 from utils import post_save, iterate_vdevs
 from fnutils import first_or_default, exclude
@@ -310,7 +310,14 @@ class DatasetsNamespace(EntityNamespace):
             name='share_type',
             get='share_type',
             list=False,
-            condition=lambda o: o['type'] == 'filesystem')
+            condition=lambda o: o['type'] == 'FILESYSTEM')
+
+        self.add_property(
+            descr='Permissions type',
+            name='permissions_type',
+            get='permissions_type',
+            list=False,
+            condition=lambda o: o['type'] == 'FILESYSTEM')
 
         self.add_property(
             descr='Compression',
@@ -339,7 +346,7 @@ class DatasetsNamespace(EntityNamespace):
             get='properties.atime.value',
             set='properties.atime.value',
             list=False,
-            condition=lambda o: o['type'] == 'filesystem')
+            condition=lambda o: o['type'] == 'FILESYSTEM')
 
         self.add_property(
             descr='Deduplication',
@@ -354,7 +361,7 @@ class DatasetsNamespace(EntityNamespace):
             get='properties.refquota.value',
             set='properties.refquota.value',
             list=False,
-            condition=lambda o: o['type'] == 'filesystem')
+            condition=lambda o: o['type'] == 'FILESYSTEM')
 
         self.add_property(
             descr='Recrusive quota',
@@ -362,7 +369,7 @@ class DatasetsNamespace(EntityNamespace):
             get='properties.quota.value',
             set='properties.quota.value',
             list=False,
-            condition=lambda o: o['type'] == 'filesystem')
+            condition=lambda o: o['type'] == 'FILESYSTEM')
 
         self.add_property(
             descr='Space reservation',
@@ -370,7 +377,7 @@ class DatasetsNamespace(EntityNamespace):
             get='properties.refreservation.value',
             set='properties.refreservation.value',
             list=False,
-            condition=lambda o: o['type'] == 'filesystem')
+            condition=lambda o: o['type'] == 'FILESYSTEM')
 
         self.add_property(
             descr='Recrusive space reservation',
@@ -378,7 +385,7 @@ class DatasetsNamespace(EntityNamespace):
             get='properties.reservation.value',
             set='properties.reservation.value',
             list=False,
-            condition=lambda o: o['type'] == 'filesystem')
+            condition=lambda o: o['type'] == 'FILESYSTEM')
 
         self.add_property(
             descr='Volume size',
@@ -386,7 +393,7 @@ class DatasetsNamespace(EntityNamespace):
             get='properties.volsize.value',
             set='properties.volsize.value',
             list=False,
-            condition=lambda o: o['type'] == 'volume')
+            condition=lambda o: o['type'] == 'VOLUME')
 
         self.add_property(
             descr='Block size',
@@ -394,7 +401,7 @@ class DatasetsNamespace(EntityNamespace):
             get='properties.volblocksize.value',
             set='properties.volblocksize.value',
             list=False,
-            condition=lambda o: o['type'] == 'volume')
+            condition=lambda o: o['type'] == 'VOLUME')
 
         self.primary_key = self.get_mapping('name')
 
@@ -431,10 +438,25 @@ class DatasetsNamespace(EntityNamespace):
 
 
 @description("Snapshots")
-class SnapshotsNamespace(EntityNamespace):
+class SnapshotsNamespace(RpcBasedLoadMixin, EntityNamespace):
     def __init__(self, name, context, parent):
         super(SnapshotsNamespace, self).__init__(name, context)
         self.parent = parent
+        self.query_call = 'volumes.snapshots.query'
+        self.primary_key_name = 'id'
+        self.extra_query_params = [
+            ('pool', '=', self.parent.name)
+        ]
+
+        self.skeleton_entity = {
+            'recursive': False
+        }
+
+        self.add_property(
+            descr='Snapshot name',
+            name='name',
+            get='id',
+            list=True)
 
         self.add_property(
             descr='Dataset name',
@@ -443,10 +465,11 @@ class SnapshotsNamespace(EntityNamespace):
             list=True)
 
         self.add_property(
-            descr='Snapshot name',
-            name='name',
-            get='name',
-            list=True)
+            descr='Recursive',
+            name='recursive',
+            get=None,
+            set='recursive',
+            list=False)
 
         self.add_property(
             descr='Compression',
@@ -469,8 +492,29 @@ class SnapshotsNamespace(EntityNamespace):
             set=None,
             list=True)
 
-    def query(self, params, options):
-        return self.context.call_sync('volumes.snapshots.query', [('pool', '=', self.parent.name)])
+        self.primary_key = self.get_mapping('name')
+
+    def save(self, this, new=False):
+        if not new:
+            raise CommandException('wut?')
+
+        self.context.submit_task(
+            'volume.snapshot.create',
+            self.parent.name,
+            this.entity['dataset'],
+            this.entity['name'],
+            this.entity['recursive'],
+            callback=lambda s: post_save(this, s)
+        )
+
+    def delete(self, name):
+        entity = self.get_one(name)
+        self.context.submit_task(
+            'volume.snapshot.delete',
+            self.parent.name,
+            entity['dataset'],
+            entity['name']
+        )
 
 
 @description("Filesystem contents")

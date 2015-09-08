@@ -264,6 +264,12 @@ class ItemNamespace(Namespace):
             self.parent = parent
 
         def run(self, context, args, kwargs, opargs):
+            if args:
+                for arg in args:
+                    if self.parent.has_property(arg):
+                        raise CommandException('Invalid use of property {0}'.format(arg))
+                    else:
+                        raise CommandException('Invalid argument or use of argument {0}'.format(arg))
             for k, v in kwargs.items():
                 if not self.parent.has_property(k):
                     raise CommandException('Property {0} not found'.format(k))

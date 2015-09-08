@@ -235,7 +235,8 @@ class AliasesNamespace(EntityNamespace):
             descr='Address family',
             name='type',
             get='type',
-            list=True
+            list=True,
+            enum=['INET', 'INET6']
         )
 
         self.add_property(
@@ -404,6 +405,10 @@ class RoutesNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
         self.update_task = 'network.routes.update'
         self.delete_task = 'network.routes.delete'
 
+        self.skeleton_entity = {
+            'type': 'INET'
+        }
+
         self.add_property(
             descr='Name',
             name='name',
@@ -415,22 +420,34 @@ class RoutesNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
             descr='Address family',
             name='type',
             get='type',
-            list=True
+            list=True,
+            enum=['INET', 'INET6']
         )
 
         self.add_property(
-            descr='Destination',
-            name='destination',
-            get='destination',
+            descr='Gateway',
+            name='gateway',
+            get='gateway',
             list=True
         )
 
         self.add_property(
             descr='Network',
             name='network',
-            get='network',
+            get=self.get_network,
+            set=self.set_network,
             list=True
         )
+
+        self.primary_key = self.get_mapping('name')
+
+    def get_network(self, entity):
+        return '{0}/{1}'.format(entity['network'], entity['netmask'])
+
+    def set_network(self, entity, value):
+        network, netmask = value.split('/')
+        entity['network'] = network
+        entity['netmask'] = int(netmask)
 
 
 @description("Network configuration")

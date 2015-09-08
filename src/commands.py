@@ -51,15 +51,19 @@ _ = t.transliterate
 @description("Sets variable value")
 class SetenvCommand(Command):
     """
-    Usage: setenv <variable> <value>
+    Usage: setenv <variable>=<value>
+
+    Example: setenv debug=yes
 
     Sets value of environment variable.
     """
     def run(self, context, args, kwargs, opargs):
-        if len(args) < 2:
-            raise CommandException('Wrong parameter count')
+        if args:
+            for arg in args:
+                raise CommandException("Incorrect syntax {0}".format(arg))
 
-        context.variables.set(args[0], args[1])
+        for k, v in kwargs.items():
+            context.variables.set(k, v)
 
     def complete(self, context, tokens):
         return [k for k, foo in context.variables.get_all()]

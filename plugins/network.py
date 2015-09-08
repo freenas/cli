@@ -99,7 +99,7 @@ class InterfacesNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
             descr='Type',
             name='type',
             get='type',
-            set=None,
+#           set=None,
             list=True
         )
 
@@ -151,37 +151,41 @@ class InterfacesNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
             list=True
         )
 
-        # self.add_property(
-        #     descr='Parent interface',
-        #     name='vlan-parent',
-        #     get='vlan.parent',
-        #     type=ValueType.STRING,
-        #     condition=lambda e: e['type'] == 'VLAN'
-        # )
+        self.add_property(
+            descr='Parent interface',
+            name='vlan-parent',
+            get='vlan.parent',
+            list=False,
+            type=ValueType.STRING,
+            condition=lambda e: e['type'] == 'VLAN'
+        )
 
-        # self.add_property(
-        #     descr='VLAN tag',
-        #     name='vlan-tag',
-        #     get='vlan.tag',
-        #     type=ValueType.NUMBER,
-        #     condition=lambda e: e['type'] == 'VLAN'
-        # )
+        self.add_property(
+            descr='VLAN tag',
+            name='vlan-tag',
+            get='vlan.tag',
+            list=False,
+            type=ValueType.NUMBER,
+            condition=lambda e: e['type'] == 'VLAN'
+        )
 
-        # self.add_property(
-        #     descr='Aggregation protocol',
-        #     name='protocol',
-        #     get='lagg.protocol',
-        #     type=ValueType.STRING,
-        #     condition=lambda e: e['type'] == 'LAGG'
-        # )
+        self.add_property(
+            descr='Aggregation protocol',
+            name='protocol',
+            get='lagg.protocol',
+            list=False,
+            type=ValueType.STRING,
+            condition=lambda e: e['type'] == 'LAGG'
+        )
 
-        # self.add_property(
-        #     descr='Member interfaces',
-        #     name='members',
-        #     get='lagg.ports',
-        #     type=ValueType.SET,
-        #     condition=lambda e: e['type'] == 'LAGG'
-        # )
+        self.add_property(
+            descr='Member interfaces',
+            name='members',
+            get='lagg.ports',
+            list=False,
+            type=ValueType.SET,
+            condition=lambda e: e['type'] == 'LAGG'
+        )
 
         self.primary_key = self.get_mapping('name')
         self.entity_commands = lambda this: {

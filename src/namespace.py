@@ -183,7 +183,7 @@ class PropertyMapping(object):
             self.set(obj, value)
             return
 
-        obj[self.set] = value
+        obj.set(self.set, value)
 
     def do_append(self, obj, value):
         if self.type != ValueType.ARRAY:

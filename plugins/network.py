@@ -314,7 +314,7 @@ class HostsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
         super(HostsNamespace, self).__init__(name, context)
 
         self.query_call = 'network.hosts.query'
-        self.create_task = 'network.hosts.add'
+        self.create_task = 'network.hosts.create'
         self.update_task = 'network.hosts.update'
         self.delete_task = 'network.hosts.delete'
 
@@ -401,7 +401,7 @@ class RoutesNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
         self.context = context
 
         self.query_call = 'network.routes.query'
-        self.create_task = 'network.routes.add'
+        self.create_task = 'network.routes.create'
         self.update_task = 'network.routes.update'
         self.delete_task = 'network.routes.delete'
 

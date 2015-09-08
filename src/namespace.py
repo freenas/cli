@@ -164,6 +164,7 @@ class PropertyMapping(object):
         self.set = kwargs.pop('set', None) if 'set' in kwargs else self.get
         self.list = kwargs.pop('list', True)
         self.type = kwargs.pop('type', ValueType.STRING)
+        self.enum = kwargs.pop('enum', None)
         self.condition = kwargs.pop('condition', None)
 
     def do_get(self, obj):
@@ -173,6 +174,10 @@ class PropertyMapping(object):
         return obj.get(self.get)
 
     def do_set(self, obj, value):
+        if self.enum:
+            if value not in self.enum:
+                raise ValueError('Invalid value for property. Should be one of: {0}'.format(', '.join(self.enum)))
+
         value = read_value(value, self.type)
         if callable(self.set):
             self.set(obj, value)

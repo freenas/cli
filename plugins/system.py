@@ -147,6 +147,49 @@ class TimeNamespace(ConfigNamespace):
         self.context.submit_task('system.time.configure', diff)
 
 
+@description("General configuration")
+class GeneralNamespace(ConfigNamespace):
+    def __init__(self, name, context):
+        super(GeneralNamespace, self).__init__(name, context)
+
+        self.add_property(
+            descr='Time zone',
+            name='timezone',
+            get='timezone',
+        )
+
+        self.add_property(
+            descr='Hostname',
+            name='hostname',
+            get='hostname'
+        )
+
+        self.add_property(
+            descr='Syslog Server',
+            name='syslog_server',
+            get='syslog_server'
+        )
+
+        self.add_property(
+            descr='Language',
+            name='language',
+            get='language'
+        )
+
+        self.add_property(
+            descr='Console Keymap',
+            name='console_keymap',
+            get='console_keymap'
+        )
+
+    def load(self):
+        self.entity = self.context.call_sync('system.general.get_config')
+
+    def save(self):
+        self.modified = False
+        return self.context.submit_task('system.general.configure', self.entity)
+
+
 @description("System namespace")
 class SystemNamespace(Namespace):
     def __init__(self, name, context):
@@ -166,6 +209,7 @@ class SystemNamespace(Namespace):
 
     def namespaces(self):
         return [
+            GeneralNamespace('config', self.context),
             TimeNamespace('time', self.context)
         ]
 

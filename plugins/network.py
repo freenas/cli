@@ -120,6 +120,22 @@ class InterfacesNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
         )
 
         self.add_property(
+            descr='IPv6 autoconfiguration',
+            name='ipv6-autoconf',
+            get='rtadv',
+            type=ValueType.BOOLEAN,
+            list=False
+        )
+
+        self.add_property(
+            descr='Disable IPv6',
+            name='ipv6-disable',
+            get='rtadv',
+            type=ValueType.BOOLEAN,
+            list=False
+        )
+
+        self.add_property(
             descr='Link address',
             name='link-address',
             get='status.link-address',

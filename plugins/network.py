@@ -30,6 +30,7 @@ import copy
 import icu 
 from namespace import Namespace, EntityNamespace, ConfigNamespace, Command, RpcBasedLoadMixin, TaskBasedSaveMixin, description
 from output import ValueType
+from fnutils.query import wrap
 
 
 t = icu.Transliterator.createInstance("Any-Accents", icu.UTransDirection.FORWARD)
@@ -470,6 +471,75 @@ class RoutesNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
         entity['netmask'] = int(netmask)
 
 
+class IPMINamespace(EntityNamespace):
+    def __init__(self, name, context):
+        super(IPMINamespace, self).__init__(name, context)
+        self.context = context
+
+        self.add_property(
+            descr='Channel',
+            name='channel',
+            get='channel',
+            set=None,
+            list=True
+        )
+
+        self.add_property(
+            descr='DHCP',
+            name='dhcp',
+            get='dhcp',
+            list=True,
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
+            descr='IP Address',
+            name='address',
+            get='address',
+            list=True
+        )
+
+        self.add_property(
+            descr='Netmask',
+            name='netmask',
+            get='netmask',
+            list=True
+        )
+
+        self.add_property(
+            descr='Gateway',
+            name='gateway',
+            get='gateway',
+            list=False
+        )
+
+        self.add_property(
+            descr='VLAN ID',
+            name='vlan_id',
+            get='vlan_id',
+            list=False
+        )
+
+        self.add_property(
+            descr='Password',
+            name='password',
+            get=None,
+            set='password',
+            list=False
+        )
+
+        self.primary_key = self.get_mapping('channel')
+
+    def query(self, params, options):
+        result = []
+        for chan in self.context.call_sync('ipmi.channels'):
+            result.append(self.context.call_sync('ipmi.get_config', chan))
+
+        return wrap(result)
+
+    def get_one(self, chan):
+        return wrap(self.context.call_sync('ipmi.get_config', chan))
+
 @description("Network configuration")
 class NetworkNamespace(Namespace):
     def __init__(self, name, context):
@@ -481,6 +551,7 @@ class NetworkNamespace(Namespace):
             InterfacesNamespace('interfaces', self.context),
             RoutesNamespace('routes', self.context),
             HostsNamespace('hosts', self.context),
+            IPMINamespace('ipmi', self.context),
             GlobalConfigNamespace('config', self.context)
         ]
 

@@ -28,41 +28,11 @@
 
 import icu 
 from descriptions import tasks
-from namespace import Namespace, IndexCommand, Command, description
-from output import Table, ValueType, output_table
-
+from namespace import EntityNamespace, RpcBasedLoadMixin, Command, description
+from output import ValueType
 
 t = icu.Transliterator.createInstance("Any-Accents", icu.UTransDirection.FORWARD)
 _ = t.transliterate
-
-
-@description("Lists system tasks")
-class ListCommand(Command):
-    def run(self, context, args, kwargs, opargs):
-        self.context = context
-        tasks = context.connection.call_sync('task.query')
-        return Table(tasks, [
-            Table.Column('ID', 'id'),
-            Table.Column('Started at', 'started_at', ValueType.TIME),
-            Table.Column('Finished at', 'finished_at', ValueType.TIME),
-            Table.Column('Description', self.describe_task),
-            Table.Column('State', self.describe_state)
-        ])
-
-    def describe_state(self, task):
-        if task['state'] == 'EXECUTING':
-            state = self.context.call_sync(
-                'task.status', task['id'])
-            if 'progress' not in state:
-                return task['state']
-
-            return '{0:2.0f}% ({1})'.format(
-                state['progress.percentage'], state['progress.message'])
-
-        return task['state']
-
-    def describe_task(self, task):
-        return tasks.translate(self.context, task['name'], task['args'])
 
 
 @description("Submits new task")
@@ -80,18 +50,88 @@ class SubmitCommand(Command):
         context.submit_task(name, *args)
 
 
-@description("Manage tasks")
-class TasksNamespace(Namespace):
-    def __init__(self, name, context):
-        super(TasksNamespace, self).__init__(name)
-        self.context = context
+@description("Aborts running task")
+class AbortCommand(Command):
+    """
+    Usage: abort
 
-    def commands(self):
-        return {
-            '?': IndexCommand(self),
-            'list': ListCommand(),
+    Submits a task to the dispatcher for execution
+
+    Examples:
+        submit update.check
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        context.call_sync('task.abort', self.parent.entity['id'])
+
+
+@description("Manage tasks")
+class TasksNamespace(RpcBasedLoadMixin, EntityNamespace):
+    def __init__(self, name, context):
+        super(TasksNamespace, self).__init__(name, context)
+
+        self.allow_create = False
+        self.allow_edit = False
+        self.query_call = 'task.query'
+        
+        self.add_property(
+            descr='ID',
+            name='id',
+            get='id',
+            list=True,
+        )
+
+        self.add_property(
+            descr='Started at',
+            name='started_at',
+            get='started_at',
+            list=True,
+        )
+
+        self.add_property(
+            descr='Finished at',
+            name='finished_at',
+            get='finished_at',
+            list=True
+        )
+
+        self.add_property(
+            descr='Description',
+            name='description',
+            get=self.describe_task,
+        )
+
+        self.add_property(
+            descr='State',
+            name='state',
+            get=self.describe_state,
+        )
+
+        self.primary_key = self.get_mapping('id')
+        self.entity_commands = lambda this: {
+            'abort': AbortCommand(this)
+        }
+
+        self.extra_commands = {
             'submit': SubmitCommand()
         }
+
+    def describe_state(self, task):
+        if task['state'] == 'EXECUTING':
+            state = self.context.call_sync(
+                'task.status', task['id'])
+            if 'progress' not in state:
+                return task['state']
+
+            return '{0:2.0f}% ({1})'.format(
+                state['progress.percentage'], state['progress.message'])
+
+        return task['state']
+
+    def describe_task(self, task):
+        return tasks.translate(self.context, task['name'], task['args'])
 
 
 def _init(context):

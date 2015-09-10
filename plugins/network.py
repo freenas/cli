@@ -547,13 +547,17 @@ class NetworkNamespace(Namespace):
         self.context = context
 
     def namespaces(self):
-        return [
+        ret = [
             InterfacesNamespace('interfaces', self.context),
             RoutesNamespace('routes', self.context),
             HostsNamespace('hosts', self.context),
-            IPMINamespace('ipmi', self.context),
             GlobalConfigNamespace('config', self.context)
         ]
+
+        if self.context.call_sync('ipmi.is_ipmi_loaded'):
+            ret.append(IPMINamespace('ipmi', self.context))
+
+        return ret
 
 
 class ServiceConfigNamespace(Namespace):

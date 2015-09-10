@@ -30,6 +30,7 @@ import copy
 import icu 
 from namespace import Namespace, EntityNamespace, ConfigNamespace, Command, RpcBasedLoadMixin, TaskBasedSaveMixin, description
 from output import ValueType
+from utils import post_save
 from fnutils.query import wrap
 
 
@@ -540,6 +541,18 @@ class IPMINamespace(EntityNamespace):
     def get_one(self, chan):
         return wrap(self.context.call_sync('ipmi.get_config', chan))
 
+    def save(self, this, new=False):
+        assert not new
+
+        self.context.submit_task(
+            'ipmi.configure',
+            this.entity['channel'],
+            this.get_diff(),
+            callback=lambda s: post_save(this, s)
+        )
+
+
+
 @description("Network configuration")
 class NetworkNamespace(Namespace):
     def __init__(self, name, context):
@@ -558,10 +571,6 @@ class NetworkNamespace(Namespace):
             ret.append(IPMINamespace('ipmi', self.context))
 
         return ret
-
-
-class ServiceConfigNamespace(Namespace):
-    pass
 
 
 def _init(context):

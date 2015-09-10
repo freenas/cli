@@ -464,7 +464,7 @@ class MainLoop(object):
 
     def __get_prompt(self):
         variables = {
-            'path': '/'.join([x.get_name() for x in self.path]),
+            'path': '/'.join([str(x.get_name()) for x in self.path]),
             'host': self.context.hostname
         }
         return self.context.variables.get('prompt').format(**variables)
@@ -609,6 +609,12 @@ class MainLoop(object):
                 continue
 
             if isinstance(token, (Literal, BinaryExpr)):
+                if not command and isinstance(token, Literal):
+                    item = self.find_in_scope(token.value)
+                    if isinstance(item, Namespace):
+                        self.cd(item)
+                        continue
+
                 args.append(token)
                 continue
 

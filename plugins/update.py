@@ -52,8 +52,8 @@ class CheckNowCommand(Command):
     Checks for updates.
     """
     def run(self, context, args, kwargs, opargs):
-        context.connection.call_task_sync('update.check')
-        updates = context.connection.call_sync('update.get_update_ops')
+        context.call_task_sync('update.check')
+        updates = context.call_sync('update.get_update_ops')
         if updates:
             for update in updates:
                 update['previous_version'] = '-'.join(update['previous_version'].split('-')[:2])

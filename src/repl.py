@@ -387,7 +387,10 @@ class Context(object):
         return wrap(self.connection.call_sync(name, *args, **kwargs))
 
     def call_task_sync(self, name, *args, **kwargs):
-        return wrap(self.connection.call_task_sync(name, *args))
+        self.ml.skip_prompt_print = True
+        wrapped_result = wrap(self.connection.call_task_sync(name, *args))
+        self.ml.skip_prompt_print = False
+        return wrapped_result
 
     def submit_task(self, name, *args, **kwargs):
         callback = kwargs.pop('callback', None)
@@ -457,6 +460,7 @@ class MainLoop(object):
         self.start_from_root = False
         self.namespaces = []
         self.connection = None
+        self.skip_prompt_print = False
 
     def __get_prompt(self):
         variables = {
@@ -786,9 +790,9 @@ class MainLoop(object):
         sys.stdout.write('\x1b[0G')
 
     def restore_readline(self):
-        sys.stdout.write(
-            self.__get_prompt() + readline.get_line_buffer().rstrip())
-        sys.stdout.flush()
+        if not self.skip_prompt_print:
+            sys.stdout.write(self.__get_prompt() + readline.get_line_buffer().rstrip())
+            sys.stdout.flush()
 
 
 def main():

@@ -303,7 +303,9 @@ class HelpCommand(Command):
 
         if isinstance(obj, Namespace):
             # First listing the Current Namespace's commands
-            cmd_dict_list = []
+            cmd_dict_list = [{"cmd":"/","description":"Go to the root namespace"},
+                                     {"cmd":"..","description":"Go up one namespace"},
+                                     {"cmd":"-","description":"Go back to previous namespace"}] 
             ns_cmds = obj.commands()
             for key, value in ns_cmds.iteritems():
                 cmd_dict = {
@@ -313,14 +315,13 @@ class HelpCommand(Command):
                 cmd_dict_list.append(cmd_dict)
 
             # Then listing the namespaces available from this namespace
-            namespaces_dict_list = []
             for nss in obj.namespaces():
                 if not isinstance(nss, EntityNamespace.SingleItemNamespace):
                     namespace_dict = {
-                        'name': nss.name,
+                        'cmd': nss.name,
                         'description': nss.description,
                     }
-                    namespaces_dict_list.append(namespace_dict)
+                    cmd_dict_list.append(namespace_dict)
 
             # Finally listing the builtin cmds
             builtin_cmd_dict_list = []
@@ -333,26 +334,11 @@ class HelpCommand(Command):
 
             # Finally printing all this out in unix `LESS(1)` pager style
             output_call_list = []
-            navigation_command_list=[{"cmd":"/","description":"Root namespace"},
-                                     {"cmd":"..","description":"Go up one namespace"},
-                                     {"cmd":"-","description":"Go back to previous namespace"}]
-            output_call_list.append(Table(navigation_command_list, [
-                                    Table.Column('Navigation Command',
-                                                 'cmd', ValueType.STRING),
-                                    Table.Column(
-                                                 'Descrption', 'description',
-                                                 ValueType.STRING)]))
             if cmd_dict_list:
                 output_call_list.append(
                     Table(cmd_dict_list, [
                         Table.Column('Command', 'cmd', ValueType.STRING),
                         Table.Column('Description', 'description', ValueType.STRING)]))
-            if namespaces_dict_list:
-                output_call_list.append(
-                    Table(namespaces_dict_list, [
-                        Table.Column('Namespace', 'name', ValueType.STRING),
-                        Table.Column('Description', 'description', ValueType.STRING)
-                        ]))
             # Only display the help on builtin commands if in the RootNamespace
             if obj.__class__.__name__ == 'RootNamespace':
                 output_call_list.append(

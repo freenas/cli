@@ -710,12 +710,6 @@ class MainLoop(object):
                 self.start_from_root = True
                 line = line[1:]
 
-        #if line == '..':
-        #    if len(self.path) > 1:
-        #        self.prev_path = self.path[:]
-        #        self.cd_up()
-        #        return
-
         if line == '-':
             prev = self.prev_path[:]
             self.prev_path = self.path[:]

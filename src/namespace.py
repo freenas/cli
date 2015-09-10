@@ -269,7 +269,9 @@ class ItemNamespace(Namespace):
                     if self.parent.has_property(arg):
                         raise CommandException('Invalid use of property {0}'.format(arg))
                     else:
-                        raise CommandException('Invalid argument or use of argument {0}'.format(arg))
+                        raise CommandException(
+                            'Invalid argument or use of argument {0}'.format(arg)
+                        )
             for k, v in kwargs.items():
                 if not self.parent.has_property(k):
                     raise CommandException('Property {0} not found'.format(k))
@@ -297,32 +299,10 @@ class ItemNamespace(Namespace):
                     prop.do_remove(entity, v)
 
             self.parent.modified = True
+            self.parent.save()
 
         def complete(self, context, tokens):
             return [x.name + '=' for x in self.parent.property_mappings if x.set]
-
-    @description("Saves item")
-    class SaveEntityCommand(Command):
-        """
-        Usage: save
-        """
-        def __init__(self, parent):
-            self.parent = parent
-
-        def run(self, context, args, kwargs, opargs):
-            self.parent.save()
-
-    @description("Discards modified item")
-    class DiscardEntityCommand(Command):
-        """
-        Usage: discard
-        """
-        def __init__(self, parent):
-            self.parent = parent
-
-        def run(self, context, args, kwargs, opargs):
-            self.parent.load()
-            self.parent.modified = False
 
     def __init__(self, name):
         super(ItemNamespace, self).__init__(name)
@@ -391,8 +371,6 @@ class ItemNamespace(Namespace):
         if self.allow_edit:
             base.update({
                 'set': self.SetEntityCommand(self),
-                'save': self.SaveEntityCommand(self),
-                'discard': self.DiscardEntityCommand(self)
             })
 
         if self.commands is not None:

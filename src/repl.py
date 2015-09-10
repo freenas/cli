@@ -485,7 +485,8 @@ class MainLoop(object):
         if not self.cwd.on_leave():
             return
 
-        del self.path[-1]
+        if len(self.path) > 1:
+            del self.path[-1]
         self.cwd.on_enter()
 
     @property
@@ -572,6 +573,10 @@ class MainLoop(object):
             token = tokens.pop(0)
 
             if isinstance(token, Symbol):
+                if token.name == '..':
+                    self.cd_up()
+                    continue
+
                 item = self.find_in_scope(token.name)
 
                 if command:
@@ -705,11 +710,11 @@ class MainLoop(object):
                 self.start_from_root = True
                 line = line[1:]
 
-        if line == '..':
-            if len(self.path) > 1:
-                self.prev_path = self.path[:]
-                self.cd_up()
-                return
+        #if line == '..':
+        #    if len(self.path) > 1:
+        #        self.prev_path = self.path[:]
+        #        self.cd_up()
+        #        return
 
         if line == '-':
             prev = self.prev_path[:]
@@ -738,6 +743,10 @@ class MainLoop(object):
         ptr = ns
         while len(tokens) > 0:
             token = tokens.pop(0)
+
+            if token == '..':
+                if len(self.path) > 1:
+                    ptr = self.path[-2]
 
             if issubclass(type(ptr), Namespace):
                 nss = ptr.namespaces()
@@ -776,6 +785,8 @@ class MainLoop(object):
 
         else:
             choices = []
+
+        choices += ['.. ', '/ ', '- ']
 
         options = [i for i in choices if i.startswith(text)]
         if state < len(options):

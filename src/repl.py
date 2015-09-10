@@ -498,7 +498,10 @@ class MainLoop(object):
 
         self.greet()
         a = ShowUrlsCommand()
-        a.run(self.context, None, None, None)
+        try:
+            a.run(self.context, None, None, None)
+        except:
+            output_msg('Cannot show GUI urls')
 
         while True:
             try:

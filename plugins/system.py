@@ -190,7 +190,7 @@ class GeneralNamespace(ConfigNamespace):
         return self.context.submit_task('system.general.configure', self.entity)
 
 
-@description("System namespace")
+@description("System info and configuration")
 class SystemNamespace(Namespace):
     def __init__(self, name, context):
         super(SystemNamespace, self).__init__(name)

@@ -530,7 +530,7 @@ class FilesystemNamespace(EntityNamespace):
         )
 
 
-@description("Volumes namespace")
+@description("Manage volumes")
 class VolumesNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
     class ShowTopologyCommand(Command):
         def run(self, context, args, kwargs, opargs):

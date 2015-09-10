@@ -53,7 +53,7 @@ class ServiceManageCommand(Command):
         context.submit_task('service.manage', self.parent.primary_key, self.action)
 
 
-@description("Services namespace")
+@description("Configure and manage services")
 class ServicesNamespace(RpcBasedLoadMixin, EntityNamespace):
     def __init__(self, name, context):
         super(ServicesNamespace, self).__init__(name, context)

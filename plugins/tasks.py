@@ -80,7 +80,7 @@ class SubmitCommand(Command):
         context.submit_task(name, *args)
 
 
-@description("Tasks namespace")
+@description("Manage tasks")
 class TasksNamespace(Namespace):
     def __init__(self, name, context):
         super(TasksNamespace, self).__init__(name)

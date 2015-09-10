@@ -44,7 +44,7 @@ class ConnectedUsersCommand(Command):
         output_list(result, _("IP address"))
 
 
-@description("Shares namespace")
+@description("Configure and manage shares")
 class SharesNamespace(Namespace):
     def __init__(self, name, context):
         super(SharesNamespace, self).__init__(name)

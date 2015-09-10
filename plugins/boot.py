@@ -33,7 +33,7 @@ from utils import iterate_vdevs
 from output import ValueType, Table, output_msg
 
 
-@description("Boot Environment Namespace")
+@description("Boot Environment Management")
 class BootEnvironmentNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin,
                                EntityNamespace):
     def __init__(self, name, context):
@@ -164,7 +164,7 @@ class ActivateBootEnvCommand(Command):
                             self.parent.entity['id'])
 
 
-@description("Boot pool namespace")
+@description("Boot pool management")
 class BootPoolNamespace(Namespace):
     def __init__(self, name, context):
         super(BootPoolNamespace, self).__init__(name)
@@ -242,7 +242,7 @@ class BootPoolDetachDiskCommand(Command):
         return
 
 
-@description("Boot namespace")
+@description("Boot management")
 class BootNamespace(Namespace):
     def __init__(self, name, context):
         super(BootNamespace, self).__init__(name)

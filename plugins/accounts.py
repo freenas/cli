@@ -185,7 +185,7 @@ class GroupsNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
         self.primary_key = self.get_mapping('name')
 
 
-@description(_("Accounts namespace"))
+@description(_("Manage system users and groups"))
 class AccountNamespace(Namespace):
     def __init__(self, name, context):
         super(AccountNamespace, self).__init__(name)

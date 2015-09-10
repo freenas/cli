@@ -80,7 +80,7 @@ class UpdateNowCommand(Command):
         context.submit_task('update.update')
 
 
-@description("Update configuration namespace")
+@description("Update configuration")
 class UpdateConfigNamespace(ConfigNamespace):
     def __init__(self, name, context):
         super(UpdateConfigNamespace, self).__init__(name, context)
@@ -114,7 +114,7 @@ class UpdateConfigNamespace(ConfigNamespace):
         return self.context.submit_task('update.configure', self.entity)
 
 
-@description("Update namespace")
+@description("System Updates")
 class UpdateNamespace(Namespace):
     def __init__(self, name, context):
         super(UpdateNamespace, self).__init__(name)

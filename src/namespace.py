@@ -527,6 +527,9 @@ class EntityNamespace(Namespace):
                 if not self.parent.has_property(k):
                     output_msg('Property {0} not found'.format(k))
                     return
+                if self.parent.get_mapping(k).set is None:
+                    output_msg('Property {0} is not writable'.format(k))
+                    return
 
             for k, v in kwargs.items():
                 prop = self.parent.get_mapping(k)
@@ -535,7 +538,9 @@ class EntityNamespace(Namespace):
             self.parent.save(ns, new=True)
 
         def complete(self, context, tokens):
-            return [x.name + '=' for x in self.parent.property_mappings]
+            settable_properties = filter(
+                lambda x: x.set is not None, self.parent.property_mappings)
+            return [x.name + '=' for x in settable_properties]
 
     @description("Removes item")
     class DeleteEntityCommand(Command):

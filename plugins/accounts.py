@@ -138,11 +138,11 @@ class UsersNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
         self.primary_key = self.get_mapping('username')
 
     def display_group(self, entity):
-        group = self.context.connection.call_sync('groups.query', [('id', '=', entity['group'])], {'single': True})
+        group = self.context.call_sync('groups.query', [('id', '=', entity['group'])], {'single': True})
         return group['name'] if group else 'GID:{0}'.format(entity['group'])
 
     def set_group(self, entity, value):
-        group = self.context.connection.call_sync('groups.query', [('name', '=', value)], {'single': True})
+        group = self.context.call_sync('groups.query', [('name', '=', value)], {'single': True})
         entity['group'] = group['id']
 
 

@@ -130,9 +130,9 @@ class VolumeCreateCommand(Command):
             return
 
         # The all_disks below is a temporary fix, use this after "select" is working
-        # all_disks = context.connection.call_sync('disks.query', [], {"select":"path"})
-        all_disks = [disk["path"] for disk in context.connection.call_sync("disks.query")]
-        available_disks = context.connection.call_sync('volumes.get_available_disks')
+        # all_disks = context.call_sync('disks.query', [], {"select":"path"})
+        all_disks = [disk["path"] for disk in context.call_sync("disks.query")]
+        available_disks = context.call_sync('volumes.get_available_disks')
         if 'alldisks' in disks:
             disks = available_disks
         else:
@@ -157,7 +157,7 @@ class FindVolumesCommand(Command):
     Finds volumes that can be imported.
     """
     def run(self, context, args, kwargs, opargs):
-        vols = context.connection.call_sync('volumes.find')
+        vols = context.call_sync('volumes.find')
         return Table(vols, [
             Table.Column('ID', 'id'),
             Table.Column('Volume name', 'name'),
@@ -171,7 +171,7 @@ class FindMediaCommand(Command):
     Usage: find-media
     """
     def run(self, context, args, kwargs, opargs):
-        media = context.connection.call_sync('volumes.find_media')
+        media = context.call_sync('volumes.find_media')
         return Table(media, [
             Table.Column('Path', 'path'),
             Table.Column('Label', 'label'),
@@ -197,7 +197,7 @@ class ImportVolumeCommand(Command):
         oldname = args[0]
 
         if not args[0].isdigit():
-            vols = context.connection.call_sync('volumes.find')
+            vols = context.call_sync('volumes.find')
             vol = first_or_default(lambda v: v['name'] == args[0], vols)
             if not vol:
                 raise CommandException('Importable volume {0} not found'.format(args[0]))

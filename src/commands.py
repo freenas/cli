@@ -153,7 +153,7 @@ class ShellCommand(Command):
 
         self.closed = False
         name = args[0] if len(args) > 0 and len(args[0]) > 0 else '/bin/sh'
-        token = context.connection.call_sync('shell.spawn', name)
+        token = context.call_sync('shell.spawn', name)
         shell = ShellClient(context.hostname, token)
         shell.open()
         shell.on_data(read)
@@ -206,7 +206,7 @@ class ShowIpsCommand(Command):
     def run(self, context, args, kwargs, opargs):
         output_msg(_("These are the active ips from all the configured"
                      " network interfaces"))
-        output_list(context.connection.call_sync('network.config.get_my_ips'),
+        output_list(context.call_sync('network.config.get_my_ips'),
                     _("IP Addresses"))
 
 
@@ -218,11 +218,9 @@ class ShowUrlsCommand(Command):
     Displays the URLs to access the web GUI from.
     """
     def run(self, context, args, kwargs, opargs):
-        output_msg(_("You may try the following URLs to access"
-                     " the web user interface:"))
-        my_ips = context.connection.call_sync('network.config.get_my_ips')
-        my_protocols = context.connection.call_sync(
-            'system.ui.get_config')
+        output_msg(_("You may try the following URLs to access the web user interface:"))
+        my_ips = context.call_sync('network.config.get_my_ips')
+        my_protocols = context.call_sync('system.ui.get_config')
         urls = []
         for proto in my_protocols['webui_protocol']:
             proto_port = my_protocols['webui_{0}_port'.format(proto.lower())]
@@ -232,8 +230,7 @@ class ShowUrlsCommand(Command):
                         urls.append('{0}://{1}'.format(proto.lower(), x))
                 else:
                     for x in my_ips:
-                        urls.append('{0}://{1}:{2}'.format(proto.lower(), x,
-                                                           proto_port))
+                        urls.append('{0}://{1}:{2}'.format(proto.lower(), x, proto_port))
         output_list(urls, label=_('URLs'))
 
 

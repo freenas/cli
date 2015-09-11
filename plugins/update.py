@@ -41,7 +41,7 @@ class CurrentTrainCommand(Command):
     Displays the current update train.
     """
     def run(self, context, args, kwargs, opargs):
-        output_msg(context.connection.call_sync('update.get_current_train'))
+        output_msg(context.call_sync('update.get_current_train'))
 
 
 @description("Checks for New Updates")

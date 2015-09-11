@@ -34,7 +34,7 @@ _ = t.transliterate
 
 
 def get_username(context, uid):
-    u = context.connection.call_sync('users.query', [('id', '=', uid)], {'single': True})
+    u = context.call_sync('users.query', [('id', '=', uid)], {'single': True})
     return u['username'] if u else '<unknown>'
 
 tasks = {
@@ -68,4 +68,3 @@ def translate(context, name, args=None):
         return first
 
     return second(context, args)
-

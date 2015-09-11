@@ -77,7 +77,7 @@ class DisksNamespace(RpcBasedLoadMixin, EntityNamespace):
         }
 
     def get_one(self, name):
-        return self.context.connection.call_sync(
+        return self.context.call_sync(
             self.query_call,
             [('path', '=', os.path.join('/dev', name))],
             {'single': True})
@@ -90,7 +90,7 @@ class DisksNamespace(RpcBasedLoadMixin, EntityNamespace):
 class FormatDiskCommand(Command):
     """
     Usage: format
-    
+
     Formats the current disk.
     """
     def __init__(self, parent):

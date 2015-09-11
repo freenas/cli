@@ -27,13 +27,17 @@
 
 
 import re
+import icu
 from namespace import (
     EntityNamespace, Command, RpcBasedLoadMixin, TaskBasedSaveMixin,
-    Namespace, IndexCommand, description
+    Namespace, IndexCommand, description, CommandException
 )
 from utils import iterate_vdevs
 from output import ValueType, Table, output_msg
 import inspect
+
+t = icu.Transliterator.createInstance("Any-Accents", icu.UTransDirection.FORWARD)
+_ = t.transliterate
 
 
 @description("Boot Environment Management")
@@ -166,7 +170,10 @@ class RenameBootEnvCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        new_be_name = args.pop(0)
+        try:
+            new_be_name = args.pop(0)
+        except IndexError:
+            raise CommandException('Please provide a target name for the renaming')
         entity = self.parent.entity
         name_property = self.parent.get_mapping('name')
         old_be = entity['id']

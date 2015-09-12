@@ -29,9 +29,13 @@
 import copy
 import traceback
 import errno
+import icu
 from fnutils.query import wrap
 from output import (ValueType, Object, Table, output_list,
                     output_msg, read_value)
+
+t = icu.Transliterator.createInstance("Any-Accents", icu.UTransDirection.FORWARD)
+_ = t.transliterate
 
 
 def description(descr):
@@ -551,6 +555,8 @@ class EntityNamespace(Namespace):
             self.parent = parent
 
         def run(self, context, args, kwargs, opargs):
+            if len(args) == 0:
+                raise CommandException(_("Please specify item to delete."))
             self.parent.delete(args[0])
 
     def has_property(self, prop):

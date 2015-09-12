@@ -516,7 +516,6 @@ class EntityNamespace(Namespace):
             ns.entity = wrap(copy.deepcopy(self.parent.skeleton_entity))
 
             if not args and not kwargs:
-                context.ml.cd(ns)
                 return
 
             if len(args) > 0:

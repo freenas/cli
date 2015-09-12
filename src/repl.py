@@ -774,14 +774,13 @@ class MainLoop(object):
                 obj.commands().keys() + \
                 self.builtin_commands.keys()
             choices = [i + ' ' for i in choices]
+            choices += ['.. ', '/ ', '- ']
 
         elif issubclass(type(obj), Command):
             choices = obj.complete(self.context, tokens)
 
         else:
             choices = []
-
-        choices += ['.. ', '/ ', '- ']
 
         options = [i for i in choices if i.startswith(text)]
         if state < len(options):

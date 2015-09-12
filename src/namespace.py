@@ -29,11 +29,9 @@
 import copy
 import traceback
 import errno
-import collections
-from texttable import Texttable
 from fnutils.query import wrap
-from output import (ValueType, Object, Table, output_object, output_table, output_list,
-                    output_msg, output_is_ascii, read_value, format_value)
+from output import (ValueType, Object, Table, output_list,
+                    output_msg, read_value)
 
 
 def description(descr):

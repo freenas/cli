@@ -374,10 +374,10 @@ class Context(object):
             output_msg(translation)
             if 'state' in data:
                 if data['state'] == 'FAILED':
-                    status = self.connection.call_sync('task.status',
-                           data['id'])
-                    output_msg("Task #{0} error: {1}".format(data['id'],
-                           status['error']['message']))
+                    status = self.connection.call_sync('task.status', data['id'])
+                    output_msg(_(
+                        "Task #{0} error: {1}".format(data['id'], status['error']['message'])
+                        ))
 
         sys.stdout.flush()
         self.ml.restore_readline()

@@ -28,8 +28,11 @@
 import re
 import icu
 import inspect
-from namespace import EntityNamespace, ConfigNamespace, Command, CommandException, RpcBasedLoadMixin, TaskBasedSaveMixin, description
-from output import Table, output_table, output_tree, output_msg
+from namespace import (
+    EntityNamespace, Command, CommandException,
+    RpcBasedLoadMixin, TaskBasedSaveMixin, description
+    )
+from output import Table, output_tree, output_msg
 from utils import post_save, iterate_vdevs
 from fnutils import first_or_default, exclude
 

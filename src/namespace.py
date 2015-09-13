@@ -417,7 +417,7 @@ class EntityNamespace(Namespace):
 
         def get_name(self):
             name = self.primary_key if self.entity else self.name
-            if not name:
+            if not name and name != 0:
                 name = 'unnamed'
 
             return name if self.saved and not self.modified else '[{0}]'.format(name)

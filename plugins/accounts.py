@@ -29,7 +29,7 @@
 import os
 import crypt
 import icu
-from namespace import Namespace, Command, EntityNamespace, IndexCommand, TaskBasedSaveMixin, RpcBasedLoadMixin, description
+from namespace import Namespace, Command, EntityNamespace, IndexCommand, TaskBasedSaveMixin, RpcBasedLoadMixin, description, CommandException
 from output import ValueType
 
 
@@ -143,7 +143,11 @@ class UsersNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
 
     def set_group(self, entity, value):
         group = self.context.call_sync('groups.query', [('name', '=', value)], {'single': True})
-        entity['group'] = group['id']
+        if group:
+            entity['group'] = group['id']
+        else:
+            raise CommandException(_('Group {0} does not exist.'.format(value)))
+        
 
 
 @description(_("System groups"))

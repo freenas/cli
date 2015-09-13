@@ -223,7 +223,7 @@ class InterfacesNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
 
     def get_ip_config(self, entity):
         for i in entity['status']['aliases']:
-            if i['family'] not in ('INET', 'INET6'):
+            if i['type'] not in ('INET', 'INET6'):
                 continue
 
             yield '{0}/{1}'.format(i['address'], i['netmask'])
@@ -550,7 +550,6 @@ class IPMINamespace(EntityNamespace):
             this.get_diff(),
             callback=lambda s: post_save(this, s)
         )
-
 
 
 @description("Network configuration")

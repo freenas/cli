@@ -26,8 +26,7 @@
 #####################################################################
 
 
-from namespace import (Namespace, ConfigNamespace, Command, IndexCommand,
-                       description)
+from namespace import ConfigNamespace, Command, description
 from output import output_msg, ValueType, Table
 from descriptions import events
 from utils import parse_query_args
@@ -59,10 +58,10 @@ class CheckNowCommand(Command):
                 update['previous_version'] = '-'.join(update['previous_version'].split('-')[:2])
                 update['new_version'] = '-'.join(update['new_version'].split('-')[:2])
             return Table(updates, [
-                Table.Column('Name','new_name'),
+                Table.Column('Name', 'new_name'),
                 Table.Column('Operation', 'operation'),
-                Table.Column('Current Version','previous_version'),
-                Table.Column('New Version','new_version')
+                Table.Column('Current Version', 'previous_version'),
+                Table.Column('New Version', 'new_version')
                 ])
         else:
             output_msg("No new updates available.")
@@ -80,58 +79,78 @@ class UpdateNowCommand(Command):
         context.submit_task('update.update')
 
 
-@description("Update configuration")
-class UpdateConfigNamespace(ConfigNamespace):
+@description("System Updates and their Configuration")
+class UpdateNamespace(ConfigNamespace):
     def __init__(self, name, context):
-        super(UpdateConfigNamespace, self).__init__(name, context)
+        super(UpdateNamespace, self).__init__(name, context)
         self.context = context
+        self.update_info = None
 
         self.add_property(
-            descr='Current Train',
+            descr='Set Update Train',
             name='train',
+            type=ValueType.STRING,
             get='train',
-            type=ValueType.STRING
+            set='train'
         )
 
         self.add_property(
-            descr='Auto check',
+            descr='Enable/Disable Auto check for Updates',
             name='check_auto',
+            type=ValueType.BOOLEAN,
             get='check_auto',
-            type=ValueType.BOOLEAN
+            set='check_auto'
         )
 
         self.add_property(
             descr='Update server',
             name='update_server',
             get='update_server',
+            set='update_server'
         )
 
-    def load(self):
-        self.entity = self.context.call_sync('update.get_config')
+        self.add_property(
+            descr='Update Available for Installing',
+            name='available',
+            type=ValueType.BOOLEAN,
+            get=lambda x: True if self.update_info is not None else False,
+            set=None
+        )
 
-    def save(self):
-        self.modified = False
-        return self.context.submit_task('update.configure', self.entity)
+        self.add_property(
+            descr='Update Changelog',
+            name='changelog',
+            type=ValueType.STRING,
+            get=lambda x: self.update_info['changelog']if self.update_info is not None else [''],
+            list=True,
+            set=None
+        )
 
-
-@description("System Updates")
-class UpdateNamespace(Namespace):
-    def __init__(self, name, context):
-        super(UpdateNamespace, self).__init__(name)
-        self.context = context
-
-    def commands(self):
-        return {
-            '?': IndexCommand(self),
+        self.extra_commands = {
             'current_train': CurrentTrainCommand(),
             'check_now': CheckNowCommand(),
             'update_now': UpdateNowCommand(),
         }
 
-    def namespaces(self):
-        return [
-            UpdateConfigNamespace('config', self.context)
-        ]
+    def load(self):
+        self.entity = self.context.call_sync('update.get_config')
+        self.update_info = self.context.call_sync('update.update_info')
+
+    def post_save(self, status):
+        """
+        Generic post-save callback for EntityNamespaces
+        """
+        if status == 'FINISHED':
+            self.modified = False
+            self.saved = True
+            self.load()
+
+    def save(self):
+        self.modified = False
+        return self.context.submit_task(
+            'update.configure',
+            self.entity,
+            callback=lambda s: self.post_save(s))
 
 
 def _init(context):

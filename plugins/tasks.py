@@ -75,7 +75,7 @@ class TasksNamespace(RpcBasedLoadMixin, EntityNamespace):
         self.allow_create = False
         self.allow_edit = False
         self.query_call = 'task.query'
-        
+
         self.add_property(
             descr='ID',
             name='id',

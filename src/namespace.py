@@ -266,6 +266,8 @@ class ItemNamespace(Namespace):
             self.parent = parent
 
         def run(self, context, args, kwargs, opargs):
+            if not (args or kwargs or opargs):
+                raise CommandException(_("You have provided no arguments."))
             if args:
                 for arg in args:
                     if self.parent.has_property(arg):
@@ -391,6 +393,14 @@ class ConfigNamespace(ItemNamespace):
         name = self.name
 
         return name if not self.modified else '[{0}]'.format(name)
+
+    def commands(self):
+        base = super(ConfigNamespace, self).commands()
+
+        if self.extra_commands:
+            base.update(self.extra_commands)
+
+        return base
 
 
 class EntityNamespace(Namespace):

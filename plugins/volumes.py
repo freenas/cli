@@ -290,6 +290,15 @@ class DatasetsNamespace(EntityNamespace):
         super(DatasetsNamespace, self).__init__(name, context)
         self.parent = parent
         self.path = name
+    
+        self.localdoc['CreateEntityCommand'] = ("""\
+            Usage: create <volume>/<dataset>
+                   create <volume>/<dataset>/<dataset>
+                
+            Examples: create tank/foo
+                      create tank/foo/bar
+                   
+            Creates a dataset.""")
 
         self.skeleton_entity = {
             'type': 'FILESYSTEM',
@@ -421,6 +430,18 @@ class DatasetsNamespace(EntityNamespace):
 
     def save(self, this, new=False):
         if new:
+            newname = this.entity['name']
+            newpath = '/'.join(newname.split('/')[:-1])
+            validpath = False
+            if len(newname.split('/')) < 2:
+                raise CommandException(_("Please include a volume in the dataset's path"))
+            for dataset in self.parent.entity['datasets']:
+                if newpath in dataset['name']:
+                    validpath =True
+                    break
+            if not validpath:
+                raise CommandException(_("{0} is not a proper target for creating a new dataset on").format(newname))
+
             self.context.submit_task(
                 'volume.dataset.create',
                 self.parent.entity['name'],

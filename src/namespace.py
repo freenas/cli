@@ -642,8 +642,10 @@ class TaskBasedSaveMixin(object):
 
     def post_save(self, this, status):
         if status == 'FINISHED':
-            this.modified = False
             this.saved = True
+        if status in ['FINISHED', 'FAILED', 'ABORTED', 'CANCELLED']:
+            this.modified = False
+            this.load()
 
     def save(self, this, new=False):
         if new:

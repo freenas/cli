@@ -390,6 +390,7 @@ class ConfigNamespace(ItemNamespace):
         self.context = context
         self.property_mappings = []
         self.extra_commands = None
+        self.localdoc = {}
 
     def get_name(self):
         name = self.name

@@ -325,10 +325,10 @@ class ItemNamespace(Namespace):
         self.load()
 
     def on_leave(self):
-        if self.modified:
-            output_msg('Object was modified. '
-                       'Type either "save" or "discard" to leave')
-            return False
+        # if self.modified:
+        #     output_msg('Object was modified. '
+        #                'Type either "save" or "discard" to leave')
+        #     return False
 
         return True
 

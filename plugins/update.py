@@ -26,10 +26,35 @@
 #####################################################################
 
 
-from namespace import ConfigNamespace, Command, description
-from output import output_msg, ValueType, Table
-from descriptions import events
-from utils import parse_query_args
+from namespace import ConfigNamespace, Command, description, CommandException
+from output import output_msg, ValueType, Table, output_table
+import icu
+import time
+
+t = icu.Transliterator.createInstance("Any-Accents", icu.UTransDirection.FORWARD)
+_ = t.transliterate
+
+
+def update_check_utility(context):
+    """
+    A small helper function that checks for updates
+    and returns the update operations to be performed
+    if any else None
+    """
+    context.call_task_sync('update.check')
+    updates = context.call_sync('update.get_update_ops')
+    if updates:
+        for update in updates:
+            update['previous_version'] = '-'.join(update['previous_version'].split('-')[:2])
+            update['new_version'] = '-'.join(update['new_version'].split('-')[:2])
+        return Table(updates, [
+            Table.Column('Name', 'new_name'),
+            Table.Column('Operation', 'operation'),
+            Table.Column('Current Version', 'previous_version'),
+            Table.Column('New Version', 'new_version')
+            ])
+    else:
+        return None
 
 
 @description("Prints current Update Train")
@@ -51,20 +76,11 @@ class CheckNowCommand(Command):
     Checks for updates.
     """
     def run(self, context, args, kwargs, opargs):
-        context.call_task_sync('update.check')
-        updates = context.call_sync('update.get_update_ops')
-        if updates:
-            for update in updates:
-                update['previous_version'] = '-'.join(update['previous_version'].split('-')[:2])
-                update['new_version'] = '-'.join(update['new_version'].split('-')[:2])
-            return Table(updates, [
-                Table.Column('Name', 'new_name'),
-                Table.Column('Operation', 'operation'),
-                Table.Column('Current Version', 'previous_version'),
-                Table.Column('New Version', 'new_version')
-                ])
+        update_ops = update_check_utility(context)
+        if update_ops:
+            return update_ops
         else:
-            output_msg("No new updates available.")
+            output_msg(_("No new updates available."))
 
 
 @description("Updates the system and reboot it")
@@ -75,8 +91,36 @@ class UpdateNowCommand(Command):
     Installs updates if they are available and restarts the system if necessary.
     """
     def run(self, context, args, kwargs, opargs):
-        output_msg("System going for an update now...")
-        context.submit_task('update.update')
+        output_msg(_("Checking for new updates..."))
+        update_ops = update_check_utility(context)
+        if update_ops:
+            output_msg(_("The following update packages are available: "))
+            output_table(update_ops)
+        else:
+            output_msg(_("No updates currently available for download and installation"))
+            return
+        original_tasks_blocking = context.variables.variables['tasks-blocking'].value
+        context.variables.set('tasks-blocking', True)
+        output_msg(_("Downloading update packages now..."))
+        download_task_id = context.submit_task('update.download')
+        download_details = context.call_sync('task.status', download_task_id)
+        while download_details['state'] == 'EXECUTING':
+            time.sleep(1)
+            download_details = context.call_sync('task.status', download_task_id)
+        if download_details['state'] != 'FINISHED':
+            raise CommandException(_("Updates failed to download"))
+        output_msg(_("System going for an update now..."))
+        apply_task_id = context.submit_task('update.update')
+        context.variables.set('tasks-blocking', original_tasks_blocking)
+        apply_details = context.call_sync('task.status', apply_task_id)
+        while apply_details['state'] == 'EXECUTING':
+            time.sleep(1)
+            apply_details = context.call_sync('task.status', apply_task_id)
+        if apply_details['state'] != 'FINISHED':
+            raise CommandException(_("Updates failed to apply"))
+        else:
+            output_msg(_(
+                "System successfully updated. Please reboot now using the 'reboot' command"))
 
 
 @description("System Updates and their Configuration")

@@ -36,11 +36,12 @@ import readline
 import icu
 import re
 import textwrap
-from namespace import (Command, PipeCommand, CommandException, description, 
+from namespace import (Command, PipeCommand, CommandException, description,
                        EntityNamespace, Namespace)
-from output import (Table, Object, output_value, output_dict, ValueType,
-                    format_value, output_msg, output_list, output_table,
-                    output_lock, output_less, output_table_list)
+from output import (
+    Table, Object, output_dict, ValueType, output_msg, output_list,
+    output_lock, output_less, output_table_list
+    )
 from dispatcher.shell import ShellClient
 
 t = icu.Transliterator.createInstance("Any-Accents",

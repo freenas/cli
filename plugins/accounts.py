@@ -106,6 +106,14 @@ class UsersNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
         )
 
         self.add_property(
+            descr='Password Disabled',
+            name='password_disabled',
+            get='password_disabled',
+            set='password_disabled',
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
             descr='Locked',
             name='locked',
             get='locked',

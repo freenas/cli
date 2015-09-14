@@ -32,7 +32,7 @@ from namespace import (
     EntityNamespace, Command, RpcBasedLoadMixin, TaskBasedSaveMixin,
     Namespace, IndexCommand, description, CommandException
 )
-from utils import iterate_vdevs
+from utils import iterate_vdevs, post_save
 from output import ValueType, Table, output_msg
 import inspect
 
@@ -152,13 +152,6 @@ class BootEnvironmentNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin,
             return
 
 
-def bootenv_post_save(this, status):
-    if status == 'FINISHED':
-        this.modified = False
-        this.saved = True
-        this.load()
-
-
 @description("Renames a boot environment")
 class RenameBootEnvCommand(Command):
     """
@@ -184,7 +177,7 @@ class RenameBootEnvCommand(Command):
             'boot.environments.rename',
             old_be,
             new_be_name,
-            callback=lambda s: bootenv_post_save(self.parent, s)
+            callback=lambda s: post_save(self.parent, s)
         )
 
 
@@ -202,7 +195,7 @@ class ActivateBootEnvCommand(Command):
         context.submit_task(
             'boot.environments.activate',
             self.parent.entity['id'],
-            callback=lambda s: bootenv_post_save(self.parent, s))
+            callback=lambda s: post_save(self.parent, s))
 
 
 @description("Boot pool management")

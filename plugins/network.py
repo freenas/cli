@@ -101,7 +101,7 @@ class InterfacesNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
             descr='Type',
             name='type',
             get='type',
-#           set=None,
+            set=None,
             list=True
         )
 
@@ -229,6 +229,8 @@ class InterfacesNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
             yield '{0}/{1}'.format(i['address'], i['netmask'])
 
     def save(self, this, new=False, callback=None):
+        if callback is None:
+            callback = lambda s: post_save(this, s)
         if new:
             self.context.submit_task(
                 'network.interface.create',
@@ -294,12 +296,13 @@ class AliasesNamespace(EntityNamespace):
 
     def my_post_save(self, this, status):
         if status == 'FINISHED':
-            this.modified = False
             this.saved = True
+        if status in ['FINISHED', 'FAILED', 'ABORTED', 'CANCELLED']:
+            this.modified = False
             self.parent.load()
 
     def my_post_delete(self, status):
-        if status == 'FINISHED':
+        if status in ['FINISHED', 'FAILED', 'ABORTED', 'CANCELLED']:
             self.parent.load()
 
     def save(self, this, new=False):
@@ -311,7 +314,6 @@ class AliasesNamespace(EntityNamespace):
             self.parent,
             callback=lambda s: self.my_post_save(this, s)
         )
-        # self.parent.load()
 
     def delete(self, address):
         self.parent.entity['aliases'] = filter(
@@ -322,7 +324,6 @@ class AliasesNamespace(EntityNamespace):
             self.parent,
             callback=lambda s: self.my_post_delete(s)
         )
-        # self.parent.load()
 
 
 class MembersNamespace(EntityNamespace):

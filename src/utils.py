@@ -69,5 +69,7 @@ def post_save(this, status):
     Generic post-save callback for EntityNamespaces
     """
     if status == 'FINISHED':
-        this.modified = False
         this.saved = True
+    if status in ['FINISHED', 'FAILED', 'ABORTED', 'CANCELLED']:
+        this.modified = False
+        this.load()

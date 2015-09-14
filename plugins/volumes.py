@@ -437,10 +437,11 @@ class DatasetsNamespace(EntityNamespace):
                 raise CommandException(_("Please include a volume in the dataset's path"))
             for dataset in self.parent.entity['datasets']:
                 if newpath in dataset['name']:
-                    validpath =True
+                    validpath = True
                     break
             if not validpath:
-                raise CommandException(_("{0} is not a proper target for creating a new dataset on").format(newname))
+                raise CommandException(_(
+                    "{0} is not a proper target for creating a new dataset on").format(newname))
 
             self.context.submit_task(
                 'volume.dataset.create',

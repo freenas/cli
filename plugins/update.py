@@ -30,6 +30,7 @@ from namespace import ConfigNamespace, Command, description, CommandException
 from output import output_msg, ValueType, Table, output_table
 import icu
 import time
+from utils import post_save
 
 t = icu.Transliterator.createInstance("Any-Accents", icu.UTransDirection.FORWARD)
 _ = t.transliterate
@@ -180,21 +181,12 @@ class UpdateNamespace(ConfigNamespace):
         self.entity = self.context.call_sync('update.get_config')
         self.update_info = self.context.call_sync('update.update_info')
 
-    def post_save(self, status):
-        """
-        Generic post-save callback for EntityNamespaces
-        """
-        if status == 'FINISHED':
-            self.modified = False
-            self.saved = True
-            self.load()
-
     def save(self):
         self.modified = False
         return self.context.submit_task(
             'update.configure',
             self.entity,
-            callback=lambda s: self.post_save(s))
+            callback=lambda s: post_save(self.parent, s))
 
 
 def _init(context):

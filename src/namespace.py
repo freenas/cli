@@ -30,6 +30,7 @@ import copy
 import traceback
 import errno
 import icu
+from utils import post_save
 from fnutils.query import wrap
 from output import (ValueType, Object, Table, output_list,
                     output_msg, read_value)
@@ -640,26 +641,19 @@ class TaskBasedSaveMixin(object):
         super(TaskBasedSaveMixin, self).__init__(*args, **kwargs)
         self.save_key_name = getattr(self, 'primary_key_name', 'id')
 
-    def post_save(self, this, status):
-        if status == 'FINISHED':
-            this.saved = True
-        if status in ['FINISHED', 'FAILED', 'ABORTED', 'CANCELLED']:
-            this.modified = False
-            this.load()
-
     def save(self, this, new=False):
         if new:
             self.context.submit_task(
                 self.create_task,
                 this.entity,
-                callback=lambda s: self.post_save(this, s))
+                callback=lambda s: post_save(this, s))
             return
 
         self.context.submit_task(
             self.update_task,
             this.orig_entity[self.save_key_name],
             this.get_diff(),
-            callback=lambda s: self.post_save(this, s))
+            callback=lambda s: post_save(this, s))
 
     def delete(self, name):
         entity = self.get_one(name)
@@ -667,4 +661,3 @@ class TaskBasedSaveMixin(object):
             self.context.submit_task(self.delete_task, entity[self.save_key_name])
         else:
             output_msg("Cannot delete {0}, item does not exist".format(name))
-

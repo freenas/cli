@@ -29,6 +29,7 @@
 import copy
 from namespace import ConfigNamespace, EntityNamespace, RpcBasedLoadMixin, Command, description
 from output import ValueType
+from utils import post_save
 
 
 @description("Start/stop/restart/reload a service")
@@ -106,18 +107,17 @@ class ServiceConfigNamespace(ConfigNamespace):
         self.get_properties(parent.name)
 
     def load(self):
-        self.entity = self.context.call_sync('services.get_service_config', self.parent.entity['name'])
+        self.entity = self.context.call_sync(
+            'services.get_service_config', self.parent.entity['name']
+            )
         self.orig_entity = copy.deepcopy(self.entity)
 
     def save(self):
-        def post_save():
-            self.modified = False
-            
         return self.context.submit_task(
             'service.configure',
             self.parent.entity['name'],
             self.get_diff(),
-            callback=lambda s: post_save())
+            callback=lambda s: post_save(self.parent, s))
 
     def get_properties(self, name):
         if name == "sshd":

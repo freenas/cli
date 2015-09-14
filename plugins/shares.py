@@ -148,28 +148,28 @@ class AFPSharesNamespace(BaseSharesNamespace):
 
         self.add_property(
             descr='Allowed hosts/networks',
-            name='hosts',
+            name='hosts-allow',
             get='properties.hosts-allow',
             type=ValueType.SET
         )
 
         self.add_property(
             descr='Denied hosts/networks',
-            name='hosts',
+            name='hosts-deny',
             get='properties.hosts-deny',
             type=ValueType.SET
         )
 
         self.add_property(
             descr='Allowed users/groups',
-            name='hosts',
+            name='users-allow',
             get='properties.users-allow',
             type=ValueType.SET
         )
 
         self.add_property(
             descr='Denied users/groups',
-            name='hosts',
+            name='users-deny',
             get='/properties/users-deny',
             type=ValueType.SET
         )

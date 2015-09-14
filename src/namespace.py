@@ -389,6 +389,7 @@ class ConfigNamespace(ItemNamespace):
         super(ConfigNamespace, self).__init__(name)
         self.context = context
         self.property_mappings = []
+        self.extra_commands = None
 
     def get_name(self):
         name = self.name

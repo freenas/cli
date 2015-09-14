@@ -725,6 +725,8 @@ class MainLoop(object):
             output_msg(_('Error: {0}'.format(str(e))))
             if self.context.variables.get('debug'):
                 output_msg(e.stacktrace)
+        except RpcException, e:
+            output_msg(_('RpcException Error: {0}'.format(str(e))))
         except SystemExit:
             # We do not want to catch a user entered `exit` so...
             raise

@@ -64,10 +64,12 @@ class InterfaceManageCommand(Command):
     def run(self, context, args, kwargs, opargs):
         if self.up:
             context.submit_task('network.interface.up',
-                                self.parent.primary_key)
+                                self.parent.primary_key,
+                                callback=lambda s: post_save(self.parent, s))
         else:
              context.submit_task('network.interface.down',
-                                 self.parent.primary_key)
+                                 self.parent.primary_key,
+                                 callback=lambda s: post_save(self.parent, s))
 
 
 @description("Network interfaces configuration")

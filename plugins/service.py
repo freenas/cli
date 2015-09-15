@@ -79,7 +79,7 @@ class ServicesNamespace(RpcBasedLoadMixin, EntityNamespace):
 
         self.primary_key = self.get_mapping('name')
         self.allow_edit = False
-        self.allow_creation = False
+        self.allow_create = False
         self.entity_namespaces = lambda this: [
             ServiceConfigNamespace('config', context, this)
         ]

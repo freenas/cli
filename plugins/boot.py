@@ -171,7 +171,6 @@ class RenameBootEnvCommand(Command):
         name_property = self.parent.get_mapping('name')
         old_be = entity['id']
         name_property.do_set(entity, new_be_name)
-        self.parent.name = new_be_name
         self.parent.modified = True
         context.submit_task(
             'boot.environments.rename',

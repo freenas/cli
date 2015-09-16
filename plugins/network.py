@@ -364,6 +364,7 @@ class HostsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
 class GlobalConfigNamespace(ConfigNamespace):
     def __init__(self, name, context):
         super(GlobalConfigNamespace, self).__init__(name, context)
+        self.config_call = "network.config.get_global_config"
 
         self.add_property(
             descr='IPv4 gateway',
@@ -411,12 +412,12 @@ class GlobalConfigNamespace(ConfigNamespace):
             type=ValueType.BOOLEAN
         )
 
-    def load(self):
-        self.entity = self.context.call_sync('network.config.get_global_config')
-        self.orig_entity = copy.deepcopy(self.entity)
+    #def load(self):
+    #    self.entity = self.context.call_sync('')
+    #    self.orig_entity = copy.deepcopy(self.entity)
 
     def save(self):
-        return self.context.submit_task('network.configure', self.get_diff())
+        return self.context.submit_task('network.configure', self.get_diff(), callback=lambda s: post_save(self, s))
 
 
 @description("Routing configuration")

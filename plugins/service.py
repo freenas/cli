@@ -98,6 +98,8 @@ class ServiceConfigNamespace(ConfigNamespace):
     def __init__(self, name, context, parent):
         super(ServiceConfigNamespace, self).__init__(name, context)
         self.parent = parent
+        self.config_call = 'services.get_service_config'
+        self.config_extra_params = lambda: self.parent.entity['name'] 
 
         self.add_property(
             descr='Enabled',
@@ -109,18 +111,12 @@ class ServiceConfigNamespace(ConfigNamespace):
 
         self.get_properties(parent.name)
 
-    def load(self):
-        self.entity = self.context.call_sync(
-            'services.get_service_config', self.parent.entity['name']
-            )
-        self.orig_entity = copy.deepcopy(self.entity)
-
     def save(self):
         return self.context.submit_task(
             'service.configure',
             self.parent.entity['name'],
             self.get_diff(),
-            callback=lambda s: post_save(self.parent, s))
+            callback=lambda s: post_save(self, s))
 
     def get_properties(self, name):
         if name == "sshd":

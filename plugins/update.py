@@ -30,6 +30,7 @@ from namespace import ConfigNamespace, Command, description, CommandException
 from output import output_msg, ValueType, Table, output_table
 import icu
 import time
+import copy
 from utils import post_save
 
 t = icu.Transliterator.createInstance("Any-Accents", icu.UTransDirection.FORWARD)
@@ -178,15 +179,23 @@ class UpdateNamespace(ConfigNamespace):
         }
 
     def load(self):
-        self.entity = self.context.call_sync('update.get_config')
-        self.update_info = self.context.call_sync('update.update_info')
+        if self.saved:
+            self.entity = self.context.call_sync('update.get_config')
+            self.orig_entity = copy.deepcopy(self.entity)
+            self.update_info = self.context.call_sync('update.update_info')
+            self.orig_update_info = copy.deepcopy(self.update_info)
+        else:
+            # This is in case the task failed!
+            self.entity = copy.deepcopy(self.orig_entity)
+            self.update_info = copy.deepcopy(self.orig_update_info)
+        self.modified = False  
+            
 
     def save(self):
-        self.modified = False
         return self.context.submit_task(
             'update.configure',
             self.entity,
-            callback=lambda s: post_save(self.parent, s))
+            callback=lambda s: post_save(self, s))
 
 
 def _init(context):

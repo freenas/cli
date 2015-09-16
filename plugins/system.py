@@ -30,7 +30,7 @@ import copy
 from namespace import Namespace, ConfigNamespace, Command, IndexCommand, description
 from output import Table, Object, ValueType, output_dict, output_table
 from descriptions import events
-from utils import parse_query_args
+from utils import parse_query_args, post_save
 
 
 @description("Provides status information about the server")
@@ -116,6 +116,7 @@ class EventsCommand(Command):
 class TimeNamespace(ConfigNamespace):
     def __init__(self, name, context):
         super(TimeNamespace, self).__init__(name, context)
+        self.config_call = 'system.info.time'
 
         self.add_property(
             descr='System time',
@@ -139,18 +140,15 @@ class TimeNamespace(ConfigNamespace):
             list=True
         )
 
-    def load(self):
-        self.entity = self.context.call_sync('system.info.time')
-        self.orig_entity = copy.deepcopy(self.entity)
-
-    def save(self, entity, diff, new):
-        self.context.submit_task('system.time.configure', diff)
+    def save(self):
+        self.context.submit_task('system.time.configure', self.get_diff(), callback=lambda s: post_save(self, s))
 
 
 @description("General configuration")
 class GeneralNamespace(ConfigNamespace):
     def __init__(self, name, context):
         super(GeneralNamespace, self).__init__(name, context)
+        self.config_call='system.general.get_config'
 
         self.add_property(
             descr='Time zone',
@@ -182,12 +180,8 @@ class GeneralNamespace(ConfigNamespace):
             get='console_keymap'
         )
 
-    def load(self):
-        self.entity = self.context.call_sync('system.general.get_config')
-
     def save(self):
-        self.modified = False
-        return self.context.submit_task('system.general.configure', self.entity)
+        return self.context.submit_task('system.general.configure', self.entity, callback=lambda s: post_save(self, s))
 
 
 @description("System info and configuration")

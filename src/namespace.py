@@ -390,6 +390,9 @@ class ConfigNamespace(ItemNamespace):
         self.context = context
         self.property_mappings = []
         self.extra_commands = None
+        self.saved = name is not None
+        self.config_call = None
+        self.config_extra_params = None
         self.localdoc = {}
 
     def get_name(self):
@@ -404,6 +407,19 @@ class ConfigNamespace(ItemNamespace):
             base.update(self.extra_commands)
 
         return base
+
+    def load(self):
+        if self.saved:
+            if self.config_extra_params:
+                config_extra = self.config_extra_params() if callable(self.config_extra_params) else self.config_extra_params
+                self.entity = self.context.call_sync(self.config_call, config_extra)
+            else:
+                self.entity = self.context.call_sync(self.config_call)
+            self.orig_entity = copy.deepcopy(self.entity)
+        else:
+            # This is in case the task failed!
+            self.entity = copy.deepcopy(self.orig_entity)
+        self.modified = False 
 
 
 class EntityNamespace(Namespace):

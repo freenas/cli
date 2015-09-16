@@ -564,9 +564,9 @@ class NetworkNamespace(Namespace):
 
     def namespaces(self):
         ret = [
-            InterfacesNamespace('interfaces', self.context),
-            RoutesNamespace('routes', self.context),
-            HostsNamespace('hosts', self.context),
+            InterfacesNamespace('interface', self.context),
+            RoutesNamespace('route', self.context),
+            HostsNamespace('host', self.context),
             GlobalConfigNamespace('config', self.context)
         ]
 

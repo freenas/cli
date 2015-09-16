@@ -288,7 +288,7 @@ class BootNamespace(Namespace):
     def namespaces(self):
         return [
             BootPoolNamespace('pool', self.context),
-            BootEnvironmentNamespace('environments', self.context)
+            BootEnvironmentNamespace('environment', self.context)
         ]
 
 

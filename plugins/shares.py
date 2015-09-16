@@ -192,4 +192,4 @@ class AFPSharesNamespace(BaseSharesNamespace):
 
 
 def _init(context):
-    context.attach_namespace('/', SharesNamespace('shares', context))
+    context.attach_namespace('/', SharesNamespace('share', context))

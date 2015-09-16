@@ -135,4 +135,4 @@ class TasksNamespace(RpcBasedLoadMixin, EntityNamespace):
 
 
 def _init(context):
-    context.attach_namespace('/', TasksNamespace('tasks', context))
+    context.attach_namespace('/', TasksNamespace('task', context))

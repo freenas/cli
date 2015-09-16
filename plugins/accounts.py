@@ -210,8 +210,8 @@ class AccountNamespace(Namespace):
 
     def namespaces(self):
         return [
-            UsersNamespace('users', self.context),
-            GroupsNamespace('groups', self.context)
+            UsersNamespace('user', self.context),
+            GroupsNamespace('group', self.context)
         ]
 
 

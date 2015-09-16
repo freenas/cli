@@ -119,4 +119,4 @@ class EraseDiskCommand(Command):
 
 
 def _init(context):
-    context.attach_namespace('/', DisksNamespace('disks', context))
+    context.attach_namespace('/', DisksNamespace('disk', context))

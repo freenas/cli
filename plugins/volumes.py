@@ -631,10 +631,10 @@ class VolumesNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
         }
 
         self.entity_namespaces = lambda this: [
-            DatasetsNamespace('datasets', self.context, this),
-            SnapshotsNamespace('snapshots', self.context, this)
+            DatasetsNamespace('dataset', self.context, this),
+            SnapshotsNamespace('snapshot', self.context, this)
         ]
 
 
 def _init(context):
-    context.attach_namespace('/', VolumesNamespace('volumes', context))
+    context.attach_namespace('/', VolumesNamespace('volume', context))

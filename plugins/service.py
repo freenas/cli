@@ -432,4 +432,4 @@ class ServiceConfigNamespace(ConfigNamespace):
 
 
 def _init(context):
-    context.attach_namespace('/', ServicesNamespace('services', context))
+    context.attach_namespace('/', ServicesNamespace('service', context))

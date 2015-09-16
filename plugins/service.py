@@ -429,6 +429,44 @@ class ServiceConfigNamespace(ConfigNamespace):
                 name='sid',
                 get='sid'
             )
+        elif name == "dyndns":
+            self.add_property(
+                descr='DynDNS Provider',
+                name='provider',
+                get='provider'
+            )
+            self.add_property(
+                descr='IP Server',
+                name='ipserver',
+                get='ipserver'
+            )
+            self.add_property(
+                descr='Username',
+                name='username',
+                get='username'
+            )
+            self.add_property(
+                descr='Password',
+                name='password',
+                get='password'
+            )
+            self.add_property(
+                descr='Update period',
+                name='update_period',
+                get='update_period',
+                type=ValueType.NUMBER
+            )
+            self.add_property(
+                descr='Force update period',
+                name='force_update_period',
+                get='force_update_period',
+                type=ValueType.NUMBER
+            )
+            self.add_property(
+                descr='Auxiliary',
+                name='auxiliary',
+                get='auxiliary'
+            )
 
 
 def _init(context):

@@ -841,8 +841,14 @@ class MainLoop(object):
             choices = self.cached_values['choices']
 
         elif issubclass(type(obj), Command):
-            choices = obj.complete(self.context, tokens)
-
+            if self.cached_values['obj'] != obj:
+                new_choices = obj.complete(self.context, tokens)
+                self.cached_values.update({
+                    'obj': obj,
+                    'choices': new_choices,
+                    'obj_namespaces': None,
+                })
+            choices = self.cached_values['choices']
         else:
             choices = []
 

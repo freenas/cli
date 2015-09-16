@@ -225,56 +225,56 @@ class ServiceConfigNamespace(ConfigNamespace):
                 name='homedir_enable',
                 get='homedir_enable',
                 type=ValueType.BOOLEAN
-                )
+            )
             self.add_property(
                 descr='Home Directory Path',
                 name='homedir_path',
                 get='homedir_path',
                 type=ValueType.STRING
-                )
+            )
             self.add_property(
                 descr='Home Directory Name',
                 name='homedir_name',
                 get='homedir_name',
                 type=ValueType.STRING
-                )
+            )
             self.add_property(
                 descr='Auxiliary Parameters',
                 name='auxiliary',
                 get='auxiliary',
                 type=ValueType.STRING
-                )
+            )
             self.add_property(
                 descr='Connections limit',
                 name='connections_limit',
                 get='connections_limit',
                 type=ValueType.NUMBER
-                )
+            )
             self.add_property(
                 descr='Guest user',
                 name='guest_user',
                 get='guest_user',
                 type=ValueType.STRING
-                )
+            )
             self.add_property(
                 descr='Enable guest user',
                 name='guest_enable',
                 get='guest_enable',
                 type=ValueType.BOOLEAN
-                )
+            )
             self.add_property(
                 descr='Bind Addresses',
                 name='bind_addresses',
                 get='bind_addresses',
                 list=True,
                 type=ValueType.SET
-                )
+            )
             self.add_property(
                 descr='Database Path',
                 name='dbpath',
                 get='dbpath',
                 type=ValueType.STRING
-                )
+            )
         elif name == "cifs":
             self.add_property(
                 descr='NetBIOS Name',

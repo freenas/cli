@@ -275,6 +275,160 @@ class ServiceConfigNamespace(ConfigNamespace):
                 get='dbpath',
                 type=ValueType.STRING
                 )
+        elif name == "cifs":
+            self.add_property(
+                descr='NetBIOS Name',
+                name='netbiosname',
+                get='netbiosname'
+            )
+
+            self.add_property(
+                descr='Workgroup',
+                name='workgroup',
+                get='workgroup'
+            )
+
+            self.add_property(
+                descr='description',
+                name='description',
+                get='description',
+            )
+
+            self.add_property(
+                descr='DOS Character Set',
+                name='dos_charset',
+                get='dos_charset'
+            )
+
+            self.add_property(
+                descr='UNIX Character Set',
+                name='unix_charset',
+                get='unix_charset'
+            )
+
+            self.add_property(
+                descr='Log level',
+                name='log_level',
+                get='log_level',
+            )
+
+            self.add_property(
+                descr='Log in syslog',
+                name='syslog',
+                get='syslog',
+                type=ValueType.BOOLEAN
+            )
+
+            self.add_property(
+                descr='Local master',
+                name='local_master',
+                get='local_master',
+                type=ValueType.BOOLEAN
+            )
+
+            self.add_property(
+                descr='Domain logons',
+                name='domain_logons',
+                get='domain_logons',
+                type=ValueType.BOOLEAN
+            )
+
+            self.add_property(
+                descr='Time server',
+                name='time_server',
+                get='time_server',
+                type=ValueType.BOOLEAN
+            )
+
+            self.add_property(
+                descr='Guest User',
+                name='guest_user',
+                get='guest_user'
+            )
+
+            self.add_property(
+                descr='File mask',
+                name='filemask',
+                get='filemask',
+            )
+
+            self.add_property(
+                descr='Directory mask',
+                name='dirmask',
+                get='dirmask',
+            )
+
+            self.add_property(
+                descr='Empty password logons',
+                name='empty_password',
+                get='empty_password'
+            )
+
+            self.add_property(
+                descr='UNIX Extensions',
+                name='unixext',
+                get='unixext',
+                type=ValueType.BOOLEAN
+            )
+
+            self.add_property(
+                descr='Zero Configuration',
+                name='zeroconf',
+                get='zeroconf',
+                type=ValueType.BOOLEAN
+            )
+
+            self.add_property(
+                descr='Host lookup',
+                name='hostlookup',
+                get='hostlookup',
+                type=ValueType.BOOLEAN
+            )
+
+            self.add_property(
+                descr='Minimum Protocol',
+                name='min_protocol',
+                get='min_protocol',
+            )
+
+            self.add_property(
+                descr='Maximum Protocol',
+                name='max_protocol',
+                get='max_protocol',
+            )
+
+            self.add_property(
+                descr='Always Execute',
+                name='execute_always',
+                get='execute_always',
+                type=ValueType.BOOLEAN
+            )
+
+            self.add_property(
+                descr='Obey PAM Restrictions',
+                name='obey_pam_restrictions',
+                get='obey_pam_restrictions',
+                type=ValueType.BOOLEAN
+            )
+
+            self.add_property(
+                descr='Bind addresses',
+                name='bind_addresses',
+                get='bind_addresses',
+                list=True
+            )
+
+            self.add_property(
+                descr='Auxiliary',
+                name='auxiliary',
+                get='auxiliary'
+            )
+
+            self.add_property(
+                descr='SID',
+                name='sid',
+                get='sid'
+            )
 
 
 def _init(context):

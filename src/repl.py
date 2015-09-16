@@ -326,13 +326,15 @@ class Context(object):
     def attach_namespace(self, path, ns):
         splitpath = path.split('/')
         ptr = self.root_ns
+        ptr_namespaces = ptr.namespaces()
 
         for n in splitpath[1:-1]:
-            if n not in ptr.namespaces().keys():
+
+            if n not in ptr_namespaces().keys():
                 self.logger.warn(_("Cannot attach to namespace %s"), path)
                 return
 
-            ptr = ptr.namespaces()[n]
+            ptr = ptr_namespaces()[n]
 
         ptr.register_namespace(ns)
 
@@ -461,6 +463,17 @@ class MainLoop(object):
         self.namespaces = []
         self.connection = None
         self.skip_prompt_print = False
+        self.cached_values = {
+            'rel_cwd': None,
+            'rel_tokens': None,
+            'rel_ptr': None,
+            'rel_ptr_namespaces': None,
+            'obj': None,
+            'obj_namespaces': None,
+            'scope_cwd': None,
+            'scope_namespaces': None,
+            'scope_commands': None,
+        }
 
     def __get_prompt(self):
         variables = {
@@ -520,11 +533,24 @@ class MainLoop(object):
         if token in self.builtin_commands.keys():
             return self.builtin_commands[token]
 
-        for ns in self.cwd.namespaces():
+        cwd_namespaces = self.cached_values['scope_namespaces']
+        cwd_commands = self.cached_values['scope_commands']
+        if (
+            self.cached_values['scope_cwd'] != self.cwd or
+            self.cached_values['scope_namespaces'] is not None
+           ):
+            cwd_namespaces = self.cwd.namespaces()
+            cwd_commands = self.cwd.commands().items()
+            self.cached_values.update({
+                'scope_cwd': self.cwd,
+                'scope_namespaces': cwd_namespaces,
+                'scope_commands': cwd_commands,
+                })
+        for ns in cwd_namespaces:
             if token == ns.get_name():
                 return ns
 
-        for name, cmd in self.cwd.commands().items():
+        for name, cmd in cwd_commands.items():
             if token == name:
                 return cmd
 
@@ -740,12 +766,30 @@ class MainLoop(object):
         while len(tokens) > 0:
             token = tokens.pop(0)
 
-            if token == '..':
-                if len(self.path) > 1:
-                    ptr = self.path[-2]
+            if token == '..' and len(self.path) > 1:
+                ptr = self.path[-2]
 
             if issubclass(type(ptr), Namespace):
-                nss = ptr.namespaces()
+                if (
+                    self.cached_values['rel_ptr'] == ptr and
+                    self.cached_values['rel_ptr_namespaces'] is not None
+                   ):
+                    nss = self.cached_values['rel_ptr_namespaces']
+                else:
+                    # Try to somehow make the below work as it saves us one .namespace()
+                    # lookup. BUt for now it does work and results in stale autocorrect
+                    # options hence commenting
+                    # if (
+                    #     ptr == self.cached_values['obj'] and
+                    #     self.cached_values['obj_namespaces'] is not None
+                    #    ):
+                    #     nss = self.cached_values['obj_namespaces']
+                    # else:
+                    nss = ptr.namespaces()
+                    self.cached_values.update({
+                        'rel_ptr': ptr,
+                        'rel_ptr_namespaces': nss
+                        })
                 for ns in nss:
                     if ns.get_name() == token:
                         ptr = ns
@@ -769,14 +813,32 @@ class MainLoop(object):
             if tokens[0][0] == '/':
                 cwd = self.root_path[0]
 
-        obj = self.get_relative_object(cwd, tokens)
+        obj = self.cached_values['obj']
+        if (
+            cwd != self.cached_values['rel_cwd'] or
+            tokens != self.cached_values['rel_tokens'] or
+            self.cached_values['obj'] is None
+           ):
+            obj = self.get_relative_object(cwd, tokens[:])
+            self.cached_values.update({
+                'rel_cwd': cwd,
+                'rel_tokens': tokens,
+                })
 
         if issubclass(type(obj), Namespace):
-            choices = [x.get_name() for x in obj.namespaces()] + \
-                obj.commands().keys() + \
-                self.builtin_commands.keys()
-            choices = [i + ' ' for i in choices]
-            choices += ['.. ', '/ ', '- ']
+            if self.cached_values['obj'] != obj:
+                obj_namespaces = obj.namespaces()
+                new_choices = [x.get_name() for x in obj_namespaces] + \
+                    obj.commands().keys() + \
+                    self.builtin_commands.keys()
+                new_choices = [i + ' ' for i in new_choices]
+                new_choices += ['.. ', '/ ', '- ']
+                self.cached_values.update({
+                    'obj': obj,
+                    'choices': new_choices,
+                    'obj_namespaces': obj_namespaces,
+                })
+            choices = self.cached_values['choices']
 
         elif issubclass(type(obj), Command):
             choices = obj.complete(self.context, tokens)

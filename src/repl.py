@@ -550,7 +550,7 @@ class MainLoop(object):
             if token == ns.get_name():
                 return ns
 
-        for name, cmd in cwd_commands.items():
+        for name, cmd in cwd_commands:
             if token == name:
                 return cmd
 

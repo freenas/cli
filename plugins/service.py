@@ -415,7 +415,8 @@ class ServiceConfigNamespace(ConfigNamespace):
                 descr='Bind addresses',
                 name='bind_addresses',
                 get='bind_addresses',
-                list=True
+                list=True,
+                type=ValueType.SET
             )
 
             self.add_property(
@@ -424,11 +425,6 @@ class ServiceConfigNamespace(ConfigNamespace):
                 get='auxiliary'
             )
 
-            self.add_property(
-                descr='SID',
-                name='sid',
-                get='sid'
-            )
         elif name == "dyndns":
             self.add_property(
                 descr='DynDNS Provider',
@@ -439,6 +435,12 @@ class ServiceConfigNamespace(ConfigNamespace):
                 descr='IP Server',
                 name='ipserver',
                 get='ipserver'
+            )
+            self.add_property(
+                descr='Domains',
+                name='domains',
+                get='domains',
+                type=ValueType.SET
             )
             self.add_property(
                 descr='Username',

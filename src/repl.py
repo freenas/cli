@@ -50,7 +50,7 @@ from namespace import Namespace, RootNamespace, Command, FilteringCommand, Comma
 from parser import parse, Symbol, CommandExpansion, Literal, BinaryExpr, PipeExpr
 from output import (
     ValueType, Object, Table, ProgressBar, output_lock, output_msg, read_value, format_value,
-    output_list, stdout_redirect, output_object, output_table
+    output_object, output_table
 )
 from dispatcher.client import Client, ClientError
 from dispatcher.rpc import RpcException
@@ -429,7 +429,14 @@ class Context(object):
 
 
 class MainLoop(object):
-    builtin_commands = {
+    pipe_commands = {
+        'search': SearchPipeCommand(),
+        'exclude': ExcludePipeCommand(),
+        'sort': SortPipeCommand(),
+        'limit': LimitPipeCommand(),
+        'select': SelectPipeCommand(),
+    }
+    base_builtin_commands = {
         'exit': ExitCommand(),
         'setenv': SetenvCommand(),
         'printenv': PrintenvCommand(),
@@ -447,12 +454,9 @@ class MainLoop(object):
         'clear': ClearCommand(),
         'history': HistoryCommand(),
         'echo': EchoCommand(),
-        'search': SearchPipeCommand(),
-        'exclude': ExcludePipeCommand(),
-        'sort': SortPipeCommand(),
-        'limit': LimitPipeCommand(),
-        'select': SelectPipeCommand()
     }
+    builtin_commands = base_builtin_commands.copy()
+    builtin_commands.update(pipe_commands)
 
     def __init__(self, context):
         self.context = context
@@ -470,6 +474,7 @@ class MainLoop(object):
             'rel_ptr_namespaces': None,
             'obj': None,
             'obj_namespaces': None,
+            'choices': None,
             'scope_cwd': None,
             'scope_namespaces': None,
             'scope_commands': None,
@@ -805,8 +810,16 @@ class MainLoop(object):
         return ptr
 
     def complete(self, text, state):
-        tokens = shlex.split(readline.get_line_buffer(), posix=False)
+        readline_buffer = readline.get_line_buffer()
+        tokens = shlex.split(readline_buffer.split('|')[-1].strip(), posix=False)
 
+        if "|" in readline_buffer:
+            choices = [x + ' ' for x in self.pipe_commands.keys()]
+            options = [i for i in choices if i.startswith(text)]
+            if state < len(options):
+                return options[state]
+            else:
+                return None
         cwd = self.cwd
 
         if tokens:
@@ -828,27 +841,34 @@ class MainLoop(object):
         if issubclass(type(obj), Namespace):
             if self.cached_values['obj'] != obj:
                 obj_namespaces = obj.namespaces()
-                new_choices = [x.get_name() for x in obj_namespaces] + \
-                    obj.commands().keys() + \
-                    self.builtin_commands.keys()
-                new_choices = [i + ' ' for i in new_choices]
-                new_choices += ['.. ', '/ ', '- ']
+                new_choices = [x.get_name() for x in obj_namespaces] + obj.commands().keys()
                 self.cached_values.update({
                     'obj': obj,
                     'choices': new_choices,
                     'obj_namespaces': obj_namespaces,
                 })
-            choices = self.cached_values['choices']
+            choices = self.cached_values['choices'][:]
+            if (
+                len(tokens) == 0 or
+                (len(tokens) <= 1 and text not in ['', None])
+               ):
+                choices += self.base_builtin_commands.keys() + ['..', '/', '-']
+            elif 'help' not in choices:
+                choices += ['help']
+            choices = [i + ' ' for i in choices]
 
         elif issubclass(type(obj), Command):
-            if self.cached_values['obj'] != obj:
+            if (
+                self.cached_values['obj'] != obj or
+                self.cached_values['choices'] is None
+               ):
                 new_choices = obj.complete(self.context, tokens)
                 self.cached_values.update({
                     'obj': obj,
                     'choices': new_choices,
                     'obj_namespaces': None,
                 })
-            choices = self.cached_values['choices']
+            choices = self.cached_values['choices'][:]
         else:
             choices = []
 

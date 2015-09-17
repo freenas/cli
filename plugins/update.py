@@ -101,8 +101,8 @@ class UpdateNowCommand(Command):
         else:
             output_msg(_("No updates currently available for download and installation"))
             return
-        original_tasks_blocking = context.variables.variables['tasks-blocking'].value
-        context.variables.set('tasks-blocking', True)
+        original_tasks_blocking = context.variables.variables['tasks_blocking'].value
+        context.variables.set('tasks_blocking', True)
         output_msg(_("Downloading update packages now..."))
         download_task_id = context.submit_task('update.download')
         download_details = context.call_sync('task.status', download_task_id)
@@ -113,7 +113,7 @@ class UpdateNowCommand(Command):
             raise CommandException(_("Updates failed to download"))
         output_msg(_("System going for an update now..."))
         apply_task_id = context.submit_task('update.update')
-        context.variables.set('tasks-blocking', original_tasks_blocking)
+        context.variables.set('tasks_blocking', original_tasks_blocking)
         apply_details = context.call_sync('task.status', apply_task_id)
         while apply_details['state'] == 'EXECUTING':
             time.sleep(1)

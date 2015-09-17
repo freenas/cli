@@ -397,7 +397,7 @@ class Context(object):
     def submit_task(self, name, *args, **kwargs):
         callback = kwargs.pop('callback', None)
 
-        if not self.variables.get('tasks-blocking'):
+        if not self.variables.get('tasks_blocking'):
             tid = self.connection.call_sync('task.submit', name, args)
             if callback:
                 self.task_callbacks[tid] = callback

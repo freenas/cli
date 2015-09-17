@@ -111,7 +111,7 @@ class ProgressBar(object):
 
     def update(self, percentage=None, message=None):
         if percentage:
-            self.percentage = percentage / 100
+            self.percentage = float(percentage / 100.0)
 
         if message:
             self.message = message

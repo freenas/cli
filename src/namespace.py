@@ -419,7 +419,7 @@ class ConfigNamespace(ItemNamespace):
         else:
             # This is in case the task failed!
             self.entity = copy.deepcopy(self.orig_entity)
-        self.modified = False 
+        self.modified = False
 
 
 class EntityNamespace(Namespace):
@@ -571,9 +571,7 @@ class EntityNamespace(Namespace):
             self.parent.save(ns, new=True)
 
         def complete(self, context, tokens):
-            settable_properties = filter(
-                lambda x: x.set is not None, self.parent.property_mappings)
-            return [x.name + '=' for x in settable_properties]
+            return [x.name + '=' for x in self.parent.property_mappings if x.set]
 
     @description("Removes item")
     class DeleteEntityCommand(Command):

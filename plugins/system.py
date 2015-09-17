@@ -64,12 +64,15 @@ class VersionCommand(Command):
     """
     def run(self, context, args, kwargs, opargs):
         return Object(
-            Object.Item('FreeNAS version', 'freenas_version', context.call_sync('system.info.version')),
-            Object.Item('System version', 'system_version', ' '.join(context.call_sync('system.info.uname_full')))
+            Object.Item(
+                'FreeNAS version', 'freenas_version', context.call_sync('system.info.version')
+                ),
+            Object.Item(
+                'System version',
+                'system_version',
+                ' '.join(context.call_sync('system.info.uname_full'))
+                )
         )
-
-    def complete(self, context, tokens):
-        print tokens
 
 
 @description("Logs in to the server")

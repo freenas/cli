@@ -205,16 +205,16 @@ class BootPoolNamespace(Namespace):
     def commands(self):
         return {
             '?': IndexCommand(self),
-            'show-disks': BootPoolShowDisksCommand(),
-            'attach-disk': BootPoolAttachDiskCommand(),
-            'detach-disk': BootPoolDetachDiskCommand(),
+            'show_disks': BootPoolShowDisksCommand(),
+            'attach_disk': BootPoolAttachDiskCommand(),
+            'detach_disk': BootPoolDetachDiskCommand(),
         }
 
 
 @description("Shows the disks in the boot pool")
 class BootPoolShowDisksCommand(Command):
     """
-    Usage: show-disks
+    Usage: show_disks
 
     Shows the disks in the boot pool
     """
@@ -231,15 +231,15 @@ class BootPoolShowDisksCommand(Command):
 @description("Attaches a disk to the boot pool")
 class BootPoolAttachDiskCommand(Command):
     """
-    Usage: attach-disk <disk>
+    Usage: attach_disk <disk>
 
-    Example: attach-disk ada1
+    Example: attach_disk ada1
 
     Attaches a disk to the boot pool.
     """
     def run(self, context, args, kwargs, opargs):
         if not args:
-            output_msg("attach-disk requires more arguments.\n{0}".format(inspect.getdoc(self)))
+            output_msg("attach_disk requires more arguments.\n{0}".format(inspect.getdoc(self)))
             return
         disk = args.pop(0)
         # The all_disks below is a temporary fix, use this after "select" is working
@@ -262,9 +262,9 @@ class BootPoolAttachDiskCommand(Command):
 @description("Detaches a disk from the boot pool")
 class BootPoolDetachDiskCommand(Command):
     """
-    Usage: detach-disk <disk>
+    Usage: detach_disk <disk>
 
-    Example: detach-disk ada1
+    Example: detach_disk ada1
 
     Detaches a disk from the boot pool.
     """

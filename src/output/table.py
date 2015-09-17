@@ -69,7 +69,7 @@ class TableOutputFormatter(object):
             return natural.size.binarysize(value)
 
         if vt == ValueType.TIME:
-            fmt = config.instance.variables.get('datetime-format')
+            fmt = config.instance.variables.get('datetime_format')
             if fmt == 'natural':
                 return natural.date.duration(value)
 

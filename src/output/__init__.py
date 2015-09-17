@@ -202,43 +202,43 @@ def read_value(value, tv=ValueType.STRING):
 
 
 def format_value(value, vt=ValueType.STRING, fmt=None):
-    fmt = fmt or config.instance.variables.get('output-format')
+    fmt = fmt or config.instance.variables.get('output_format')
     return get_formatter(fmt).format_value(value, vt)
 
 
 def output_value(value, fmt=None):
-    fmt = fmt or config.instance.variables.get('output-format')
+    fmt = fmt or config.instance.variables.get('output_format')
     return get_formatter(fmt).output_value(value)
 
 
 def output_list(data, label=_("Items"), fmt=None):
-    fmt = fmt or config.instance.variables.get('output-format')
+    fmt = fmt or config.instance.variables.get('output_format')
     return get_formatter(fmt).output_list(data, label)
 
 
 def output_dict(data, key_label=_("Key"), value_label=_("Value"), fmt=None):
-    fmt = fmt or config.instance.variables.get('output-format')
+    fmt = fmt or config.instance.variables.get('output_format')
     return get_formatter(fmt).output_dict(data, key_label, value_label)
 
 
 def output_table(table, fmt=None):
-    fmt = fmt or config.instance.variables.get('output-format')
+    fmt = fmt or config.instance.variables.get('output_format')
     return get_formatter(fmt).output_table(table)
 
 
 def output_table_list(tables, fmt=None):
-    fmt = fmt or config.instance.variables.get('output-format')
+    fmt = fmt or config.instance.variables.get('output_format')
     return get_formatter(fmt).output_table_list(tables)
 
 
 def output_object(item, **kwargs):
     fmt = kwargs.pop('fmt', None)
-    fmt = fmt or config.instance.variables.get('output-format')
+    fmt = fmt or config.instance.variables.get('output_format')
     return get_formatter(fmt).output_object(item)
 
 
 def output_tree(tree, children, label, fmt=None):
-    fmt = fmt or config.instance.variables.get('output-format')
+    fmt = fmt or config.instance.variables.get('output_format')
     return get_formatter(fmt).output_tree(tree, children, label)
 
 
@@ -248,12 +248,12 @@ def get_formatter(name):
 
 
 def output_msg(message, fmt=None, **kwargs):
-    fmt = fmt or config.instance.variables.get('output-format')
+    fmt = fmt or config.instance.variables.get('output_format')
     return get_formatter(fmt).output_msg(message, **kwargs)
 
 
 def output_is_ascii():
-    return config.instance.variables.get('output-format') == 'ascii'
+    return config.instance.variables.get('output_format') == 'ascii'
 
 
 # The following solution to implement `LESS(1)` style output is a combination

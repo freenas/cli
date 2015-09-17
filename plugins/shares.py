@@ -148,35 +148,35 @@ class AFPSharesNamespace(BaseSharesNamespace):
 
         self.add_property(
             descr='Allowed hosts/networks',
-            name='hosts-allow',
+            name='hosts_allow',
             get='properties.hosts-allow',
             type=ValueType.SET
         )
 
         self.add_property(
             descr='Denied hosts/networks',
-            name='hosts-deny',
+            name='hosts_deny',
             get='properties.hosts-deny',
             type=ValueType.SET
         )
 
         self.add_property(
             descr='Allowed users/groups',
-            name='users-allow',
+            name='users_allow',
             get='properties.users-allow',
             type=ValueType.SET
         )
 
         self.add_property(
             descr='Denied users/groups',
-            name='users-deny',
+            name='users_deny',
             get='/properties/users-deny',
             type=ValueType.SET
         )
 
         self.add_property(
             descr='Read only',
-            name='read-only',
+            name='read_only',
             get='properties.read-only',
             list=True,
             type=ValueType.BOOLEAN
@@ -184,7 +184,7 @@ class AFPSharesNamespace(BaseSharesNamespace):
 
         self.add_property(
             descr='Time machine',
-            name='time-machine',
+            name='time_machine',
             get='properties.time-machine',
             list=True,
             type=ValueType.BOOLEAN

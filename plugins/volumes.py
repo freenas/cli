@@ -112,23 +112,23 @@ class DeleteVdevCommand(Command):
 @description("Creates new volume in simple way")
 class VolumeCreateCommand(Command):
     """
-    Usage: create-auto <volume> <disk> [...]
-           create-auto <volume> alldisks
+    Usage: create_auto <volume> <disk> [...]
+           create_auto <volume> alldisks
 
-    Examples: create-auto tank ada1 ada2
-              create-auto tank alldisks
+    Examples: create_auto tank ada1 ada2
+              create_auto tank alldisks
 
     Creates a new volume in a simple way.
     """
     def run(self, context, args, kwargs, opargs):
         if not args:
-            output_msg("create-auto requires more arguments.\n" +
+            output_msg("create_auto requires more arguments.\n" +
                        inspect.getdoc(self))
             return
         name = args.pop(0)
         disks = args
         if len(disks) == 0:
-            output_msg("create-auto requires more arguments.\n" +
+            output_msg("create_auto requires more arguments.\n" +
                        inspect.getdoc(self))
             return
 
@@ -171,7 +171,7 @@ class FindVolumesCommand(Command):
 @description("Finds connected media that can be used to import data from")
 class FindMediaCommand(Command):
     """
-    Usage: find-media
+    Usage: find_media
     """
     def run(self, context, args, kwargs, opargs):
         media = context.call_sync('volumes.find_media')
@@ -230,7 +230,7 @@ class DetachVolumeCommand(Command):
 @description("Shows volume topology")
 class ShowTopologyCommand(Command):
     """
-    Usage: show-topology
+    Usage: show_topology
 
     Shows the volume topology.
     """
@@ -252,7 +252,7 @@ class ShowTopologyCommand(Command):
 @description("Shows volume disks status")
 class ShowDisksCommand(Command):
     """
-    Usage: show-disks
+    Usage: show_disks
 
     Shows disk status for the volume.
     """
@@ -615,19 +615,19 @@ class VolumesNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
 
         self.primary_key = self.get_mapping('name')
         self.extra_commands = {
-            'create-auto': VolumeCreateCommand(),
+            'create_auto': VolumeCreateCommand(),
             'find': FindVolumesCommand(),
-            'find-media': FindMediaCommand(),
+            'find_media': FindMediaCommand(),
             'import': ImportVolumeCommand(),
             'detach': DetachVolumeCommand(),
         }
 
         self.entity_commands = lambda this: {
-            'show-topology': ShowTopologyCommand(this),
-            'show-disks': ShowDisksCommand(this),
+            'show_topology': ShowTopologyCommand(this),
+            'show_disks': ShowDisksCommand(this),
             'scrub': ScrubCommand(this),
-            'add-vdev': AddVdevCommand(this),
-            'delete-vdev': DeleteVdevCommand(this)
+            'add_vdev': AddVdevCommand(this),
+            'delete_vdev': DeleteVdevCommand(this)
         }
 
         self.entity_namespaces = lambda this: [

@@ -125,7 +125,7 @@ class InterfacesNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
 
         self.add_property(
             descr='IPv6 autoconfiguration',
-            name='ipv6-autoconf',
+            name='ipv6_autoconf',
             get='rtadv',
             type=ValueType.BOOLEAN,
             list=False
@@ -133,7 +133,7 @@ class InterfacesNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
 
         self.add_property(
             descr='Disable IPv6',
-            name='ipv6-disable',
+            name='ipv6_disable',
             get='rtadv',
             type=ValueType.BOOLEAN,
             list=False
@@ -141,7 +141,7 @@ class InterfacesNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
 
         self.add_property(
             descr='Link address',
-            name='link-address',
+            name='link_address',
             get='status.link-address',
             list=True
         )
@@ -157,7 +157,7 @@ class InterfacesNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
 
         self.add_property(
             descr='Link state',
-            name='link-state',
+            name='link_state',
             get=self.get_link_state,
             set=None,
             list=True
@@ -173,7 +173,7 @@ class InterfacesNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
 
         self.add_property(
             descr='Parent interface',
-            name='vlan-parent',
+            name='vlan_parent',
             get='vlan.parent',
             list=False,
             type=ValueType.STRING,

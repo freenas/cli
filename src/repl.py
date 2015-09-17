@@ -129,15 +129,15 @@ class VariableStore(object):
     def __init__(self):
         self.save_to_file = DEFAULT_CLI_CONFIGFILE
         self.variables = {
-            'output-format': self.Variable('ascii', ValueType.STRING,
+            'output_format': self.Variable('ascii', ValueType.STRING,
                                            ['ascii', 'json', 'table']),
-            'datetime-format': self.Variable('natural', ValueType.STRING),
+            'datetime_format': self.Variable('natural', ValueType.STRING),
             'language': self.Variable(os.getenv('LANG', 'C'),
                                       ValueType.STRING),
             'prompt': self.Variable('{host}:{path}>', ValueType.STRING),
             'timeout': self.Variable(10, ValueType.NUMBER),
-            'tasks-blocking': self.Variable(False, ValueType.BOOLEAN),
-            'show-events': self.Variable(True, ValueType.BOOLEAN),
+            'tasks_blocking': self.Variable(False, ValueType.BOOLEAN),
+            'show_events': self.Variable(True, ValueType.BOOLEAN),
             'debug': self.Variable(False, ValueType.BOOLEAN)
         }
 

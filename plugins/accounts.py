@@ -1,4 +1,4 @@
-#+
+# +
 # Copyright 2014 iXsystems, Inc.
 # All rights reserved
 #
@@ -26,15 +26,17 @@
 #####################################################################
 
 
-import os
-import crypt
 import icu
-from namespace import Namespace, Command, EntityNamespace, IndexCommand, TaskBasedSaveMixin, RpcBasedLoadMixin, description, CommandException
+from namespace import (
+    Namespace, EntityNamespace, IndexCommand, TaskBasedSaveMixin,
+    RpcBasedLoadMixin, description, CommandException
+    )
 from output import ValueType
 
 
 t = icu.Transliterator.createInstance("Any-Accents", icu.UTransDirection.FORWARD)
 _ = t.transliterate
+
 
 @description(_("System users"))
 class UsersNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
@@ -146,7 +148,9 @@ class UsersNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
         self.primary_key = self.get_mapping('username')
 
     def display_group(self, entity):
-        group = self.context.call_sync('groups.query', [('id', '=', entity['group'])], {'single': True})
+        group = self.context.call_sync(
+            'groups.query', [('id', '=', entity['group'])], {'single': True}
+            )
         return group['name'] if group else 'GID:{0}'.format(entity['group'])
 
     def set_group(self, entity, value):
@@ -155,7 +159,6 @@ class UsersNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
             entity['group'] = group['id']
         else:
             raise CommandException(_('Group {0} does not exist.'.format(value)))
-        
 
 
 @description(_("System groups"))

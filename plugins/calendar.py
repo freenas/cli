@@ -27,7 +27,7 @@
 
 
 import os
-from namespace import Namespace, EntityNamespace, ConfigNamespace, Command, RpcBasedLoadMixin, description
+from namespace import Namespace, EntityNamespace, ConfigNamespace, Command, RpcBasedLoadMixin, TaskBasedSaveMixin, description
 from output import ValueType, output_msg, output_table, read_value
 
 
@@ -92,15 +92,18 @@ class ScheduleNamespace(ConfigNamespace):
         self.entity = self.parent.entity['schedule']
 
     def save(self):
-        pass
+        self.parent.save()
 
 
 @description("Provides access to task scheduled on a regular basis")
-class CalendarTasksNamespace(RpcBasedLoadMixin, EntityNamespace):
+class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
     def __init__(self, name, context):
         super(CalendarTasksNamespace, self).__init__(name, context)
 
         self.query_call = 'calendar_tasks.query'
+        self.create_task = 'calendar_tasks.create'
+        self.update_task = 'calendar_tasks.update'
+        self.delete_task = 'calendar_tasks.delete'
 
         self.add_property(
             descr='Task id',
@@ -121,7 +124,8 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, EntityNamespace):
             name='args',
             get=lambda row: ', '.join(row['args']),
             set=None,
-            list=True,)
+            list=True
+        )
 
         self.add_property(
             descr='Coalesce',

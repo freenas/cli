@@ -33,7 +33,6 @@ from namespace import (
     )
 from output import ValueType
 
-
 t = icu.Transliterator.createInstance("Any-Accents", icu.UTransDirection.FORWARD)
 _ = t.transliterate
 

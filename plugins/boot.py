@@ -29,8 +29,8 @@
 import re
 import icu
 from namespace import (
-    EntityNamespace, Command, RpcBasedLoadMixin, TaskBasedSaveMixin,
-    Namespace, IndexCommand, description, CommandException
+    Namespace, EntityNamespace, Command, RpcBasedLoadMixin,
+    IndexCommand, description, CommandException
 )
 from utils import iterate_vdevs, post_save
 from output import ValueType, Table, output_msg
@@ -41,12 +41,9 @@ _ = t.transliterate
 
 
 @description("Boot Environment Management")
-class BootEnvironmentNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin,
-                               EntityNamespace):
+class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
     def __init__(self, name, context):
         super(BootEnvironmentNamespace, self).__init__(name, context)
-        self.create_task = 'boot.environments.create'
-        self.delete_task = 'boot.environments.delete'
         self.query_call = 'boot.environments.query'
         self.primary_key_name = 'name'
         self.allow_edit = False
@@ -145,9 +142,11 @@ class BootEnvironmentNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin,
 
     def save(self, this, new=False):
         if new:
-            self.context.submit_task('boot.environments.create',
-                                     this.entity['id'])
-            return
+            self.context.submit_task(
+                'boot.environments.create',
+                this.entity['id'],
+                callback=lambda s: post_save(this, s),
+                )
         else:
             return
 

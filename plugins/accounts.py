@@ -48,6 +48,7 @@ class UsersNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
         self.create_task = 'users.create'
         self.update_task = 'users.update'
         self.delete_task = 'users.delete'
+        self.save_key_name = 'id'
 
         self.localdoc['CreateEntityCommand'] = ("""\
             Usage: create username=<name> group=<group> password=<passwd>...
@@ -140,7 +141,8 @@ class UsersNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
         self.add_property(
             descr='SSH public key',
             name='pubkey',
-            get='pubkey',
+            get='sshpubkey',
+            type=ValueType.STRING,
             list=False
         )
 

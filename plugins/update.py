@@ -70,6 +70,29 @@ class CurrentTrainCommand(Command):
         output_msg(context.call_sync('update.get_current_train'))
 
 
+@description("Lists the Available Update Trains")
+class ShowTrainsCommand(Command):
+    """
+    Usage: show_trains
+
+    Displays the available update trains from the update server.
+    """
+    def run(self, context, args, kwargs, opargs):
+        trains = context.call_sync('update.trains')
+        if trains is None:
+            output_msg(_(
+                "Could not fetch Available Trains from the Update Server. "
+                "Please Check internet connectivity and try again."
+                ))
+        else:
+            return Table(trains, [
+                Table.Column('Name', 'name'),
+                Table.Column('Description', 'description'),
+                Table.Column('Sequence', 'sequence'),
+                Table.Column('Current', 'current', vt=ValueType.BOOLEAN)
+                ])
+
+
 @description("Checks for New Updates")
 class CheckNowCommand(Command):
     """
@@ -176,6 +199,7 @@ class UpdateNamespace(ConfigNamespace):
             'current_train': CurrentTrainCommand(),
             'check_now': CheckNowCommand(),
             'update_now': UpdateNowCommand(),
+            'show_trains': ShowTrainsCommand(),
         }
 
     def load(self):
@@ -188,8 +212,7 @@ class UpdateNamespace(ConfigNamespace):
             # This is in case the task failed!
             self.entity = copy.deepcopy(self.orig_entity)
             self.update_info = copy.deepcopy(self.orig_update_info)
-        self.modified = False  
-            
+        self.modified = False
 
     def save(self):
         return self.context.submit_task(

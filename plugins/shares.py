@@ -61,7 +61,8 @@ class SharesNamespace(Namespace):
     def namespaces(self):
         return [
             NFSSharesNamespace('nfs', self.context),
-            AFPSharesNamespace('afp', self.context)
+            AFPSharesNamespace('afp', self.context),
+            CIFSSharesNamespace('cifs', self.context)
         ]
 
 
@@ -187,6 +188,66 @@ class AFPSharesNamespace(BaseSharesNamespace):
             name='time_machine',
             get='properties.time-machine',
             list=True,
+            type=ValueType.BOOLEAN
+        )
+
+
+@description("CIFS shares")
+class CIFSSharesNamespace(BaseSharesNamespace):
+    def __init__(self, name, context):
+        super(CIFSSharesNamespace, self).__init__(name, 'cifs', context)
+
+        self.add_property(
+            descr='Allowed hosts',
+            name='hosts_allow',
+            get='properties.hosts_allow',
+            type=ValueType.SET
+        )
+
+        self.add_property(
+            descr='Denied hosts',
+            name='hosts_deny',
+            get='properties.hosts_deny',
+            type=ValueType.SET
+        )
+
+        self.add_property(
+            descr='Read only',
+            name='read_only',
+            get='properties.read_only',
+            list=True,
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
+            descr='Guest OK',
+            name='guest_ok',
+            get='properties.guest_ok',
+            list=True,
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
+            descr='Guest only',
+            name='guest_only',
+            get='properties.guest_only',
+            list=False,
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
+            descr='Browseable',
+            name='browseable',
+            get='properties.browseable',
+            list=False,
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
+            descr='Show hidden files',
+            name='show_hidden_files',
+            get='properties.show_hidden_files',
+            list=False,
             type=ValueType.BOOLEAN
         )
 

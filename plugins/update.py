@@ -100,8 +100,12 @@ class CheckNowCommand(Command):
 
     Checks for updates.
     """
+    def __init__(self, parent):
+        self.parent = parent
+
     def run(self, context, args, kwargs, opargs):
         update_ops = update_check_utility(context)
+        self.parent.load()
         if update_ops:
             return update_ops
         else:
@@ -195,9 +199,11 @@ class UpdateNamespace(ConfigNamespace):
             set=None
         )
 
+        self.subcommands = {
+            'check_now': CheckNowCommand(self)
+        }
         self.extra_commands = {
             'current_train': CurrentTrainCommand(),
-            'check_now': CheckNowCommand(),
             'update_now': UpdateNowCommand(),
             'show_trains': ShowTrainsCommand(),
         }

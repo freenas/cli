@@ -120,23 +120,53 @@ class NFSSharesNamespace(BaseSharesNamespace):
         )
 
         self.add_property(
+            descr='Read only',
+            name='read_only',
+            get='properties.read_only',
+            list=True,
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
             descr='Root user',
             name='root_user',
-            get='properties.maproot-user',
-            list=True
+            get='properties.maproot_user',
+            list=False
         )
 
         self.add_property(
             descr='Root group',
             name='root_group',
-            get='properties.maproot-group',
-            list=True
+            get='properties.maproot_group',
+            list=False
+        )
+
+        self.add_property(
+            descr='All user',
+            name='all_user',
+            get='properties.mapall_user',
+            list=False
+        )
+
+        self.add_property(
+            descr='All group',
+            name='all_group',
+            get='properties.mapall_group',
+            list=False
         )
 
         self.add_property(
             descr='Allowed hosts/networks',
             name='hosts',
             get='properties.hosts',
+            list=True,
+            type=ValueType.SET
+        )
+
+        self.add_property(
+            descr='Security',
+            name='security',
+            get='properties.security',
             list=True,
             type=ValueType.SET
         )

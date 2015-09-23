@@ -29,6 +29,7 @@
 import os
 from namespace import Namespace, EntityNamespace, Command, RpcBasedLoadMixin, description
 from output import ValueType, output_msg, output_table, read_value
+from fnutils import extend
 
 
 @description("Provides information about installed disks")
@@ -62,9 +63,9 @@ class DisksNamespace(RpcBasedLoadMixin, EntityNamespace):
             type=ValueType.BOOLEAN)
 
         self.add_property(
-            descr='Disposition',
-            name='disposition',
-            get=self.get_disposition,
+            descr='Allocation',
+            name='allocation',
+            get=self.get_allocation,
             set=None,
             list=True
         )
@@ -76,14 +77,42 @@ class DisksNamespace(RpcBasedLoadMixin, EntityNamespace):
             'erase': EraseDiskCommand(this)
         }
 
+    def query(self, params, options):
+        ret = super(DisksNamespace, self).query(params, options)
+        disks = map(lambda d: d['path'], ret)
+        allocations = self.context.call_sync('volumes.get_disks_allocation', disks)
+
+        return map(
+            lambda d: extend(d, {'allocation': allocations[d['path']]}),
+            ret
+        )
+
     def get_one(self, name):
-        return self.context.call_sync(
+        ret = self.context.call_sync(
             self.query_call,
             [('path', '=', os.path.join('/dev', name))],
             {'single': True})
 
-    def get_disposition(self, entity):
-        return ''
+        ret['allocation'] = self.context.call_sync(
+            'volumes.get_disks_allocation',
+            [ret['path']]
+        ).get(ret['path'])
+
+        return ret
+
+    def get_allocation(self, entity):
+        disp = entity.get('allocation')
+
+        if disp is None:
+            return 'unallocated'
+
+        if disp['type'] == 'BOOT':
+            return 'boot device'
+
+        if disp['type'] == 'VOLUME':
+            return 'part of volume {0}'.format(disp['name'])
+
+        return 'unknown'
 
 
 @description("Formats given disk")

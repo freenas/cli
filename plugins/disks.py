@@ -81,9 +81,11 @@ class DisksNamespace(RpcBasedLoadMixin, EntityNamespace):
         ret = super(DisksNamespace, self).query(params, options)
         disks = map(lambda d: d['path'], ret)
         allocations = self.context.call_sync('volumes.get_disks_allocation', disks)
-
+        allocations_keys = allocations.keys()
         return map(
-            lambda d: extend(d, {'allocation': allocations[d['path']]}),
+            lambda d: extend(
+                d,
+                {'allocation': allocations[d['path']] if d['path'] in allocations_keys else None}),
             ret
         )
 

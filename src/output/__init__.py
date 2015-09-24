@@ -98,11 +98,11 @@ class ProgressBar(object):
         sys.stdout.write('\n')
 
     def draw(self):
-        progress_width = get_terminal_size()[0] - 5
+        progress_width = get_terminal_size()[1] - 35
         filled_width = int(self.percentage * progress_width)
         sys.stdout.write('\033[2K\033[A\033[2K\r')
         sys.stdout.write('Status: {}\n'.format(self.message))
-        sys.stdout.write('[{}{}] {:.2%}'.format(
+        sys.stdout.write('Total Task Progress: [{}{}] {:.2%}'.format(
             '#' * filled_width,
             '_' * (progress_width - filled_width),
             self.percentage))

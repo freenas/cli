@@ -396,6 +396,7 @@ class Context(object):
 
     def submit_task(self, name, *args, **kwargs):
         callback = kwargs.pop('callback', None)
+        message_formatter = kwargs.pop('message_formatter', None)
 
         if not self.variables.get('tasks_blocking'):
             tid = self.connection.call_sync('task.submit', name, args)
@@ -411,8 +412,10 @@ class Context(object):
                 event, data = self.event_queue.get()
 
                 if event == 'task.progress' and data['id'] == tid:
-                    progress.update(percentage=data['percentage'],
-                                    message=data['message'])
+                    message = data['message']
+                    if callable(message_formatter):
+                        message = message_formatter(message)
+                    progress.update(percentage=data['percentage'], message=message)
 
                 if event == 'task.updated' and data['id'] == tid:
                     progress.update(message=data['state'])

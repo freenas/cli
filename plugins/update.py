@@ -112,6 +112,29 @@ class CheckNowCommand(Command):
             output_msg(_("No new updates available."))
 
 
+def download_message_formatter(msg):
+    """
+    A small function to be passed to submit_task
+    to format progress message for when `tasks_blocking
+    is set to True for Downloading Updates.
+    """
+    msg = msg.split('Rate', 1)[0].split('Size', 1)[0]
+    msg = msg.split('Progress:')
+    progress = None
+    if len(msg) != 1:
+        try:
+            progress = int(msg[1])
+        except:
+            progress = None
+        msg = msg[0]
+    else:
+        msg = msg[0]
+    if progress:
+        filled_width = int(float(progress/100.0) * 10)
+        msg += ' [{0}{1}] :{2}%'.format('#'*filled_width, '_'*(10 - filled_width), progress)
+    return msg
+
+
 @description("Updates the system and reboot it")
 class UpdateNowCommand(Command):
     """
@@ -131,7 +154,8 @@ class UpdateNowCommand(Command):
         original_tasks_blocking = context.variables.variables['tasks_blocking'].value
         context.variables.set('tasks_blocking', True)
         output_msg(_("Downloading update packages now..."))
-        download_task_id = context.submit_task('update.download')
+        download_task_id = context.submit_task(
+            'update.download', message_formatter=download_message_formatter)
         download_details = context.call_sync('task.status', download_task_id)
         while download_details['state'] == 'EXECUTING':
             time.sleep(1)

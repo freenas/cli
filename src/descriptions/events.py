@@ -77,7 +77,7 @@ events = {
     'task.created': (_("Task created"), task_created),
     'task.updated': (_("Task updated"), task_updated),
     'entity-subscriber.volumes.changed': (_("Volume changed"), lambda c, a: entity_subscriber_changed(_("Volume"), a, lambda e: e['name'])),
-    'entity-subscriber.disk.changed': (_("Disk changed"), lambda c, a: entity_subscriber_changed(_("Disk"), a, lambda e: e['description']))
+    'entity-subscriber.disks.changed': (_("Disk changed"), lambda c, a: entity_subscriber_changed(_("Disk"), a, lambda e: e['description']))
 }
 
 

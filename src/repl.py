@@ -86,7 +86,7 @@ EVENT_MASKS = [
     'service.stopped',
     'service.started',
     'entity-subscriber.volumes.changed',
-    'entity-subscriber.disk.changed'
+    'entity-subscriber.disks.changed'
 ]
 
 

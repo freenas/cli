@@ -45,6 +45,30 @@ def task_updated(context, args):
     return _("Task #{0} {1}: {2}".format(args['id'], _(args['state'].lower()), translation))
 
 
+def entity_subscriber_changed(name, args, select=None):
+    if not select:
+        select = lambda e: e['id']
+
+    key = 'ids' if args['operation'] == 'delete' else 'entities'
+
+    if len(args[key]) > 1:
+        name += "s"
+
+    if args['operation'] == 'delete':
+        items = ', '.join(args[key])
+    else:
+        items = ', '.join(map(select, args[key]))
+
+    if args['operation'] == 'create':
+        return _("{0} {1} created".format(name, items))
+
+    if args['operation'] == 'update':
+        return _("{0} {1} updated".format(name, items))
+
+    if args['operation'] == 'delete':
+        return _("{0} {1} deleted".format(name, items))
+
+
 events = {
     'server.client_logged': (_("User logged in"), lambda c, a: _("User {0} logged in").format(a['username'])),
     'server.client_disconnected': (_("Client disconnected"), lambda c, a: _("Client {0} disconnected").format(a['address'])),
@@ -52,6 +76,8 @@ events = {
     'service.stopped': (_("Service stopped"), lambda c, a: _("Service {0} stopped").format(a['name'])),
     'task.created': (_("Task created"), task_created),
     'task.updated': (_("Task updated"), task_updated),
+    'entity-subscriber.volumes.changed': (_("Volume changed"), lambda c, a: entity_subscriber_changed(_("Volume"), a, lambda e: e['name'])),
+    'entity-subscriber.disk.changed': (_("Disk changed"), lambda c, a: entity_subscriber_changed(_("Disk"), a, lambda e: e['description']))
 }
 
 

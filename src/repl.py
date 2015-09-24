@@ -85,7 +85,7 @@ EVENT_MASKS = [
     'task.progress',
     'service.stopped',
     'service.started',
-    'volume.created',
+    'entity-subscriber.volumes.changed',
 ]
 
 

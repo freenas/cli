@@ -279,7 +279,8 @@ class ServiceConfigNamespace(ConfigNamespace):
             self.add_property(
                 descr='NetBIOS Name',
                 name='netbiosname',
-                get='netbiosname'
+                get='netbiosname',
+                type=ValueType.SET
             )
 
             self.add_property(

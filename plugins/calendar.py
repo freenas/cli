@@ -33,7 +33,7 @@ from output import ValueType, output_msg, output_table, read_value
 
 TASK_TYPES = {
     'scrub': 'zfs.pool.scrub',
-    'smart': 'disks.test'
+    'smart': 'disks.test_parallel'
 }
 
 

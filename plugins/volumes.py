@@ -32,7 +32,7 @@ from namespace import (
     EntityNamespace, Command, CommandException,
     RpcBasedLoadMixin, TaskBasedSaveMixin, description
     )
-from output import Table, output_tree, output_msg
+from output import Table, ValueType, output_tree, output_msg
 from utils import post_save, iterate_vdevs
 from fnutils import first_or_default, exclude
 
@@ -162,7 +162,7 @@ class FindVolumesCommand(Command):
     def run(self, context, args, kwargs, opargs):
         vols = context.call_sync('volumes.find')
         return Table(vols, [
-            Table.Column('ID', 'id'),
+            Table.Column('ID', 'id', vt=ValueType.STRING),
             Table.Column('Volume name', 'name'),
             Table.Column('Status', 'status')
         ])

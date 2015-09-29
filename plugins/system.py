@@ -147,10 +147,11 @@ class TimeNamespace(ConfigNamespace):
         self.context.submit_task('system.time.configure', self.get_diff(), callback=lambda s: post_save(self, s))
 
 
-@description("General configuration")
-class GeneralNamespace(ConfigNamespace):
+@description("System info and configuration")
+class SystemNamespace(ConfigNamespace):
     def __init__(self, name, context):
-        super(GeneralNamespace, self).__init__(name, context)
+        super(SystemNamespace, self).__init__(name, context)
+        self.context = context
         self.config_call='system.general.get_config'
 
         self.add_property(
@@ -183,19 +184,7 @@ class GeneralNamespace(ConfigNamespace):
             get='console_keymap'
         )
 
-    def save(self):
-        return self.context.submit_task('system.general.configure', self.entity, callback=lambda s: post_save(self, s))
-
-
-@description("System info and configuration")
-class SystemNamespace(Namespace):
-    def __init__(self, name, context):
-        super(SystemNamespace, self).__init__(name)
-        self.context = context
-
-    def commands(self):
-        return {
-            '?': IndexCommand(self),
+        self.extra_commands = {
             'login': LoginCommand(),
             'status': StatusCommand(),
             'version': VersionCommand(),
@@ -204,9 +193,11 @@ class SystemNamespace(Namespace):
             'sessions': SessionsCommand()
         }
 
+    def save(self):
+        return self.context.submit_task('system.general.configure', self.entity, callback=lambda s: post_save(self, s))
+
     def namespaces(self):
         return [
-            GeneralNamespace('config', self.context),
             TimeNamespace('time', self.context)
         ]
 

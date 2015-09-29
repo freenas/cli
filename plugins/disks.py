@@ -38,11 +38,21 @@ class DisksNamespace(RpcBasedLoadMixin, EntityNamespace):
         super(DisksNamespace, self).__init__(name, context)
 
         self.query_call = 'disks.query'
+        self.extra_query_params = [
+            ('online', '=', True)
+        ]
+
+        self.add_property(
+            descr='Disk path',
+            name='path',
+            get='path',
+            set=None,
+            list=True)
 
         self.add_property(
             descr='Disk name',
             name='name',
-            get=lambda row: os.path.basename(row['path']),
+            get=lambda row: row.get('status.description', os.path.basename(row['path'])),
             set=None,
             list=True)
 
@@ -55,8 +65,15 @@ class DisksNamespace(RpcBasedLoadMixin, EntityNamespace):
             type=ValueType.SIZE)
 
         self.add_property(
+            descr='Serial number',
+            name='serial',
+            get='serial',
+            set=None,
+            list=False)
+
+        self.add_property(
             descr='Online',
-            name='builtin',
+            name='online',
             get='online',
             set=None,
             list=True,
@@ -83,7 +100,9 @@ class DisksNamespace(RpcBasedLoadMixin, EntityNamespace):
         allocations = self.context.call_sync('volumes.get_disks_allocation', disks)
 
         return map(
-            lambda d: extend(d, {'allocation': allocations.get(d['path'])}),
+            lambda d: extend(d, {
+                'allocation': allocations.get(d['path']) if d['online'] else None
+            }),
             ret
         )
 

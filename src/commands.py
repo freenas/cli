@@ -235,6 +235,19 @@ class ShowUrlsCommand(Command):
         output_list(urls, label=_('URLs'))
 
 
+@description("Logs in to the server")
+class LoginCommand(Command):
+    """
+    Usage: login <username> <password>
+    """
+    def run(self, context, args, kwargs, opargs):
+        if len(args) < 2:
+            raise CommandException("Not enough arguments provided, usage: login <username> <password>")
+        context.connection.login_user(args[0], args[1])
+        context.connection.subscribe_events('*')
+        context.login_plugins()
+
+
 @description("Exits the CLI, enter \"^D\" (ctrl+D)")
 class ExitCommand(Command):
     """

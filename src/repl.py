@@ -60,7 +60,7 @@ from commands import (
     RebootCommand, EvalCommand, HelpCommand, ShowUrlsCommand, ShowIpsCommand,
     TopCommand, ClearCommand, HistoryCommand, SaveenvCommand, EchoCommand,
     SourceCommand, LessCommand, SearchPipeCommand, ExcludePipeCommand,
-    SortPipeCommand, LimitPipeCommand, SelectPipeCommand
+    SortPipeCommand, LimitPipeCommand, SelectPipeCommand, LoginCommand
 )
 
 if platform.system() == 'Darwin':
@@ -441,6 +441,7 @@ class MainLoop(object):
         'select': SelectPipeCommand(),
     }
     base_builtin_commands = {
+        'login': LoginCommand(),
         'exit': ExitCommand(),
         'setenv': SetenvCommand(),
         'printenv': PrintenvCommand(),

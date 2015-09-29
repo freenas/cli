@@ -27,7 +27,7 @@
 
 
 import copy
-from namespace import Namespace, ConfigNamespace, Command, IndexCommand, description
+from namespace import Namespace, ConfigNamespace, Command, IndexCommand, description, CommandException
 from output import Table, Object, ValueType, output_dict, output_table
 from descriptions import events
 from utils import parse_query_args, post_save
@@ -73,17 +73,6 @@ class VersionCommand(Command):
                 ' '.join(context.call_sync('system.info.uname_full'))
                 )
         )
-
-
-@description("Logs in to the server")
-class LoginCommand(Command):
-    """
-    Usage: login <username> <password>
-    """
-    def run(self, context, args, kwargs, opargs):
-        context.connection.login_user(args[0], args[1])
-        context.connection.subscribe_events('*')
-        context.login_plugins()
 
 
 @description("Prints session history")
@@ -185,7 +174,6 @@ class SystemNamespace(ConfigNamespace):
         )
 
         self.extra_commands = {
-            'login': LoginCommand(),
             'status': StatusCommand(),
             'version': VersionCommand(),
             'info': InfoCommand(),

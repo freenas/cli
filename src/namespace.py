@@ -507,7 +507,7 @@ class EntityNamespace(Namespace):
                     if op == '~=': op = '~'
 
                     prop = self.parent.get_mapping(k)
-                    yield prop.get, op, v
+                    yield k if callable(prop.get) else prop.get, op, v
 
         def run(self, context, args, kwargs, opargs, filtering=None):
             cols = []

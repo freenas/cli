@@ -658,7 +658,7 @@ class MainLoop(object):
             if isinstance(token, Set):
                 if not command:
                     try:
-                        raise SyntaxError("Incorrect usage of Set notation")
+                        raise SyntaxError(_('Command or namespace "{0}" not found'.format(token.value)))
                     finally:
                         self.path = oldpath
 

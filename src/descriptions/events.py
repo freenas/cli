@@ -76,8 +76,13 @@ events = {
     'service.stopped': (_("Service stopped"), lambda c, a: _("Service {0} stopped").format(a['name'])),
     'task.created': (_("Task created"), task_created),
     'task.updated': (_("Task updated"), task_updated),
-    'entity-subscriber.volumes.changed': (_("Volume changed"), lambda c, a: entity_subscriber_changed(_("Volume"), a, lambda e: e['name'])),
-    'entity-subscriber.disks.changed': (_("Disk changed"), lambda c, a: entity_subscriber_changed(_("Disk"), a, lambda e: e['status']['description']))
+    'entity-subscriber.volumes.changed': (_("Volume changed"), lambda c, a: entity_subscriber_changed(_("Volume"), a, lambda e: e.get('name'))),
+    'entity-subscriber.disks.changed': (
+        _("Disk changed"),
+        lambda c, a: entity_subscriber_changed(
+            _("Disk"), a, lambda e: e.get('status').get('description') if e.get('status') else e.get('path')
+        )
+    )
 }
 
 

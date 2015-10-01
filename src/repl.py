@@ -47,7 +47,7 @@ import traceback
 import Queue
 from descriptions import events
 from namespace import Namespace, RootNamespace, Command, FilteringCommand, CommandException
-from parser import parse, Symbol, CommandExpansion, Literal, BinaryExpr, PipeExpr
+from parser import parse, Symbol, Set, CommandExpansion, Literal, BinaryExpr, PipeExpr
 from output import (
     ValueType, Object, Table, ProgressBar, output_lock, output_msg, read_value, format_value,
     output_object, output_table
@@ -572,6 +572,9 @@ class MainLoop(object):
                 # Convert symbol to string
                 yield i.name
 
+            if isinstance(i, Set):
+                yield i.value
+
             if isinstance(i, Literal):
                 yield i.value
 
@@ -582,6 +585,9 @@ class MainLoop(object):
                 if isinstance(i.right, Symbol):
                     # Convert symbol to string
                     yield (i.left, i.op, i.right.name)
+
+                if isinstance(i.right, Set):
+                    yield (i.left, i.op, i.right.value)
 
                 if isinstance(i.right, CommandExpansion):
                     yield (i.left, i.op, self.eval(i.right.expr))
@@ -647,6 +653,15 @@ class MainLoop(object):
                         self.path = oldpath
 
                 args.append(Literal(result, type(result)))
+                continue
+
+            if isinstance(token, Set):
+                if not command:
+                    try:
+                        raise SyntaxError("Incorrect usage of Set notation")
+                    finally:
+                        self.path = oldpath
+
                 continue
 
             if isinstance(token, (Literal, BinaryExpr)):

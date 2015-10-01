@@ -41,6 +41,17 @@ class Symbol(object):
         return str(self)
 
 
+class Set(object):
+    def __init__(self, value):
+        self.value = value
+    
+    def __str__(self):
+        return "<Set '{0}'>".format(self.value)
+
+    def __repr__(self):
+        return str(self)
+
+
 class BinaryExpr(object):
     def __init__(self, left, op, right):
         self.left = left
@@ -92,7 +103,7 @@ class CommandExpansion(object):
 tokens = [
     'ATOM', 'NUMBER', 'HEXNUMBER', 'BINNUMBER', 'OCTNUMBER', 'STRING',
     'ASSIGN', 'EOPEN', 'ECLOSE', 'EQ', 'NE', 'GT', 'GE', 'LT', 'LE',
-    'REGEX', 'UP', 'PIPE', 'LIST'
+    'REGEX', 'UP', 'PIPE', 'LIST', 'COMMA'
 ]
 
 
@@ -138,10 +149,10 @@ t_GE = r'>='
 t_LT = r'<'
 t_LE = r'<'
 t_REGEX = r'~='
+t_COMMA = r'\,'
 t_UP = r'\.\.'
 t_LIST = r'\?'
-t_ATOM = r'[0-9a-zA-Z_\$\/-][0-9a-zA-Z_\_\-\.\/]*'
-
+t_ATOM = r'[0-9a-zA-Z_\$\/-][0-9a-zA-Z_\_\-\.\/#]*'
 
 
 def t_error(t):
@@ -179,6 +190,7 @@ def p_expr(p):
     expr : symbol
     expr : binary
     expr : expansion
+    expr : set
     """
     p[0] = p[1]
 
@@ -214,10 +226,22 @@ def p_binary(p):
     """
     p[0] = BinaryExpr(p[1], p[2], p[3])
 
+def p_set(p):
+    """
+    set : ATOM COMMA set
+    set : ATOM
+    """
+    if len(p) > 2:
+        if isinstance(p[3], Set):
+            right = p[3].value
+        else:
+            right = p[3].name
+        p[0] = Set(p[1] + p[2] + right)
+    else:
+        p[0] = Symbol(p[1])
 
 def p_symbol(p):
     """
-    symbol : ATOM
     symbol : UP
     symbol : LIST
     """

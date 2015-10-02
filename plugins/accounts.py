@@ -89,6 +89,14 @@ class UsersNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
             set=self.set_group)
 
         self.add_property(
+            descr='Auxilliary groups',
+            name='groups',
+            get=self.display_aux_groups,
+            set=self.set_aux_groups,
+            type=ValueType.SET
+            )
+
+        self.add_property(
             descr='Login shell',
             name='shell',
             get='shell')
@@ -160,6 +168,20 @@ class UsersNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
             entity['group'] = group['id']
         else:
             raise CommandException(_('Group {0} does not exist.'.format(value)))
+
+    def display_aux_groups(self, entity):
+        groups = self.context.call_sync(
+            'groups.query', [('id', 'in', entity['groups'])]
+            )
+        for group in groups:
+            yield group['name'] if group else 'GID:{0}'.format(group['id'])
+
+    def set_aux_groups(self, entity, value):
+        groups = self.context.call_sync('groups.query', [('name', 'in', value)])
+        diff_groups = set.difference(set([x['name'] for x in groups]), set(value))
+        if len(diff_groups):
+            raise CommandException(_('Groups {0} do not exist.'.format(diff_groups)))
+        entity['groups'] = [group['id'] for group in groups]
 
 
 @description(_("System groups"))

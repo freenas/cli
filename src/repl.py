@@ -339,7 +339,7 @@ class Context(object):
 
         ptr.register_namespace(ns)
 
-    def connection_error(self, event):
+    def connection_error(self, event, **kwargs):
         if event == ClientError.LOGOUT:
             output_msg('Logged out from server.')
             self.connection.disconnect()

@@ -200,17 +200,17 @@ class UpdateNamespace(ConfigNamespace):
         )
 
         self.add_property(
-            descr='Update server',
+            descr='Update Server',
             name='update_server',
             get='update_server',
-            set='update_server'
+            set=None,
         )
 
         self.add_property(
-            descr='Update Available for Installing',
+            descr='Update Available',
             name='available',
             type=ValueType.BOOLEAN,
-            get=lambda x: True if self.update_info is not None else False,
+            get=lambda x: True if self.update_info else False,
             set=None
         )
 
@@ -218,8 +218,16 @@ class UpdateNamespace(ConfigNamespace):
             descr='Update Changelog',
             name='changelog',
             type=ValueType.STRING,
-            get=lambda x: self.update_info['changelog']if self.update_info is not None else [''],
+            get=lambda x: self.update_info['changelog'] if self.update_info else [''],
             list=True,
+            set=None
+        )
+
+        self.add_property(
+            descr='Updates already Downloaded',
+            name='downloaded',
+            type=ValueType.BOOLEAN,
+            get=lambda x: self.update_info['downloaded'] if self.update_info else False,
             set=None
         )
 
@@ -247,7 +255,7 @@ class UpdateNamespace(ConfigNamespace):
     def save(self):
         return self.context.submit_task(
             'update.configure',
-            self.entity,
+            self.get_diff(),
             callback=lambda s: post_save(self, s))
 
 

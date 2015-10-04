@@ -26,7 +26,7 @@
 #####################################################################
 
 
-import icu 
+import icu
 from descriptions import tasks
 
 

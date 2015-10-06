@@ -120,13 +120,11 @@ class TasksNamespace(RpcBasedLoadMixin, EntityNamespace):
 
     def describe_state(self, task):
         if task['state'] == 'EXECUTING':
-            state = self.context.call_sync(
-                'task.status', task['id'])
-            if 'progress' not in state:
+            if 'progress' not in task:
                 return task['state']
 
             return '{0:2.0f}% ({1})'.format(
-                state['progress.percentage'], state['progress.message'])
+                task['progress.percentage'], task['progress.message'])
 
         return task['state']
 

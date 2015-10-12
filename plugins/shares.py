@@ -62,7 +62,8 @@ class SharesNamespace(Namespace):
         return [
             NFSSharesNamespace('nfs', self.context),
             AFPSharesNamespace('afp', self.context),
-            CIFSSharesNamespace('cifs', self.context)
+            CIFSSharesNamespace('cifs', self.context),
+            ISCSISharesNamespace('iscsi', self.context)
         ]
 
 
@@ -279,6 +280,45 @@ class CIFSSharesNamespace(BaseSharesNamespace):
             get='properties.show_hidden_files',
             list=False,
             type=ValueType.BOOLEAN
+        )
+
+
+class ISCSISharesNamespace(BaseSharesNamespace):
+    def __init__(self, name, context):
+        super(ISCSISharesNamespace, self).__init__(name, 'iscsi', context)
+
+        self.add_property(
+            descr='Serial number',
+            name='serial',
+            get='properties.serial',
+            list=True
+        )
+
+        self.add_property(
+            descr='Size',
+            name='size',
+            get='properties.size',
+            list=True
+        )
+
+        self.add_property(
+            descr='Block size',
+            name='block_size',
+            get='properties.block_size'
+        )
+
+        self.add_property(
+            descr='Physical block size reporting',
+            name='physical_block_size',
+            get='properties.physical_block_size',
+            list=False
+        )
+
+        self.add_property(
+            descr='RPM',
+            name='rpm',
+            get='properties.rpm',
+            list=False
         )
 
 

@@ -317,7 +317,8 @@ class ISCSITargetMapingNamespace(EntityNamespace):
         self.add_property(
             descr='LUN number',
             name='number',
-            get='number'
+            get='number',
+            type=ValueType.NUMBER
         )
 
         self.add_property(

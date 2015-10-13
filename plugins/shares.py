@@ -31,6 +31,7 @@ from namespace import (
     RpcBasedLoadMixin, TaskBasedSaveMixin, description
     )
 from output import ValueType, output_list
+from fnutils import first_or_default
 
 
 t = icu.Transliterator.createInstance("Any-Accents", icu.UTransDirection.FORWARD)
@@ -283,6 +284,70 @@ class CIFSSharesNamespace(BaseSharesNamespace):
         )
 
 
+class ISCSITargetsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
+    def __init__(self, name, context):
+        super(ISCSITargetsNamespace, self).__init__(name, context)
+        self.query_call = 'shares.iscsi.target.query'
+        self.create_task = 'share.iscsi.target.create'
+        self.update_task = 'share.iscsi.target.update'
+
+        self.add_property(
+            descr='Target name',
+            name='name',
+            get='id'
+        )
+
+        self.add_property(
+            descr='Target description',
+            name='description',
+            get='description'
+        )
+
+        self.primary_key = self.get_mapping('name')
+        self.entity_namespaces = lambda this: [
+            ISCSITargetMapingNamespace('luns', self.context, this)
+        ]
+
+
+class ISCSITargetMapingNamespace(EntityNamespace):
+    def __init__(self, name, context, parent):
+        super(ISCSITargetMapingNamespace, self).__init__(name, context)
+        self.parent = parent
+
+        self.add_property(
+            descr='LUN number',
+            name='number',
+            get='number'
+        )
+
+        self.add_property(
+            descr='Share name',
+            name='name',
+            get='name'
+        )
+
+        self.primary_key = self.get_mapping('name')
+
+    def get_one(self, name):
+        return first_or_default(lambda a: a['name'] == name, self.parent.entity['extents'])
+
+    def query(self, params, options):
+        return self.parent.entity.get('extents', [])
+
+    def save(self, this, new=False):
+        if new:
+            self.parent.entity['extents'].append(this.entity)
+        else:
+            entity = first_or_default(lambda a: a['name'] == this.entity['name'], self.parent.entity['extents'])
+            entity.update(this.entity)
+            
+        self.parent.save()
+
+    def delete(self, name):
+        self.parent.entity['extents'] = filter(lambda a: a['name'] == name, self.parent.entity['extents'])
+        self.parent.save()
+
+
 class ISCSISharesNamespace(BaseSharesNamespace):
     def __init__(self, name, context):
         super(ISCSISharesNamespace, self).__init__(name, 'iscsi', context)
@@ -320,6 +385,11 @@ class ISCSISharesNamespace(BaseSharesNamespace):
             get='properties.rpm',
             list=False
         )
+
+    def namespaces(self):
+        return [
+            ISCSITargetsNamespace('targets', self.context)
+        ]
 
 
 def _init(context):

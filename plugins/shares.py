@@ -284,12 +284,94 @@ class CIFSSharesNamespace(BaseSharesNamespace):
         )
 
 
+class ISCSIAuthGroupsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
+    def __init__(self, name, context):
+        super(ISCSIAuthGroupsNamespace, self).__init__(name, context)
+        self.query_call = 'shares.iscsi.auth.query'
+        self.create_task = 'share.iscsi.auth.create'
+        self.update_task = 'share.iscsi.auth.update'
+        self.delete_task = 'share.iscsi.auth.delete'
+
+        self.add_property(
+            descr='Group name',
+            name='name',
+            get='id'
+        )
+
+        self.add_property(
+            descr='Group policy',
+            name='policy',
+            get='type',
+            type=ValueType.STRING,
+            enum=['NONE', 'DENY', 'CHAP', 'CHAP_MUTUAL']
+        )
+
+        self.primary_key = self.get_mapping('name')
+        self.entity_namespaces = lambda this: [
+            ISCSIUsersNamespace('users', self.context, this)
+        ]
+
+
+class ISCSIUsersNamespace(EntityNamespace):
+    def __init__(self, name, context, parent):
+        super(ISCSIUsersNamespace, self).__init__(name, context)
+        self.parent = parent
+
+        self.add_property(
+            descr='User name',
+            name='name',
+            get='name'
+        )
+
+        self.add_property(
+            descr='User secret',
+            name='secret',
+            get='secret'
+        )
+
+        self.add_property(
+            descr='Peer user name',
+            name='peer_name',
+            get='peer_name'
+        )
+
+        self.add_property(
+            descr='Peer secret',
+            name='peer_secret',
+            get='peer_secret'
+        )
+
+        self.primary_key = self.get_mapping('name')
+
+    def get_one(self, name):
+        return first_or_default(lambda a: a['name'] == name, self.parent.entity.get('users', []))
+
+    def query(self, params, options):
+        return self.parent.entity['users'] or []
+
+    def save(self, this, new=False):
+        if new:
+            if self.parent.entity['users'] is None:
+                 self.parent.entity['users'] = []
+            self.parent.entity['users'].append(this.entity)
+        else:
+            entity = first_or_default(lambda a: a['name'] == this.entity['name'], self.parent.entity['users'])
+            entity.update(this.entity)
+
+        self.parent.save()
+
+    def delete(self, name):
+        self.parent.entity['users'] = filter(lambda a: a['name'] == name, self.parent.entity['users'])
+        self.parent.save()
+
+
 class ISCSITargetsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
     def __init__(self, name, context):
         super(ISCSITargetsNamespace, self).__init__(name, context)
         self.query_call = 'shares.iscsi.target.query'
         self.create_task = 'share.iscsi.target.create'
         self.update_task = 'share.iscsi.target.update'
+        self.delete_task = 'share.iscsi.target.delete'
 
         self.add_property(
             descr='Target name',
@@ -389,7 +471,8 @@ class ISCSISharesNamespace(BaseSharesNamespace):
 
     def namespaces(self):
         return [
-            ISCSITargetsNamespace('targets', self.context)
+            ISCSITargetsNamespace('targets', self.context),
+            ISCSIAuthGroupsNamespace('auth', self.context)
         ]
 
 

@@ -466,11 +466,12 @@ class ISCSISharesNamespace(BaseSharesNamespace):
             descr='RPM',
             name='rpm',
             get='properties.rpm',
-            list=False
+            list=False,
+            enum=['UNKNOWN', 'SSD', '5400', '7200', '10000', '15000']
         )
 
     def namespaces(self):
-        return [
+        return list(super(ISCSISharesNamespace, self).namespaces()) + [
             ISCSITargetsNamespace('targets', self.context),
             ISCSIAuthGroupsNamespace('auth', self.context)
         ]

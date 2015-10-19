@@ -487,6 +487,119 @@ class SingleItemNamespace(ItemNamespace):
         self.parent.save(self, not self.saved)
 
 
+@description("Lists items")
+class ListCommand(FilteringCommand):
+    """
+    Usage: show [<field> <operator> <value> ...] [limit=<n>] [sort=<field>,-<field2>]
+
+    Lists items in current namespace, optinally doing filtering and sorting.
+
+    Examples:
+        show
+        show username=root
+        show uid>1000
+        show fullname~="John" sort=fullname
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def __map_filter_properties(self, expr):
+        for i in expr:
+            if len(i) == 2:
+                op, l = i
+                yield op, list(self.__map_filter_properties(l))
+
+            if len(i) == 3:
+                k, op, v = i
+                if op == '==': op = '='
+                if op == '~=': op = '~'
+
+                prop = self.parent.get_mapping(k)
+                yield k if callable(prop.get) else prop.get, op, v
+
+    def run(self, context, args, kwargs, opargs, filtering=None):
+        cols = []
+        params = []
+        options = {}
+
+        if filtering:
+            for k, v in filtering['params'].items():
+                if k == 'limit':
+                    options['limit'] = int(v)
+                    continue
+
+                if k == 'sort':
+                    for sortkey in v:
+                        prop = self.parent.get_mapping(sortkey)
+                        options.setdefault('sort', []).append(prop.get)
+                    continue
+
+                if not self.parent.has_property(k):
+                    raise CommandException('Unknown field {0}'.format(k))
+
+            params = list(self.__map_filter_properties(filtering['filter']))
+
+        for col in filter(lambda x: x.list, self.parent.property_mappings):
+            cols.append(Table.Column(col.descr, col.get, col.type))
+
+        return Table(self.parent.query(params, options), cols)
+
+
+@description("Creates new item")
+class CreateEntityCommand(Command):
+    """
+    Usage: create [<field>=<value> ...]
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        ns = SingleItemNamespace(None, self.parent)
+        ns.orig_entity = wrap(copy.deepcopy(self.parent.skeleton_entity))
+        ns.entity = wrap(copy.deepcopy(self.parent.skeleton_entity))
+
+        if not args and not kwargs:
+            return
+
+        if len(args) > 0:
+            prop = self.parent.primary_key
+            prop.do_set(ns.entity, args.pop(0))
+
+        for k, v in kwargs.items():
+            if not self.parent.has_property(k):
+                output_msg('Property {0} not found'.format(k))
+                return
+            if self.parent.get_mapping(k).set is None:
+                output_msg('Property {0} is not writable'.format(k))
+                return
+
+        for k, v in kwargs.items():
+            prop = self.parent.get_mapping(k)
+            prop.do_set(ns.entity, v)
+
+        self.parent.save(ns, new=True)
+
+    def complete(self, context, tokens):
+        return [x.name + '=' for x in self.parent.property_mappings if x.set]
+
+
+@description("Removes item")
+class DeleteEntityCommand(Command):
+    """
+    Usage: delete <primary-key>
+
+    Examples:
+        delete john
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        if len(args) == 0:
+            raise CommandException(_("Please specify item to delete."))
+        self.parent.delete(args[0])
+
+
 class EntityNamespace(Namespace):
 
     def __init__(self, name, context):
@@ -500,120 +613,8 @@ class EntityNamespace(Namespace):
         self.allow_edit = True
         self.allow_create = True
         self.skeleton_entity = {}
-        self.create_command = self.CreateEntityCommand
-        self.delete_command = self.DeleteEntityCommand
         self.localdoc = {}
         self.entity_localdoc = {}
-
-    @description("Lists items")
-    class ListCommand(FilteringCommand):
-        """
-        Usage: show [<field> <operator> <value> ...] [limit=<n>] [sort=<field>,-<field2>]
-
-        Lists items in current namespace, optinally doing filtering and sorting.
-
-        Examples:
-            show
-            show username=root
-            show uid>1000
-            show fullname~="John" sort=fullname
-        """
-        def __init__(self, parent):
-            self.parent = parent
-
-        def __map_filter_properties(self, expr):
-            for i in expr:
-                if len(i) == 2:
-                    op, l = i
-                    yield op, list(self.__map_filter_properties(l))
-
-                if len(i) == 3:
-                    k, op, v = i
-                    if op == '==': op = '='
-                    if op == '~=': op = '~'
-
-                    prop = self.parent.get_mapping(k)
-                    yield k if callable(prop.get) else prop.get, op, v
-
-        def run(self, context, args, kwargs, opargs, filtering=None):
-            cols = []
-            params = []
-            options = {}
-
-            if filtering:
-                for k, v in filtering['params'].items():
-                    if k == 'limit':
-                        options['limit'] = int(v)
-                        continue
-
-                    if k == 'sort':
-                        for sortkey in v:
-                            prop = self.parent.get_mapping(sortkey)
-                            options.setdefault('sort', []).append(prop.get)
-                        continue
-
-                    if not self.parent.has_property(k):
-                        raise CommandException('Unknown field {0}'.format(k))
-
-                params = list(self.__map_filter_properties(filtering['filter']))
-
-            for col in filter(lambda x: x.list, self.parent.property_mappings):
-                cols.append(Table.Column(col.descr, col.get, col.type))
-
-            return Table(self.parent.query(params, options), cols)
-
-    @description("Creates new item")
-    class CreateEntityCommand(Command):
-        """
-        Usage: create [<field>=<value> ...]
-        """
-        def __init__(self, parent):
-            self.parent = parent
-
-        def run(self, context, args, kwargs, opargs):
-            ns = SingleItemNamespace(None, self.parent)
-            ns.orig_entity = wrap(copy.deepcopy(self.parent.skeleton_entity))
-            ns.entity = wrap(copy.deepcopy(self.parent.skeleton_entity))
-
-            if not args and not kwargs:
-                return
-
-            if len(args) > 0:
-                prop = self.parent.primary_key
-                prop.do_set(ns.entity, args.pop(0))
-
-            for k, v in kwargs.items():
-                if not self.parent.has_property(k):
-                    output_msg('Property {0} not found'.format(k))
-                    return
-                if self.parent.get_mapping(k).set is None:
-                    output_msg('Property {0} is not writable'.format(k))
-                    return
-
-            for k, v in kwargs.items():
-                prop = self.parent.get_mapping(k)
-                prop.do_set(ns.entity, v)
-
-            self.parent.save(ns, new=True)
-
-        def complete(self, context, tokens):
-            return [x.name + '=' for x in self.parent.property_mappings if x.set]
-
-    @description("Removes item")
-    class DeleteEntityCommand(Command):
-        """
-        Usage: delete <primary-key>
-
-        Examples:
-            delete john
-        """
-        def __init__(self, parent):
-            self.parent = parent
-
-        def run(self, context, args, kwargs, opargs):
-            if len(args) == 0:
-                raise CommandException(_("Please specify item to delete."))
-            self.parent.delete(args[0])
 
     def has_property(self, prop):
         return any(filter(lambda x: x.name == prop, self.property_mappings))
@@ -640,7 +641,7 @@ class EntityNamespace(Namespace):
     def commands(self):
         base = {
             '?': IndexCommand(self),
-            'show': self.ListCommand(self)
+            'show': ListCommand(self)
         }
 
         if self.extra_commands:
@@ -648,8 +649,8 @@ class EntityNamespace(Namespace):
 
         if self.allow_create:
             base.update({
-                'create': self.create_command(self),
-                'delete': self.delete_command(self)
+                'create': CreateEntityCommand(self),
+                'delete': DeleteEntityCommand(self)
             })
 
         return base

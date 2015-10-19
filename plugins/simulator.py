@@ -69,8 +69,7 @@ class DisksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
             name='vendor',
             get='online',
             set=None,
-            list=True,
-            type=ValueType.BOOLEAN)
+            list=True)
 
         self.add_property(
             descr='Model name',

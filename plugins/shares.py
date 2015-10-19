@@ -30,7 +30,7 @@ from namespace import (
     Namespace, EntityNamespace, Command, IndexCommand,
     RpcBasedLoadMixin, TaskBasedSaveMixin, description
     )
-from output import ValueType, output_list
+from output import ValueType, Table
 from fnutils import first_or_default
 
 
@@ -45,7 +45,11 @@ class ConnectedUsersCommand(Command):
 
     def run(self, context, args, kwargs, opargs):
         result = context.call_sync('shares.get_connected_clients', self.parent.entity['id'])
-        output_list(result, _("IP address"))
+        return Table(result, [
+            Table.Column(_("IP address"), 'host', ValueType.STRING),
+            Table.Column(_("User"), 'user', ValueType.STRING),
+            Table.Column(_("Connected at"), 'connected_at', ValueType.STRING)
+        ])
 
 
 @description("Configure and manage shares")

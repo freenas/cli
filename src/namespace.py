@@ -446,46 +446,48 @@ class ConfigNamespace(ItemNamespace):
         self.modified = False
 
 
+class SingleItemNamespace(ItemNamespace):
+    def __init__(self, name, parent):
+        super(SingleItemNamespace, self).__init__(name)
+        self.parent = parent
+        self.saved = name is not None
+        self.property_mappings = parent.property_mappings
+        self.localdoc = parent.entity_localdoc
+
+        if parent.entity_commands:
+            self.subcommands = parent.entity_commands(self)
+
+        if parent.entity_namespaces:
+            self.nslist = parent.entity_namespaces(self)
+
+        if hasattr(parent, 'allow_edit'):
+            self.allow_edit = parent.allow_edit
+
+    @property
+    def primary_key(self):
+        return self.parent.primary_key.do_get(self.entity)
+
+    def get_name(self):
+        name = self.primary_key if self.entity else self.name
+        if not name and name != 0:
+            name = 'unnamed'
+
+        return name if self.saved and not self.modified else '[{0}]'.format(name)
+
+    def load(self):
+        if self.saved:
+            self.entity = self.parent.get_one(self.get_name())
+            self.orig_entity = copy.deepcopy(self.entity)
+        else:
+            # This is in case the task failed!
+            self.entity = copy.deepcopy(self.orig_entity)
+        self.modified = False
+
+    def save(self):
+        self.parent.save(self, not self.saved)
+
+
 class EntityNamespace(Namespace):
-    class SingleItemNamespace(ItemNamespace):
-        def __init__(self, name, parent):
-            super(EntityNamespace.SingleItemNamespace, self).__init__(name)
-            self.parent = parent
-            self.saved = name is not None
-            self.property_mappings = parent.property_mappings
-            self.localdoc = parent.entity_localdoc
-
-            if parent.entity_commands:
-                self.subcommands = parent.entity_commands(self)
-
-            if parent.entity_namespaces:
-                self.nslist = parent.entity_namespaces(self)
-
-            if hasattr(parent, 'allow_edit'):
-                self.allow_edit = parent.allow_edit
-
-        @property
-        def primary_key(self):
-            return self.parent.primary_key.do_get(self.entity)
-
-        def get_name(self):
-            name = self.primary_key if self.entity else self.name
-            if not name and name != 0:
-                name = 'unnamed'
-
-            return name if self.saved and not self.modified else '[{0}]'.format(name)
-
-        def load(self):
-            if self.saved:
-                self.entity = self.parent.get_one(self.get_name())
-                self.orig_entity = copy.deepcopy(self.entity)
-            else:
-                # This is in case the task failed!
-                self.entity = copy.deepcopy(self.orig_entity)
-            self.modified = False
-
-        def save(self):
-            self.parent.save(self, not self.saved)
 
     def __init__(self, name, context):
         super(EntityNamespace, self).__init__(name)
@@ -569,7 +571,7 @@ class EntityNamespace(Namespace):
             self.parent = parent
 
         def run(self, context, args, kwargs, opargs):
-            ns = EntityNamespace.SingleItemNamespace(None, self.parent)
+            ns = SingleItemNamespace(None, self.parent)
             ns.orig_entity = wrap(copy.deepcopy(self.parent.skeleton_entity))
             ns.entity = wrap(copy.deepcopy(self.parent.skeleton_entity))
 
@@ -658,7 +660,7 @@ class EntityNamespace(Namespace):
 
         for i in self.query([], {}):
             name = self.primary_key.do_get(i)
-            yield self.SingleItemNamespace(name, self)
+            yield SingleItemNamespace(name, self)
 
 
 class RpcBasedLoadMixin(object):

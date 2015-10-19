@@ -26,9 +26,11 @@
 #####################################################################
 
 
-import copy
-import icu 
-from namespace import Namespace, EntityNamespace, ConfigNamespace, Command, RpcBasedLoadMixin, TaskBasedSaveMixin, description
+import icu
+from namespace import (
+    Namespace, EntityNamespace, ConfigNamespace, Command,
+    RpcBasedLoadMixin, TaskBasedSaveMixin, description
+)
 from output import ValueType
 from utils import post_save
 from fnutils.query import wrap

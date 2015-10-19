@@ -385,6 +385,12 @@ class ISCSITargetsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespa
             get='description'
         )
 
+        self.add_property(
+            descr='Auth group',
+            name='auth_group',
+            get='auth_group'
+        )
+
         self.primary_key = self.get_mapping('name')
         self.entity_namespaces = lambda this: [
             ISCSITargetMapingNamespace('luns', self.context, this)
@@ -459,7 +465,8 @@ class ISCSISharesNamespace(BaseSharesNamespace):
             descr='Physical block size reporting',
             name='physical_block_size',
             get='properties.physical_block_size',
-            list=False
+            list=False,
+            type=ValueType.BOOLEAN
         )
 
         self.add_property(

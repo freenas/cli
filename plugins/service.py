@@ -80,6 +80,14 @@ class ServicesNamespace(RpcBasedLoadMixin, EntityNamespace):
             list=True
         )
 
+        self.add_property(
+            descr='Process ID',
+            name='pid',
+            get='pid',
+            set=None,
+            list=True
+        )
+
         self.primary_key = self.get_mapping('name')
         self.allow_edit = False
         self.allow_create = False

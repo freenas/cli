@@ -189,17 +189,40 @@ class PropertyMapping(object):
         obj.set(self.set, value)
 
     def do_append(self, obj, value):
-        if self.type != ValueType.ARRAY:
-            raise ValueError('Property is not an array')
+        if self.type != ValueType.SET:
+            raise ValueError('Property is not a set')
 
         value = read_value(value, self.type)
-        self.set(obj, self.get(obj).append(value))
+        oldvalues = obj.get(self.set)
+        if oldvalues is not None:
+            newvalues = oldvalues + value
+        else:
+            newvalues = value
+
+        if callable(self.set):
+            self.set(obj, newvalues)
+            return
+
+        obj.set(self.set, newvalues)
 
     def do_remove(self, obj, value):
-        if self.type != ValueType.ARRAY:
-            raise ValueError('Property is not an array')
+        if self.type != ValueType.SET:
+            raise ValueError('Property is not a set')
 
         value = read_value(value, self.type)
+        oldvalues = obj.get(self.set)
+        newvalues = oldvalues
+        for v in value:
+            if v in newvalues:
+                newvalues.remove(v)
+            else:
+                raise CommandException(_('{0} is not a value in {1}'.format(v, self.set)))
+
+        if callable(self.set):
+            self.set(obj, newvalues)
+            return
+
+        obj.set(self.set, newvalues)
 
 
 class ItemNamespace(Namespace):
@@ -291,16 +314,16 @@ class ItemNamespace(Namespace):
                 prop.do_set(entity, v)
 
             for k, op, v in opargs:
-                if op not in ('+=', '-='):
+                if op not in ('=+', '=-'):
                     raise CommandException(
                         "Syntax error, invalid operator used")
 
                 prop = self.parent.get_mapping(k)
 
-                if op == '+=':
+                if op == '=+':
                     prop.do_append(entity, v)
 
-                if op == '-=':
+                if op == '=-':
                     prop.do_remove(entity, v)
 
             self.parent.modified = True

@@ -103,7 +103,7 @@ class CommandExpansion(object):
 tokens = [
     'ATOM', 'NUMBER', 'HEXNUMBER', 'BINNUMBER', 'OCTNUMBER', 'STRING',
     'ASSIGN', 'EOPEN', 'ECLOSE', 'EQ', 'NE', 'GT', 'GE', 'LT', 'LE',
-    'REGEX', 'UP', 'PIPE', 'LIST', 'COMMA'
+    'REGEX', 'UP', 'PIPE', 'LIST', 'COMMA', 'INC', 'DEC'
 ]
 
 
@@ -142,6 +142,8 @@ t_PIPE = r'\|'
 t_EOPEN = r'\$\('
 t_ECLOSE = r'\)'
 t_ASSIGN = r'='
+t_INC = r'=\+'
+t_DEC = r'=-'
 t_EQ = r'=='
 t_NE = r'\!='
 t_GT = r'>'
@@ -223,6 +225,8 @@ def p_binary(p):
     binary : ATOM LT expr
     binary : ATOM LE expr
     binary : ATOM REGEX expr
+    binary : ATOM INC expr
+    binary : ATOM DEC expr
     """
     p[0] = BinaryExpr(p[1], p[2], p[3])
 

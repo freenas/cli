@@ -67,8 +67,7 @@ class DisksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
         self.add_property(
             descr='Vendor name',
             name='vendor',
-            get='online',
-            set=None,
+            get='vendor',
             list=True)
 
         self.add_property(
@@ -81,7 +80,7 @@ class DisksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
         self.add_property(
             descr='RPM',
             name='rpm',
-            get='properties.rpm',
+            get='rpm',
             list=False,
             enum=['UNKNOWN', 'SSD', '5400', '7200', '10000', '15000']
         )

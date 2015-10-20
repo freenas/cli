@@ -43,32 +43,45 @@ class DisksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
             descr='Disk name',
             name='name',
             get='id',
-            list=True)
+            list=True
+        )
 
         self.add_property(
             descr='Disk path',
             name='path',
             get='path',
-            list=True)
+            list=True
+        )
+
+        self.add_property(
+            descr='Online',
+            name='online',
+            get='online',
+            list=True,
+            type=ValueType.BOOLEAN
+        )
 
         self.add_property(
             descr='Size',
             name='mediasize',
             get='mediasize',
             list=True,
-            type=ValueType.SIZE)
+            type=ValueType.SIZE
+        )
 
         self.add_property(
             descr='Serial number',
             name='serial',
             get='serial',
-            list=False)
+            list=False
+        )
 
         self.add_property(
             descr='Vendor name',
             name='vendor',
             get='vendor',
-            list=True)
+            list=True
+        )
 
         self.add_property(
             descr='Model name',

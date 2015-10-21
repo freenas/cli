@@ -335,7 +335,8 @@ class ItemNamespace(Namespace):
     def __init__(self, name):
         super(ItemNamespace, self).__init__(name)
         self.name = name
-        self.description = name
+        if not hasattr(self, 'description'):
+            self.description = name
         self.entity = None
         self.orig_entity = None
         self.allow_edit = True

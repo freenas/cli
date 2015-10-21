@@ -288,16 +288,16 @@ class CIFSSharesNamespace(BaseSharesNamespace):
         )
 
 
-class ISCSIAuthGroupsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
+class ISCSIPortalsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
     def __init__(self, name, context):
-        super(ISCSIAuthGroupsNamespace, self).__init__(name, context)
-        self.query_call = 'shares.iscsi.auth.query'
-        self.create_task = 'share.iscsi.auth.create'
-        self.update_task = 'share.iscsi.auth.update'
-        self.delete_task = 'share.iscsi.auth.delete'
+        super(ISCSIPortalsNamespace, self).__init__(name, context)
+        self.query_call = 'shares.iscsi.portal.query'
+        self.create_task = 'share.iscsi.portal.create'
+        self.update_task = 'share.iscsi.portal.update'
+        self.delete_task = 'share.iscsi.portal.delete'
 
         self.add_property(
-            descr='Group name',
+            descr='Portal name',
             name='name',
             get='id'
         )
@@ -314,6 +314,59 @@ class ISCSIAuthGroupsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityName
         self.entity_namespaces = lambda this: [
             ISCSIUsersNamespace('users', self.context, this)
         ]
+
+
+class ISCSIAuthGroupsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
+    def __init__(self, name, context):
+        super(ISCSIAuthGroupsNamespace, self).__init__(name, context)
+        self.query_call = 'shares.iscsi.auth.query'
+        self.create_task = 'share.iscsi.auth.create'
+        self.update_task = 'share.iscsi.auth.update'
+        self.delete_task = 'share.iscsi.auth.delete'
+
+        self.add_property(
+            descr='Group name',
+            name='name',
+            get='id'
+        )
+
+        self.add_property(
+            descr='Discovery auth group',
+            name='discovery_auth_group',
+            get='discovery_auth_group',
+            type=ValueType.STRING,
+        )
+
+        self.add_property(
+            descr='Discovery auth method',
+            name='discovery_auth_method',
+            get='discovery_auth_method',
+            type=ValueType.STRING,
+            enum=['NONE', 'CHAP', 'CHAP_MUTUAL']
+        )
+
+        self.add_property(
+            descr='Listen addresses and ports',
+            name='listen',
+            get=self.get_portals,
+            set=self.set_portals,
+            type=ValueType.SET
+        )
+
+        self.primary_key = self.get_mapping('name')
+
+    def get_portals(self, obj):
+        return map(lambda i: '{address}:{port}'.format(**i), obj['portals'])
+
+    def set_portals(self, obj, value):
+        def pack(item):
+            host, port = item.split(':', 2)
+            return {
+                'address': host,
+                'port': int(port)
+            }
+
+        obj['portals'] = map(pack, value)
 
 
 class ISCSIUsersNamespace(EntityNamespace):
@@ -483,6 +536,7 @@ class ISCSISharesNamespace(BaseSharesNamespace):
 
     def namespaces(self):
         return list(super(ISCSISharesNamespace, self).namespaces()) + [
+            ISCSIPortalsNamespace('portals', self.context),
             ISCSITargetsNamespace('targets', self.context),
             ISCSIAuthGroupsNamespace('auth', self.context)
         ]

@@ -29,7 +29,7 @@ from namespace import Namespace, EntityNamespace, Command, RpcBasedLoadMixin, Ta
 from output import ValueType
 
 
-@description("Provides information about installed disks")
+@description("Tools for simulating disks")
 class DisksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
     def __init__(self, name, context):
         super(DisksNamespace, self).__init__(name, context)
@@ -101,6 +101,7 @@ class DisksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
         self.primary_key = self.get_mapping('name')
 
 
+@description("Tools for simulating aspects of a NAS")
 class SimulatorNamespace(Namespace):
     def __init__(self, name, context):
         super(SimulatorNamespace, self).__init__(name)

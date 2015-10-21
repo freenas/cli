@@ -297,34 +297,6 @@ class ISCSIPortalsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespa
         self.delete_task = 'share.iscsi.portal.delete'
 
         self.add_property(
-            descr='Portal name',
-            name='name',
-            get='id'
-        )
-
-        self.add_property(
-            descr='Group policy',
-            name='policy',
-            get='type',
-            type=ValueType.STRING,
-            enum=['NONE', 'DENY', 'CHAP', 'CHAP_MUTUAL']
-        )
-
-        self.primary_key = self.get_mapping('name')
-        self.entity_namespaces = lambda this: [
-            ISCSIUsersNamespace('users', self.context, this)
-        ]
-
-
-class ISCSIAuthGroupsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
-    def __init__(self, name, context):
-        super(ISCSIAuthGroupsNamespace, self).__init__(name, context)
-        self.query_call = 'shares.iscsi.auth.query'
-        self.create_task = 'share.iscsi.auth.create'
-        self.update_task = 'share.iscsi.auth.update'
-        self.delete_task = 'share.iscsi.auth.delete'
-
-        self.add_property(
             descr='Group name',
             name='name',
             get='id'
@@ -360,13 +332,41 @@ class ISCSIAuthGroupsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityName
 
     def set_portals(self, obj, value):
         def pack(item):
-            host, port = item.split(':', 2)
+            ret = item.split(':', 2)
             return {
-                'address': host,
-                'port': int(port)
+                'address': ret[0],
+                'port': ret[1] if len(ret) == 2 else 3260
             }
 
         obj['portals'] = map(pack, value)
+
+
+class ISCSIAuthGroupsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
+    def __init__(self, name, context):
+        super(ISCSIAuthGroupsNamespace, self).__init__(name, context)
+        self.query_call = 'shares.iscsi.auth.query'
+        self.create_task = 'share.iscsi.auth.create'
+        self.update_task = 'share.iscsi.auth.update'
+        self.delete_task = 'share.iscsi.auth.delete'
+
+        self.add_property(
+            descr='Portal name',
+            name='name',
+            get='id'
+        )
+
+        self.add_property(
+            descr='Group policy',
+            name='policy',
+            get='type',
+            type=ValueType.STRING,
+            enum=['NONE', 'DENY', 'CHAP', 'CHAP_MUTUAL']
+        )
+
+        self.primary_key = self.get_mapping('name')
+        self.entity_namespaces = lambda this: [
+            ISCSIUsersNamespace('users', self.context, this)
+        ]
 
 
 class ISCSIUsersNamespace(EntityNamespace):

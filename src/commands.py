@@ -37,7 +37,7 @@ import icu
 import re
 import textwrap
 from namespace import (Command, PipeCommand, CommandException, description,
-                       EntityNamespace, Namespace)
+                       SingleItemNamespace, Namespace)
 from output import (
     Table, Object, output_dict, ValueType, output_msg, output_list,
     output_lock, output_less, output_table_list
@@ -327,7 +327,7 @@ class HelpCommand(Command):
 
             # Then listing the namespaces available from this namespace
             for nss in obj.namespaces():
-                if not isinstance(nss, EntityNamespace.SingleItemNamespace):
+                if not isinstance(nss, SingleItemNamespace):
                     namespace_dict = {
                         'cmd': nss.name,
                         'description': nss.description,

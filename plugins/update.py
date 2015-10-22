@@ -28,6 +28,7 @@
 
 from namespace import ConfigNamespace, Command, description, CommandException
 from output import output_msg, ValueType, Table, output_table
+from datetime import datetime
 import icu
 import time
 import copy
@@ -35,6 +36,18 @@ from utils import post_save
 
 t = icu.Transliterator.createInstance("Any-Accents", icu.UTransDirection.FORWARD)
 _ = t.transliterate
+
+
+def get_short_version(check_str):
+    version = []
+    for x in check_str.split('-'):
+        try:
+            datetime.strptime(x, '%Y%m%d%H%M')
+            version.append(x)
+            break
+        except:
+            version.append(x)
+    return '-'.join(version)
 
 
 def update_check_utility(context):
@@ -47,8 +60,8 @@ def update_check_utility(context):
     updates = context.call_sync('update.get_update_ops')
     if updates:
         for update in updates:
-            update['previous_version'] = '-'.join(update['previous_version'].split('-')[:2])
-            update['new_version'] = '-'.join(update['new_version'].split('-')[:2])
+            update['previous_version'] = get_short_version(update['previous_version'])
+            update['new_version'] = get_short_version(update['new_version'])
         return Table(updates, [
             Table.Column('Name', 'new_name'),
             Table.Column('Operation', 'operation'),

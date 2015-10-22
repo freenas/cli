@@ -62,7 +62,7 @@ class BinaryExpr(object):
         self.right = right
 
     def __str__(self):
-        return "<BinaryExpr left '{0}' op '{1}' right '{2}>".format(self.left, self.op, self.right)
+        return "<BinaryExpr left '{0}' op '{1}' right '{2}'>".format(self.left, self.op, self.right)
 
     def __repr__(self):
         return str(self)

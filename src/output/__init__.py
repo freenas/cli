@@ -158,6 +158,9 @@ def resolve_cell(row, spec):
 
 
 def read_value(value, tv=ValueType.STRING):
+    if value is None:
+        return value
+
     if tv == ValueType.STRING:
         return str(value)
 

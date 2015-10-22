@@ -32,7 +32,10 @@ import ply.yacc as yacc
 
 class Symbol(object):
     def __init__(self, name):
-        self.name = name
+        if name == "none":
+            self.name = None
+        else:
+            self.name = name
 
     def __str__(self):
         return "<Symbol '{0}'>".format(self.name)

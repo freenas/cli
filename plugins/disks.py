@@ -52,7 +52,7 @@ class DisksNamespace(RpcBasedLoadMixin, EntityNamespace):
         self.add_property(
             descr='Disk name',
             name='name',
-            get=lambda row: row.get('status.description', os.path.basename(row['path'])),
+            get=lambda row: os.path.basename(row.get('path')),
             set=None,
             list=True)
 

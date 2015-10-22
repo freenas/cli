@@ -923,19 +923,18 @@ class MainLoop(object):
 
 
 def main():
+    pid = os.getpid()
     logging.basicConfig(
-        filename='/var/tmp/freenascli.{0}.log'.format(str(os.getpid())),
-        level=logging.DEBUG)
+        filename='/var/tmp/freenascli.{0}.log'.format(pid), level=logging.DEBUG)
     # create symlink to latest created cli log
     # but first check if previous exists and nuke it
     try:
-        os.unlink('/var/tmp/freenascli.latest.log')
-        os.symlink(
-            '/var/tmp/freenascli.{0}.log'.format(str(os.getpid())),
-            '/var/tmp/freenascli.latest.log'
-            )
+        latest_log = '/var/tmp/freenascli.latest.log'
+        if os.path.lexists(latest_log):
+            os.unlink(latest_log)
+        os.symlink('/var/tmp/freenascli.{0}.log'.format(pid), latest_log)
         # Try to set the permissions on this symlink to be readable, writable by all
-        os.chmod('/var/tmp/freenascli.latest.log', 0777)
+        os.chmod(latest_log, 0777)
     except OSError:
         # not there no probs or cannot make this symlink move on
         pass

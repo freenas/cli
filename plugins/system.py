@@ -173,6 +173,7 @@ class MailNamespace(ConfigNamespace):
             descr='Encryption type',
             name='encryption',
             get='encryption',
+            enum=['PLAIN', 'TLS', 'SSL']
         )
 
         self.add_property(

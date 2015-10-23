@@ -135,6 +135,63 @@ class TimeNamespace(ConfigNamespace):
     def save(self):
         self.context.submit_task('system.time.configure', self.get_diff(), callback=lambda s: post_save(self, s))
 
+@description("Mail configuration")
+class MailNamespace(ConfigNamespace):
+    def __init__(self, name, context):
+        super(MailNamespace, self).__init__(name, context)
+        self.context = context
+        self.config_call='mail.get_config'
+        
+        self.add_property(
+            descr='Email address',
+            name='email',
+            get='from',
+            set='from',
+        )
+
+        self.add_property(
+            descr='Email server',
+            name='server',
+            get='server',
+        )
+
+        self.add_property(
+            descr='SMTP port',
+            name='port',
+            get='port',
+            type=ValueType.NUMBER,
+        )
+
+        self.add_property(
+            descr='Authentication required',
+            name='auth',
+            get='auth',
+            type=ValueType.BOOLEAN,
+        )
+
+        self.add_property(
+            descr='Encryption type',
+            name='encryption',
+            get='encryption',
+        )
+
+        self.add_property(
+            descr='Username for Authentication',
+            name='username',
+            get='user',
+            set='user',
+        )
+
+        self.add_property(
+            descr='Password for Authentication',
+            name='password',
+            get=None,
+            set='pass',
+        )
+
+    def save(self):
+        self.context.submit_task('mail.configure', self.get_diff(), callback=lambda s: post_save(self, s))
+
 
 @description("System info and configuration")
 class SystemNamespace(ConfigNamespace):
@@ -186,7 +243,8 @@ class SystemNamespace(ConfigNamespace):
 
     def namespaces(self):
         return [
-            TimeNamespace('time', self.context)
+            TimeNamespace('time', self.context),
+            MailNamespace('mail', self.context)
         ]
 
 

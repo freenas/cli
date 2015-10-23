@@ -193,6 +193,97 @@ class MailNamespace(ConfigNamespace):
     def save(self):
         self.context.submit_task('mail.configure', self.get_diff(), callback=lambda s: post_save(self, s))
 
+@description("Advanced system configuration")
+class AdvancedNamespace(ConfigNamespace):
+    def __init__(self, name, context):
+        super(AdvancedNamespace, self).__init__(name, context)
+        self.context = context
+        self.config_call='system.advanced.get_config'
+
+        self.add_property(
+            descr='Enable Console CLI',
+            name='console_cli',
+            get='console_cli',
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
+            descr='Enable Console Screensaver',
+            name='console_screensaver',
+            get='console_screensaver',
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
+            descr='Enable Serial Console',
+            name='serial_console',
+            get='serial_console',
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
+            descr='Serial Console Port',
+            name='serial_port',
+            get='serial_port',
+        )
+
+        self.add_property(
+            descr='Serial Port Speed',
+            name='serial_speed',
+            get='serial_speed',
+            type=ValueType.NUMBER
+        )
+
+        self.add_property(
+            descr='Enable powerd',
+            name='powerd',
+            get='powerd',
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
+            descr='Default swap on drives',
+            name='swapondrive',
+            get='swapondrive',
+            type=ValueType.NUMBER
+        )
+
+        self.add_property(
+            descr='Enable Autotune',
+            name='autotune',
+            get='autotune',
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
+            descr='Enable Debug Kernel',
+            name='debugkernel',
+            get='debugkernel',
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
+            descr='Automatically upload crash dumps to iXsystems',
+            name='uploadcrash',
+            get='uploadcrash',
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
+            descr='Message of the day',
+            name='motd',
+            get='motd',
+        )
+
+        self.add_property(
+            descr='Periodic Notify User UID',
+            name='periodic_notify_user',
+            get='periodic_notify_user',
+            type=ValueType.NUMBER
+        )
+        
+    def save(self):
+        self.context.submit_task('system.advanced.configure', self.get_diff(), callback=lambda s: post_save(self, s))
 
 @description("System info and configuration")
 class SystemNamespace(ConfigNamespace):
@@ -244,6 +335,7 @@ class SystemNamespace(ConfigNamespace):
 
     def namespaces(self):
         return [
+            AdvancedNamespace('advanced', self.context),
             TimeNamespace('time', self.context),
             MailNamespace('mail', self.context)
         ]

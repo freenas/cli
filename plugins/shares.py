@@ -72,7 +72,7 @@ class SharesNamespace(Namespace):
         ]
 
 
-class BaseSharesNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
+class BaseSharesNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
     def __init__(self, name, type_name, context):
         super(BaseSharesNamespace, self).__init__(name, context)
 
@@ -90,7 +90,7 @@ class BaseSharesNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
         self.add_property(
             descr='Share name',
             name='name',
-            get='id',
+            get='name',
             list=True
         )
 
@@ -103,6 +103,8 @@ class BaseSharesNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
         )
 
         self.primary_key = self.get_mapping('name')
+        self.primary_key_name = 'name'
+        self.save_key_name = 'id'
         self.entity_commands = lambda this: {
             'clients': ConnectedUsersCommand(this)
         }

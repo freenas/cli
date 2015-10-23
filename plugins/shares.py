@@ -95,6 +95,13 @@ class BaseSharesNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace
         )
 
         self.add_property(
+            descr='Share type',
+            name='type',
+            get='type',
+            list=False
+        )
+
+        self.add_property(
             descr='Target',
             name='target',
             get='target',

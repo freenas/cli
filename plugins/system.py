@@ -249,13 +249,6 @@ class AdvancedNamespace(ConfigNamespace):
         )
 
         self.add_property(
-            descr='Enable Autotune',
-            name='autotune',
-            get='autotune',
-            type=ValueType.BOOLEAN
-        )
-
-        self.add_property(
             descr='Enable Debug Kernel',
             name='debugkernel',
             get='debugkernel',

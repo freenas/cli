@@ -26,7 +26,6 @@
 #####################################################################
 
 
-import copy
 from namespace import ConfigNamespace, EntityNamespace, RpcBasedLoadMixin, Command, description
 from output import ValueType
 from utils import post_save

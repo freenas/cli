@@ -60,8 +60,14 @@ def update_check_utility(context):
     updates = context.call_sync('update.get_update_ops')
     if updates:
         for update in updates:
-            update['previous_version'] = get_short_version(update['previous_version'])
-            update['new_version'] = get_short_version(update['new_version'])
+            update['previous_version'] = (
+                get_short_version(update['previous_version'])
+                if update['previous_version'] else '-'
+            )
+            update['new_version'] = (
+                get_short_version(update['new_version'])
+                if update['new_version'] else '-'
+            )
         return Table(updates, [
             Table.Column('Name', 'new_name'),
             Table.Column('Operation', 'operation'),

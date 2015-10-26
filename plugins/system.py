@@ -27,7 +27,7 @@
 
 
 import copy
-from namespace import Namespace, ConfigNamespace, Command, IndexCommand, description, CommandException
+from namespace import Namespace, ConfigNamespace, Command, IndexCommand, description, CommandException, RpcBasedLoadMixin, EntityNamespace
 from output import Table, Object, ValueType, output_dict, output_table
 from descriptions import events
 from utils import parse_query_args, post_save
@@ -75,21 +75,49 @@ class VersionCommand(Command):
         )
 
 
-@description("Prints session history")
-class SessionsCommand(Command):
-    """
-    Usage: sessions [<field> <operator> <value> ...] [limit=<n>] [sort=<field>,-<field2>]
-    """
-    def run(self, context, args, kwargs, opargs):
-        items = context.call_sync('sessions.query', *parse_query_args(args, kwargs))
-        return Table(items, [
-            Table.Column('Session ID', 'id', ValueType.NUMBER),
-            Table.Column('IP address', 'address', ValueType.STRING),
-            Table.Column('User name', 'username', ValueType.STRING),
-            Table.Column('Started at', 'started-at', ValueType.TIME),
-            Table.Column('Ended at', 'ended-at', ValueType.TIME)
-        ])
+@description("View sessions")
+class SessionsNamespace(RpcBasedLoadMixin, EntityNamespace):
+    def __init__(self, name, context):
+        super(SessionsNamespace, self).__init__(name, context)
 
+        self.allow_create = False
+        self.allow_edit = False
+        self.query_call = 'sessions.query'
+
+        self.add_property(
+            descr='Session ID',
+            name='id',
+            get='id',
+            type=ValueType.NUMBER
+        )
+
+        self.add_property(
+            descr='IP Address',
+            name='address',
+            get='address',
+        )
+
+        self.add_property(
+            descr='User name',
+            name='username',
+            get='username',
+        )
+
+        self.add_property(
+            descr='Started at',
+            name='started',
+            get='started-at',
+            type=ValueType.TIME
+        )
+
+        self.add_property(
+            descr='Ended at',
+            name='ended',
+            get='ended-at',
+            type=ValueType.TIME
+        )
+
+        self.primary_key = self.get_mapping('id')
 
 @description("Prints event history")
 class EventsCommand(Command):
@@ -320,7 +348,6 @@ class SystemNamespace(ConfigNamespace):
             'version': VersionCommand(),
             'info': InfoCommand(),
             'events': EventsCommand(),
-            'sessions': SessionsCommand()
         }
 
     def save(self):
@@ -330,7 +357,8 @@ class SystemNamespace(ConfigNamespace):
         return [
             AdvancedNamespace('advanced', self.context),
             TimeNamespace('time', self.context),
-            MailNamespace('mail', self.context)
+            MailNamespace('mail', self.context),
+            SessionsNamespace('session', self.context),
         ]
 
 

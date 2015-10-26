@@ -219,9 +219,8 @@ class InterfacesNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
             'down': InterfaceManageCommand(this, False),
         }
 
-        self.entity_namespaces = lambda this: [
-            AliasesNamespace('aliases', self.context, this)
-        ]
+        self.leaf_entity_namespace = lambda this: AliasesNamespace('aliases', self.context, this)
+        self.leaf_harborer = True
 
     def get_link_state(self, entity):
         return self.link_states[entity['status.link_state']]

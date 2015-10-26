@@ -417,12 +417,16 @@ class GlobalConfigNamespace(ConfigNamespace):
             type=ValueType.BOOLEAN
         )
 
-    #def load(self):
+    # def load(self):
     #    self.entity = self.context.call_sync('')
     #    self.orig_entity = copy.deepcopy(self.entity)
 
     def save(self):
-        return self.context.submit_task('network.configure', self.get_diff(), callback=lambda s: post_save(self, s))
+        return self.context.submit_task(
+            'network.configure',
+            self.get_diff(),
+            callback=lambda s: post_save(self, s)
+        )
 
 
 @description("Routing configuration")

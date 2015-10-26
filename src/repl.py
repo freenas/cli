@@ -596,6 +596,9 @@ class MainLoop(object):
                     yield (i.left, i.op, self.eval(i.right.expr))
 
     def format_output(self, object):
+        if isinstance(object, list):
+            for i in object:
+                self.format_output(i)
         if isinstance(object, Object):
             output_object(object)
 

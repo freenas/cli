@@ -54,6 +54,8 @@ class Namespace(object):
         self.nslist = []
         self.property_mappings = []
         self.localdoc = {}
+        self.required_props = None
+        self.extra_required_props = None
 
     def help(self):
         pass
@@ -615,7 +617,7 @@ class CreateEntityCommand(Command):
                 output_msg('Property {0} is not writable'.format(k))
                 return
 
-        if hasattr(self.parent, 'required_props'):
+        if self.parent.required_props:
             missing_args = []
             for prop in self.parent.required_props:
                 if isinstance(prop, list):
@@ -628,7 +630,7 @@ class CreateEntityCommand(Command):
                 else:
                     if prop not in kwargs.keys():
                         missing_args.append(prop)
-            if hasattr(self.parent, 'extra_required_props'):
+            if self.parent.extra_required_props:
                 for prop_set in self.parent.extra_required_props:
                     found_one = False
                     missing = False

@@ -26,12 +26,8 @@
 #####################################################################
 
 
-import copy
-from namespace import (
-    Namespace, ConfigNamespace, Command, IndexCommand, description,
-    CommandException, RpcBasedLoadMixin, EntityNamespace
-)
-from output import Table, Object, ValueType, output_dict, output_table
+from namespace import ConfigNamespace, Command, description, RpcBasedLoadMixin, EntityNamespace
+from output import Table, Object, ValueType, output_dict
 from descriptions import events
 from utils import parse_query_args, post_save
 

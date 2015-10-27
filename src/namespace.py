@@ -349,6 +349,7 @@ class ItemNamespace(Namespace):
         if not hasattr(self, 'description'):
             self.description = name
         self.entity = None
+        self.leaf_entity = False
         self.orig_entity = None
         self.allow_edit = True
         self.modified = False

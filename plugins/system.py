@@ -119,19 +119,6 @@ class SessionsNamespace(RpcBasedLoadMixin, EntityNamespace):
         self.primary_key = self.get_mapping('id')
 
 
-@description("Prints event history")
-class EventsCommand(Command):
-    """
-    Usage: events [<field> <operator> <value> ...] [limit=<n>] [sort=<field>,-<field2>]
-    """
-    def run(self, context, args, kwargs, opargs):
-        items = context.call_sync('event.query', *parse_query_args(args, kwargs))
-        return Table(items, [
-            Table.Column('Event name', lambda t: events.translate(context, t['name'], t['args'])),
-            Table.Column('Time', 'timestamp', ValueType.TIME)
-        ])
-
-
 @description("View event history")
 class EventsNamespace(RpcBasedLoadMixin, EntityNamespace):
     def __init__(self, name, context):
@@ -404,7 +391,6 @@ class SystemNamespace(ConfigNamespace):
             'status': StatusCommand(),
             'version': VersionCommand(),
             'info': InfoCommand(),
-            'events': EventsCommand(),
         }
 
     def save(self):

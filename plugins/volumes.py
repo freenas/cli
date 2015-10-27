@@ -290,7 +290,8 @@ class DatasetsNamespace(EntityNamespace):
         super(DatasetsNamespace, self).__init__(name, context)
         self.parent = parent
         self.path = name
-    
+        self.required_props = ['name']
+        
         self.localdoc['CreateEntityCommand'] = ("""\
             Usage: create <volume>/<dataset>
                    create <volume>/<dataset>/<dataset>
@@ -469,6 +470,7 @@ class SnapshotsNamespace(RpcBasedLoadMixin, EntityNamespace):
         self.parent = parent
         self.query_call = 'volumes.snapshots.query'
         self.primary_key_name = 'id'
+        self.required_props = ['name', 'dataset']
         self.extra_query_params = [
             ('pool', '=', self.parent.name)
         ]

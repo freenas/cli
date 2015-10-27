@@ -49,6 +49,7 @@ class UsersNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
         self.update_task = 'users.update'
         self.delete_task = 'users.delete'
         self.save_key_name = 'id'
+        self.required_props = ['username', 'group', ['password','password_disabled']]
 
         self.localdoc['CreateEntityCommand'] = ("""\
             Usage: create username=<name> group=<group> password=<passwd>...
@@ -194,6 +195,7 @@ class GroupsNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
         self.create_task = 'groups.create'
         self.update_task = 'groups.update'
         self.delete_task = 'groups.delete'
+        self.required_props = ['name']
 
         self.skeleton_entity = {
             'name': None,

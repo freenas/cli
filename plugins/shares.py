@@ -81,6 +81,7 @@ class BaseSharesNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace
         self.create_task = 'share.create'
         self.update_task = 'share.update'
         self.delete_task = 'share.delete'
+        self.required_props = ['name', 'target']
 
         self.skeleton_entity = {
             'type': type_name,
@@ -304,6 +305,7 @@ class ISCSIPortalsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespa
         self.create_task = 'share.iscsi.portal.create'
         self.update_task = 'share.iscsi.portal.update'
         self.delete_task = 'share.iscsi.portal.delete'
+        self.required_props = ['name', 'listen']
 
         self.add_property(
             descr='Group name',
@@ -357,6 +359,7 @@ class ISCSIAuthGroupsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityName
         self.create_task = 'share.iscsi.auth.create'
         self.update_task = 'share.iscsi.auth.update'
         self.delete_task = 'share.iscsi.auth.delete'
+        self.required_props = ['name', 'policy']
 
         self.add_property(
             descr='Portal name',
@@ -382,6 +385,8 @@ class ISCSIUsersNamespace(EntityNamespace):
     def __init__(self, name, context, parent):
         super(ISCSIUsersNamespace, self).__init__(name, context)
         self.parent = parent
+        self.required_props = ['name', 'secret']
+        self.extra_required_props = [['peer_name', 'peer_secret']]
 
         self.add_property(
             descr='User name',
@@ -438,6 +443,7 @@ class ISCSITargetsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespa
         self.create_task = 'share.iscsi.target.create'
         self.update_task = 'share.iscsi.target.update'
         self.delete_task = 'share.iscsi.target.delete'
+        self.required_props = ['name']
 
         self.add_property(
             descr='Target name',

@@ -603,9 +603,6 @@ class CreateEntityCommand(Command):
         ns.orig_entity = wrap(copy.deepcopy(self.parent.skeleton_entity))
         ns.entity = wrap(copy.deepcopy(self.parent.skeleton_entity))
 
-        if not args and not kwargs:
-            return
-
         if len(args) > 0:
             prop = self.parent.primary_key
             prop.do_set(ns.entity, args.pop(0))
@@ -618,6 +615,38 @@ class CreateEntityCommand(Command):
                 output_msg('Property {0} is not writable'.format(k))
                 return
 
+        if hasattr(self.parent, 'required_props'):
+            missing_args = []
+            for prop in self.parent.required_props:
+                if isinstance(prop, list):
+                    has_arg = False
+                    for p in prop:
+                        if p in kwargs.keys():
+                            has_arg = True
+                    if not has_arg:
+                        missing_args.append("{0}".format(' or '.join(prop)))
+                else:
+                    if prop not in kwargs.keys():
+                        missing_args.append(prop)
+            if hasattr(self.parent, 'extra_required_props'):
+                for prop_set in self.parent.extra_required_props:
+                    found_one = False
+                    missing = False
+                    for prop in prop_set:
+                        if prop in kwargs.keys():
+                            found_one = True
+                        else:
+                            if found_one:
+                                missing = True
+                    if found_one and missing:
+                        missing_args.append(' and '.join(prop_set))
+            if len(missing_args) > 0:
+                output_msg('Required properties not met, still missing: {0}'.format(', '.join(missing_args)))
+                return
+        else:
+            if not args and not kwargs:
+                return
+
         for k, v in kwargs.items():
             prop = self.parent.get_mapping(k)
             prop.do_set(ns.entity, v)
@@ -626,6 +655,10 @@ class CreateEntityCommand(Command):
 
     def complete(self, context, tokens):
         return [x.name + '=' for x in self.parent.property_mappings if x.set]
+
+    def check_args(self, req_props, kwarg_keys):
+        return missing_args
+
 
 
 @description("Removes item")

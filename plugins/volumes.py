@@ -469,7 +469,7 @@ class SnapshotsNamespace(RpcBasedLoadMixin, EntityNamespace):
         super(SnapshotsNamespace, self).__init__(name, context)
         self.parent = parent
         self.query_call = 'volumes.snapshots.query'
-        self.primary_key_name = 'id'
+        self.primary_key_name = 'name'
         self.required_props = ['name', 'dataset']
         self.extra_query_params = [
             ('pool', '=', self.parent.name)
@@ -483,6 +483,7 @@ class SnapshotsNamespace(RpcBasedLoadMixin, EntityNamespace):
             descr='Snapshot name',
             name='name',
             get='id',
+            set='id',
             list=True)
 
         self.add_property(
@@ -529,7 +530,7 @@ class SnapshotsNamespace(RpcBasedLoadMixin, EntityNamespace):
             'volume.snapshot.create',
             self.parent.name,
             this.entity['dataset'],
-            this.entity['name'],
+            this.entity['id'],
             this.entity['recursive'],
             callback=lambda s: post_save(this, s)
         )

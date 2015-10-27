@@ -659,10 +659,6 @@ class CreateEntityCommand(Command):
     def complete(self, context, tokens):
         return [x.name + '=' for x in self.parent.property_mappings if x.set]
 
-    def check_args(self, req_props, kwarg_keys):
-        return missing_args
-
-
 
 @description("Removes item")
 class DeleteEntityCommand(Command):

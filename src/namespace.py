@@ -723,10 +723,10 @@ class RpcBasedLoadMixin(object):
             self.extra_query_params + params, options))
 
     def get_one(self, name):
-        return wrap(self.context.connection.call_sync(
+        return self.context.call_sync(
             self.query_call,
             self.extra_query_params + [(self.primary_key_name, '=', name)],
-            {'single': True}))
+            {'single': True})
 
 
 class TaskBasedSaveMixin(object):

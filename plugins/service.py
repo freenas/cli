@@ -477,6 +477,12 @@ class ServiceConfigNamespace(ConfigNamespace):
                 name='auxiliary',
                 get='auxiliary'
             )
+        elif name == "ipfs":
+            self.add_property(
+                descr='IPFS PATH',
+                name='path',
+                get='path'
+            )
 
 
 def _init(context):

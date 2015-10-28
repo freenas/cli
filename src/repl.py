@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # +
 # Copyright 2014 iXsystems, Inc.
 # All rights reserved

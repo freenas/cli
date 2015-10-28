@@ -1,4 +1,4 @@
 #!/bin/sh
 trap '' 2
-exec python3 /usr/local/lib/freenascli/src/repl.py $*
+exec python2.7 /usr/local/lib/freenascli/src/repl.py $*
 trap 2

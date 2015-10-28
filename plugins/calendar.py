@@ -28,16 +28,25 @@
 
 import os
 from namespace import Namespace, EntityNamespace, ConfigNamespace, Command, RpcBasedLoadMixin, TaskBasedSaveMixin, description
-from output import ValueType, output_msg, output_table, read_value
+from output import ValueType, output_msg, output_table, read_value, format_value
 
 
 TASK_TYPES = {
     'scrub': 'zfs.pool.scrub',
-    'smart': 'disks.test_parallel'
+    'smart': 'disks.test_parallel',
+    'snapshot': 'replication.snapshot_dataset',
+    'replication': 'replication.replicate_dataset',
+    'check_updates': 'update.checkfetch'
 }
 
 
 TASK_TYPES_REVERSE = {v: k for k, v in TASK_TYPES.items()}
+
+
+@description("Runs calendar task right now")
+class RunCommand(Command):
+    def run(self, args, kwargs, opargs):
+        pass
 
 
 @description("Global network configuration")
@@ -122,7 +131,7 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
         self.add_property(
             descr='Task arguments',
             name='args',
-            get=lambda row: ', '.join(row['args']),
+            get=lambda row: [format_value(i) for i in row['args']],
             set=None,
             list=True
         )
@@ -146,6 +155,10 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
         self.entity_namespaces = lambda this: [
             ScheduleNamespace('schedule', self.context, this)
         ]
+
+        self.entity_commands = lambda this: {
+            'run': RunCommand()
+        }
 
     def set_type(self, row):
         pass

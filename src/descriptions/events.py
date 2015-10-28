@@ -70,10 +70,8 @@ def entity_subscriber_changed(name, args, select=None):
 
 
 events = {
-    'server.client_logged': (_("User logged in"), lambda c, a: _("User {0} logged in").format(a['username'])),
-    'server.client_disconnected': (_("Client disconnected"), lambda c, a: _("Client {0} disconnected").format(a['address'])),
-    'service.started': (_("Service started"), lambda c, a: _("Service {0} started").format(a['name'])),
-    'service.stopped': (_("Service stopped"), lambda c, a: _("Service {0} stopped").format(a['name'])),
+    'server.client_login': (_("User logged in"), lambda c, a: _("User {0} logged in").format(a['username'])),
+    'server.client_logout': (_("Client logged out"), lambda c, a: _("Client {0} logged out").format(a['username'])),
     'task.created': (_("Task created"), task_created),
     'task.updated': (_("Task updated"), task_updated),
     'entity-subscriber.volumes.changed': (_("Volume changed"), lambda c, a: entity_subscriber_changed(_("Volume"), a, lambda e: e.get('name'))),

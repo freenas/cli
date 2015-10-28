@@ -272,10 +272,16 @@ class HelpCommand(Command):
         help
         help printenv
         help account users show
+
+    To see the properties of a given namespace, use 'help properties'
     """
     def run(self, context, args, kwargs, opargs):
-        if args:
-            if args[0] == "/":
+        arg = args[0] if len(args) > 0 else None
+        obj = context.ml.get_relative_object(context.ml.path[-1], args)
+        bases = map(lambda x: x.__name__, obj.__class__.__bases__)
+
+        if arg:
+            if arg == "/":
                 output_msg(textwrap.dedent("""\
                     Usage: /
                     / <namespace>
@@ -284,34 +290,63 @@ class HelpCommand(Command):
                     Allows you to navigate or execute commands starting \
                     from the root namespace"""))
                 return
-            elif args[0] == "..":
+            elif arg == "..":
                 output_msg(textwrap.dedent("""\
                     Usage: ..
 
                     Goes up one level of namespace"""))
                 return
-            elif args[0] == "-":
+            elif arg == "-":
                 output_msg(textwrap.dedent("""\
                     Usage: -
 
                     Goes back to the previous namespace"""))
                 return
-
-        obj = context.ml.get_relative_object(context.ml.path[-1], args)
-        bases = map(lambda x: x.__name__, obj.__class__.__bases__)
+            elif arg == "properties":
+            # If the namespace has properties, display a list of the available properties
+                if hasattr(obj, 'property_mappings'):
+                    prop_dict_list = []
+                    for prop in obj.property_mappings:
+                        values = {
+                                ValueType.STRING:"string", 
+                                ValueType.NUMBER: "number", 
+                                ValueType.HEXNUMBER: "hex",
+                                ValueType.BOOLEAN: "boolean",
+                                ValueType.SIZE: "size",
+                                ValueType.TIME: "time",
+                                ValueType.SET: "set",
+                                }
+                        if hasattr(prop, 'enum') and prop.enum:
+                            prop_type = "enum [" + ", ".join(prop.enum) + "]"
+                        else:
+                            prop_type = values[prop.type]
+                        if not prop.set:
+                            prop_type += " (read only)"
+                        prop_dict = {
+                                'propname': prop.name,
+                                'propdescr': prop.descr,
+                                'proptype' : prop_type
+                        }
+                        prop_dict_list.append(prop_dict)
+                if len(prop_dict_list) > 0:
+                    return Table(prop_dict_list, [
+                        Table.Column('Property', 'propname', ValueType.STRING),
+                        Table.Column('Description', 'propdescr', ValueType.STRING),
+                        Table.Column('Type', 'proptype', ValueType.STRING)])
 
         if 'Command' in bases and obj.__doc__:
+            command_name = obj.__class__.__name__
             if hasattr(obj, 'parent'):
                 if hasattr(obj.parent, 'localdoc'):
-                    if obj.__class__.__name__ in obj.parent.localdoc.keys():
-                        output_msg(textwrap.dedent(obj.parent.localdoc[obj.__class__.__name__]))
+                    if command_name in obj.parent.localdoc.keys():
+                        output_msg(textwrap.dedent(obj.parent.localdoc[command_name]))
                     else:
                         output_msg(inspect.getdoc(obj))
                 else:
                     output_msg(inspect.getdoc(obj))
             else:
                 output_msg(inspect.getdoc(obj))
-
+        
         if 'PipeCommand' in bases and obj.__doc__:
             output_msg(inspect.getdoc(obj))
 
@@ -361,18 +396,6 @@ class HelpCommand(Command):
                         Table.Column('Global Command', 'cmd', ValueType.STRING),
                         Table.Column('Description', 'description', ValueType.STRING)
                     ]))
-            # If the namespace has properties, display a list of the available properties
-            if hasattr(obj, 'property_mappings'):
-                prop_dict_list = []
-                for prop in obj.property_mappings:
-                    prop_dict = {
-                            'propname': prop.name,
-                            'propdescr': prop.descr
-                    }
-                    prop_dict_list.append(prop_dict)
-                output_call_list.append(Table(prop_dict_list, [
-                    Table.Column('Property', 'propname', ValueType.STRING),
-                    Table.Column('Description', 'propdescr', ValueType.STRING)]))
             output_less(lambda: output_table_list(output_call_list))
 
 

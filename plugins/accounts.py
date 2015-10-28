@@ -52,20 +52,21 @@ class UsersNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
         self.required_props = ['username', 'group', ['password','password_disabled']]
 
         self.localdoc['CreateEntityCommand'] = ("""\
-            Usage: create username=<name> group=<group> password=<passwd>...
+            Usage: create username=<name> group=<group> <property>=<value>...
 
             Examples: create username=foo group=foo password=bar home=/tank/foo
+                      create username=bar group=bar password_disabled=true
 
-            Creates a user account.""")
+            Creates a user account. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
-            Usage: set <field>=<value> [...]
+            Usage: set <property>=<value> [...]
 
             Examples: set fullname="John Smith"
                       set group=users
                       set password_disabled=True
                       set groups=wheel, ftp, operator
 
-            Sets a user property.""")
+            Sets a user property. For a list of properties, see 'help properties'.""")
 
 
         self.skeleton_entity = {

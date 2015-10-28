@@ -295,7 +295,9 @@ class ItemNamespace(Namespace):
     @description("Sets single item property")
     class SetEntityCommand(Command):
         """
-        Usage: set <field>=<value> [...]
+        Usage: set <property>=<value> [...]
+
+        For a list of properties for the current namespace, see 'help properties'.
         """
         def __init__(self, parent):
             self.parent = parent
@@ -593,7 +595,9 @@ class ListCommand(FilteringCommand):
 @description("Creates new item")
 class CreateEntityCommand(Command):
     """
-    Usage: create [<field>=<value> ...]
+    Usage: create [<property>=<value> ...]
+
+    For a list of properties for the current namespace, see 'help properties'.
     """
     def __init__(self, parent):
         if hasattr(parent, 'leaf_entity') and parent.leaf_entity:

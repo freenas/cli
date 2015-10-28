@@ -290,7 +290,7 @@ class CIFSSharesNamespace(BaseSharesNamespace):
             Examples: set guest_ok=false
                       set read_only=true
                       set browseable=true
-                      set hosts_allow=192.168.1.1, foobar.ltruel
+                      set hosts_allow=192.168.1.1, foobar.local
 
             Sets a CIFS share property. For a list of properties, see 'help properties'.""")
 

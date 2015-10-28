@@ -704,7 +704,7 @@ class EntityNamespace(Namespace):
         return any([x for x in self.property_mappings if x.name == prop])
 
     def get_mapping(self, prop):
-        return filter(lambda x: x.name == prop, self.property_mappings)[0]
+        return list(filter(lambda x: x.name == prop, self.property_mappings))[0]
 
     def get_property(self, prop, obj):
         mapping = self.get_mapping(prop)

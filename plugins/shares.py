@@ -509,6 +509,7 @@ class ISCSITargetMapingNamespace(EntityNamespace):
         self.parent.save()
 
 
+@description("iSCSI shares")
 class ISCSISharesNamespace(BaseSharesNamespace):
     def __init__(self, name, context):
         super(ISCSISharesNamespace, self).__init__(name, 'iscsi', context)

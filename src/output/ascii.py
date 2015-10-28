@@ -84,7 +84,7 @@ class AsciiOutputFormatter(object):
 
     @staticmethod
     def output_dict(data, key_label, value_label, value_vt=ValueType.STRING):
-        sys.stdout.write(columnize(['{0}={1}'.format(row[0], AsciiOutputFormatter.format_value(row[1], value_vt)) for row in data.items()]))
+        sys.stdout.write(columnize(['{0}={1}'.format(row[0], AsciiOutputFormatter.format_value(row[1], value_vt)) for row in list(data.items())]))
         sys.stdout.flush()
 
     @staticmethod
@@ -93,7 +93,7 @@ class AsciiOutputFormatter(object):
         table.set_deco(0)
         table.header([i.label for i in tab.columns])
         table.add_rows([[AsciiOutputFormatter.format_value(resolve_cell(row, i.accessor), i.vt) for i in tab.columns] for row in tab.data], False)
-        print table.draw()
+        print(table.draw())
 
     @staticmethod
     def output_table_list(tables):
@@ -111,7 +111,7 @@ class AsciiOutputFormatter(object):
                     if current_width > widths[i]:
                         widths[i] = current_width
 
-        if sum(widths) <> terminal_size:
+        if sum(widths) != terminal_size:
             widths[-1] = terminal_size - sum(widths[:-1]) - len(widths) * 3
 
         for tab in tables:
@@ -120,7 +120,7 @@ class AsciiOutputFormatter(object):
             table.set_deco(0)
             table.header([i.label for i in tab.columns])
             table.add_rows([[AsciiOutputFormatter.format_value(resolve_cell(row, i.accessor), i.vt) for i in tab.columns] for row in tab.data], False)
-            print table.draw() + "\n"
+            print(table.draw() + "\n")
 
     @staticmethod
     def output_object(obj):
@@ -129,7 +129,7 @@ class AsciiOutputFormatter(object):
         for item in obj:
             table.add_row(['{0} ({1})'.format(item.descr, item.name), AsciiOutputFormatter.format_value(item.value, item.vt)])
 
-        print table.draw()
+        print(table.draw())
 
     @staticmethod
     def output_tree(tree, children, label, label_vt=ValueType.STRING):
@@ -137,7 +137,7 @@ class AsciiOutputFormatter(object):
             for idx, i in enumerate(obj):
                 subtree = resolve_cell(i, children)
                 char = '+' if subtree else ('`' if idx == len(obj) - 1 else '|')
-                print '{0} {1}-- {2}'.format('    ' * indent, char, resolve_cell(i, label))
+                print('{0} {1}-- {2}'.format('    ' * indent, char, resolve_cell(i, label)))
                 if subtree:
                     branch(subtree, indent + 1)
 

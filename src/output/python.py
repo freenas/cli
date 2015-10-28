@@ -26,7 +26,7 @@
 #####################################################################
 
 
-import json
+from . import json
 from output import ValueType, get_terminal_size, resolve_cell
 
 

@@ -161,7 +161,7 @@ t_ATOM = r'[0-9a-zA-Z_\$\/-\/][0-9a-zA-Z_\_\-\.\/#@\:]*'
 
 
 def t_error(t):
-    print("Illegal character '%s'" % t.value[0])
+    print(("Illegal character '%s'" % t.value[0]))
     t.lexer.skip(1)
 
 
@@ -256,7 +256,7 @@ def p_symbol(p):
 
 
 def p_error(p):
-    print "error: {0}".format(p)
+    print("error: {0}".format(p))
 
 
 lex.lex()

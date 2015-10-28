@@ -44,7 +44,7 @@ import time
 import icu
 import getpass
 import traceback
-import Queue
+import queue
 from descriptions import events
 from namespace import Namespace, RootNamespace, Command, FilteringCommand, CommandException
 from parser import parse, Symbol, Set, CommandExpansion, Literal, BinaryExpr, PipeExpr
@@ -55,13 +55,14 @@ from output import (
 from dispatcher.client import Client, ClientError
 from dispatcher.rpc import RpcException
 from fnutils.query import wrap
-from commands import (
+from subprocess import (
     ExitCommand, PrintenvCommand, SetenvCommand, ShellCommand, ShutdownCommand,
     RebootCommand, EvalCommand, HelpCommand, ShowUrlsCommand, ShowIpsCommand,
     TopCommand, ClearCommand, HistoryCommand, SaveenvCommand, EchoCommand,
     SourceCommand, LessCommand, SearchPipeCommand, ExcludePipeCommand,
     SortPipeCommand, LimitPipeCommand, SelectPipeCommand, LoginCommand
 )
+import collections
 
 if platform.system() == 'Darwin':
     import gnureadline as readline
@@ -166,14 +167,14 @@ class VariableStore(object):
         # than the default (DEFAULT_CLI_CONFIGFILE) lets just set this class's
         # 'save_to_file' variable to this file.
         self.save_to_file = filename
-        for name, setting in data.iteritems():
+        for name, setting in data.items():
             self.set(name, setting['value'],
                      ValueType(setting['type']), setting['default'],
                      setting['choices'])
 
     def save(self, filename=None):
         env_settings = {}
-        for key, variable in self.variables.iteritems():
+        for key, variable in self.variables.items():
             env_settings[key] = {
                 'default': variable.default,
                 'type': variable.type.value,
@@ -185,7 +186,7 @@ class VariableStore(object):
                 json.dump(env_settings, f)
         except IOError:
             raise
-        except ValueError, err:
+        except ValueError as err:
             raise ValueError(
                 _("Could not save environemnet to file. Following error " +
                   "occured: {0}".format(str(err))))
@@ -194,10 +195,10 @@ class VariableStore(object):
         return self.variables[name].value
 
     def get_all(self):
-        return self.variables.items()
+        return list(self.variables.items())
 
     def get_all_printable(self):
-        for name, var in self.variables.items():
+        for name, var in list(self.variables.items()):
             yield (name, str(var))
 
     def set(self, name, value, vtype=ValueType.STRING,
@@ -221,7 +222,7 @@ class Context(object):
         self.root_ns = RootNamespace('')
         self.event_masks = ['*']
         self.event_divert = False
-        self.event_queue = Queue.Queue()
+        self.event_queue = queue.Queue()
         self.keepalive_timer = None
         config.instance = self
 
@@ -243,7 +244,7 @@ class Context(object):
             self.connection.on_event(self.handle_event)
             self.connection.on_error(self.connection_error)
 
-        except RpcException, e:
+        except RpcException as e:
             if e.code == errno.EACCES:
                 self.connection.disconnect()
                 output_msg(_("Wrong username or password"))
@@ -288,7 +289,7 @@ class Context(object):
             self.__discover_plugin_dir(dir)
 
     def login_plugins(self):
-        for i in self.plugins.values():
+        for i in list(self.plugins.values()):
             if hasattr(i, '_login'):
                 i._login(self)
 
@@ -330,7 +331,7 @@ class Context(object):
                     output_msg(_("Reauthentication failed (most likely token expired or server was restarted)"))
                     sys.exit(1)
                 break
-            except Exception, e:
+            except Exception as e:
                 output_msg(_('Cannot reconnect: {0}'.format(str(e))))
 
         self.ml.restore_readline()
@@ -343,7 +344,7 @@ class Context(object):
 
         for n in splitpath[1:-1]:
 
-            if n not in ptr_namespaces().keys():
+            if n not in list(ptr_namespaces().keys()):
                 self.logger.warn(_("Cannot attach to namespace %s"), path)
                 return
 
@@ -429,7 +430,7 @@ class Context(object):
 
                 if event == 'task.progress' and data['id'] == tid:
                     message = data['message']
-                    if callable(message_formatter):
+                    if isinstance(message_formatter, collections.Callable):
                         message = message_formatter(message)
                     progress.update(percentage=data['percentage'], message=message)
 
@@ -440,7 +441,7 @@ class Context(object):
                         break
 
                     if data['state'] == 'FAILED':
-                        print
+                        print()
                         break
 
         self.event_divert = False
@@ -544,18 +545,18 @@ class MainLoop(object):
 
         while True:
             try:
-                line = raw_input(self.__get_prompt()).strip()
+                line = input(self.__get_prompt()).strip()
             except EOFError:
-                print
+                print()
                 return
             except KeyboardInterrupt:
-                print
+                print()
                 continue
 
             self.process(line)
 
     def find_in_scope(self, token):
-        if token in self.builtin_commands.keys():
+        if token in list(self.builtin_commands.keys()):
             return self.builtin_commands[token]
 
         cwd_namespaces = self.cached_values['scope_namespaces']
@@ -565,7 +566,7 @@ class MainLoop(object):
             self.cached_values['scope_namespaces'] is not None
            ):
             cwd_namespaces = self.cwd.namespaces()
-            cwd_commands = self.cwd.commands().items()
+            cwd_commands = list(self.cwd.commands().items())
             self.cached_values.update({
                 'scope_cwd': self.cwd,
                 'scope_namespaces': cwd_namespaces,
@@ -617,7 +618,7 @@ class MainLoop(object):
         if isinstance(object, Table):
             output_table(object)
 
-        if isinstance(object, (basestring, int, long, bool)):
+        if isinstance(object, (str, int, bool)):
             output_msg(object)
 
     def eval(self, tokens):
@@ -664,7 +665,7 @@ class MainLoop(object):
                         self.path = oldpath
 
                 result = self.eval(token.expr)
-                if not isinstance(result, basestring):
+                if not isinstance(result, str):
                     try:
                         raise SyntaxError("Can only use command expansion with commands returning single value")
                     finally:
@@ -790,14 +791,14 @@ class MainLoop(object):
         try:
             i = parse(line)
             self.format_output(self.eval(i))
-        except SyntaxError, e:
+        except SyntaxError as e:
             output_msg(_('Syntax error: {0}'.format(str(e))))
-        except CommandException, e:
+        except CommandException as e:
             output_msg(_('Error: {0}'.format(str(e))))
             self.context.logger.error(e.stacktrace)
             if self.context.variables.get('debug'):
                 output_msg(e.stacktrace)
-        except RpcException, e:
+        except RpcException as e:
             self.context.logger.error(str(e))
             output_msg(_('RpcException Error: {0}'.format(str(e))))
         except SystemExit:
@@ -858,7 +859,7 @@ class MainLoop(object):
         tokens = shlex.split(readline_buffer.split('|')[-1].strip(), posix=False)
 
         if "|" in readline_buffer:
-            choices = [x + ' ' for x in self.pipe_commands.keys()]
+            choices = [x + ' ' for x in list(self.pipe_commands.keys())]
             options = [i for i in choices if i.startswith(text)]
             if state < len(options):
                 return options[state]
@@ -885,7 +886,7 @@ class MainLoop(object):
         if issubclass(type(obj), Namespace):
             if self.cached_values['obj'] != obj:
                 obj_namespaces = obj.namespaces()
-                new_choices = [x.get_name() for x in obj_namespaces] + obj.commands().keys()
+                new_choices = [x.get_name() for x in obj_namespaces] + list(obj.commands().keys())
                 self.cached_values.update({
                     'obj': obj,
                     'choices': new_choices,
@@ -896,7 +897,7 @@ class MainLoop(object):
                 len(tokens) == 0 or
                 (len(tokens) <= 1 and text not in ['', None])
                ):
-                choices += self.base_builtin_commands.keys() + ['..', '/', '-']
+                choices += list(self.base_builtin_commands.keys()) + ['..', '/', '-']
             elif 'help' not in choices:
                 choices += ['help']
             choices = [i + ' ' for i in choices]
@@ -954,7 +955,7 @@ def main():
             os.unlink(latest_log)
         os.symlink(current_cli_logfile, latest_log)
         # Try to set the permissions on this symlink to be readable, writable by all
-        os.chmod(latest_log, 0777)
+        os.chmod(latest_log, 0o777)
     except OSError:
         # not there no probs or cannot make this symlink move on
         pass
@@ -1000,7 +1001,7 @@ def main():
                 ml.process(line.strip())
 
             f.close()
-        except EnvironmentError, e:
+        except EnvironmentError as e:
             sys.stderr.write('Cannot open input file: {0}'.format(str(e)))
             sys.exit(1)
 

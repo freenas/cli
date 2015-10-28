@@ -245,7 +245,7 @@ class ShowTopologyCommand(Command):
                 return vdev['type']
 
         volume = self.parent.entity
-        tree = filter(lambda x: len(x['children']) > 0, map(lambda (k, v): {'type': k, 'children': v}, volume['topology'].items()))
+        tree = [x for x in [{'type': k_v[0], 'children': k_v[1]} for k_v in list(volume['topology'].items())] if len(x['children']) > 0]
         output_tree(tree, 'children', print_vdev)
 
 

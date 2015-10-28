@@ -408,7 +408,7 @@ class ISCSIPortalsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespa
         self.primary_key = self.get_mapping('name')
 
     def get_portals(self, obj):
-        return map(lambda i: '{address}:{port}'.format(**i), obj['portals'])
+        return ['{address}:{port}'.format(**i) for i in obj['portals']]
 
     def set_portals(self, obj, value):
         def pack(item):
@@ -420,7 +420,7 @@ class ISCSIPortalsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespa
                 'port': int(ret[1]) if len(ret) == 2 else 3260
             }
 
-        obj['portals'] = map(pack, value)
+        obj['portals'] = list(map(pack, value))
 
 
 @description("iSCSI authentication groups")
@@ -538,7 +538,7 @@ class ISCSIUsersNamespace(EntityNamespace):
         self.parent.save()
 
     def delete(self, name):
-        self.parent.entity['users'] = filter(lambda a: a['name'] == name, self.parent.entity['users'])
+        self.parent.entity['users'] = [a for a in self.parent.entity['users'] if a['name'] == name]
         self.parent.save()
 
 
@@ -629,7 +629,7 @@ class ISCSITargetMapingNamespace(EntityNamespace):
         self.parent.save()
 
     def delete(self, name):
-        self.parent.entity['extents'] = filter(lambda a: a['name'] == name, self.parent.entity['extents'])
+        self.parent.entity['extents'] = [a for a in self.parent.entity['extents'] if a['name'] == name]
         self.parent.save()
 
 

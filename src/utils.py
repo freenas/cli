@@ -55,7 +55,7 @@ def list_split(lst, delimiter):
 
 
 def iterate_vdevs(topology):
-    for group in topology.values():
+    for group in list(topology.values()):
         for vdev in group:
             if vdev['type'] == 'disk':
                 yield vdev

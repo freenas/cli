@@ -59,7 +59,7 @@ tasks = {
 
 
 def translate(context, name, args=None):
-    if name not in tasks.keys():
+    if name not in list(tasks.keys()):
         return name
 
     first, second = tasks[name]

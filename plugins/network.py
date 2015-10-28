@@ -311,7 +311,7 @@ class AliasesNamespace(EntityNamespace):
         self.primary_key = self.get_mapping('address')
 
     def get_one(self, name):
-        f = filter(lambda a: a['address'] == name, self.parent.entity['aliases'])
+        f = [a for a in self.parent.entity['aliases'] if a['address'] == name]
         return f[0] if f else None
 
     def query(self, params, options):
@@ -339,10 +339,7 @@ class AliasesNamespace(EntityNamespace):
         )
 
     def delete(self, address):
-        self.parent.entity['aliases'] = filter(
-            lambda a: a['address'] != address,
-            self.parent.entity['aliases']
-        )
+        self.parent.entity['aliases'] = [a for a in self.parent.entity['aliases'] if a['address'] != address]
         self.parent.parent.save(
             self.parent,
             callback=lambda s: self.my_post_delete(s)

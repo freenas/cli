@@ -34,6 +34,7 @@ from utils import post_save
 from fnutils.query import wrap
 from output import (ValueType, Object, Table, output_list,
                     output_msg, read_value)
+import collections
 
 t = icu.Transliterator.createInstance("Any-Accents", icu.UTransDirection.FORWARD)
 _ = t.transliterate
@@ -66,7 +67,7 @@ class Namespace(object):
     def commands(self):
         # lazy import to avoid circular import hell
         # TODO: can this be avoided? If so please!
-        from commands import HelpCommand
+        from subprocess import HelpCommand
         return {
             '?': IndexCommand(self),
             'help': HelpCommand(),
@@ -144,10 +145,10 @@ class IndexCommand(Command):
         obj = context.ml.get_relative_object(context.ml.path[-1], args)
         if obj.__class__.__name__ == 'RootNamespace':
             output_msg('Builtin items:', attrs=['bold'])
-            output_list(context.ml.builtin_commands.keys())
+            output_list(list(context.ml.builtin_commands.keys()))
 
         output_msg('Current namespace items:', attrs=['bold'])
-        out = cmds.keys()
+        out = list(cmds.keys())
         out += [ns.get_name() for ns in sorted(nss)]
         output_list(out)
 
@@ -176,7 +177,7 @@ class PropertyMapping(object):
         self.condition = kwargs.pop('condition', None)
 
     def do_get(self, obj):
-        if callable(self.get):
+        if isinstance(self.get, collections.Callable):
             return self.get(obj)
 
         return obj.get(self.get)
@@ -187,7 +188,7 @@ class PropertyMapping(object):
                 raise ValueError('Invalid value for property. Should be one of: {0}'.format(', '.join(self.enum)))
 
         value = read_value(value, self.type)
-        if callable(self.set):
+        if isinstance(self.set, collections.Callable):
             self.set(obj, value)
             return
 
@@ -204,7 +205,7 @@ class PropertyMapping(object):
         else:
             newvalues = value
 
-        if callable(self.set):
+        if isinstance(self.set, collections.Callable):
             self.set(obj, newvalues)
             return
 
@@ -223,7 +224,7 @@ class PropertyMapping(object):
             else:
                 raise CommandException(_('{0} is not a value in {1}'.format(v, self.set)))
 
-        if callable(self.set):
+        if isinstance(self.set, collections.Callable):
             self.set(obj, newvalues)
             return
 
@@ -313,13 +314,13 @@ class ItemNamespace(Namespace):
                         raise CommandException(
                             'Invalid argument or use of argument {0}'.format(arg)
                         )
-            for k, v in kwargs.items():
+            for k, v in list(kwargs.items()):
                 if not self.parent.has_property(k):
                     raise CommandException('Property {0} not found'.format(k))
 
             entity = self.parent.entity
 
-            for k, v in kwargs.items():
+            for k, v in list(kwargs.items()):
                 prop = self.parent.get_mapping(k)
                 if prop.set is None:
                     raise CommandException('Property {0} is not writable'.format(k))
@@ -373,8 +374,8 @@ class ItemNamespace(Namespace):
         return self.name
 
     def get_changed_keys(self):
-        for i in self.entity.keys():
-            if i not in self.orig_entity.keys():
+        for i in list(self.entity.keys()):
+            if i not in list(self.orig_entity.keys()):
                 yield i
                 continue
 
@@ -391,7 +392,7 @@ class ItemNamespace(Namespace):
         raise NotImplementedError()
 
     def has_property(self, prop):
-        return any(filter(lambda x: x.name == prop, self.property_mappings))
+        return any([x for x in self.property_mappings if x.name == prop])
 
     def get_mapping(self, prop):
         return filter(lambda x: x.name == prop, self.property_mappings)[0]
@@ -445,7 +446,7 @@ class ConfigNamespace(ItemNamespace):
     def load(self):
         if self.saved:
             if self.config_extra_params:
-                config_extra = self.config_extra_params() if callable(self.config_extra_params) else self.config_extra_params
+                config_extra = self.config_extra_params() if isinstance(self.config_extra_params, collections.Callable) else self.config_extra_params
                 self.entity = self.context.call_sync(self.config_call, config_extra)
             else:
                 self.entity = self.context.call_sync(self.config_call)
@@ -562,7 +563,7 @@ class ListCommand(FilteringCommand):
                 if op == '~=': op = '~'
 
                 prop = self.parent.get_mapping(k)
-                yield k if callable(prop.get) else prop.get, op, v
+                yield k if isinstance(prop.get, collections.Callable) else prop.get, op, v
 
     def run(self, context, args, kwargs, opargs, filtering=None):
         cols = []
@@ -570,7 +571,7 @@ class ListCommand(FilteringCommand):
         options = {}
 
         if filtering:
-            for k, v in filtering['params'].items():
+            for k, v in list(filtering['params'].items()):
                 if k == 'limit':
                     options['limit'] = int(v)
                     continue
@@ -586,7 +587,7 @@ class ListCommand(FilteringCommand):
 
             params = list(self.__map_filter_properties(filtering['filter']))
 
-        for col in filter(lambda x: x.list, self.parent.property_mappings):
+        for col in [x for x in self.parent.property_mappings if x.list]:
             cols.append(Table.Column(col.descr, col.get, col.type))
 
         return Table(self.parent.query(params, options), cols)
@@ -614,7 +615,7 @@ class CreateEntityCommand(Command):
             prop = self.parent.primary_key
             prop.do_set(ns.entity, args.pop(0))
 
-        for k, v in kwargs.items():
+        for k, v in list(kwargs.items()):
             if not self.parent.has_property(k):
                 output_msg('Property {0} not found'.format(k))
                 return
@@ -700,7 +701,7 @@ class EntityNamespace(Namespace):
         self.leaf_entity_namespace = None
 
     def has_property(self, prop):
-        return any(filter(lambda x: x.name == prop, self.property_mappings))
+        return any([x for x in self.property_mappings if x.name == prop])
 
     def get_mapping(self, prop):
         return filter(lambda x: x.name == prop, self.property_mappings)[0]

@@ -96,15 +96,12 @@ class DisksNamespace(RpcBasedLoadMixin, EntityNamespace):
 
     def query(self, params, options):
         ret = super(DisksNamespace, self).query(params, options)
-        disks = map(lambda d: d['path'], ret)
+        disks = [d['path'] for d in ret]
         allocations = self.context.call_sync('volumes.get_disks_allocation', disks)
 
-        return map(
-            lambda d: extend(d, {
+        return [extend(d, {
                 'allocation': allocations.get(d['path']) if d['online'] else None
-            }),
-            ret
-        )
+            }) for d in ret]
 
     def get_one(self, name):
         ret = self.context.call_sync(

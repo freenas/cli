@@ -34,8 +34,9 @@ import enum
 import string
 from threading import Lock
 import contextlib
-import StringIO
+import io
 import pydoc
+import collections
 
 
 output_lock = Lock()
@@ -151,7 +152,7 @@ def resolve_cell(row, spec):
     if type(spec) == str:
         return row.get(spec)
 
-    if callable(spec):
+    if isinstance(spec, collections.Callable):
         return spec(row)
 
     return '<unknown>'
@@ -179,7 +180,7 @@ def read_value(value, tv=ValueType.STRING):
     if tv == ValueType.SIZE:
         if value[-1] in string.ascii_letters:
             suffix = value[-1]
-            value = long(value[:-1])
+            value = int(value[:-1])
 
             if suffix in ('k', 'K', 'kb', 'KB'):
                 value *= 1024
@@ -193,7 +194,7 @@ def read_value(value, tv=ValueType.STRING):
             if suffix in ('t', 'T', 'TB', 'tb'):
                 value *= 1024 * 1024 * 1024 * 1024
 
-        return long(value)
+        return int(value)
 
     if tv == ValueType.SET:
         if type(value) is list:
@@ -288,7 +289,7 @@ def output_less(output_call_list):
                         ' a list of functions. Instead the following type ' +
                         'was received: {0}'.format(type(output_call_list)))
 
-    with stdout_redirect(StringIO.StringIO()) as new_stdout:
+    with stdout_redirect(io.StringIO()) as new_stdout:
         for output_func_call in output_call_list:
             output_func_call()
 

@@ -49,4 +49,4 @@ functions_table = {
 
 
 def evaluate(code):
-    exec code in functions_table
+    exec(code, functions_table)

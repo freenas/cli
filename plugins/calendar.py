@@ -40,7 +40,7 @@ TASK_TYPES = {
 }
 
 
-TASK_TYPES_REVERSE = {v: k for k, v in TASK_TYPES.items()}
+TASK_TYPES_REVERSE = {v: k for k, v in list(TASK_TYPES.items())}
 
 
 @description("Runs calendar task right now")
@@ -146,7 +146,7 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
         self.add_property(
             descr='Schedule',
             name='schedule',
-            get=lambda row: ' '.join(filter(lambda v: isinstance(v, basestring), row['schedule'].values())),
+            get=lambda row: ' '.join([v for v in list(row['schedule'].values()) if isinstance(v, str)]),
             set=None,
             list=True,
             type=ValueType.STRING)

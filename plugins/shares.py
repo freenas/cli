@@ -126,6 +126,23 @@ class BaseSharesNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace
 class NFSSharesNamespace(BaseSharesNamespace):
     def __init__(self, name, context):
         super(NFSSharesNamespace, self).__init__(name, 'nfs', context)
+        self.localdoc['CreateEntityCommand'] = ("""\
+            Usage: create name=<name> target=<target> <property>=<value> ...
+
+            Examples:
+                create name=foo target=tank
+                create name=foo target=tank read_only=true
+
+            Creates an NFS share. For a list of properties, see 'help properties'.""")
+        self.entity_localdoc['SetEntityCommand'] = ("""\
+            Usage: set <property>=<value> ...
+
+            Examples: set alldirs=true
+                      set read_only=true
+                      set root_user=tom
+                      set hosts=192.168.1.1, foobar.local
+
+            Sets an NFS share property. For a list of properties, see 'help properties'.""")
 
         self.add_property(
             descr='All directories',
@@ -192,6 +209,23 @@ class NFSSharesNamespace(BaseSharesNamespace):
 class AFPSharesNamespace(BaseSharesNamespace):
     def __init__(self, name, context):
         super(AFPSharesNamespace, self).__init__(name, 'afp', context)
+        self.localdoc['CreateEntityCommand'] = ("""\
+            Usage: create name=<name> target=<target> <property>=<value> ...
+
+            Examples:
+                create name=foo target=tank
+                create name=foo target=tank read_only=true
+
+            Creates an AFP share. For a list of properties, see 'help properties'.""")
+        self.entity_localdoc['SetEntityCommand'] = ("""\
+            Usage: set <property>=<value> ...
+
+            Examples: set time_machine=true
+                      set read_only=true
+                      set users_allow=tom, frank
+                      set hosts_allow=192.168.1.1, foobar.local
+
+            Sets an AFP share property. For a list of properties, see 'help properties'.""")
 
         self.add_property(
             descr='Allowed hosts/networks',
@@ -242,6 +276,23 @@ class AFPSharesNamespace(BaseSharesNamespace):
 class CIFSSharesNamespace(BaseSharesNamespace):
     def __init__(self, name, context):
         super(CIFSSharesNamespace, self).__init__(name, 'cifs', context)
+        self.localdoc['CreateEntityCommand'] = ("""\
+            Usage: create name=<name> target=<target> <property>=<value> ...
+
+            Examples:
+                create name=foo target=tank
+                create name=foo target=tank read_only=true
+
+            Creates a CIFS share. For a list of properties, see 'help properties'.""")
+        self.entity_localdoc['SetEntityCommand'] = ("""\
+            Usage: set <property>=<value> ...
+
+            Examples: set guest_ok=false
+                      set read_only=true
+                      set browseable=true
+                      set hosts_allow=192.168.1.1, foobar.ltruel
+
+            Sets a CIFS share property. For a list of properties, see 'help properties'.""")
 
         self.add_property(
             descr='Allowed hosts',

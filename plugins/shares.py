@@ -350,6 +350,7 @@ class CIFSSharesNamespace(BaseSharesNamespace):
         )
 
 
+@description("iSCSI portals")
 class ISCSIPortalsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
     def __init__(self, name, context):
         super(ISCSIPortalsNamespace, self).__init__(name, context)
@@ -422,6 +423,7 @@ class ISCSIPortalsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespa
         obj['portals'] = map(pack, value)
 
 
+@description("iSCSI authentication groups")
 class ISCSIAuthGroupsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
     def __init__(self, name, context):
         super(ISCSIAuthGroupsNamespace, self).__init__(name, context)
@@ -451,6 +453,7 @@ class ISCSIAuthGroupsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityName
         ]
 
 
+@description("iSCSI users")
 class ISCSIUsersNamespace(EntityNamespace):
     def __init__(self, name, context, parent):
         super(ISCSIUsersNamespace, self).__init__(name, context)
@@ -506,6 +509,7 @@ class ISCSIUsersNamespace(EntityNamespace):
         self.parent.save()
 
 
+@description("iSCSI targets")
 class ISCSITargetsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
     def __init__(self, name, context):
         super(ISCSITargetsNamespace, self).__init__(name, context)
@@ -539,6 +543,7 @@ class ISCSITargetsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespa
         ]
 
 
+@description("iSCSI luns")
 class ISCSITargetMapingNamespace(EntityNamespace):
     def __init__(self, name, context, parent):
         super(ISCSITargetMapingNamespace, self).__init__(name, context)

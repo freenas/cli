@@ -108,7 +108,7 @@ class ServiceConfigNamespace(ConfigNamespace):
         super(ServiceConfigNamespace, self).__init__(name, context)
         self.parent = parent
         self.config_call = 'services.get_service_config'
-        self.config_extra_params = lambda: self.parent.entity['name'] 
+        self.config_extra_params = parent.name
 
         self.add_property(
             descr='Enabled',

@@ -60,8 +60,7 @@ class SetenvCommand(Command):
     """
     def run(self, context, args, kwargs, opargs):
         if args:
-            for arg in args:
-                raise CommandException("Incorrect syntax {0}".format(arg))
+            raise CommandException("Incorrect syntax {0}".format(args))
 
         for k, v in kwargs.items():
             context.variables.set(k, v)

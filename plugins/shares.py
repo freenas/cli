@@ -468,14 +468,30 @@ class ISCSIAuthGroupsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityName
         ]
 
 
-@description("iSCSI users")
+@description("iSCSI auth users")
 class ISCSIUsersNamespace(EntityNamespace):
     def __init__(self, name, context, parent):
         super(ISCSIUsersNamespace, self).__init__(name, context)
         self.parent = parent
         self.required_props = ['name', 'secret']
         self.extra_required_props = [['peer_name', 'peer_secret']]
+        self.localdoc['CreateEntityCommand'] = ("""\
+            Usage: create name=<name> secret=<secret>
 
+            Examples:
+                create name=foo secret=abcdefghijkl
+                create name=bar secret=mnopqrstuvwx peer_name=foo peer_secret=abcdefghijkl
+
+            Creates an ISCI auth user. For a list of properties, see 'help properties'.""")
+        self.entity_localdoc['SetEntityCommand'] = ("""\
+            Usage: set <property>=<value> ...
+
+            Examples: set name=newname
+                      set secret=yzabcdefghij
+                      set peer_name=bob
+                      set peer_secret=klmnopqrstuv
+
+            Sets a ISCI auth user property. For a list of properties, see 'help properties'.""")
         self.add_property(
             descr='User name',
             name='name',

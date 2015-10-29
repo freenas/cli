@@ -327,14 +327,12 @@ class HelpCommand(Command):
 
         if 'Command' in bases and obj.__doc__:
             command_name = obj.__class__.__name__
-            if hasattr(obj, 'parent'):
-                if hasattr(obj.parent, 'localdoc'):
-                    if command_name in obj.parent.localdoc.keys():
-                        output_msg(textwrap.dedent(obj.parent.localdoc[command_name]))
-                    else:
-                        output_msg(inspect.getdoc(obj))
-                else:
-                    output_msg(inspect.getdoc(obj))
+            if (
+                hasattr(obj, 'parent') and
+                hasattr(obj.parent, 'localdoc') and
+                command_name in obj.parent.localdoc.keys()
+               ):
+                output_msg(textwrap.dedent(obj.parent.localdoc[command_name]))
             else:
                 output_msg(inspect.getdoc(obj))
 

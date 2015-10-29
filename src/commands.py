@@ -303,29 +303,20 @@ class HelpCommand(Command):
                     Goes back to the previous namespace"""))
                 return
             elif arg == "properties":
-            # If the namespace has properties, display a list of the available properties
+                # If the namespace has properties, display a list of the available properties
                 if hasattr(obj, 'property_mappings'):
                     prop_dict_list = []
                     for prop in obj.property_mappings:
-                        values = {
-                                ValueType.STRING:"string", 
-                                ValueType.NUMBER: "number", 
-                                ValueType.HEXNUMBER: "hex",
-                                ValueType.BOOLEAN: "boolean",
-                                ValueType.SIZE: "size",
-                                ValueType.TIME: "time",
-                                ValueType.SET: "set",
-                                }
                         if hasattr(prop, 'enum') and prop.enum:
                             prop_type = "enum [" + ", ".join(prop.enum) + "]"
                         else:
-                            prop_type = values[prop.type]
+                            prop_type = str(prop.type).split('ValueType.')[-1].lower()
                         if not prop.set:
                             prop_type += " (read only)"
                         prop_dict = {
                                 'propname': prop.name,
                                 'propdescr': prop.descr,
-                                'proptype' : prop_type
+                                'proptype': prop_type
                         }
                         prop_dict_list.append(prop_dict)
                 if len(prop_dict_list) > 0:

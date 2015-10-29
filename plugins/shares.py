@@ -433,7 +433,7 @@ class ISCSIAuthGroupsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityName
         self.delete_task = 'share.iscsi.auth.delete'
         self.required_props = ['name', 'policy']
         self.localdoc['CreateEntityCommand'] = ("""\
-            Usage: create name=<name> listen=<hostname>:<port>,<hostname>:<port> <property>=<value> ...
+            Usage: create name=<name> policy=<policy>
 
             Examples:
                 create name=foo policy=NONE

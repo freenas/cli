@@ -780,17 +780,21 @@ class MainLoop(object):
             output_msg(_('Syntax error: {0}'.format(str(e))))
         except CommandException, e:
             output_msg(_('Error: {0}'.format(str(e))))
+            self.context.logger.error(e.stacktrace)
             if self.context.variables.get('debug'):
                 output_msg(e.stacktrace)
         except RpcException, e:
+            self.context.logger.error(str(e))
             output_msg(_('RpcException Error: {0}'.format(str(e))))
         except SystemExit:
             # We do not want to catch a user entered `exit` so...
             raise
         except Exception as e:
             output_msg(_('Unexpected Error: {0}'.format(str(e))))
+            error_trace = traceback.format_exc()
+            self.context.logger.error(error_trace)
             if self.context.variables.get('debug'):
-                output_msg(traceback.format_exc())
+                output_msg(error_trace)
 
     def get_relative_object(self, ns, tokens):
         ptr = ns

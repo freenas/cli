@@ -28,7 +28,8 @@
 import icu
 from namespace import (
     Namespace, EntityNamespace, Command, IndexCommand,
-    RpcBasedLoadMixin, TaskBasedSaveMixin, description
+    RpcBasedLoadMixin, TaskBasedSaveMixin, description,
+    CommandException
     )
 from output import ValueType, Table
 from fnutils import first_or_default
@@ -357,6 +358,22 @@ class ISCSIPortalsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespa
         self.update_task = 'share.iscsi.portal.update'
         self.delete_task = 'share.iscsi.portal.delete'
         self.required_props = ['name', 'listen']
+        self.localdoc['CreateEntityCommand'] = ("""\
+            Usage: create name=<name> listen=<hostname>:<port>,<hostname>:<port> <property>=<value> ...
+
+            Examples:
+                create name=foo listen=192.168.1.10
+                create name=bar listen=127.0.0.1,foobar.local:8888 
+
+            Creates an ISCI portal. For a list of properties, see 'help properties'.""")
+        self.entity_localdoc['SetEntityCommand'] = ("""\
+            Usage: set <property>=<value> ...
+
+            Examples: set discovery_auth_group=somegroup
+                      set discovery_auth_method=CHAP
+                      set listen=hostname,127.0.0.1,192.168.1.10:8888
+
+            Sets a ISCI portal property. For a list of properties, see 'help properties'.""")
 
         self.add_property(
             descr='Group name',
@@ -395,9 +412,11 @@ class ISCSIPortalsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespa
     def set_portals(self, obj, value):
         def pack(item):
             ret = item.split(':', 2)
+            if not ret[1].isdigit():
+                raise CommandException(_("Invalid port number: {0}").format(ret[1]))
             return {
                 'address': ret[0],
-                'port': ret[1] if len(ret) == 2 else 3260
+                'port': int(ret[1]) if len(ret) == 2 else 3260
             }
 
         obj['portals'] = map(pack, value)

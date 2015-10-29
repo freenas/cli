@@ -432,7 +432,22 @@ class ISCSIAuthGroupsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityName
         self.update_task = 'share.iscsi.auth.update'
         self.delete_task = 'share.iscsi.auth.delete'
         self.required_props = ['name', 'policy']
+        self.localdoc['CreateEntityCommand'] = ("""\
+            Usage: create name=<name> listen=<hostname>:<port>,<hostname>:<port> <property>=<value> ...
 
+            Examples:
+                create name=foo policy=NONE
+                create name=bar policy=DENY 
+
+            Creates an ISCI auth group. For a list of properties, see 'help properties'.""")
+        self.entity_localdoc['SetEntityCommand'] = ("""\
+            Usage: set <property>=<value> ...
+
+            Examples: set name=newname
+                      set policy=CHAP
+
+            Sets a ISCI auth group property. For a list of properties, see 'help properties'.""")
+        
         self.add_property(
             descr='Portal name',
             name='name',

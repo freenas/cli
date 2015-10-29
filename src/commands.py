@@ -307,7 +307,7 @@ class HelpCommand(Command):
                 if hasattr(obj, 'property_mappings'):
                     prop_dict_list = []
                     for prop in obj.property_mappings:
-                        if hasattr(prop, 'enum') and prop.enum:
+                        if prop.enum:
                             prop_type = "enum [" + ", ".join(prop.enum) + "]"
                         else:
                             prop_type = str(prop.type).split('ValueType.')[-1].lower()
@@ -337,15 +337,17 @@ class HelpCommand(Command):
                     output_msg(inspect.getdoc(obj))
             else:
                 output_msg(inspect.getdoc(obj))
-        
+
         if 'PipeCommand' in bases and obj.__doc__:
             output_msg(inspect.getdoc(obj))
 
         if isinstance(obj, Namespace):
             # First listing the Current Namespace's commands
-            cmd_dict_list = [{"cmd":"/","description":"Go to the root namespace"},
-                                     {"cmd":"..","description":"Go up one namespace"},
-                                     {"cmd":"-","description":"Go back to previous namespace"}] 
+            cmd_dict_list = [
+                {"cmd": "/", "description": "Go to the root namespace"},
+                {"cmd": "..", "description": "Go up one namespace"},
+                {"cmd": "-", "description": "Go back to previous namespace"}
+            ]
             ns_cmds = obj.commands()
             for key, value in ns_cmds.iteritems():
                 cmd_dict = {

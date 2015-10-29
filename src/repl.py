@@ -727,8 +727,10 @@ class MainLoop(object):
                 'params': filter_params
             })
         else:
-            self.path = oldpath
-            ret = command.run(self.context, args, kwargs, opargs)
+            try:
+                ret = command.run(self.context, args, kwargs, opargs)
+            finally:
+                self.path = oldpath
 
         for i in pipe_stack:
             pipe_cmd = self.find_in_scope(i[0].name)

@@ -68,8 +68,12 @@ if platform.system() == 'Darwin':
 else:
     import readline
 
+DEFAULT_MIDDLEWARE_CONFIGFILE = None
+CLI_LOG_DIR = os.getcwd()
+if os.environ.get('FREENAS_SYSTEM') == 'YES':
+    DEFAULT_MIDDLEWARE_CONFIGFILE = '/usr/local/etc/middleware.conf'
+    CLI_LOG_DIR = '/var/tmp'
 
-DEFAULT_MIDDLEWARE_CONFIGFILE = '/usr/local/etc/middleware.conf'
 DEFAULT_CLI_CONFIGFILE = os.path.expanduser('~/.freenascli.conf')
 t = icu.Transliterator.createInstance(
     "Any-Accents",
@@ -252,6 +256,14 @@ class Context(object):
             self.connection.call_sync('management.ping')
 
     def read_middleware_config_file(self, file):
+        if file is None:
+            # This can only happen when we are NOT runnig the cli
+            # natively on freenas/truenas
+            # can we generisize/improve this logic?
+            plug_dirs = os.path.dirname(os.path.realpath(__file__))
+            plug_dirs = os.path.join(os.path.split(plug_dirs)[0], 'plugins')
+            self.plug_dirs += [plug_dirs]
+            return
         try:
             f = open(file, 'r')
             data = json.load(f)
@@ -932,16 +944,15 @@ class MainLoop(object):
 
 
 def main():
-    pid = os.getpid()
-    logging.basicConfig(
-        filename='/var/tmp/freenascli.{0}.log'.format(pid), level=logging.DEBUG)
+    current_cli_logfile = os.path.join(CLI_LOG_DIR, 'freenascli.{0}.log'.format(os.getpid()))
+    logging.basicConfig(filename=current_cli_logfile, level=logging.DEBUG)
     # create symlink to latest created cli log
     # but first check if previous exists and nuke it
     try:
-        latest_log = '/var/tmp/freenascli.latest.log'
+        latest_log = os.path.join(CLI_LOG_DIR, 'freenascli.latest.log')
         if os.path.lexists(latest_log):
             os.unlink(latest_log)
-        os.symlink('/var/tmp/freenascli.{0}.log'.format(pid), latest_log)
+        os.symlink(current_cli_logfile, latest_log)
         # Try to set the permissions on this symlink to be readable, writable by all
         os.chmod(latest_log, 0777)
     except OSError:

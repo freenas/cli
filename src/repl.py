@@ -74,7 +74,7 @@ if os.environ.get('FREENAS_SYSTEM') == 'YES':
     DEFAULT_MIDDLEWARE_CONFIGFILE = '/usr/local/etc/middleware.conf'
     CLI_LOG_DIR = '/var/tmp'
 
-DEFAULT_CLI_CONFIGFILE = os.path.expanduser('~/.freenascli.conf')
+DEFAULT_CLI_CONFIGFILE = os.path.join(os.getcwd(), '.freenascli.conf')
 t = icu.Transliterator.createInstance(
     "Any-Accents",
     icu.UTransDirection.FORWARD)

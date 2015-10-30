@@ -395,7 +395,7 @@ class ItemNamespace(Namespace):
         return any([x for x in self.property_mappings if x.name == prop])
 
     def get_mapping(self, prop):
-        return filter(lambda x: x.name == prop, self.property_mappings)[0]
+        return list([x for x in self.property_mappings if x.name == prop])[0]
 
     def add_property(self, **kwargs):
         self.property_mappings.append(PropertyMapping(**kwargs))

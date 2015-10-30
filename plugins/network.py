@@ -100,6 +100,7 @@ class InterfacesNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
         self.query_call = 'network.interfaces.query'
         self.create_task = 'network.interface.create'
         self.update_task = 'network.interface.configure'
+        self.required_props = ['name']
 
         self.link_states = {
             'LINK_STATE_UP': _("up"),
@@ -275,6 +276,7 @@ class AliasesNamespace(EntityNamespace):
         super(AliasesNamespace, self).__init__(name, context)
         self.parent = parent
         self.allow_edit = False
+        self.required_props = ['address', 'netmask']
 
         self.add_property(
             descr='Address family',
@@ -361,6 +363,7 @@ class HostsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
         self.create_task = 'network.hosts.create'
         self.update_task = 'network.hosts.update'
         self.delete_task = 'network.hosts.delete'
+        self.required_props = ['name', 'address']
 
         self.add_property(
             descr='IP address',
@@ -512,8 +515,6 @@ class RoutesNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
         )
 
         self.primary_key = self.get_mapping('name')
-
-
 
 
 class IPMINamespace(EntityNamespace):

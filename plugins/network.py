@@ -140,7 +140,7 @@ class InterfacesNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
         self.add_property(
             descr='Disable IPv6',
             name='ipv6_disable',
-            get='rtadv',
+            get='noipv6',
             type=ValueType.BOOLEAN,
             list=False
         )

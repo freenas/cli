@@ -935,7 +935,7 @@ class MainLoop(object):
 
         text_len = len(readline.get_line_buffer()) + 2
         sys.stdout.write('\x1b[2K')
-        sys.stdout.write('\x1b[1A\x1b[2K' * (text_len / cols))
+        sys.stdout.write('\x1b[1A\x1b[2K' * int(text_len / cols))
         sys.stdout.write('\x1b[0G')
 
     def restore_readline(self):

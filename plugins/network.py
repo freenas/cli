@@ -42,7 +42,7 @@ _ = t.transliterate
 
 def set_netmask(entity, netmask):
     nm = None
-    if re.match("(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})", netmask):
+    if re.match("^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$", netmask):
         nm = 0
         for octet in netmask.split('.'):
             nm += bin(int(octet)).count("1")

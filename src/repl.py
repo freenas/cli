@@ -997,7 +997,7 @@ def main():
         try:
             f = sys.stdin if args.f == '-' else open(args.f)
             for line in f:
-                ml.process(line)
+                ml.process(line.strip())
 
             f.close()
         except EnvironmentError, e:

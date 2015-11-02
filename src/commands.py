@@ -40,7 +40,7 @@ from namespace import (Command, PipeCommand, CommandException, description,
                        SingleItemNamespace, Namespace)
 from output import (
     Table, Object, output_dict, ValueType, output_msg, output_list,
-    output_lock, output_less, output_table_list
+    output_lock, output_less, output_table, output_table_list
     )
 from dispatcher.shell import ShellClient
 
@@ -415,14 +415,34 @@ class ClearCommand(Command):
 @description("Shows the CLI command history")
 class HistoryCommand(Command):
     """
-    Usage: history
+    Usage: history [histroy_range]
 
     Lists the list commands previously executed in this CLI instance.
+    Optionally, one can provide an argument (history_range) for showing
+    only the last `n` lines of history.
+
+    Note: history_range is 1 indexed.
     """
     def run(self, context, args, kwargs, opargs):
+        desired_range = None
+        if args:
+            if len(args) != 1:
+                raise CommandException(_("Invalid Syntax for history command. See help for usage"))
+            try:
+                desired_range = int(args[0])
+            except ValueError:
+                raise CommandException(_("Please specify an integer for the history range"))
         histroy_range = readline.get_current_history_length()
-        history = [readline.get_history_item(i) for i in range(histroy_range)]
-        output_less(lambda: output_list(history, label="Command History"))
+        if desired_range is not None and desired_range < histroy_range:
+            histroy_range = desired_range + 1
+        history = [
+            {'cmd': readline.get_history_item(i)} for i in range(1, histroy_range)
+        ]
+        result_hist_table = Table(
+            history,
+            [Table.Column('Command History', 'cmd', ValueType.STRING)]
+        )
+        output_less(lambda: output_table(result_hist_table))
 
 
 @description("Imports a script for parsing")
@@ -445,7 +465,7 @@ class SourceCommand(Command):
                     try:
                         with open(arg, 'r') as f:
                             for line in f:
-                                context.ml.process(line)
+                                context.ml.process(line.strip())
                     except UnicodeDecodeError, e:
                         output_msg(_("Incorrect filetype, cannot parse file: {0}".format(str(e))))
                     finally:

@@ -63,6 +63,7 @@ class ServicesNamespace(RpcBasedLoadMixin, EntityNamespace):
     def __init__(self, name, context):
         super(ServicesNamespace, self).__init__(name, context)
         self.query_call = 'services.query'
+        self.extra_query_params = [('builtin', '=', False)]
 
         self.primary_key_name = 'name'
         self.add_property(

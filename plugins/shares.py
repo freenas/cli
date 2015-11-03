@@ -82,7 +82,7 @@ class BaseSharesNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace
         self.create_task = 'share.create'
         self.update_task = 'share.update'
         self.delete_task = 'share.delete'
-        self.required_props = ['name', 'target']
+        self.required_props = ['name', 'volume']
 
         self.skeleton_entity = {
             'type': type_name,
@@ -104,8 +104,8 @@ class BaseSharesNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace
         )
 
         self.add_property(
-            descr='Target',
-            name='target',
+            descr='Target volume',
+            name='volume',
             get='target',
             set='target',
             list=True
@@ -128,11 +128,11 @@ class NFSSharesNamespace(BaseSharesNamespace):
     def __init__(self, name, context):
         super(NFSSharesNamespace, self).__init__(name, 'nfs', context)
         self.localdoc['CreateEntityCommand'] = ("""\
-            Usage: create name=<name> target=<target> <property>=<value> ...
+            Usage: create name=<name> volume=<volume> <property>=<value> ...
 
             Examples:
-                create name=foo target=tank
-                create name=foo target=tank read_only=true
+                create name=foo volume=tank
+                create name=foo volume=tank read_only=true
 
             Creates an NFS share. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
@@ -211,11 +211,11 @@ class AFPSharesNamespace(BaseSharesNamespace):
     def __init__(self, name, context):
         super(AFPSharesNamespace, self).__init__(name, 'afp', context)
         self.localdoc['CreateEntityCommand'] = ("""\
-            Usage: create name=<name> target=<target> <property>=<value> ...
+            Usage: create name=<name> volume=<volume> <property>=<value> ...
 
             Examples:
-                create name=foo target=tank
-                create name=foo target=tank read_only=true
+                create name=foo volume=tank
+                create name=foo volume=tank read_only=true
 
             Creates an AFP share. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
@@ -278,11 +278,11 @@ class CIFSSharesNamespace(BaseSharesNamespace):
     def __init__(self, name, context):
         super(CIFSSharesNamespace, self).__init__(name, 'cifs', context)
         self.localdoc['CreateEntityCommand'] = ("""\
-            Usage: create name=<name> target=<target> <property>=<value> ...
+            Usage: create name=<name> volume=<volume> <property>=<value> ...
 
             Examples:
-                create name=foo target=tank
-                create name=foo target=tank read_only=true
+                create name=foo volume=tank
+                create name=foo volume=tank read_only=true
 
             Creates a CIFS share. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\

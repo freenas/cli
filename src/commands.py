@@ -155,9 +155,9 @@ class ShellCommand(Command):
         name = args[0] if len(args) > 0 and len(args[0]) > 0 else '/bin/sh'
         token = context.call_sync('shell.spawn', name)
         shell = ShellClient(context.hostname, token)
-        shell.open()
         shell.on_data(read)
         shell.on_close(close)
+        shell.open()
 
         fd = sys.stdin.fileno()
         old_settings = termios.tcgetattr(fd)

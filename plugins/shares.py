@@ -68,7 +68,7 @@ class SharesNamespace(Namespace):
         return [
             NFSSharesNamespace('nfs', self.context),
             AFPSharesNamespace('afp', self.context),
-            CIFSSharesNamespace('cifs', self.context),
+            SMBSharesNamespace('smb', self.context),
             ISCSISharesNamespace('iscsi', self.context)
         ]
 
@@ -273,10 +273,10 @@ class AFPSharesNamespace(BaseSharesNamespace):
         )
 
 
-@description("CIFS shares")
-class CIFSSharesNamespace(BaseSharesNamespace):
+@description("SMB shares")
+class SMBSharesNamespace(BaseSharesNamespace):
     def __init__(self, name, context):
-        super(CIFSSharesNamespace, self).__init__(name, 'cifs', context)
+        super(SMBSharesNamespace, self).__init__(name, 'cifs', context)
         self.localdoc['CreateEntityCommand'] = ("""\
             Usage: create name=<name> volume=<volume> <property>=<value> ...
 
@@ -284,7 +284,7 @@ class CIFSSharesNamespace(BaseSharesNamespace):
                 create name=foo volume=tank
                 create name=foo volume=tank read_only=true
 
-            Creates a CIFS share. For a list of properties, see 'help properties'.""")
+            Creates a SMB share. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
             Usage: set <property>=<value> ...
 
@@ -293,7 +293,7 @@ class CIFSSharesNamespace(BaseSharesNamespace):
                       set browseable=true
                       set hosts_allow=192.168.1.1, foobar.local
 
-            Sets a CIFS share property. For a list of properties, see 'help properties'.""")
+            Sets a SMB share property. For a list of properties, see 'help properties'.""")
 
         self.add_property(
             descr='Allowed hosts',

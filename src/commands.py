@@ -145,7 +145,7 @@ class ShellCommand(Command):
 
     def run(self, context, args, kwargs, opargs):
         def read(data):
-            sys.stdout.write(data)
+            sys.stdout.write(data.decode('utf8'))
             sys.stdout.flush()
 
         def close():

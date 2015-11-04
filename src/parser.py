@@ -260,7 +260,7 @@ def p_error(p):
 
 
 lex.lex()
-yacc.yacc()
+yacc.yacc(debug=False)
 
 
 def parse(s):

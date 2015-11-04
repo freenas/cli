@@ -49,12 +49,12 @@ class UsersNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
         self.update_task = 'users.update'
         self.delete_task = 'users.delete'
         self.save_key_name = 'id'
-        self.required_props = ['username', 'group', ['password','password_disabled']]
+        self.required_props = ['username', ['password','password_disabled']]
 
         self.localdoc['CreateEntityCommand'] = ("""\
-            Usage: create username=<name> group=<group> <property>=<value>...
+            Usage: create username=<name> password=<password> <property>=<value>...
 
-            Examples: create username=foo group=foo password=bar home=/tank/foo
+            Examples: create username=foo password=bar home=/tank/foo
                       create username=bar group=bar password_disabled=true
 
             Creates a user account. For a list of properties, see 'help properties'.""")

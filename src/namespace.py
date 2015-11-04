@@ -149,7 +149,7 @@ class IndexCommand(Command):
 
         output_msg('Current namespace items:', attrs=['bold'])
         out = list(cmds.keys())
-        out += [ns.get_name() for ns in sorted(nss)]
+        out += [ns.get_name() for ns in sorted(nss, key=lambda i: i.get_name())]
         output_list(out)
 
 

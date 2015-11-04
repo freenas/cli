@@ -34,11 +34,11 @@ from namespace import (
 )
 from output import ValueType
 from utils import post_save
-from fnutils.query import wrap
 
 
 t = icu.Transliterator.createInstance("Any-Accents", icu.UTransDirection.FORWARD)
 _ = t.transliterate
+
 
 def set_netmask(entity, netmask):
     nm = None
@@ -50,9 +50,10 @@ def set_netmask(entity, netmask):
         nm = int(netmask)
 
     if nm is None:
-        raise CommandException(_("Invalid netmask: {0}").format(netmask))
-    
+        raise CommandException(_("Invalid netmask: {0}".format(netmask)))
+
     entity['netmask'] = nm
+
 
 class InterfaceCreateCommand(Command):
     def run(self, context, args, kwargs, opargs):
@@ -99,8 +100,9 @@ class InterfacesNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
 
         self.query_call = 'network.interfaces.query'
         self.create_task = 'network.interface.create'
+        self.delete_task = 'network.interface.delete'
         self.update_task = 'network.interface.configure'
-        self.required_props = ['name']
+        self.required_props = ['type']
 
         self.link_states = {
             'LINK_STATE_UP': _("up"),
@@ -124,7 +126,8 @@ class InterfacesNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
             descr='Type',
             name='type',
             get='type',
-            set=None,
+            set='type',
+            enum_set=['VLAN', 'BRIDGE', 'LAGG'],
             list=True
         )
 
@@ -579,10 +582,10 @@ class IPMINamespace(EntityNamespace):
         for chan in self.context.call_sync('ipmi.channels'):
             result.append(self.context.call_sync('ipmi.get_config', chan))
 
-        return wrap(result)
+        return result
 
     def get_one(self, chan):
-        return wrap(self.context.call_sync('ipmi.get_config', chan))
+        return self.context.call_sync('ipmi.get_config', chan)
 
     def save(self, this, new=False):
         assert not new

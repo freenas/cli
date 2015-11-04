@@ -109,7 +109,13 @@ class BaseSharesNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace
             descr='Target volume',
             name='volume',
             get='target',
-            set='target',
+            list=True
+        )
+
+        self.add_property(
+            descr='Compression',
+            name='compression',
+            get='compression',
             list=True
         )
 

@@ -175,6 +175,8 @@ class PropertyMapping(object):
         self.type = kwargs.pop('type', ValueType.STRING)
         self.enum = kwargs.pop('enum', None)
         self.enum_set = kwargs.pop('enum_set') if kwargs.get('enum_set') else self.enum
+        self.usersetable = kwargs.pop('usersetable', True)
+        self.createsetable = kwargs.pop('createsetable', True)
         self.condition = kwargs.pop('condition', None)
 
     def do_get(self, obj):
@@ -323,7 +325,7 @@ class ItemNamespace(Namespace):
 
             for k, v in list(kwargs.items()):
                 prop = self.parent.get_mapping(k)
-                if prop.set is None:
+                if prop.set is None or not prop.usersetable:
                     raise CommandException('Property {0} is not writable'.format(k))
 
                 prop.do_set(entity, v)
@@ -620,7 +622,7 @@ class CreateEntityCommand(Command):
             if not self.parent.has_property(k):
                 output_msg('Property {0} not found'.format(k))
                 return
-            if self.parent.get_mapping(k).set is None:
+            if self.parent.get_mapping(k).set is None or not self.parent.get_mapping(k).createsetable:
                 output_msg('Property {0} is not writable'.format(k))
                 return
 

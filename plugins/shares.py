@@ -100,6 +100,8 @@ class BaseSharesNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace
             descr='Share type',
             name='type',
             get='type',
+            usersetable=False,
+            createsetable=False,
             list=False
         )
 

@@ -128,6 +128,7 @@ class InterfacesNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
             get='type',
             set='type',
             enum_set=['VLAN', 'BRIDGE', 'LAGG'],
+            usersetable=False,
             list=True
         )
 

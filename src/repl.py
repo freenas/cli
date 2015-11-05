@@ -422,27 +422,33 @@ class Context(object):
 
             return tid
         else:
+            output_msg(_("Hit Ctrl+C to terminate task if needed"))
             self.event_divert = True
             tid = self.connection.call_sync('task.submit', name, args)
             progress = ProgressBar()
-            while True:
-                event, data = self.event_queue.get()
+            try:
+                while True:
+                    event, data = self.event_queue.get()
 
-                if event == 'task.progress' and data['id'] == tid:
-                    message = data['message']
-                    if isinstance(message_formatter, collections.Callable):
-                        message = message_formatter(message)
-                    progress.update(percentage=data['percentage'], message=message)
+                    if event == 'task.progress' and data['id'] == tid:
+                        message = data['message']
+                        if isinstance(message_formatter, collections.Callable):
+                            message = message_formatter(message)
+                        progress.update(percentage=data['percentage'], message=message)
 
-                if event == 'task.updated' and data['id'] == tid:
-                    progress.update(message=data['state'])
-                    if data['state'] == 'FINISHED':
-                        progress.finish()
-                        break
+                    if event == 'task.updated' and data['id'] == tid:
+                        progress.update(message=data['state'])
+                        if data['state'] == 'FINISHED':
+                            progress.finish()
+                            break
 
-                    if data['state'] == 'FAILED':
-                        print()
-                        break
+                        if data['state'] == 'FAILED':
+                            print()
+                            break
+            except KeyboardInterrupt:
+                print()
+                output_msg(_("User requested task termination. Task abort signal sent"))
+                self.call_sync('task.abort', tid)
 
         self.event_divert = False
         return tid

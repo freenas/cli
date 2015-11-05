@@ -37,7 +37,7 @@ import errno
 import struct
 import fcntl
 import platform
-import termios
+from termios import TIOCGWINSZ
 import config
 import json
 import time
@@ -541,7 +541,7 @@ class MainLoop(object):
         try:
             a.run(self.context, None, None, None)
         except:
-            output_msg('Cannot show GUI urls')
+            output_msg(_('Cannot show GUI urls'))
 
         while True:
             try:
@@ -551,6 +551,7 @@ class MainLoop(object):
                 return
             except KeyboardInterrupt:
                 print()
+                output_msg(_('User terminated command'))
                 continue
 
             self.process(line)
@@ -928,7 +929,7 @@ class MainLoop(object):
 
     def blank_readline(self):
         rows, cols = struct.unpack('hh', fcntl.ioctl(
-            sys.stdout, termios.TIOCGWINSZ, '1234'))
+            sys.stdout, TIOCGWINSZ, '1234'))
 
         if cols == 0:
             cols = 80

@@ -672,5 +672,55 @@ svc_cli_config = {
             'name': 'path',
             'get': 'path'
         },
+    ],
+    "nfs": [
+        {
+            'descr': 'Number of servers',
+            'name': 'servers',
+            'get': 'servers',
+            'type': ValueType.NUMBER
+        },        
+        {
+            'descr': 'Enable UDP',
+            'name': 'udp',
+            'get': 'udp',
+            'type': ValueType.BOOLEAN
+        },
+        {
+            'descr': 'Enable NFSv4',
+            'name': 'v4',
+            'get': 'v4',
+            'type': ValueType.BOOLEAN
+        },
+        {
+            'descr': 'Enable NFSv4 Kerberos',
+            'name': 'v4_kerberos',
+            'get': 'v4_kerberos',
+            'type': ValueType.BOOLEAN
+        },
+        {
+            'descr': 'Bind addresses',
+            'name': 'bind_addresses',
+            'get': 'bind_addresses',
+            'type': ValueType.SET
+        },
+        {
+            'descr': 'Mountd port',
+            'name': 'mountd_port',
+            'get': 'mountd_port',
+            'type': ValueType.NUMBER
+        },
+        {
+            'descr': 'RPC statd port',
+            'name': 'rpcstatd_port',
+            'get': 'rpcstatd_port',
+            'type': ValueType.NUMBER
+        },
+        {
+            'descr': 'RPC Lockd port',
+            'name': 'rpclockd_port',
+            'get': 'rpclockd_port',
+            'type': ValueType.NUMBER
+        },
     ]
 }

@@ -26,6 +26,7 @@
 #####################################################################
 
 
+import re
 import copy
 import traceback
 import errno
@@ -177,6 +178,7 @@ class PropertyMapping(object):
         self.enum_set = kwargs.pop('enum_set') if kwargs.get('enum_set') else self.enum
         self.usersetable = kwargs.pop('usersetable', True)
         self.createsetable = kwargs.pop('createsetable', True)
+        self.regex = kwargs.pop('regex', None)
         self.condition = kwargs.pop('condition', None)
 
     def do_get(self, obj):
@@ -327,7 +329,8 @@ class ItemNamespace(Namespace):
                 prop = self.parent.get_mapping(k)
                 if prop.set is None or not prop.usersetable:
                     raise CommandException('Property {0} is not writable'.format(k))
-
+                if prop.regex is not None and not re.match(prop.regex, str(v)):
+                    raise CommandException('Invalid input {0} for property {1}.'.format(v, k))
                 prop.do_set(entity, v)
 
             for k, op, v in opargs:
@@ -622,8 +625,12 @@ class CreateEntityCommand(Command):
             if not self.parent.has_property(k):
                 output_msg('Property {0} not found'.format(k))
                 return
-            if self.parent.get_mapping(k).set is None or not self.parent.get_mapping(k).createsetable:
+            mapping = self.parent.get_mapping(k)
+            if mapping.set is None or not mapping.createsetable:
                 output_msg('Property {0} is not writable'.format(k))
+                return
+            if mapping.regex is not None and not re.match(mapping.regex, str(v)):
+                output_msg('Invalid input {0} for property {1}.'.format(v, k))
                 return
 
         if self.parent.required_props:

@@ -103,6 +103,23 @@ class InterfacesNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
         self.delete_task = 'network.interface.delete'
         self.update_task = 'network.interface.configure'
         self.required_props = ['type']
+        self.localdoc['CreateEntityCommand'] = ("""\
+            Usage: create type=<type>
+
+            Examples:
+                create type=LAGG
+                create type=VLAN
+                create type=BRIDGE
+
+            Creates a logical interface. You must create an interface before setting any properties for it.""")
+        self.entity_localdoc['SetEntityCommand'] = ("""\
+            Usage: set <property>=<value> ...
+
+            Examples: set dhcp=true
+                      set ipv6_disable=true 
+                      set enabled=false
+
+            Sets a network interface property. For a list of properties, see 'help properties'.""")
 
         self.link_states = {
             'LINK_STATE_UP': _("up"),
@@ -137,6 +154,7 @@ class InterfacesNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
             name='enabled',
             get='enabled',
             type=ValueType.BOOLEAN,
+            createsetable=False,
             list=True
         )
 
@@ -145,6 +163,7 @@ class InterfacesNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
             name='dhcp',
             get='dhcp',
             type=ValueType.BOOLEAN,
+            createsetable=False,
             list=True
         )
 
@@ -153,6 +172,7 @@ class InterfacesNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
             name='ipv6_autoconf',
             get='rtadv',
             type=ValueType.BOOLEAN,
+            createsetable=False,
             list=False
         )
 
@@ -161,6 +181,7 @@ class InterfacesNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
             name='ipv6_disable',
             get='noipv6',
             type=ValueType.BOOLEAN,
+            createsetable=False,
             list=False
         )
 
@@ -168,6 +189,7 @@ class InterfacesNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
             descr='Link address',
             name='link_address',
             get='status.link-address',
+            createsetable=False,
             list=True
         )
 
@@ -201,6 +223,7 @@ class InterfacesNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
             name='vlan_parent',
             get='vlan.parent',
             list=False,
+            createsetable=False,
             type=ValueType.STRING,
             condition=lambda e: e['type'] == 'VLAN'
         )
@@ -210,6 +233,7 @@ class InterfacesNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
             name='vlan-tag',
             get='vlan.tag',
             list=False,
+            createsetable=False,
             type=ValueType.NUMBER,
             condition=lambda e: e['type'] == 'VLAN'
         )
@@ -219,6 +243,7 @@ class InterfacesNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
             name='protocol',
             get='lagg.protocol',
             list=False,
+            createsetable=False,
             type=ValueType.STRING,
             condition=lambda e: e['type'] == 'LAGG'
         )
@@ -228,6 +253,7 @@ class InterfacesNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
             name='members',
             get='lagg.ports',
             list=False,
+            createsetable=False,
             type=ValueType.SET,
             condition=lambda e: e['type'] == 'LAGG'
         )
@@ -281,6 +307,16 @@ class AliasesNamespace(EntityNamespace):
         self.parent = parent
         self.allow_edit = False
         self.required_props = ['address', 'netmask']
+        self.localdoc['CreateEntityCommand'] = ("""\
+            Usage: create address=<name> netmask=<netmask> type=<type> <property>=<value> ...
+
+            Examples: create address=192.168.1.1 netmask=255.255.0.0
+                      create address=fda8:06c3:ce53:a890:0000:0000:0000:0005 netmask=64 type=INET6
+                      create address=10.10.0.1 netmask=16 broadcast=10.10.0.0
+
+            Available properties: type=[INET, INET6], address, netmask, broadcast
+
+            Creates a network interface alias. Aliases cannot be edited after creation so if you need to change an alias you must delete it then recreate it.""")
 
         self.add_property(
             descr='Address family',
@@ -467,7 +503,7 @@ class RoutesNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
 
             Creates a network route. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
-            Usage: set <property>=<value> [...]
+            Usage: set <property>=<value> ...
 
             Examples: set name=newname
                       set gateway=172.16.0.1

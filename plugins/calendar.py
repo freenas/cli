@@ -34,7 +34,7 @@ from output import ValueType, output_msg, output_table, read_value, format_value
 TASK_TYPES = {
     'scrub': 'zfs.pool.scrub',
     'smart': 'disks.test_parallel',
-    'snapshot': 'replication.snapshot_dataset',
+    'snapshot': 'volume.snapshot_dataset',
     'replication': 'replication.replicate_dataset',
     'check_updates': 'update.checkfetch'
 }

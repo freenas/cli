@@ -368,7 +368,8 @@ svc_cli_config = {
         {
             'descr': 'Empty password logons',
             'name': 'empty_password',
-            'get': 'empty_password'
+            'get': 'empty_password',
+            'type': ValueType.BOOLEAN
         },
         {
             'descr': 'UNIX Extensions',

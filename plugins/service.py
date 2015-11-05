@@ -236,6 +236,202 @@ svc_cli_config = {
             'get': 'port',
             'type': ValueType.NUMBER
         },
+        {
+            'descr': 'Maximum clients',
+            'name': 'max_clients',
+            'get': 'max_clients',
+            'type': ValueType.NUMBER
+        },
+        {
+            'descr': 'Maximum connections per IP',
+            'name': 'ip_connections',
+            'get': 'ip_connections',
+            'type': ValueType.NUMBER
+        },
+        {
+            'descr': 'Maximum login attempts',
+            'name': 'login_attempts',
+            'get': 'login_atempt',
+            'type': ValueType.NUMBER
+        },
+        {
+            'descr': 'Idle timeout',
+            'name': 'timeout',
+            'get': 'timeout',
+            'type': ValueType.NUMBER
+        },
+        {
+            'descr': 'root login',
+            'name': 'root_login',
+            'get': 'root_login',
+            'type': ValueType.BOOLEAN
+        },
+        {
+            'descr': 'Path for anonymous login',
+            'name': 'anonymous_path',
+            'get': 'anonymous_path',
+            'type': ValueType.STRING
+        },
+        {
+            'descr': 'Only allow anonymous login',
+            'name': 'only_anonymous',
+            'get': 'only_anonymous',
+            'type': ValueType.BOOLEAN
+        },
+        {
+            'descr': 'Only allow local user login',
+            'name': 'only_local',
+            'get': 'only_local',
+            'type': ValueType.BOOLEAN
+        },
+        {
+            'descr': 'Login message',
+            'name': 'display_login',
+            'get': 'display_login',
+            'type': ValueType.STRING
+        },
+        {
+            'descr': 'File creation mask',
+            'name': 'filemask',
+            'get': 'filemask',
+            'regex': '^\d{0,4}$',
+            'type': ValueType.NUMBER
+        },
+        {
+            'descr': 'Directory creation mask',
+            'name': 'dirmask',
+            'get': 'dirmask',
+            'regex': '^\d{0,4}$',
+            'type': ValueType.NUMBER
+        },
+        {
+            'descr': 'Enable FXP protocol',
+            'name': 'fxp',
+            'get': 'fxp',
+            'type': ValueType.BOOLEAN
+        },
+        {
+            'descr': 'Automatic transfer resumption',
+            'name': 'resume',
+            'get': 'resume',
+            'type': ValueType.BOOLEAN
+        },
+        {
+            'descr': 'Chroot local users',
+            'name': 'chroot',
+            'get': 'chroot',
+            'type': ValueType.BOOLEAN
+        },
+        {
+            'descr': 'Require identd authentication',
+            'name': 'ident',
+            'get': 'ident',
+            'type': ValueType.BOOLEAN
+        },
+        {
+            'descr': 'Perform reverse DNS lookups',
+            'name': 'reverse_dns',
+            'get': 'reverse_dns',
+            'type': ValueType.BOOLEAN
+        },
+        {
+            'descr': 'Masquerade address',
+            'name': 'masquerade_address',
+            'get': 'masquerade_address',
+            'type': ValueType.STRING
+        },
+        {
+            'descr': 'Minimum passive ports',
+            'name': 'passive_ports_min',
+            'get': 'passive_ports_min',
+            'type': ValueType.NUMBER
+        },
+        {
+            'descr': 'Maximum passive ports',
+            'name': 'passive_ports_max',
+            'get': 'passive_ports_max',
+            'type': ValueType.NUMBER
+        },
+        {
+            'descr': 'Local user upload bandwidth',
+            'name': 'local_up_bandwidth',
+            'get': 'local_up_bandwidth',
+            'type': ValueType.NUMBER
+        },
+        {
+            'descr': 'Local user download bandwidth',
+            'name': 'local_down_bandwidth',
+            'get': 'local_down_bandwidth',
+            'type': ValueType.NUMBER
+        },
+        {
+            'descr': 'Anonymous upload bandwidth',
+            'name': 'anon_up_bandwidth',
+            'get': 'anon_up_bandwidth',
+            'type': ValueType.NUMBER
+        },
+        {
+            'descr': 'Anonymous download bandwidth',
+            'name': 'anon_down_bandwidth',
+            'get': 'anon_down_bandwidth',
+            'type': ValueType.NUMBER
+        },
+        {
+            'descr': 'Enable TLS',
+            'name': 'tls',
+            'get': 'tls',
+            'type': ValueType.BOOLEAN
+        },
+        {
+            'descr': 'TLS Policy',
+            'name': 'tls_policy',
+            'get': 'tls_policy',
+            'enum': [
+                'ON',
+                'OFF',
+                'DATA',
+                '!DATA',
+                'AUTH',
+                'CTRL',
+                'CTRL+DATA',
+                'CTRL+!DATA',
+                'AUTH+DATA',
+                'AUTH+!DATA',
+            ],
+            'type': ValueType.STRING
+        },
+        {
+            'descr': 'TLS Options',
+            'name': 'tls_options',
+            'get': 'tls_options',
+            'enum': [
+                    'ALLOW_CLIENT_RENEGOTIATIONS',
+                    'ALLOW_DOT_LOGIN',
+                    'ALLOW_PER_USER',
+                    'COMMON_NAME_REQUIRED',
+                    'ENABLE_DIAGNOSTICS',
+                    'EXPORT_CERTIFICATE_DATA',
+                    'NO_CERTIFICATE_REQUEST',
+                    'NO_EMPTY_FRAGMENTS',
+                    'NO_SESSION_REUSE_REQUIRED',
+                    'STANDARD_ENV_VARS',
+                    'DNS_NAME_REQUIRED',
+                    'IP_ADDRESS_REQUIRED',
+            ],
+            'type': ValueType.SET
+        },
+        {
+            'descr': 'TLS SSL Certificate',
+            'name': 'tls_ssl_certificate',
+            'get': 'tls_ssl_certificate',
+            'type': ValueType.STRING
+        },
+        {
+            'descr': 'Auxiliary parameters',
+            'name': 'auxiliary',
+            'get': 'auxiliary',
+            'type': ValueType.STRING
+        },
     ],
     "afp": [
         {

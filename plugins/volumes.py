@@ -497,7 +497,8 @@ class SnapshotsNamespace(RpcBasedLoadMixin, EntityNamespace):
             name='recursive',
             get=None,
             set='recursive',
-            list=False)
+            list=False,
+            type=ValueType.BOOLEAN)
 
         self.add_property(
             descr='Compression',

@@ -802,5 +802,25 @@ svc_cli_config = {
             'get': 'isns_servers',
             'type': ValueType.SET
         },
+    ],
+    "lldp": [
+        {
+            'descr': 'Save description',
+            'name': 'save_description',
+            'get': 'save_description',
+            'type': ValueType.BOOLEAN
+        },
+        {
+            'descr': 'Country code',
+            'name': 'country_code',
+            'get': 'country_code',
+            'type': ValueType.STRING
+        },
+        {
+            'descr': 'Location',
+            'name': 'location',
+            'get': 'location',
+            'type': ValueType.STRING
+        },
     ]
 }

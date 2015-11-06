@@ -330,7 +330,6 @@ class AliasesNamespace(EntityNamespace):
             descr='IP address',
             name='address',
             get='address',
-            regex="^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$",
             list=True
         )
 

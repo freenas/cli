@@ -722,5 +722,13 @@ svc_cli_config = {
             'get': 'rpclockd_port',
             'type': ValueType.NUMBER
         },
+    ],
+    "glusterd": [
+        {
+            'descr': 'Working directory',
+            'name': 'working_directory',
+            'get': 'working_directory',
+            'type': ValueType.STRING
+        },
     ]
 }

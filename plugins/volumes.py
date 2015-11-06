@@ -95,8 +95,11 @@ class AddVdevCommand(Command):
         if typ.startswith('raidz'):
             entity['topology']['data'].append({
                 'type': typ,
-                'path': [{'type': 'disk', 'path': x} for x in args]
+                'children': [{'type': 'disk', 'path': x} for x in args]
             })
+
+        self.parent.modified = True
+        self.parent.save()
 
 
 @description("Removes vdev from volume")

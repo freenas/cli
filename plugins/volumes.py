@@ -46,6 +46,7 @@ def correct_disk_path(disk):
         disk = "/dev/" + disk
     return disk
 
+
 @description("Adds new vdev to volume")
 class AddVdevCommand(Command):
     def __init__(self, parent):
@@ -64,7 +65,7 @@ class AddVdevCommand(Command):
 
             entity['topology']['data'].append({
                 'type': 'disk',
-                'path': args[0]
+                'path': correct_disk_path(args[0])
             })
 
         if typ == 'mirror':
@@ -73,7 +74,7 @@ class AddVdevCommand(Command):
 
             entity['topology']['data'].append({
                 'type': 'mirror',
-                'children': [{'type': 'disk', 'path': x} for x in args]
+                'children': [{'type': 'disk', 'path': correct_disk_path(x)} for x in args]
             })
 
         if typ == 'cache':
@@ -82,7 +83,7 @@ class AddVdevCommand(Command):
 
             entity['topology']['cache'].append({
                 'type': 'disk',
-                'path': args[0]
+                'path': correct_disk_path(args[0])
             })
 
         if typ == 'log':
@@ -94,14 +95,38 @@ class AddVdevCommand(Command):
 
             entity['topology']['log'].append({
                 'type': 'disk',
-                'path': args[0]
+                'path': correct_disk_path(args[0])
             })
 
         if typ.startswith('raidz'):
             entity['topology']['data'].append({
                 'type': typ,
-                'children': [{'type': 'disk', 'path': x} for x in args]
+                'children': [{'type': 'disk', 'path': correct_disk_path(x)} for x in args]
             })
+
+        self.parent.modified = True
+        self.parent.save()
+
+
+@description("Adds new disk to existing mirror or converts stripe to a mirror")
+class ExtendVdevCommand(Command):
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        vdev_ident = correct_disk_path(kwargs.pop('vdev'))
+        disk = correct_disk_path(args[0])
+
+        vdev = first_or_default(lambda v:
+            v['path'] == vdev_ident or
+            vdev_ident in [i['path'] for i in v['children']],
+            self.parent.entity['topology']['data']
+        )
+
+        vdev['children'].append({
+            'type': 'disk',
+            'path': disk
+        })
 
         self.parent.modified = True
         self.parent.save()
@@ -703,7 +728,8 @@ class VolumesNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
             'add_vdev': AddVdevCommand(this),
             'delete_vdev': DeleteVdevCommand(this),
             'offline': OfflineVdevCommand(this),
-            'online': OnlineVdevCommand(this)
+            'online': OnlineVdevCommand(this),
+            'extend_vdev': ExtendVdevCommand(this)
         }
 
         self.entity_namespaces = lambda this: [

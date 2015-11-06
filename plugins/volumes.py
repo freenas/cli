@@ -41,6 +41,11 @@ t = icu.Transliterator.createInstance("Any-Accents", icu.UTransDirection.FORWARD
 _ = t.transliterate
 
 
+def correct_disk_path(disk):
+    if not re.match("^\/dev\/", disk):
+        disk = "/dev/" + disk
+    return disk
+
 @description("Adds new vdev to volume")
 class AddVdevCommand(Command):
     def __init__(self, parent):
@@ -112,6 +117,69 @@ class DeleteVdevCommand(Command):
             raise CommandException('Cannot delete vdev from existing volume')
 
 
+@description("Offlines a disk in a volume")
+class OfflineVdevCommand(Command):
+    """
+    Usage: offline <disk>
+
+    Example: offline ada1
+
+    Offlines a disk in a volume"
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        if len(args) == 0:
+            raise CommandException(_("Please specify a disk"))
+        disk = args[0]
+        volume = self.parent.entity
+
+        disk = correct_disk_path(disk)
+
+        vdevs = list(iterate_vdevs(volume['topology']))
+        guid = None
+        for vdev in vdevs:
+            if vdev['path'] == disk:
+                guid = vdev['guid']
+                break
+
+        if guid is None:
+            raise CommandException(_("Disk {0} is not part of the volume.".format(disk)))
+        context.submit_task('zfs.pool.offline_disk', self.parent.entity['name'], guid)
+
+@description("Onlines a disk in a volume")
+class OnlineVdevCommand(Command):
+    """
+    Usage: online <disk>
+
+    Example: online ada1
+
+    Onlines a disk in a volume"
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        if len(args) == 0:
+            raise CommandException(_("Please specify a disk"))
+        disk = args[0]
+        volume = self.parent.entity
+
+        disk = correct_disk_path(disk)
+
+        vdevs = list(iterate_vdevs(volume['topology']))
+        guid = None
+        for vdev in vdevs:
+            if vdev['path'] == disk:
+                guid = vdev['guid']
+                break
+
+        if guid is None:
+            raise CommandException(_("Disk {0} is not part of the volume.".format(disk)))
+        context.submit_task('zfs.pool.online_disk', self.parent.entity['name'], guid)
+
+
 @description("Creates new volume in simple way")
 class VolumeCreateCommand(Command):
     """
@@ -143,8 +211,7 @@ class VolumeCreateCommand(Command):
             disks = available_disks
         else:
             for disk in disks:
-                if not re.match("^\/dev\/", disk):
-                    disk = "/dev/" + disk
+                disk = correct_disk_path(disk)
                 if disk not in all_disks:
                     output_msg("Disk " + disk + " does not exist.")
                     return
@@ -634,7 +701,9 @@ class VolumesNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
             'show_disks': ShowDisksCommand(this),
             'scrub': ScrubCommand(this),
             'add_vdev': AddVdevCommand(this),
-            'delete_vdev': DeleteVdevCommand(this)
+            'delete_vdev': DeleteVdevCommand(this),
+            'offline': OfflineVdevCommand(this),
+            'online': OnlineVdevCommand(this)
         }
 
         self.entity_namespaces = lambda this: [

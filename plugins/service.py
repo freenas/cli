@@ -782,5 +782,25 @@ svc_cli_config = {
             'enum': ['HTTP','TCP'],
             'type': ValueType.STRING
         },
+    ],
+    "iscsi": [
+        {
+            'descr': 'Base name',
+            'name': 'base_name',
+            'get': 'base_name',
+            'type': ValueType.STRING
+        },
+        {
+            'descr': 'Pool space threshold',
+            'name': 'pool_space_threshold',
+            'get': 'pool_space_threshold',
+            'type': ValueType.NUMBER
+        },        
+        {
+            'descr': 'ISNS servers',
+            'name': 'isns_servers',
+            'get': 'isns_servers',
+            'type': ValueType.SET
+        },
     ]
 }

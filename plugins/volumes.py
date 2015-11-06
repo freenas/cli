@@ -173,6 +173,7 @@ class OfflineVdevCommand(Command):
             raise CommandException(_("Disk {0} is not part of the volume.".format(disk)))
         context.submit_task('zfs.pool.offline_disk', self.parent.entity['name'], guid)
 
+
 @description("Onlines a disk in a volume")
 class OnlineVdevCommand(Command):
     """

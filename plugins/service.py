@@ -730,5 +730,57 @@ svc_cli_config = {
             'get': 'working_directory',
             'type': ValueType.STRING
         },
+    ],
+    "haproxy": [
+        {
+            'descr': 'Global maximum connections',
+            'name': 'global_maxconn',
+            'get': 'global_maxconn',
+            'type': ValueType.NUMBER
+        },
+        {
+            'descr': 'Default maximum connections',
+            'name': 'default_maxconn',
+            'get': 'defaults_maxconn',
+            'type': ValueType.NUMBER
+        },
+        {
+            'descr': 'HTTP IP address',
+            'name': 'http_ip',
+            'get': 'http_ip',
+            'type': ValueType.STRING
+        },
+        {
+            'descr': 'HTTP port',
+            'name': 'http_port',
+            'get': 'http_port',
+            'type': ValueType.NUMBER
+        },
+        {
+            'descr': 'HTTPS IP address',
+            'name': 'https_ip',
+            'get': 'https_ip',
+            'type': ValueType.STRING
+        },
+        {
+            'descr': 'HTTPS port',
+            'name': 'https_port',
+            'get': 'https_port',
+            'type': ValueType.NUMBER
+        },
+        {
+            'descr': 'Frontend mode',
+            'name': 'frontend_mode',
+            'get': 'frontend_mode',
+            'enum': ['HTTP','TCP'],
+            'type': ValueType.STRING
+        },
+        {
+            'descr': 'Backend mode',
+            'name': 'backend_mode',
+            'get': 'backend_mode',
+            'enum': ['HTTP','TCP'],
+            'type': ValueType.STRING
+        },
     ]
 }

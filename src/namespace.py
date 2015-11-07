@@ -602,7 +602,7 @@ class ListCommand(FilteringCommand):
 @description("Creates new item")
 class CreateEntityCommand(Command):
     """
-    Usage: create [<property>=<value> ...]
+    Usage: create <name> <property>=<value> ...
 
     For a list of properties for the current namespace, see 'help properties'.
     """
@@ -619,7 +619,7 @@ class CreateEntityCommand(Command):
 
         if len(args) > 0:
             prop = self.parent.primary_key
-            prop.do_set(ns.entity, args.pop(0))
+            kwargs[prop.name] = args.pop(0)
 
         for k, v in list(kwargs.items()):
             if not self.parent.has_property(k):

@@ -118,6 +118,30 @@ class DirectoryServiceShowKDCCommand(DirectoryServiceCommandBase):
             output_msg(res['result'][0])
 
 
+@description("Configures domain controllers for directory service")
+class DirectoryServiceConfigureDCs(DirectoryServiceCommandBase):
+    def run(self, context, args, kwargs, opargs):
+        ds_id = self.parent.entity['id']
+        context.submit_task('directoryservice.configure', [ ds_id, 'dcs' ],
+            callback=lambda s: post_save(self.parent, s))
+
+
+@description("Configures global catalogs for directory service")
+class DirectoryServiceConfigureGCs(DirectoryServiceCommandBase):
+    def run(self, context, args, kwargs, opargs):
+        ds_id = self.parent.entity['id']
+        context.submit_task('directoryservice.configure', [ ds_id, 'gcs' ],
+            callback=lambda s: post_save(self.parent, s))
+
+
+@description("Configures Kerberos KDC's for directory service")
+class DirectoryServiceConfigureKDCs(DirectoryServiceCommandBase):
+    def run(self, context, args, kwargs, opargs):
+        ds_id = self.parent.entity['id']
+        context.submit_task('directoryservice.configure', [ ds_id, 'kdcs' ],
+            callback=lambda s: post_save(self.parent, s))
+
+
 @description("Configures hostname for directory service")
 class DirectoryServiceConfigureHostnameCommand(DirectoryServiceCommandBase):
     def run(self, context, args, kwargs, opargs):
@@ -308,16 +332,19 @@ class ActiveDirectoryNamespace(BaseDirectoryServiceNamespace):
             list=False
         )
 
-
         self.primary_key = self.get_mapping('name')
         self.primary_key_name = 'name'
+        self.save_key_name = 'name'
 
         self.entity_commands = lambda this: {
             'enable': DirectoryServiceEnableCommand(this),
             'disable': DirectoryServiceDisableCommand(this),
-            'show_dc': DirectoryServiceShowDCCommand(this),
-            'show_gc': DirectoryServiceShowGCCommand(this),
-            'show_kdc': DirectoryServiceShowKDCCommand(this),
+            'show_dcs': DirectoryServiceShowDCCommand(this),
+            'show_gcs': DirectoryServiceShowGCCommand(this),
+            'show_kdcs': DirectoryServiceShowKDCCommand(this),
+            'configure_dcs': DirectoryServiceConfigureDCs(this),
+            'configure_gcs': DirectoryServiceConfigureGCs(this),
+            'configure_kdcs': DirectoryServiceConfigureKDCs(this),
             'configure_hostname': DirectoryServiceConfigureHostnameCommand(this),
             'configure_hosts': DirectoryServiceConfigureHostsCommand(this),
             'configure_kerberos': DirectoryServiceConfigureKerberosCommand(this),
@@ -365,6 +392,7 @@ class LDAPDirectoryNamespace(BaseDirectoryServiceNamespace):
 
         self.primary_key = self.get_mapping('name')
         self.primary_key_name = 'name'
+        self.save_key_name = 'name'
 
         self.entity_commands = lambda this: {
             'enable': DirectoryServiceEnableCommand(this),

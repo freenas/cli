@@ -308,11 +308,11 @@ class AliasesNamespace(EntityNamespace):
         self.allow_edit = False
         self.required_props = ['address', 'netmask']
         self.localdoc['CreateEntityCommand'] = ("""\
-            Usage: create address=<name> netmask=<netmask> type=<type> <property>=<value> ...
+            Usage: create <address> netmask=<netmask> type=<type> <property>=<value> ...
 
-            Examples: create address=192.168.1.1 netmask=255.255.0.0
-                      create address=fda8:06c3:ce53:a890:0000:0000:0000:0005 netmask=64 type=INET6
-                      create address=10.10.0.1 netmask=16 broadcast=10.10.0.0
+            Examples: create 192.168.1.1 netmask=255.255.0.0
+                      create fda8:06c3:ce53:a890:0000:0000:0000:0005 netmask=64 type=INET6
+                      create 10.10.0.1 netmask=16 broadcast=10.10.0.0
 
             Available properties: type=[INET, INET6], address, netmask, broadcast
 

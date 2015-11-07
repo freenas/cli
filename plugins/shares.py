@@ -139,8 +139,8 @@ class NFSSharesNamespace(BaseSharesNamespace):
             Usage: create name=<name> volume=<volume> <property>=<value> ...
 
             Examples:
-                create name=foo volume=tank
-                create name=foo volume=tank read_only=true
+                create foo volume=tank
+                create foo volume=tank read_only=true
 
             Creates an NFS share. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
@@ -222,8 +222,8 @@ class AFPSharesNamespace(BaseSharesNamespace):
             Usage: create name=<name> volume=<volume> <property>=<value> ...
 
             Examples:
-                create name=foo volume=tank
-                create name=foo volume=tank read_only=true
+                create foo volume=tank
+                create foo volume=tank read_only=true
 
             Creates an AFP share. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
@@ -289,8 +289,8 @@ class SMBSharesNamespace(BaseSharesNamespace):
             Usage: create name=<name> volume=<volume> <property>=<value> ...
 
             Examples:
-                create name=foo volume=tank
-                create name=foo volume=tank read_only=true
+                create foo volume=tank
+                create foo volume=tank read_only=true
 
             Creates a SMB share. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
@@ -371,8 +371,8 @@ class ISCSIPortalsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespa
             Usage: create name=<name> listen=<hostname>:<port>,<hostname>:<port> <property>=<value> ...
 
             Examples:
-                create name=foo listen=192.168.1.10
-                create name=bar listen=127.0.0.1,foobar.local:8888 
+                create foo listen=192.168.1.10
+                create bar listen=127.0.0.1,foobar.local:8888 
 
             Creates an iSCSI portal. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
@@ -444,8 +444,8 @@ class ISCSIAuthGroupsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityName
             Usage: create name=<name> policy=<policy>
 
             Examples:
-                create name=foo policy=NONE
-                create name=bar policy=DENY 
+                create foo policy=NONE
+                create bar policy=DENY 
 
             Creates an iSCSI auth group. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
@@ -484,12 +484,12 @@ class ISCSIUsersNamespace(EntityNamespace):
         self.required_props = ['name', 'secret']
         self.extra_required_props = [['peer_name', 'peer_secret']]
         self.localdoc['CreateEntityCommand'] = ("""\
-            Usage: create name=<name> secret=<secret>
-                   create name=<name> secret=<secret> peer_name<name> peer_secret=<secret>
+            Usage: create <name> secret=<secret>
+                   create <name> secret=<secret> peer_name<name> peer_secret=<secret>
 
             Examples:
-                create name=foo secret=abcdefghijkl
-                create name=bar secret=mnopqrstuvwx peer_name=foo peer_secret=abcdefghijkl
+                create foo secret=abcdefghijkl
+                create bar secret=mnopqrstuvwx peer_name=foo peer_secret=abcdefghijkl
 
             Creates an iSCSI auth user. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
@@ -560,11 +560,11 @@ class ISCSITargetsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespa
         self.delete_task = 'share.iscsi.target.delete'
         self.required_props = ['name']
         self.localdoc['CreateEntityCommand'] = ("""\
-            Usage: create name=<name> <property>=<value> ...
+            Usage: create <name> <property>=<value> ...
 
             Examples:
-                create name=foo
-                create name=bar description="some share" auth_group=somegroup
+                create foo
+                create bar description="some share" auth_group=somegroup
 
             Creates an iSCSI target. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\

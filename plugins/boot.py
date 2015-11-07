@@ -52,7 +52,7 @@ class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
         self.localdoc['CreateEntityCommand'] = ("""\
             Usage: create name=<bootenv name>
 
-            Example: create name=foo
+            Example: create foo
 
             Creates a boot environment""")
 

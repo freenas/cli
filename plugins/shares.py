@@ -116,6 +116,7 @@ class BaseSharesNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace
             descr='Compression',
             name='compression',
             get='compression',
+            enum=['off', 'on', 'lzjb', 'gzip', 'zle', 'lz4'],
             list=True
         )
 

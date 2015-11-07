@@ -301,7 +301,7 @@ class ItemNamespace(Namespace):
     @description("Sets single item property")
     class SetEntityCommand(Command):
         """
-        Usage: set <property>=<value> [...]
+        Usage: set <property>=<value> ...
 
         For a list of properties for the current namespace, see 'help properties'.
         """

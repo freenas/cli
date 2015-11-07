@@ -605,6 +605,21 @@ class ISCSITargetMapingNamespace(EntityNamespace):
     def __init__(self, name, context, parent):
         super(ISCSITargetMapingNamespace, self).__init__(name, context)
         self.parent = parent
+        self.required_props['number','name']
+        self.localdoc['CreateEntityCommand'] = ("""\
+            Usage: create <name> <number>=<number>
+
+            Examples:
+                create foo number=12
+
+            Creates an iSCSI lun. For a list of properties, see 'help properties'.""")
+        self.entity_localdoc['SetEntityCommand'] = ("""\
+            Usage: set <property>=<value> ...
+
+            Examples: set name=newname
+                      set number=13
+
+            Sets a iSCSI lun property. For a list of properties, see 'help properties'.""")
 
         self.add_property(
             descr='LUN number',
@@ -645,6 +660,22 @@ class ISCSITargetMapingNamespace(EntityNamespace):
 class ISCSISharesNamespace(BaseSharesNamespace):
     def __init__(self, name, context):
         super(ISCSISharesNamespace, self).__init__(name, 'iscsi', context)
+        self.required_props = ['name']
+        self.localdoc['CreateEntityCommand'] = ("""\
+            Usage: create <name> volume=<volume> size=<size> <property>=<value> ...
+
+            Examples:
+                create foobariscsi volume=tank size=3GB
+
+            Creates an iSCSI share. For a list of properties, see 'help properties'.""")
+        self.entity_localdoc['SetEntityCommand'] = ("""\
+            Usage: set <property>=<value> ...
+
+            Examples: set name=newname
+                      set block_size=256
+                      set compression=gzip
+
+            Sets a iSCSI target property. For a list of properties, see 'help properties'.""")
 
         self.add_property(
             descr='Serial number',
@@ -657,6 +688,7 @@ class ISCSISharesNamespace(BaseSharesNamespace):
             descr='Size',
             name='size',
             get='properties.size',
+            usersetable=False,
             list=True
         )
 

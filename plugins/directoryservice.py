@@ -56,8 +56,9 @@ class DirectoryServiceNamespace(Namespace):
         ]
 
 class DirectoryServiceCommandBase(Command):
-    def __init__(self, parent):
+    def __init__(self, parent, enable=True):
         self.parent = parent
+        self.enable = enable
 
     def run(self, context, args, kwargs, opargs):
         pass
@@ -122,7 +123,9 @@ class DirectoryServiceShowKDCCommand(DirectoryServiceCommandBase):
 class DirectoryServiceConfigureDCs(DirectoryServiceCommandBase):
     def run(self, context, args, kwargs, opargs):
         ds_id = self.parent.entity['id']
-        context.submit_task('directoryservice.configure', [ ds_id, 'dcs' ],
+        args = [ ds_id, 'dcs', self.enable ]
+
+        context.submit_task('directoryservice.configure', args,
             callback=lambda s: post_save(self.parent, s))
 
 
@@ -130,7 +133,9 @@ class DirectoryServiceConfigureDCs(DirectoryServiceCommandBase):
 class DirectoryServiceConfigureGCs(DirectoryServiceCommandBase):
     def run(self, context, args, kwargs, opargs):
         ds_id = self.parent.entity['id']
-        context.submit_task('directoryservice.configure', [ ds_id, 'gcs' ],
+        args = [ ds_id, 'gcs', self.enable ]
+
+        context.submit_task('directoryservice.configure', args,
             callback=lambda s: post_save(self.parent, s))
 
 
@@ -138,7 +143,9 @@ class DirectoryServiceConfigureGCs(DirectoryServiceCommandBase):
 class DirectoryServiceConfigureKDCs(DirectoryServiceCommandBase):
     def run(self, context, args, kwargs, opargs):
         ds_id = self.parent.entity['id']
-        context.submit_task('directoryservice.configure', [ ds_id, 'kdcs' ],
+        args = [ ds_id, 'kdcs', self.enable ]
+
+        context.submit_task('directoryservice.configure', args,
             callback=lambda s: post_save(self.parent, s))
 
 
@@ -146,7 +153,9 @@ class DirectoryServiceConfigureKDCs(DirectoryServiceCommandBase):
 class DirectoryServiceConfigureHostnameCommand(DirectoryServiceCommandBase):
     def run(self, context, args, kwargs, opargs):
         ds_id = self.parent.entity['id']
-        context.submit_task('directoryservice.configure', [ ds_id, 'hostname' ],
+        args = [ ds_id, 'hostname', self.enable ]
+
+        context.submit_task('directoryservice.configure', args,
             callback=lambda s: post_save(self.parent, s))
 
 
@@ -154,7 +163,9 @@ class DirectoryServiceConfigureHostnameCommand(DirectoryServiceCommandBase):
 class DirectoryServiceConfigureHostsCommand(DirectoryServiceCommandBase):
     def run(self, context, args, kwargs, opargs):
         ds_id = self.parent.entity['id']
-        context.submit_task('directoryservice.configure', [ ds_id, 'hosts' ],
+        args = [ ds_id, 'hosts', self.enable ]
+
+        context.submit_task('directoryservice.configure', args,
             callback=lambda s: post_save(self.parent, s))
 
 
@@ -162,7 +173,9 @@ class DirectoryServiceConfigureHostsCommand(DirectoryServiceCommandBase):
 class DirectoryServiceConfigureKerberosCommand(DirectoryServiceCommandBase):
     def run(self, context, args, kwargs, opargs):
         ds_id = self.parent.entity['id']
-        context.submit_task('directoryservice.configure', [ ds_id, 'kerberos' ],
+        args = [ ds_id, 'kerberos', self.enable ]
+
+        context.submit_task('directoryservice.configure', args,
             callback=lambda s: post_save(self.parent, s))
 
 
@@ -170,7 +183,9 @@ class DirectoryServiceConfigureKerberosCommand(DirectoryServiceCommandBase):
 class DirectoryServiceConfigureNSSWitchCommand(DirectoryServiceCommandBase):
     def run(self, context, args, kwargs, opargs):
         ds_id = self.parent.entity['id']
-        context.submit_task('directoryservice.configure', [ ds_id, 'nsswitch' ],
+        args = [ ds_id, 'nsswitch', self.enable ]
+
+        context.submit_task('directoryservice.configure', args,
             callback=lambda s: post_save(self.parent, s))
 
 
@@ -178,7 +193,9 @@ class DirectoryServiceConfigureNSSWitchCommand(DirectoryServiceCommandBase):
 class DirectoryServiceConfigureOpenLDAPCommand(DirectoryServiceCommandBase):
     def run(self, context, args, kwargs, opargs):
         ds_id = self.parent.entity['id']
-        context.submit_task('directoryservice.configure', [ ds_id, 'openldap' ],
+        args = [ ds_id, 'openldap', self.enable ]
+
+        context.submit_task('directoryservice.configure', args,
             callback=lambda s: post_save(self.parent, s))
 
 
@@ -186,7 +203,9 @@ class DirectoryServiceConfigureOpenLDAPCommand(DirectoryServiceCommandBase):
 class DirectoryServiceConfigureNSSLDAPCommand(DirectoryServiceCommandBase):
     def run(self, context, args, kwargs, opargs):
         ds_id = self.parent.entity['id']
-        context.submit_task('directoryservice.configure', [ ds_id, 'nssldap' ],
+        args = [ ds_id, 'nssldap', self.enable ]
+
+        context.submit_task('directoryservice.configure', args,
             callback=lambda s: post_save(self.parent, s))
 
 
@@ -194,7 +213,9 @@ class DirectoryServiceConfigureNSSLDAPCommand(DirectoryServiceCommandBase):
 class DirectoryServiceConfigureSSSDCommand(DirectoryServiceCommandBase):
     def run(self, context, args, kwargs, opargs):
         ds_id = self.parent.entity['id']
-        context.submit_task('directoryservice.configure', [ ds_id, 'sssd' ],
+        args = [ ds_id, 'sssd', self.enable ]
+
+        context.submit_task('directoryservice.configure', args,
             callback=lambda s: post_save(self.parent, s))
 
 
@@ -202,7 +223,9 @@ class DirectoryServiceConfigureSSSDCommand(DirectoryServiceCommandBase):
 class DirectoryServiceConfigureSambaCommand(DirectoryServiceCommandBase):
     def run(self, context, args, kwargs, opargs):
         ds_id = self.parent.entity['id']
-        context.submit_task('directoryservice.configure', [ ds_id, 'samba' ],
+        args = [ ds_id, 'samba', self.enable ]
+
+        context.submit_task('directoryservice.configure', args,
             callback=lambda s: post_save(self.parent, s))
 
 
@@ -210,7 +233,9 @@ class DirectoryServiceConfigureSambaCommand(DirectoryServiceCommandBase):
 class DirectoryServiceConfigurePAMCommand(DirectoryServiceCommandBase):
     def run(self, context, args, kwargs, opargs):
         ds_id = self.parent.entity['id']
-        context.submit_task('directoryservice.configure', [ ds_id, 'pam' ],
+        args = [ ds_id, 'pam', self.enable ]
+
+        context.submit_task('directoryservice.configure', args,
             callback=lambda s: post_save(self.parent, s))
 
 
@@ -218,7 +243,9 @@ class DirectoryServiceConfigurePAMCommand(DirectoryServiceCommandBase):
 class DirectoryServiceConfigureActiveDirectoryCommand(DirectoryServiceCommandBase):
     def run(self, context, args, kwargs, opargs):
         ds_id = self.parent.entity['id']
-        context.submit_task('directoryservice.configure', [ ds_id, 'activedirectory' ],
+        args = [ ds_id, 'activedirectory', self.enable ]
+
+        context.submit_task('directoryservice.configure', args,
             callback=lambda s: post_save(self.parent, s))
 
 
@@ -342,19 +369,32 @@ class ActiveDirectoryNamespace(BaseDirectoryServiceNamespace):
             'show_dcs': DirectoryServiceShowDCCommand(this),
             'show_gcs': DirectoryServiceShowGCCommand(this),
             'show_kdcs': DirectoryServiceShowKDCCommand(this),
-            'configure_dcs': DirectoryServiceConfigureDCs(this),
-            'configure_gcs': DirectoryServiceConfigureGCs(this),
-            'configure_kdcs': DirectoryServiceConfigureKDCs(this),
-            'configure_hostname': DirectoryServiceConfigureHostnameCommand(this),
-            'configure_hosts': DirectoryServiceConfigureHostsCommand(this),
-            'configure_kerberos': DirectoryServiceConfigureKerberosCommand(this),
-            'configure_nsswitch': DirectoryServiceConfigureNSSWitchCommand(this),
-            'configure_openldap': DirectoryServiceConfigureOpenLDAPCommand(this),
-            'configure_nssldap': DirectoryServiceConfigureNSSLDAPCommand(this),
-            'configure_sssd': DirectoryServiceConfigureSSSDCommand(this),
-            'configure_samba': DirectoryServiceConfigureSambaCommand(this),
-            'configure_pam': DirectoryServiceConfigurePAMCommand(this),
-            'configure_activedirectory': DirectoryServiceConfigureActiveDirectoryCommand(this),
+            'configure_dcs': DirectoryServiceConfigureDCs(this, True),
+            'unconfigure_dcs': DirectoryServiceConfigureDCs(this, False),
+            'configure_gcs': DirectoryServiceConfigureGCs(this, True),
+            'unconfigure_gcs': DirectoryServiceConfigureGCs(this, False),
+            'configure_kdcs': DirectoryServiceConfigureKDCs(this, True),
+            'unconfigure_kdcs': DirectoryServiceConfigureKDCs(this, False),
+            'configure_hostname': DirectoryServiceConfigureHostnameCommand(this, True),
+            'unconfigure_hostname': DirectoryServiceConfigureHostnameCommand(this, False),
+            'configure_hosts': DirectoryServiceConfigureHostsCommand(this, True),
+            'unconfigure_hosts': DirectoryServiceConfigureHostsCommand(this, False),
+            'configure_kerberos': DirectoryServiceConfigureKerberosCommand(this, True),
+            'unconfigure_kerberos': DirectoryServiceConfigureKerberosCommand(this, False),
+            'configure_nsswitch': DirectoryServiceConfigureNSSWitchCommand(this, True),
+            'unconfigure_nsswitch': DirectoryServiceConfigureNSSWitchCommand(this, False),
+            'configure_openldap': DirectoryServiceConfigureOpenLDAPCommand(this, True),
+            'unconfigure_openldap': DirectoryServiceConfigureOpenLDAPCommand(this, False),
+            'configure_nssldap': DirectoryServiceConfigureNSSLDAPCommand(this, True),
+            'unconfigure_nssldap': DirectoryServiceConfigureNSSLDAPCommand(this, False),
+            'configure_sssd': DirectoryServiceConfigureSSSDCommand(this, True),
+            'unconfigure_sssd': DirectoryServiceConfigureSSSDCommand(this, False),
+            'configure_samba': DirectoryServiceConfigureSambaCommand(this, True),
+            'unconfigure_samba': DirectoryServiceConfigureSambaCommand(this, False),
+            'configure_pam': DirectoryServiceConfigurePAMCommand(this, True),
+            'unconfigure_pam': DirectoryServiceConfigurePAMCommand(this, False),
+            'configure_activedirectory': DirectoryServiceConfigureActiveDirectoryCommand(this, True),
+            'unconfigure_activedirectory': DirectoryServiceConfigureActiveDirectoryCommand(this, False),
             'get_kerberos_ticket': DirectoryServiceGetKerberosTicketCommand(this),
             'join_activedirectory': DirectoryServiceJoinActiveDirectoryCommand(this),
         }

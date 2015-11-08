@@ -56,7 +56,7 @@ class AddVdevCommand(Command):
     Example:
             add_vdev type=mirror ada1 ada2 
     
-    Valid types are:mirror stripe raidz1 raidz2 raidz3 cache log
+    Valid types are: mirror disk raidz1 raidz2 raidz3 cache log
 
     Adds a new vdev to volume
     """
@@ -67,12 +67,12 @@ class AddVdevCommand(Command):
         entity = self.parent.entity
         typ = kwargs.pop('type')
 
-        if typ not in ('stripe', 'mirror', 'cache', 'log', 'raidz1', 'raidz2', 'raidz3'):
+        if typ not in ('disk', 'mirror', 'cache', 'log', 'raidz1', 'raidz2', 'raidz3'):
             raise CommandException(_("Invalid vdev type"))
 
-        if typ == 'stripe':
+        if typ == 'disk':
             if len(args) != 1:
-                raise CommandException(_("Stripe vdev consist of single disk"))
+                raise CommandException(_("Disk vdev consist of single disk"))
 
             entity['topology']['data'].append({
                 'type': 'disk',
@@ -119,7 +119,7 @@ class AddVdevCommand(Command):
         self.parent.save()
 
 
-@description("Adds new disk to existing mirror or converts stripe to a mirror")
+@description("Adds new disk to existing mirror or converts single disk stripe to a mirror")
 class ExtendVdevCommand(Command):
     """
     Usage:
@@ -128,7 +128,7 @@ class ExtendVdevCommand(Command):
     Example:
         extend_vdev vdev=ada1 ada2
 
-    Adds new disk to existing mirror or converts stripe to a mirror
+    Adds new disk to existing mirror or converts single disk stripe to a mirror
     """
     def __init__(self, parent):
         self.parent = parent

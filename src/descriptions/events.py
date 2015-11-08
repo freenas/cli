@@ -62,9 +62,6 @@ def entity_subscriber_changed(name, args, select=None):
     if args['operation'] == 'create':
         return _("{0} {1} created".format(name, items))
 
-    if args['operation'] == 'update':
-        return _("{0} {1} updated".format(name, items))
-
     if args['operation'] == 'delete':
         return _("{0} {1} deleted".format(name, items))
 

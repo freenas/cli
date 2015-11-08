@@ -696,7 +696,8 @@ class ISCSISharesNamespace(BaseSharesNamespace):
             name='size',
             get='properties.size',
             usersetable=False,
-            list=True
+            list=True,
+            type=ValueType.SIZE
         )
 
         self.add_property(

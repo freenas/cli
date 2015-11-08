@@ -386,7 +386,7 @@ class ISCSIPortalsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespa
             Sets a iSCSI portal property. For a list of properties, see 'help properties'.""")
 
         self.add_property(
-            descr='Group name',
+            descr='Portal name',
             name='name',
             get='id'
         )
@@ -417,19 +417,19 @@ class ISCSIPortalsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespa
         self.primary_key = self.get_mapping('name')
 
     def get_portals(self, obj):
-        return ['{address}:{port}'.format(**i) for i in obj['portals']]
+        return ['{address}:{port}'.format(**i) for i in obj['listen']]
 
     def set_portals(self, obj, value):
         def pack(item):
             ret = item.split(':', 2)
-            if not ret[1].isdigit():
+            if len(ret) > 1 and not ret[1].isdigit():
                 raise CommandException(_("Invalid port number: {0}").format(ret[1]))
             return {
                 'address': ret[0],
                 'port': int(ret[1]) if len(ret) == 2 else 3260
             }
 
-        obj['portals'] = list(map(pack, value))
+        obj['listen'] = list(map(pack, value))
 
 
 @description("iSCSI authentication groups")

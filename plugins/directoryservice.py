@@ -89,10 +89,10 @@ class DirectoryServiceDisableCommand(DirectoryServiceCommandBase):
 class DirectoryServiceShowDCCommand(DirectoryServiceCommandBase):
     def run(self, context, args, kwargs, opargs):
         ds_id = self.parent.entity['id']
-        res = context.call_task_sync('directoryservice.show', [ id, 'domaincontrollers' ])
+        res = context.call_task_sync('directoryservice.get', [ ds_id, 'dcs' ])
 
         # XXX format output and show domain controllers
-        if res and 'result' in res:
+        if res and 'result' in res and res['result']:
             output_msg(res['result'][0])
 
 
@@ -100,10 +100,10 @@ class DirectoryServiceShowDCCommand(DirectoryServiceCommandBase):
 class DirectoryServiceShowGCCommand(DirectoryServiceCommandBase):
     def run(self, context, args, kwargs, opargs):
         ds_id = self.parent.entity['id']
-        res = context.call_task_sync('directoryservice.show', [ id, 'globalcatalogs' ])
+        res = context.call_task_sync('directoryservice.get', [ ds_id, 'gcs' ])
 
         # XXX format output and show global catalogs
-        if res and 'result' in res:
+        if res and 'result' in res and res['result']:
             output_msg(res['result'][0])
 
 
@@ -111,10 +111,10 @@ class DirectoryServiceShowGCCommand(DirectoryServiceCommandBase):
 class DirectoryServiceShowKDCCommand(DirectoryServiceCommandBase):
     def run(self, context, args, kwargs, opargs):
         ds_id = self.parent.entity['id']
-        res = context.call_task_sync('directoryservice.show', [ id, 'kerberoskdcs' ])
+        res = context.call_task_sync('directoryservice.get', [ ds_id, 'kdcs' ])
 
         # XXX format output and show global catalogs
-        if res and 'result' in res:
+        if res and 'result' in res and res['result']:
             output_msg(res['result'][0])
 
 

@@ -606,7 +606,7 @@ class ISCSITargetMapingNamespace(EntityNamespace):
     def __init__(self, name, context, parent):
         super(ISCSITargetMapingNamespace, self).__init__(name, context)
         self.parent = parent
-        self.required_props['number','name']
+        self.required_props = ['number','name']
         self.localdoc['CreateEntityCommand'] = ("""\
             Usage: create <name> <number>=<number>
 

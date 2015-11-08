@@ -882,5 +882,43 @@ svc_cli_config = {
             'get': 'auxiliary',
             'type': ValueType.STRING
         },
+    ],
+    "smartd": [
+        {
+            'descr': 'Interval',
+            'name': 'interval',
+            'get': 'interval',
+            'type': ValueType.NUMBER
+        },
+        {
+            'descr': 'Power mode',
+            'name': 'power_mode',
+            'get': 'power_mode',
+            'enum': [
+                'NEVER',
+                'SLEEP',
+                'STANDBY',
+                'IDLE',
+            ],
+            'type': ValueType.STRING
+        },
+        {
+            'descr': 'Temperature difference',
+            'name': 'temp_difference',
+            'get': 'temp_difference',
+            'type': ValueType.NUMBER
+        },
+        {
+            'descr': 'Temperature informational',
+            'name': 'temp_informational',
+            'get': 'temp_informational',
+            'type': ValueType.NUMBER
+        },
+        {
+            'descr': 'Temperature critical',
+            'name': 'temp_critical',
+            'get': 'temp_critical',
+            'type': ValueType.NUMBER
+        },
     ]
 }

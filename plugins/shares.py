@@ -676,7 +676,7 @@ class ISCSISharesNamespace(BaseSharesNamespace):
                       set block_size=256
                       set compression=gzip
 
-            Sets a iSCSI target property. For a list of properties, see 'help properties'.""")
+            Sets a iSCSI share property. For a list of properties, see 'help properties'.""")
 
         self.add_property(
             descr='Serial number',

@@ -363,9 +363,15 @@ class ActiveDirectoryNamespace(BaseDirectoryServiceNamespace):
         self.primary_key_name = 'name'
         self.save_key_name = 'name'
 
+        # XXX Most of these are for debugging, remove when 
+        # XXX everything works
+        # XXX Perhaps they can be conditional ?
         self.entity_commands = lambda this: {
             'enable': DirectoryServiceEnableCommand(this),
             'disable': DirectoryServiceDisableCommand(this),
+        }
+
+"""
             'show_dcs': DirectoryServiceShowDCCommand(this),
             'show_gcs': DirectoryServiceShowGCCommand(this),
             'show_kdcs': DirectoryServiceShowKDCCommand(this),
@@ -398,6 +404,7 @@ class ActiveDirectoryNamespace(BaseDirectoryServiceNamespace):
             'get_kerberos_ticket': DirectoryServiceGetKerberosTicketCommand(this),
             'join_activedirectory': DirectoryServiceJoinActiveDirectoryCommand(this),
         }
+"""
 
 
 @description("LDAP directory settings")

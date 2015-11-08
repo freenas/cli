@@ -26,15 +26,16 @@
 #####################################################################
 
 import re
+import copy
 import icu
 import inspect
 from namespace import (
-    EntityNamespace, Command, CommandException,
+    EntityNamespace, Command, CommandException, SingleItemNamespace,
     RpcBasedLoadMixin, TaskBasedSaveMixin, description
     )
 from output import Table, ValueType, output_tree, output_msg
 from utils import post_save, iterate_vdevs
-from fnutils import first_or_default, exclude
+from fnutils import first_or_default, exclude, query
 
 
 t = icu.Transliterator.createInstance("Any-Accents", icu.UTransDirection.FORWARD)
@@ -230,48 +231,6 @@ class OnlineVdevCommand(Command):
         if guid is None:
             raise CommandException(_("Disk {0} is not part of the volume.".format(disk)))
         context.submit_task('zfs.pool.online_disk', self.parent.entity['name'], guid)
-
-
-@description("Creates new volume in simple way")
-class VolumeCreateCommand(Command):
-    """
-    Usage: create_auto <volume> <disk> [...]
-           create_auto <volume> alldisks
-
-    Examples: create_auto tank ada1 ada2
-              create_auto tank alldisks
-
-    Creates a new volume in a simple way.
-    """
-    def run(self, context, args, kwargs, opargs):
-        if not args:
-            output_msg("create_auto requires more arguments.\n" +
-                       inspect.getdoc(self))
-            return
-        name = args.pop(0)
-        disks = args
-        if len(disks) == 0:
-            output_msg("create_auto requires more arguments.\n" +
-                       inspect.getdoc(self))
-            return
-
-        # The all_disks below is a temporary fix, use this after "select" is working
-        # all_disks = context.call_sync('disks.query', [], {"select":"path"})
-        all_disks = [disk["path"] for disk in context.call_sync("disks.query")]
-        available_disks = context.call_sync('volumes.get_available_disks')
-        if 'alldisks' in disks:
-            disks = available_disks
-        else:
-            for disk in disks:
-                disk = correct_disk_path(disk)
-                if disk not in all_disks:
-                    output_msg("Disk " + disk + " does not exist.")
-                    return
-                if disk not in available_disks:
-                    output_msg("Disk " + disk + " is not usable.")
-                    return
-
-        context.submit_task('volume.create_auto', name, 'zfs', disks)
 
 
 @description("Finds volumes available to import")
@@ -680,6 +639,91 @@ class FilesystemNamespace(EntityNamespace):
             get='name'
         )
 
+@description("Creates new volume")
+class CreateVolumeCommand(Command):
+    """
+    Usage: create <name> type=<type> disks=<disks>
+
+    Example: create tank disks=ada1,ada2
+             create tank type=raidz2 disks=ada1,ada2,ada3,ada4
+
+    The types available for pool creation are: auto, disk, mirror, raidz1, raidz2 and raidz3
+    The "auto" setting is used if a type is not specified.
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        volume_types = ['disk', 'mirror', 'raidz1', 'raidz2', 'raidz3']
+        if not args and not kwargs:
+            raise CommandException(_('create requires more arguments, see \'help create\' for more information'))
+
+        ns = SingleItemNamespace(None, self.parent)
+        ns.orig_entity = query.wrap(copy.deepcopy(self.parent.skeleton_entity))
+        ns.entity = query.wrap(copy.deepcopy(self.parent.skeleton_entity))
+        creation_props = ['disks', 'type']
+
+        if len(args) > 0:
+            prop = self.parent.primary_key
+            kwargs[prop.name] = args.pop(0)
+
+        if 'name' not in kwargs.keys():
+            raise CommandException(_('Please specify a name for your pool'))
+        else:
+            name = kwargs.pop('name')
+
+        if 'type' not in kwargs.keys():
+            volume_type = 'auto'
+        else:
+            volume_type = kwargs.pop('type')
+            if volume_type not in volume_types:
+                raise CommandException(_("Invalid volume type {0}".format(volume_type)))
+        
+        if 'disks' not in kwargs.keys():
+            raise CommandException(_('Please specify one or more disks using the \'disks\' property'))
+        else:
+            disks = kwargs.pop('disks').split(',')
+        
+        disks_per_type={'auto': 1,
+                        'disk':1,
+                        'mirror':2,
+                        'raidz1':3,
+                        'raidz2':4,
+                        'raidz3':5}
+        if len(disks) < disks_per_type[volume_type]:
+            raise CommandException(_("Volume type {0} requires at least {1} disks".format(volume_type, disks_per_type)))
+        if len(disks) > 1 and volume_type == 'disk':
+            raise CommandException(_("Cannot create a volume of type disk with multiple disks"))
+
+        all_disks = [disk["path"] for disk in context.call_sync("disks.query")]
+        available_disks = context.call_sync('volumes.get_available_disks')
+        if 'alldisks' in disks:
+            disks = available_disks
+        else:
+            for disk in disks:
+                disk = correct_disk_path(disk)
+                if disk not in all_disks:
+                    raise CommandException(_("Disk {0} does not exist.".format(disk)))
+                if disk not in available_disks:
+                    raise CommandException(_("Disk {0} is not available.".format(disk)))
+
+        if volume_type == 'auto':
+            context.submit_task('volume.create_auto', name, 'zfs', disks)
+        else:
+            ns.entity['name'] = name
+            ns.entity['topology'] = {}
+            ns.entity['topology']['data'] = []
+            if volume_type == 'disk':
+                ns.entity['topology']['data'].append(
+                    {'type': 'disk', 'path': correct_disk_path(disks[0])})
+            else:
+                ns.entity['topology']['data'].append({
+                    'type': volume_type,
+                    'children': [{'type': 'disk', 'path': correct_disk_path(disk)} for disk in disks]
+                })
+
+            self.parent.save(ns, new=True)
+
 
 @description("Manage volumes")
 class VolumesNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
@@ -741,7 +785,6 @@ class VolumesNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
 
         self.primary_key = self.get_mapping('name')
         self.extra_commands = {
-            'create_auto': VolumeCreateCommand(),
             'find': FindVolumesCommand(),
             'find_media': FindMediaCommand(),
             'import': ImportVolumeCommand(),
@@ -763,6 +806,11 @@ class VolumesNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
             DatasetsNamespace('dataset', self.context, this),
             SnapshotsNamespace('snapshot', self.context, this)
         ]
+
+    def commands(self):
+        cmds = super(VolumesNamespace, self).commands()
+        cmds.update({'create': CreateVolumeCommand(self)})
+        return cmds
 
 
 def _init(context):

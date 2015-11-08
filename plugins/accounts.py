@@ -52,7 +52,7 @@ class UsersNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
         self.required_props = ['username', ['password','password_disabled']]
 
         self.localdoc['CreateEntityCommand'] = ("""\
-            Usage: create username=<name> password=<password> <property>=<value> ...
+            Usage: create <name> password=<password> <property>=<value> ...
 
             Examples: create foo password=bar home=/tank/foo
                       create bar group=bar password_disabled=true

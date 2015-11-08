@@ -49,6 +49,16 @@ def correct_disk_path(disk):
 
 @description("Adds new vdev to volume")
 class AddVdevCommand(Command):
+    """
+    Usage: add_vdev type=<type> <disk1> <disk2> <disk3> ...
+    
+    Example:
+            add_vdev type=mirror ada1 ada2 
+    
+    Valid types are:mirror stripe raidz1 raidz2 raidz3 cache log
+
+    Adds a new vdev to volume
+    """
     def __init__(self, parent):
         self.parent = parent
 
@@ -110,6 +120,15 @@ class AddVdevCommand(Command):
 
 @description("Adds new disk to existing mirror or converts stripe to a mirror")
 class ExtendVdevCommand(Command):
+    """
+    Usage:
+        extend_vdev vdev=<disk> <newdisk1> <newdisk2>
+
+    Example:
+        extend_vdev vdev=ada1 ada2
+
+    Adds new disk to existing mirror or converts stripe to a mirror
+    """
     def __init__(self, parent):
         self.parent = parent
 
@@ -122,6 +141,13 @@ class ExtendVdevCommand(Command):
             vdev_ident in [i['path'] for i in v['children']],
             self.parent.entity['topology']['data']
         )
+
+        if vdev['type'] == 'disk':
+            vdev['type'] = 'mirror'
+            vdev['children'].append({
+                'type': 'disk',
+                'path': vdev_ident
+                })
 
         vdev['children'].append({
             'type': 'disk',

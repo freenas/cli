@@ -131,6 +131,12 @@ class BaseSharesNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace
         params.append(('type', '=', self.type_name))
         return self.context.call_sync('shares.query', params)
 
+    def get_one(self, name):
+        return self.context.call_sync(
+            self.query_call,
+            self.extra_query_params + [(self.primary_key_name, '=', name)] + [('type', '=', self.type_name)],
+            {'single': True})
+
 
 @description("NFS shares")
 class NFSSharesNamespace(BaseSharesNamespace):

@@ -667,12 +667,12 @@ class ISCSITargetMapingNamespace(EntityNamespace):
 class ISCSISharesNamespace(BaseSharesNamespace):
     def __init__(self, name, context):
         super(ISCSISharesNamespace, self).__init__(name, 'iscsi', context)
-        self.required_props = ['name']
+        self.required_props = ['name', 'volume', 'size']
         self.localdoc['CreateEntityCommand'] = ("""\
             Usage: create <name> volume=<volume> size=<size> <property>=<value> ...
 
             Examples:
-                create foobariscsi volume=tank size=3GB
+                create foobariscsi volume=tank size=3G
 
             Creates an iSCSI share. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\

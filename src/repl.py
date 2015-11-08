@@ -987,9 +987,14 @@ def main():
     ml = MainLoop(context)
     context.ml = ml
 
+    if args.hostname not in ('localhost', '127.0.0.1'):
+        if args.l is None:
+            args.l = input('Please provide username: ')
+        if args.p is None:
+            args.p = getpass.getpass('Please provide password: ')
     if args.l:
         context.login(args.l, args.p)
-    elif args.l is None and args.p is None and args.hostname == '127.0.0.1':
+    elif args.l is None and args.p is None and args.hostname in ('127.0.0.1', 'localhost'):
         context.login(getpass.getuser(), '')
 
     if args.D:

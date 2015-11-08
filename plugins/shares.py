@@ -614,10 +614,10 @@ class ISCSITargetMapingNamespace(EntityNamespace):
         self.parent = parent
         self.required_props = ['number','name']
         self.localdoc['CreateEntityCommand'] = ("""\
-            Usage: create <name> <number>=<number>
+            Usage: create <number> <name>=<name>
 
             Examples:
-                create foo number=12
+                create 12 name=foo
 
             Creates an iSCSI lun. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
@@ -641,7 +641,7 @@ class ISCSITargetMapingNamespace(EntityNamespace):
             get='name'
         )
 
-        self.primary_key = self.get_mapping('name')
+        self.primary_key = self.get_mapping('number')
 
     def get_one(self, name):
         return first_or_default(lambda a: a['name'] == name, self.parent.entity['extents'])

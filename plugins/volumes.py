@@ -386,6 +386,27 @@ class ScrubCommand(Command):
         context.submit_task('zfs.pool.scrub', self.parent.entity['name'])
 
 
+@description("Replicates dataset to another system")
+class ReplicateCommand(Command):
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        remote = kwargs.pop('remote')
+        remote_dataset = kwargs.pop('remote_dataset')
+        bandwidth = kwargs.pop('bandwidth_limit', None)
+
+        context.submit_task(
+            'replication.replicate_dataset',
+            self.parent.parent.parent.entity['name'],
+            self.parent.entity['name'],
+            {
+                'remote': remote,
+                'remote_dataset': remote_dataset,
+                'bandwidth_limit': bandwidth
+            })
+
+
 @description("Datasets")
 class DatasetsNamespace(EntityNamespace):
     def __init__(self, name, context, parent):
@@ -519,6 +540,9 @@ class DatasetsNamespace(EntityNamespace):
             condition=lambda o: o['type'] == 'VOLUME')
 
         self.primary_key = self.get_mapping('name')
+        self.entity_commands = lambda this: {
+            'replicate': ReplicateCommand(this)
+        }
 
     def query(self, params, options):
         self.parent.load()

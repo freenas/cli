@@ -95,6 +95,7 @@ class AddVdevCommand(Command):
         if len(args) < disks_per_type[typ]:
             raise CommandException(_("Vdev of type {0} requires at least {1} disks".format(typ, disks_per_type[typ])))
 
+        if typ== 'mirror':
             entity['topology']['data'].append({
                 'type': 'mirror',
                 'children': [{'type': 'disk', 'path': correct_disk_path(x)} for x in args]

@@ -77,7 +77,7 @@ class AddVdevCommand(Command):
 
     def run(self, context, args, kwargs, opargs):
         entity = self.parent.entity
-        if 'type' not in kwargs.keys():
+        if 'type' not in kwargs:
             raise CommandException(_("Please specify a type of vdev, see 'help add_vdev' for more information"))
         typ = kwargs.pop('type')
 
@@ -92,22 +92,27 @@ class AddVdevCommand(Command):
                         'raidz2':4,
                         'raidz3':5}
 
-        if len(args) < disks_per_type[typ]:
+        if 'disks' not in kwargs:
+            raise CommandException(_("Please specify one or more disks using the disks property"))
+        else:
+            disks = kwargs.pop('disks').split(',')
+
+        if len(disks) < disks_per_type[typ]:
             raise CommandException(_("Vdev of type {0} requires at least {1} disks".format(typ, disks_per_type[typ])))
 
         if typ== 'mirror':
             entity['topology']['data'].append({
                 'type': 'mirror',
-                'children': [{'type': 'disk', 'path': correct_disk_path(x)} for x in args]
+                'children': [{'type': 'disk', 'path': correct_disk_path(x)} for x in disks]
             })
 
         if typ == 'disk':
-            if len(args) != 1:
+            if len(disks) != 1:
                 raise CommandException(_("Disk vdev consist of single disk"))
 
             entity['topology']['data'].append({
                 'type': 'disk',
-                'path': correct_disk_path(args[0])
+                'path': correct_disk_path(disks[0])
             })
 
         if typ == 'cache':
@@ -116,11 +121,11 @@ class AddVdevCommand(Command):
 
             entity['topology']['cache'].append({
                 'type': 'disk',
-                'path': correct_disk_path(args[0])
+                'path': correct_disk_path(disks[0])
             })
 
         if typ == 'log':
-            if len(args) != 1:
+            if len(disks) != 1:
                 raise CommandException(_("Log vdevs cannot be mirrored"))
 
             if 'log' not in entity:
@@ -128,13 +133,13 @@ class AddVdevCommand(Command):
 
             entity['topology']['log'].append({
                 'type': 'disk',
-                'path': correct_disk_path(args[0])
+                'path': correct_disk_path(disks[0])
             })
 
         if typ.startswith('raidz'):
             entity['topology']['data'].append({
                 'type': typ,
-                'children': [{'type': 'disk', 'path': correct_disk_path(x)} for x in args]
+                'children': [{'type': 'disk', 'path': correct_disk_path(x)} for x in disks]
             })
 
         self.parent.modified = True

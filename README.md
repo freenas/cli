@@ -76,6 +76,8 @@ Disk path   Disk name     Size      Online   Allocation
 /dev/ada4   ada4        6.44 GiB    yes      unallocated
 ```
 
+On the left of the table you see the disk names and on the right you can see the allocation status of these disks.  Be sure to only use "unallocated" disks since those are ones that are not currently being used.
+
 The command to create a volume is `volume create`.  This command takes as arguments the name of the volume, the type of volume you are creating and the disks you are assigning to the volume.  For example:
 
 ```
@@ -93,7 +95,20 @@ To see the topology of the newly created volume, use the command `show_topology`
          `-- /dev/ada3 (disk)
 ```
 
-The valid types for volume create are: disk, mirror, raidz1, raidz2, raidz3 and auto.  If you do not specify a type `auto` is assumed and FreeNAS will try to decide the best topology for you (if it is a multiple of 2, you will get a stripe of mirrors and if it is a multiple of 3 you get a stripe of raidz1).
+If you type `disk show` again you will see that these disks are now marked as allocated to tank:
+
+```
+127.0.0.1:>disk show
+Disk path   Disk name     Size      Online       Allocation      
+/dev/ada5   ada5        6.44 GiB    yes      unallocated         
+/dev/ada4   ada4        6.44 GiB    yes      unallocated         
+/dev/ada0   ada0        17.18 GiB   yes      boot device         
+/dev/ada1   ada1        6.44 GiB    yes      part of volume tank 
+/dev/ada2   ada2        6.44 GiB    yes      part of volume tank 
+/dev/ada3   ada3        6.44 GiB    yes      part of volume tank 
+```
+
+The valid types for volume create are: disk, mirror, raidz1, raidz2, raidz3 and auto.  If you do not specify a type `auto` is assumed and FreeNAS will try to decide the best topology for you (if you use a multiple of 2 disks, you will get a stripe of mirrors or if you use a multiple of 3 disks you get a stripe of raidz1).
 
 
 ```

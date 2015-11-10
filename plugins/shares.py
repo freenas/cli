@@ -79,6 +79,7 @@ class BaseSharesNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace
 
         self.type_name = type_name
         self.query_call = 'shares.query'
+        self.extra_query_params = [('type', '=', type_name)]
         self.create_task = 'share.create'
         self.update_task = 'share.update'
         self.delete_task = 'share.delete'
@@ -126,16 +127,6 @@ class BaseSharesNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace
         self.entity_commands = lambda this: {
             'clients': ConnectedUsersCommand(this)
         }
-
-    def query(self, params, options):
-        params.append(('type', '=', self.type_name))
-        return self.context.call_sync('shares.query', params)
-
-    def get_one(self, name):
-        return self.context.call_sync(
-            self.query_call,
-            self.extra_query_params + [(self.primary_key_name, '=', name)] + [('type', '=', self.type_name)],
-            {'single': True})
 
 
 @description("NFS shares")

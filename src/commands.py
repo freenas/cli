@@ -547,6 +547,22 @@ class LessCommand(Command):
             output_less(lambda: output_msg(less_output))
 
 
+def map_opargs(opargs, context):
+    ns = context.ml.get_relative_object(context.ml.path[-1], [])
+    mapped_opargs = []
+    for k, o, v in opargs:
+        if ns.has_property(k):
+            mapped_opargs.append((ns.get_mapping(k).name,o,v))
+        else:
+            raise CommandException(_(
+                'Property {0} not found, valid properties are: {1}'.format(
+                    k,
+                    ','.join([x.name for x in ns.property_mappings if x.list])
+                )
+            ))
+    return mapped_opargs
+
+
 @description("Filters result set basing on specified conditions")
 class SearchPipeCommand(PipeCommand):
     """
@@ -567,22 +583,17 @@ class SearchPipeCommand(PipeCommand):
         mapped_opargs = map_opargs(opargs, context)
         
         if len(kwargs) > 0:
-            raise CommandException(_("Invalid syntax {0}, see 'help exclude' for more information.").format(kwargs))
+            raise CommandException(_(
+                "Invalid syntax {0}, see 'help exclude' for more information.".format(kwargs)
+            ))
 
         if len(args) > 0:
-            raise CommandException(_("Invalid syntax {0}, see 'help exclude' for more information.").format(args))
+            raise CommandException(_(
+                "Invalid syntax {0}, see 'help exclude' for more information.".format(args)
+            ))
 
         return {"filter": mapped_opargs}
 
-def map_opargs(opargs, context):
-        ns = context.ml.get_relative_object(context.ml.path[-1], [])
-        mapped_opargs = []
-        for k, o, v in opargs:
-            if ns.has_property(k):
-                mapped_opargs.append((ns.get_mapping(k).name,o,v))
-            else:
-                raise CommandException(_('Property {0} not found, valid properties are: {1}'.format(k, ','.join([x.name for x in ns.property_mappings if x.list]))))
-        return mapped_opargs
 
 @description("Excludes certain results from result set basing on specified conditions")
 class ExcludePipeCommand(PipeCommand):
@@ -600,10 +611,14 @@ class ExcludePipeCommand(PipeCommand):
         mapped_opargs = map_opargs(opargs, context)
 
         if len(kwargs) > 0:
-            raise CommandException(_("Invalid syntax {0}, see 'help exclude' for more information.").format(kwargs))
+            raise CommandException(_(
+                "Invalid syntax {0}, see 'help exclude' for more information.".format(kwargs)
+            ))
 
         if len(args) > 0:
-            raise CommandException(_("Invalid syntax {0}, see 'help exclude' for more information.").format(args))
+            raise CommandException(_(
+                "Invalid syntax {0}, see 'help exclude' for more information.".format(args)
+            ))
 
         result = []
         for i in mapped_opargs:
@@ -638,7 +653,9 @@ class LimitPipeCommand(PipeCommand):
         if len(args) == 0:
             raise CommandException(_("Please specify a number to limit."))
         if not isinstance(args[0], int) or len(args) > 1:
-            raise CommandException(_("Invalid input {0}. See 'help limit' for more information.".format(args)))
+            raise CommandException(_(
+                "Invalid input {0}. See 'help limit' for more information.".format(args)
+            ))
         return {"params": {"limit": args[0]}}
 
 
@@ -652,13 +669,24 @@ class SelectPipeCommand(PipeCommand):
     Returns only the output of the specific field for a list.
     """
     def run(self, context, args, kwargs, opargs, input=None):
-        ns = context.ml.get_relative_object(context.ml.path[-1], [])
-        available_props = [x.name for x in ns.property_mappings if x.list]
         if len(args) == 0:
-            raise CommandException(_("Please specify a property field. Available properties are: {0}".format(','.join(available_props))))
+            raise CommandException(_(
+                "Please specify a property field. Available properties are: {0}".format(
+                    ','.join(available_props)
+                )
+            ))
+
         field = args[0]
-        if field not in available_props:
-            raise CommandException(_("Please specify a property field. Available properties are: {0}".format(','.join(available_props))))
+        ns = context.ml.get_relative_object(context.ml.path[-1], [])
+
+        if ns.has_property(field):
+            field = ns.get_mapping(field).get_name
+        else:
+            raise CommandException(_(
+                "Please specify a property field. Available properties are: {0}".format(
+                    ','.join([x.name for x in ns.property_mappings if x.list])
+                )
+            ))
 
         if isinstance(input, Table):
             input.data = [{'result': x.get(field)} for x in input.data]

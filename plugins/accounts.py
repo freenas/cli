@@ -97,6 +97,7 @@ class UsersNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
         self.add_property(
             descr='Primary group',
             name='group',
+            get_name='group',
             get=self.display_group,
             set=self.set_group)
 
@@ -104,6 +105,7 @@ class UsersNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
             descr='Auxilliary groups',
             name='groups',
             get=self.display_aux_groups,
+            get_name='groups',
             set=self.set_aux_groups,
             type=ValueType.SET
             )
@@ -189,7 +191,7 @@ class UsersNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
             yield group['name'] if group else 'GID:{0}'.format(group['id'])
 
     def set_aux_groups(self, entity, value):
-        groups = self.context.call_sync('groups.query', [('name', 'in', value)])
+        groups = self.context.call_sync('groups.query', [('name', 'in', list(value))])
         diff_groups = set.difference(set([x['name'] for x in groups]), set(value))
         if len(diff_groups):
             raise CommandException(_('Groups {0} do not exist.'.format(diff_groups)))

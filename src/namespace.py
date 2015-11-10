@@ -171,6 +171,7 @@ class PropertyMapping(object):
         self.name = kwargs.pop('name')
         self.descr = kwargs.pop('descr')
         self.get = kwargs.pop('get')
+        self.get_name = kwargs.pop('get_name', self.get)
         self.set = kwargs.pop('set', None) if 'set' in kwargs else self.get
         self.list = kwargs.pop('list', True)
         self.type = kwargs.pop('type', ValueType.STRING)
@@ -569,7 +570,14 @@ class ListCommand(FilteringCommand):
                 if op == '~=': op = '~'
 
                 prop = self.parent.get_mapping(k)
-                yield k if isinstance(prop.get, collections.Callable) else prop.get, op, v
+                # yield k if isinstance(prop.get, collections.Callable) else prop.get, op, v
+                # hack to make `accout user show | search group==wheel` work
+                # else one would have to `account user show | search group==0`
+                if isinstance(prop.set, collections.Callable):
+                    dummy_entity = {}
+                    prop.set(dummy_entity, v)
+                    v = dummy_entity[prop.get_name] 
+                yield prop.get_name, op, v
 
     def run(self, context, args, kwargs, opargs, filtering=None):
         cols = []

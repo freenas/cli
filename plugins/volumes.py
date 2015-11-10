@@ -42,6 +42,17 @@ t = icu.Transliterator.createInstance("Any-Accents", icu.UTransDirection.FORWARD
 _ = t.transliterate
 
 
+# Global lists/dicts for create command and other stuff
+VOLUME_TYPES = ['disk', 'mirror', 'raidz1', 'raidz2', 'raidz3', 'auto']
+DISKS_PER_TYPE = {
+    'auto': 1,
+    'disk':1,
+    'mirror':2,
+    'raidz1':3,
+    'raidz2':4,
+    'raidz3':5
+}
+
 def correct_disk_path(disk):
     if not re.match("^\/dev\/", disk):
         disk = "/dev/" + disk
@@ -663,46 +674,40 @@ class CreateVolumeCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        volume_types = ['disk', 'mirror', 'raidz1', 'raidz2', 'raidz3']
         if not args and not kwargs:
-            raise CommandException(_('create requires more arguments, see \'help create\' for more information'))
+            raise CommandException(_("create requires more arguments, see 'help create' for more information"))
+        if len(args) > 1:
+            raise CommandException(_("Wrong syntax for create, see 'help create' for more information"))
+
+        # This magic below make either `create foo` or `create name=foo` work
+        if len(args) == 1:
+            kwargs[self.parent.primary_key.name] = args.pop(0)
+
+        if 'name' not in kwargs:
+            raise CommandException(_('Please specify a name for your pool'))
+        else:
+            name = kwargs.pop('name')
+        
+        volume_type = kwargs.pop('type', 'auto')
+        if volume_type not in VOLUME_TYPES:
+            raise CommandException(_(
+                "Invalid volume type {0}.  Should be one of: {1}".format(volume_type, VOLUME_TYPES)
+            ))
+
+        if 'disks' not in kwargs:
+            raise CommandException(_("Please specify one or more disks using the disks property"))
+        else:
+            disks = kwargs.pop('disks').split(',')
+        
+
+        if len(disks) < DISKS_PER_TYPE[volume_type]:
+            raise CommandException(_("Volume type {0} requires at least {1} disks".format(volume_type, DISKS_PER_TYPE)))
+        if len(disks) > 1 and volume_type == 'disk':
+            raise CommandException(_("Cannot create a volume of type disk with multiple disks"))
 
         ns = SingleItemNamespace(None, self.parent)
         ns.orig_entity = query.wrap(copy.deepcopy(self.parent.skeleton_entity))
         ns.entity = query.wrap(copy.deepcopy(self.parent.skeleton_entity))
-        creation_props = ['disks', 'type']
-
-        if len(args) > 0:
-            prop = self.parent.primary_key
-            kwargs[prop.name] = args.pop(0)
-
-        if 'name' not in kwargs.keys():
-            raise CommandException(_('Please specify a name for your pool'))
-        else:
-            name = kwargs.pop('name')
-
-        if 'type' not in kwargs.keys():
-            volume_type = 'auto'
-        else:
-            volume_type = kwargs.pop('type')
-            if volume_type not in volume_types:
-                raise CommandException(_("Invalid volume type {0}".format(volume_type)))
-        
-        if 'disks' not in kwargs.keys():
-            raise CommandException(_('Please specify one or more disks using the \'disks\' property'))
-        else:
-            disks = kwargs.pop('disks').split(',')
-        
-        disks_per_type={'auto': 1,
-                        'disk':1,
-                        'mirror':2,
-                        'raidz1':3,
-                        'raidz2':4,
-                        'raidz3':5}
-        if len(disks) < disks_per_type[volume_type]:
-            raise CommandException(_("Volume type {0} requires at least {1} disks".format(volume_type, disks_per_type)))
-        if len(disks) > 1 and volume_type == 'disk':
-            raise CommandException(_("Cannot create a volume of type disk with multiple disks"))
 
         all_disks = [disk["path"] for disk in context.call_sync("disks.query")]
         available_disks = context.call_sync('volumes.get_available_disks')

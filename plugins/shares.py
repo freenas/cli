@@ -377,7 +377,6 @@ class ISCSIPortalsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespa
             Usage: set <property>=<value> ...
 
             Examples: set discovery_auth_group=somegroup
-                      set discovery_auth_method=CHAP
                       set listen=hostname,127.0.0.1,192.168.1.10:8888
 
             Sets a iSCSI portal property. For a list of properties, see 'help properties'.""")
@@ -393,14 +392,6 @@ class ISCSIPortalsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespa
             name='discovery_auth_group',
             get='discovery_auth_group',
             type=ValueType.STRING,
-        )
-
-        self.add_property(
-            descr='Discovery auth method',
-            name='discovery_auth_method',
-            get='discovery_auth_method',
-            type=ValueType.STRING,
-            enum=['NONE', 'CHAP', 'CHAP_MUTUAL']
         )
 
         self.add_property(

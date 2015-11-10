@@ -765,9 +765,7 @@ class RpcBasedLoadMixin(object):
         self.extra_query_params = []
 
     def query(self, params, options):
-        return wrap(self.context.connection.call_sync(
-            self.query_call,
-            self.extra_query_params + params, options))
+        return self.context.call_sync(self.query_call, self.extra_query_params + params, options)
 
     def get_one(self, name):
         return self.context.call_sync(

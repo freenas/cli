@@ -724,6 +724,9 @@ class CreateVolumeCommand(Command):
 
             self.parent.save(ns, new=True)
 
+    def complete(self, context, tokens):
+        return ['name=', 'type=', 'disks=']
+
 
 @description("Manage volumes")
 class VolumesNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):

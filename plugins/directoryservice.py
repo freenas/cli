@@ -119,36 +119,6 @@ class DirectoryServiceShowKDCCommand(DirectoryServiceCommandBase):
             output_msg(res['result'][0])
 
 
-@description("Configures domain controllers for directory service")
-class DirectoryServiceConfigureDCs(DirectoryServiceCommandBase):
-    def run(self, context, args, kwargs, opargs):
-        ds_id = self.parent.entity['id']
-        args = [ ds_id, 'dcs', self.enable ]
-
-        context.submit_task('directoryservice.configure', args,
-            callback=lambda s: post_save(self.parent, s))
-
-
-@description("Configures global catalogs for directory service")
-class DirectoryServiceConfigureGCs(DirectoryServiceCommandBase):
-    def run(self, context, args, kwargs, opargs):
-        ds_id = self.parent.entity['id']
-        args = [ ds_id, 'gcs', self.enable ]
-
-        context.submit_task('directoryservice.configure', args,
-            callback=lambda s: post_save(self.parent, s))
-
-
-@description("Configures Kerberos KDC's for directory service")
-class DirectoryServiceConfigureKDCs(DirectoryServiceCommandBase):
-    def run(self, context, args, kwargs, opargs):
-        ds_id = self.parent.entity['id']
-        args = [ ds_id, 'kdcs', self.enable ]
-
-        context.submit_task('directoryservice.configure', args,
-            callback=lambda s: post_save(self.parent, s))
-
-
 @description("Configures hostname for directory service")
 class DirectoryServiceConfigureHostnameCommand(DirectoryServiceCommandBase):
     def run(self, context, args, kwargs, opargs):
@@ -375,12 +345,6 @@ class ActiveDirectoryNamespace(BaseDirectoryServiceNamespace):
             'show_dcs': DirectoryServiceShowDCCommand(this),
             'show_gcs': DirectoryServiceShowGCCommand(this),
             'show_kdcs': DirectoryServiceShowKDCCommand(this),
-            'configure_dcs': DirectoryServiceConfigureDCs(this, True),
-            'unconfigure_dcs': DirectoryServiceConfigureDCs(this, False),
-            'configure_gcs': DirectoryServiceConfigureGCs(this, True),
-            'unconfigure_gcs': DirectoryServiceConfigureGCs(this, False),
-            'configure_kdcs': DirectoryServiceConfigureKDCs(this, True),
-            'unconfigure_kdcs': DirectoryServiceConfigureKDCs(this, False),
             'configure_hostname': DirectoryServiceConfigureHostnameCommand(this, True),
             'unconfigure_hostname': DirectoryServiceConfigureHostnameCommand(this, False),
             'configure_hosts': DirectoryServiceConfigureHostsCommand(this, True),

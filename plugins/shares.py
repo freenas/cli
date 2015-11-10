@@ -29,7 +29,7 @@ import icu
 from namespace import (
     Namespace, EntityNamespace, Command, IndexCommand,
     RpcBasedLoadMixin, TaskBasedSaveMixin, description,
-    CommandException
+    CommandException, ListCommand
     )
 from output import ValueType, Table
 from fnutils import first_or_default
@@ -54,14 +54,62 @@ class ConnectedUsersCommand(Command):
 
 
 @description("Configure and manage shares")
-class SharesNamespace(Namespace):
+class SharesNamespace(RpcBasedLoadMixin, EntityNamespace):
     def __init__(self, name, context):
-        super(SharesNamespace, self).__init__(name)
+        super(SharesNamespace, self).__init__(name, context)
         self.context = context
+        self.query_call = 'shares.query'
+        self.primary_key_name = 'name'
+
+        self.add_property(
+            descr='Share Name',
+            name='name',
+            get='name',
+            set=None,
+            createsetable=False,
+            usersetable=False
+        )
+
+        self.add_property(
+            descr='Share Type',
+            name='type',
+            get='type',
+            set=None,
+            createsetable=False,
+            usersetable=False
+        )
+
+        self.add_property(
+            descr='Volume',
+            name='volume',
+            get='target',
+            set=None,
+            createsetable=False,
+            usersetable=False
+        )
+
+        self.add_property(
+            descr='Dataset Path',
+            name='dataset_path',
+            get='dataset_path',
+            set=None,
+            createsetable=False,
+            usersetable=False
+        )
+
+        self.add_property(
+            descr='Description',
+            name='description',
+            get='description',
+            set=None,
+            createsetable=False,
+            usersetable=False
+        )
 
     def commands(self):
         return {
-            '?': IndexCommand(self)
+            '?': IndexCommand(self),
+            'show': ListCommand(self)
         }
 
     def namespaces(self):

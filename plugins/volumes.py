@@ -51,10 +51,10 @@ def correct_disk_path(disk):
 @description("Adds new vdev to volume")
 class AddVdevCommand(Command):
     """
-    Usage: add_vdev type=<type> <disk1> <disk2> <disk3> ...
+    Usage: add_vdev type=<type> disks=<disk1>,<disk2>,<disk3> ...
     
     Example:
-            add_vdev type=mirror ada1 ada2 
+            add_vdev type=mirror disks=ada3,ada4 
     
     Valid types are: mirror disk raidz1 raidz2 raidz3 cache log
 
@@ -65,10 +65,28 @@ class AddVdevCommand(Command):
 
     def run(self, context, args, kwargs, opargs):
         entity = self.parent.entity
+        if 'type' not in kwargs.keys():
+            raise CommandException(_("Please specify a type of vdev, see 'help add_vdev' for more information"))
         typ = kwargs.pop('type')
 
         if typ not in ('disk', 'mirror', 'cache', 'log', 'raidz1', 'raidz2', 'raidz3'):
             raise CommandException(_("Invalid vdev type"))
+
+        disks_per_type={'disk':1,
+                        'cache':1,
+                        'log':1,
+                        'mirror':2,
+                        'raidz1':3,
+                        'raidz2':4,
+                        'raidz3':5}
+
+        if len(args) < disks_per_type[typ]:
+            raise CommandException(_("Vdev of type {0} requires at least {1} disks".format(typ, disks_per_type[typ])))
+
+            entity['topology']['data'].append({
+                'type': 'mirror',
+                'children': [{'type': 'disk', 'path': correct_disk_path(x)} for x in args]
+            })
 
         if typ == 'disk':
             if len(args) != 1:
@@ -77,15 +95,6 @@ class AddVdevCommand(Command):
             entity['topology']['data'].append({
                 'type': 'disk',
                 'path': correct_disk_path(args[0])
-            })
-
-        if typ == 'mirror':
-            if len(args) < 2:
-                raise CommandException(_("Mirrored vdev requires at least two disks"))
-
-            entity['topology']['data'].append({
-                'type': 'mirror',
-                'children': [{'type': 'disk', 'path': correct_disk_path(x)} for x in args]
             })
 
         if typ == 'cache':

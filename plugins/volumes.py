@@ -46,12 +46,13 @@ _ = t.transliterate
 VOLUME_TYPES = ['disk', 'mirror', 'raidz1', 'raidz2', 'raidz3', 'auto']
 DISKS_PER_TYPE = {
     'auto': 1,
-    'disk':1,
-    'mirror':2,
-    'raidz1':3,
-    'raidz2':4,
-    'raidz3':5
+    'disk': 1,
+    'mirror': 2,
+    'raidz1': 3,
+    'raidz2': 4,
+    'raidz3': 5
 }
+
 
 def correct_disk_path(disk):
     if not re.match("^\/dev\/", disk):

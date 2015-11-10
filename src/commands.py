@@ -581,7 +581,7 @@ class SearchPipeCommand(PipeCommand):
 
     def serialize_filter(self, context, args, kwargs, opargs):
         mapped_opargs = map_opargs(opargs, context)
-        
+
         if len(kwargs) > 0:
             raise CommandException(_(
                 "Invalid syntax {0}, see 'help search' for more information.".format(kwargs)
@@ -669,6 +669,8 @@ class SelectPipeCommand(PipeCommand):
     Returns only the output of the specific field for a list.
     """
     def run(self, context, args, kwargs, opargs, input=None):
+        ns = context.ml.get_relative_object(context.ml.path[-1], [])
+        available_props = [x.name for x in ns.property_mappings if x.list]
         if len(args) == 0:
             raise CommandException(_(
                 "Please specify a property field. Available properties are: {0}".format(
@@ -677,14 +679,12 @@ class SelectPipeCommand(PipeCommand):
             ))
 
         field = args[0]
-        ns = context.ml.get_relative_object(context.ml.path[-1], [])
-
         if ns.has_property(field):
             field = ns.get_mapping(field).get_name
         else:
             raise CommandException(_(
                 "Please specify a property field. Available properties are: {0}".format(
-                    ','.join([x.name for x in ns.property_mappings if x.list])
+                    ','.join(available_props)
                 )
             ))
 

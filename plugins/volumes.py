@@ -424,10 +424,10 @@ class ReplicateCommand(Command):
                     )
 
                 if row['type'] == 'DELETE_SNAPSHOTS':
-                    return 'on remote dataset {remotefs}'.format(**row)
+                    return 'reinitialize remote dataset {remotefs}'.format(**row)
 
                 if row['type'] == 'DELETE_DATASET':
-                    return row['remotefs']
+                    return 'delete remote dataset {remotefs} (because it has been deleted locally)'.format(**row)
 
             result = context.call_task_sync(*args)
             return Table(result['result'], [

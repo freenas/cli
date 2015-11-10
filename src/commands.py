@@ -564,8 +564,7 @@ class SearchPipeCommand(PipeCommand):
             pass
 
     def serialize_filter(self, context, args, kwargs, opargs):
-        ns = context.ml.get_relative_object(context.ml.path[-1], [])
-        check_opargs(opargs, ns)
+        mapped_opargs = map_opargs(opargs, context)
         
         if len(kwargs) > 0:
             raise CommandException(_("Invalid syntax {0}, see 'help exclude' for more information.").format(kwargs))
@@ -573,16 +572,17 @@ class SearchPipeCommand(PipeCommand):
         if len(args) > 0:
             raise CommandException(_("Invalid syntax {0}, see 'help exclude' for more information.").format(args))
 
-        mapped_opargs = []
-        for k, o, v in opargs:
-            mapped_opargs.append((ns.get_mapping(k).name,o,v))
         return {"filter": mapped_opargs}
 
-def check_opargs(opargs, ns):
-    for k, o, v in opargs:
-        if not ns.has_property(k):
-            raise CommandException(_('Property {0} not found, valid properties are: {1}'.format(k, ','.join([x.name for x in ns.property_mappings if x.list]))))
-        return
+def map_opargs(opargs, context):
+        ns = context.ml.get_relative_object(context.ml.path[-1], [])
+        mapped_opargs = []
+        for k, o, v in opargs:
+            if ns.has_property(k):
+                mapped_opargs.append((ns.get_mapping(k).name,o,v))
+            else:
+                raise CommandException(_('Property {0} not found, valid properties are: {1}'.format(k, ','.join([x.name for x in ns.property_mappings if x.list]))))
+        return mapped_opargs
 
 @description("Excludes certain results from result set basing on specified conditions")
 class ExcludePipeCommand(PipeCommand):
@@ -597,10 +597,8 @@ class ExcludePipeCommand(PipeCommand):
         pass
 
     def serialize_filter(self, context, args, kwargs, opargs):
-        ns = context.ml.get_relative_object(context.ml.path[-1], [])
+        mapped_opargs = map_opargs(opargs, context)
 
-        check_opargs(opargs, ns)
-        
         if len(kwargs) > 0:
             raise CommandException(_("Invalid syntax {0}, see 'help exclude' for more information.").format(kwargs))
 
@@ -608,8 +606,8 @@ class ExcludePipeCommand(PipeCommand):
             raise CommandException(_("Invalid syntax {0}, see 'help exclude' for more information.").format(args))
 
         result = []
-        for k, o, v in opargs:
-            result.append(('nor', ((ns.get_mapping(k).name,o,v),)))
+        for i in mapped_opargs:
+            result.append(('nor', (i,)))
 
         return {"filter": result}
 

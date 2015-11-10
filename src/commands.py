@@ -573,7 +573,10 @@ class SearchPipeCommand(PipeCommand):
         if len(args) > 0:
             raise CommandException(_("Invalid syntax {0}, see 'help exclude' for more information.").format(args))
 
-        return {"filter": opargs}
+        mapped_opargs = []
+        for k, o, v in opargs:
+            mapped_opargs.append((ns.get_mapping(k).name,o,v))
+        return {"filter": mapped_opargs}
 
 def check_opargs(opargs, ns):
     for k, o, v in opargs:
@@ -605,8 +608,8 @@ class ExcludePipeCommand(PipeCommand):
             raise CommandException(_("Invalid syntax {0}, see 'help exclude' for more information.").format(args))
 
         result = []
-        for i in opargs:
-            result.append(('nor', (i,)))
+        for k, o, v in opargs:
+            result.append(('nor', ((ns.get_mapping(k).name,o,v),)))
 
         return {"filter": result}
 

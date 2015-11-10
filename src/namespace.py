@@ -284,12 +284,12 @@ class ItemNamespace(Namespace):
             self.parent = parent
 
         def run(self, context, args, kwargs, opargs):
-            if len(args) < 1:
-                output_msg('Wrong arguments count')
+            if len(args) != 1:
+                raise CommandException(_('Wrong arguments count'))
                 return
 
             if not self.parent.has_property(args[0]):
-                output_msg('Property {0} not found'.format(args[0]))
+                raise CommandException(_('Property {0} not found'.format(args[0])))
                 return
 
             entity = self.parent.entity

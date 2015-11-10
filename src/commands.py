@@ -637,7 +637,7 @@ class LimitPipeCommand(PipeCommand):
     def serialize_filter(self, context, args, kwargs, opargs):
         if len(args) == 0:
             raise CommandException(_("Please specify a number to limit."))
-        if not str.isdigit(str(args[0])) or len(args) > 1:
+        if not isinstance(args[0], int) or len(args) > 1:
             raise CommandException(_("Invalid input {0}. See 'help limit' for more information.".format(args)))
         return {"params": {"limit": args[0]}}
 

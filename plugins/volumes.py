@@ -395,8 +395,9 @@ class ReplicateCommand(Command):
         remote = kwargs.pop('remote')
         remote_dataset = kwargs.pop('remote_dataset')
         bandwidth = kwargs.pop('bandwidth_limit', None)
+        dry_run = kwargs.pop('dry_run', False)
 
-        context.submit_task(
+        args = (
             'replication.replicate_dataset',
             self.parent.parent.parent.entity['name'],
             self.parent.entity['name'],
@@ -404,7 +405,32 @@ class ReplicateCommand(Command):
                 'remote': remote,
                 'remote_dataset': remote_dataset,
                 'bandwidth_limit': bandwidth
-            })
+            },
+            dry_run
+        )
+
+        if dry_run:
+            def describe(row):
+                if row['type'] == 'SEND_STREAM':
+                    return '{localfs}@{snapshot} -> {remotefs}@{snapshot} ({incr})'.format(
+                        incr='incremental' if row.get('incremental') else 'full',
+                        **row
+                    )
+
+                if row['type'] == 'DELETE_SNAPSHOTS':
+                    return 'on remote dataset {remotefs}'.format(**row)
+
+                if row['type'] == 'DELETE_DATASET':
+                    return row['remotefs']
+
+            result = context.call_task_sync(*args)
+            return Table(result['result'], [
+                Table.Column('Action type', 'type', ValueType.STRING),
+                Table.Column('Description', describe, ValueType.STRING)
+            ])
+
+        else:
+            context.submit_task(*args)
 
 
 @description("Datasets")

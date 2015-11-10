@@ -564,8 +564,22 @@ class SearchPipeCommand(PipeCommand):
             pass
 
     def serialize_filter(self, context, args, kwargs, opargs):
+        ns = context.ml.get_relative_object(context.ml.path[-1], [])
+        check_opargs(opargs, ns)
+        
+        if len(kwargs) > 0:
+            raise CommandException(_("Invalid syntax {0}, see 'help exclude' for more information.").format(kwargs))
+
+        if len(args) > 0:
+            raise CommandException(_("Invalid syntax {0}, see 'help exclude' for more information.").format(args))
+
         return {"filter": opargs}
 
+def check_opargs(opargs, ns):
+    for k, o, v in opargs:
+        if not ns.has_property(k):
+            raise CommandException(_('Property {0} not found, valid properties are: {1}'.format(k, ','.join([x.name for x in ns.property_mappings if x.list]))))
+        return
 
 @description("Excludes certain results from result set basing on specified conditions")
 class ExcludePipeCommand(PipeCommand):
@@ -580,6 +594,16 @@ class ExcludePipeCommand(PipeCommand):
         pass
 
     def serialize_filter(self, context, args, kwargs, opargs):
+        ns = context.ml.get_relative_object(context.ml.path[-1], [])
+
+        check_opargs(opargs, ns)
+        
+        if len(kwargs) > 0:
+            raise CommandException(_("Invalid syntax {0}, see 'help exclude' for more information.").format(kwargs))
+
+        if len(args) > 0:
+            raise CommandException(_("Invalid syntax {0}, see 'help exclude' for more information.").format(args))
+
         result = []
         for i in opargs:
             result.append(('nor', (i,)))

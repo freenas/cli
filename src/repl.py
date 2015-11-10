@@ -738,6 +738,8 @@ class MainLoop(object):
 
                 except NotImplementedError:
                     continue
+                finally:
+                    self.path = oldpath
 
                 # If serializing filter succeeded, remove it from pipe stack
                 pipe_stack.remove(p)

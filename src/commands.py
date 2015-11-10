@@ -635,6 +635,10 @@ class LimitPipeCommand(PipeCommand):
     Returns only the n elements of a list.
     """
     def serialize_filter(self, context, args, kwargs, opargs):
+        if len(args) == 0:
+            raise CommandException(_("Please specify a number to limit."))
+        if not str.isdigit(str(args[0])) or len(args) > 1:
+            raise CommandException(_("Invalid input {0}. See 'help limit' for more information.".format(args)))
         return {"params": {"limit": args[0]}}
 
 
@@ -648,7 +652,14 @@ class SelectPipeCommand(PipeCommand):
     Returns only the output of the specific field for a list.
     """
     def run(self, context, args, kwargs, opargs, input=None):
+        ns = context.ml.get_relative_object(context.ml.path[-1], [])
+        available_props = [x.name for x in ns.property_mappings if x.list]
+        if len(args) == 0:
+            raise CommandException(_("Please specify a property field. Available properties are: {0}".format(','.join(available_props))))
         field = args[0]
+        if field not in available_props:
+            raise CommandException(_("Please specify a property field. Available properties are: {0}".format(','.join(available_props))))
+
         if isinstance(input, Table):
             input.data = [{'result': x.get(field)} for x in input.data]
             input.columns = [Table.Column('Result', 'result')]

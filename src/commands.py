@@ -584,12 +584,12 @@ class SearchPipeCommand(PipeCommand):
         
         if len(kwargs) > 0:
             raise CommandException(_(
-                "Invalid syntax {0}, see 'help exclude' for more information.".format(kwargs)
+                "Invalid syntax {0}, see 'help search' for more information.".format(kwargs)
             ))
 
         if len(args) > 0:
             raise CommandException(_(
-                "Invalid syntax {0}, see 'help exclude' for more information.".format(args)
+                "Invalid syntax {0}, see 'help search' for more information.".format(args)
             ))
 
         return {"filter": mapped_opargs}

@@ -425,6 +425,8 @@ class ReplicateCommand(Command):
         remote_dataset = kwargs.pop('remote_dataset')
         bandwidth = kwargs.pop('bandwidth_limit', None)
         dry_run = kwargs.pop('dry_run', False)
+        recursive = kwargs.pop('recursive', False)
+        follow_delete = kwargs.pop('follow_delete', False)
 
         args = (
             'replication.replicate_dataset',
@@ -433,7 +435,9 @@ class ReplicateCommand(Command):
             {
                 'remote': remote,
                 'remote_dataset': remote_dataset,
-                'bandwidth_limit': bandwidth
+                'bandwidth_limit': bandwidth,
+                'recursive': recursive,
+                'followdelete': follow_delete
             },
             dry_run
         )

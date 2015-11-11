@@ -191,4 +191,29 @@ To run a scrub on your volume, use the `scrub` command:
 127.0.0.1:>volume tank scrub
 ```
 
+To detatch/export a volume, use the 'detach' volume command.  After detaching you will notice it is no longer visible in volume show:
+
+```
+127.0.0.1:>volume show
+Volume name   Status   Mount point     Last scrub time     Last scrub errors 
+tank          ONLINE   /mnt/tank     2015-11-10 23:04:46   0                 
+
+127.0.0.1:>volume detach tank
+...
+127.0.0.1:>volume show
+Volume name   Status   Mount point   Last scrub time   Last scrub errors 
+```
+
+If you wish to import your volume tank, first use `find` to see if your volume is visible then use `import` to import it:
+
+```
+127.0.0.1:>volume find       
+   ID       Volume name   Status 
+1.845e+19   tank          ONLINE 
+127.0.0.1:>volume import tank
+127.0.0.1:>volume show
+Volume name   Status   Mount point   Last scrub time   Last scrub errors 
+tank          ONLINE   /mnt/tank     none              none           
+```
+
 

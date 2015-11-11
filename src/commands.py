@@ -534,18 +534,14 @@ class LessPipeCommand(PipeCommand):
     """
     Usage: <command> | less
 
-    Examples: task list | less
-              account user show | less 
+    Examples: task show | less
+              account user show | less
 
     Allows paging and scrolling through long outputs of text.
     """
     def run(self, context, args, kwargs, opargs, input=None):
-        if input is None:
-            output_msg("")
-        elif isinstance(input, Table):
-            output_less(lambda: output_table(input))
-        else:
-            output_less(lambda: output_msg(input))
+        output_less(lambda: context.ml.format_output(input))
+
 
 def map_opargs(opargs, context):
     ns = context.ml.get_relative_object(context.ml.path[-1], [])

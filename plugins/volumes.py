@@ -99,6 +99,8 @@ class AddVdevCommand(Command):
         else:
             disks = kwargs.pop('disks').split(',')
 
+        check_disks(context, disks)
+
         if len(disks) < disks_per_type[typ]:
             raise CommandException(_(
                 "Vdev of type {0} requires at least {1} disks".format(typ, disks_per_type[typ])
@@ -165,8 +167,17 @@ class ExtendVdevCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
+        if 'vdev' not in kwargs:
+            raise CommandException(_("Please specify a vdev to mirror to."))
         vdev_ident = correct_disk_path(kwargs.pop('vdev'))
+        if len(args) < 1:
+            raise CommandException(_("Please specify a disk to add to the vdev."))
+        elif len(args) > 1:
+            raise CommandException(_("Invalid input: {0}".format(args)))
+        
         disk = correct_disk_path(args[0])
+        if disk not in context.call_sync('volumes.get_available_disks'):
+            raise CommandException(_("Disk {0} is not available".format(disk)))
 
         vdev = first_or_default(lambda v:
             v['path'] == vdev_ident or
@@ -730,6 +741,19 @@ class FilesystemNamespace(EntityNamespace):
             get='name'
         )
 
+def check_disks(context, disks):
+    all_disks = [disk["path"] for disk in context.call_sync("disks.query")]
+    available_disks = context.call_sync('volumes.get_available_disks')
+    if 'alldisks' in disks:
+        disks = available_disks
+    else:
+        for disk in disks:
+            disk = correct_disk_path(disk)
+            if disk not in all_disks:
+                raise CommandException(_("Disk {0} does not exist.".format(disk)))
+            if disk not in available_disks:
+                raise CommandException(_("Disk {0} is not available.".format(disk)))
+
 @description("Creates new volume")
 class CreateVolumeCommand(Command):
     """
@@ -780,18 +804,7 @@ class CreateVolumeCommand(Command):
         ns.orig_entity = query.wrap(copy.deepcopy(self.parent.skeleton_entity))
         ns.entity = query.wrap(copy.deepcopy(self.parent.skeleton_entity))
 
-        all_disks = [disk["path"] for disk in context.call_sync("disks.query")]
-        available_disks = context.call_sync('volumes.get_available_disks')
-        if 'alldisks' in disks:
-            disks = available_disks
-        else:
-            for disk in disks:
-                disk = correct_disk_path(disk)
-                if disk not in all_disks:
-                    raise CommandException(_("Disk {0} does not exist.".format(disk)))
-                if disk not in available_disks:
-                    raise CommandException(_("Disk {0} is not available.".format(disk)))
-
+        check_disks(context, disks)
         if volume_type == 'auto':
             context.submit_task('volume.create_auto', name, 'zfs', disks)
         else:

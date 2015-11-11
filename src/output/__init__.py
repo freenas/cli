@@ -40,8 +40,7 @@ import collections
 
 
 output_lock = Lock()
-t = icu.Transliterator.createInstance("Any-Accents",
-                                      icu.UTransDirection.FORWARD)
+t = icu.Transliterator.createInstance("Any-Accents", icu.UTransDirection.FORWARD)
 _ = t.transliterate
 
 

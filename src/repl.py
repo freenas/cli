@@ -623,6 +623,7 @@ class MainLoop(object):
         if isinstance(object, list):
             for i in object:
                 self.format_output(i)
+
         if isinstance(object, Object):
             output_object(object)
 

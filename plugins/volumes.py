@@ -33,7 +33,7 @@ from namespace import (
     EntityNamespace, Command, CommandException, SingleItemNamespace,
     RpcBasedLoadMixin, TaskBasedSaveMixin, description
     )
-from output import Table, ValueType, output_tree, output_msg
+from output import Table, ValueType, output_tree, output_msg, format_value
 from utils import post_save, iterate_vdevs
 from fnutils import first_or_default, exclude, query
 
@@ -453,10 +453,18 @@ class ReplicateCommand(Command):
                     return 'delete remote dataset {remotefs} (because it has been deleted locally)'.format(**row)
 
             result = context.call_task_sync(*args)
-            return Table(result['result'], [
-                Table.Column('Action type', 'type', ValueType.STRING),
-                Table.Column('Description', describe, ValueType.STRING)
-            ])
+            return [
+                Table(
+                    result['result'], [
+                        Table.Column('Action type', 'type', ValueType.STRING),
+                        Table.Column('Description', describe, ValueType.STRING)
+                    ]
+                ),
+                "Estimated replication stream size: {0}".format(format_value(
+                    sum(a['send_size'] for a in result['result']),
+                    ValueType.SIZE)
+                )
+            ]
 
         else:
             context.submit_task(*args)

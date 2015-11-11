@@ -90,33 +90,30 @@ class DirectoryServiceDisableCommand(DirectoryServiceCommandBase):
 class DirectoryServiceShowDCCommand(DirectoryServiceCommandBase):
     def run(self, context, args, kwargs, opargs):
         ds_id = self.parent.entity['id']
-        res = context.call_task_sync('directoryservice.get', [ ds_id, 'dcs' ])
-
-        # XXX format output and show domain controllers
-        if res and 'result' in res and res['result']:
-            output_msg(res['result'][0])
+        dcs = context.call_sync('directoryservices.get', ds_id, 'dcs')
+        if dcs:
+            for dc in dcs:
+                output_msg(dc)
 
 
 @description("Displays cached global catalogs")
 class DirectoryServiceShowGCCommand(DirectoryServiceCommandBase):
     def run(self, context, args, kwargs, opargs):
         ds_id = self.parent.entity['id']
-        res = context.call_task_sync('directoryservice.get', [ ds_id, 'gcs' ])
-
-        # XXX format output and show global catalogs
-        if res and 'result' in res and res['result']:
-            output_msg(res['result'][0])
+        gcs = context.call_sync('directoryservices.get', ds_id, 'gcs')
+        if gcs:
+            for gc in gcs:
+                output_msg(gc)
 
 
 @description("Displays cached Kerberos KDC servers")
 class DirectoryServiceShowKDCCommand(DirectoryServiceCommandBase):
     def run(self, context, args, kwargs, opargs):
         ds_id = self.parent.entity['id']
-        res = context.call_task_sync('directoryservice.get', [ ds_id, 'kdcs' ])
-
-        # XXX format output and show global catalogs
-        if res and 'result' in res and res['result']:
-            output_msg(res['result'][0])
+        kdcs = context.call_sync('directoryservices.get', ds_id, 'kdcs')
+        if kdcs:
+            for kdc in kdcs:
+                output_msg(kdc)
 
 
 @description("Configures hostname for directory service")
@@ -339,12 +336,11 @@ class ActiveDirectoryNamespace(BaseDirectoryServiceNamespace):
         self.entity_commands = lambda this: {
             'enable': DirectoryServiceEnableCommand(this),
             'disable': DirectoryServiceDisableCommand(this),
-        }
-
-"""
             'show_dcs': DirectoryServiceShowDCCommand(this),
             'show_gcs': DirectoryServiceShowGCCommand(this),
             'show_kdcs': DirectoryServiceShowKDCCommand(this),
+        }
+"""
             'configure_hostname': DirectoryServiceConfigureHostnameCommand(this, True),
             'unconfigure_hostname': DirectoryServiceConfigureHostnameCommand(this, False),
             'configure_hosts': DirectoryServiceConfigureHostsCommand(this, True),

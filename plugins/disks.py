@@ -151,7 +151,9 @@ class FormatDiskCommand(Command):
 class EraseDiskCommand(Command):
     """
     Usage: erase
-           erase wipe=yes
+           erase wipe=quick
+           erase wipe=zeros
+           erase wipe=random
 
     Erases the partitions from the current disk and optionally wipes it.
     """
@@ -159,7 +161,7 @@ class EraseDiskCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        erase_data = read_value(kwargs.pop('wipe', 'no'), ValueType.BOOLEAN)
+        erase_data = str.upper(kwargs.pop('wipe', 'quick'))
         context.submit_task('disks.erase', self.parent.entity['path'], erase_data)
 
 

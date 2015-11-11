@@ -539,6 +539,9 @@ class LessPipeCommand(PipeCommand):
 
     Allows paging and scrolling through long outputs of text.
     """
+    def __init__(self):
+        self.must_be_last = True
+
     def run(self, context, args, kwargs, opargs, input=None):
         output_less(lambda: context.ml.format_output(input))
 

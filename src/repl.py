@@ -723,6 +723,7 @@ class MainLoop(object):
         tmpath = self.path[:]
 
         if isinstance(command, FilteringCommand):
+            top_of_stack = True
             for p in pipe_stack[:]:
                 pipe_cmd = self.find_in_scope(p[0].name)
                 if not pipe_cmd:
@@ -730,6 +731,12 @@ class MainLoop(object):
                         raise SyntaxError("Pipe command {0} not found".format(p[0].name))
                     finally:
                         self.path = oldpath
+                if pipe_cmd.must_be_last and not top_of_stack: 
+                    try:
+                        raise SyntaxError(_("The {0} command must be used at the end of the pipe list").format(p[0].name))
+                    finally:
+                        self.path = oldpath
+                top_of_stack = False
 
                 pipe_args = self.convert_literals(p[1:])
                 try:

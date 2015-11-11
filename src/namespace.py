@@ -101,6 +101,9 @@ class FilteringCommand(Command):
 
 
 class PipeCommand(Command):
+    def __init__(self):
+        self.must_be_last = False
+
     def run(self, context, args, kwargs, opargs, input=None):
         pass
 

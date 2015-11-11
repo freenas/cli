@@ -97,9 +97,7 @@ class AddVdevCommand(Command):
         if 'disks' not in kwargs:
             raise CommandException(_("Please specify one or more disks using the disks property"))
         else:
-            disks = kwargs.pop('disks').split(',')
-
-        check_disks(context, disks)
+            disks = check_disks(context, kwargs.pop('disks').split(','))
 
         if len(disks) < disks_per_type[typ]:
             raise CommandException(_(
@@ -745,7 +743,7 @@ def check_disks(context, disks):
     all_disks = [disk["path"] for disk in context.call_sync("disks.query")]
     available_disks = context.call_sync('volumes.get_available_disks')
     if 'alldisks' in disks:
-        disks = available_disks
+        return available_disks
     else:
         for disk in disks:
             disk = correct_disk_path(disk)
@@ -753,6 +751,7 @@ def check_disks(context, disks):
                 raise CommandException(_("Disk {0} does not exist.".format(disk)))
             if disk not in available_disks:
                 raise CommandException(_("Disk {0} is not available.".format(disk)))
+    return disks
 
 @description("Creates new volume")
 class CreateVolumeCommand(Command):
@@ -804,7 +803,7 @@ class CreateVolumeCommand(Command):
         ns.orig_entity = query.wrap(copy.deepcopy(self.parent.skeleton_entity))
         ns.entity = query.wrap(copy.deepcopy(self.parent.skeleton_entity))
 
-        check_disks(context, disks)
+        disks = check_disks(context, disks)
         if volume_type == 'auto':
             context.submit_task('volume.create_auto', name, 'zfs', disks)
         else:

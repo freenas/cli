@@ -117,6 +117,7 @@ class SharesNamespace(RpcBasedLoadMixin, EntityNamespace):
             NFSSharesNamespace('nfs', self.context),
             AFPSharesNamespace('afp', self.context),
             SMBSharesNamespace('smb', self.context),
+            WebDAVSharesNamespace('webdav', self.context),
             ISCSISharesNamespace('iscsi', self.context)
         ]
 
@@ -400,6 +401,43 @@ class SMBSharesNamespace(BaseSharesNamespace):
             name='show_hidden_files',
             get='properties.show_hidden_files',
             list=False,
+            type=ValueType.BOOLEAN
+        )
+
+
+@description("WebDAV shares")
+class WebDAVSharesNamespace(BaseSharesNamespace):
+    def __init__(self, name, context):
+        super(WebDAVSharesNamespace, self).__init__(name, 'webdav', context)
+        self.localdoc['CreateEntityCommand'] = ("""\
+            Usage: create name=<name> volume=<volume> <property>=<value> ...
+
+            Examples:
+                create foo volume=tank
+                create foo volume=tank read_only=true
+
+            Creates WebDAV share. For a list of properties, see 'help properties'.""")
+        self.entity_localdoc['SetEntityCommand'] = ("""\
+            Usage: set <property>=<value> ...
+
+            Examples: set permission=true
+                      set read_only=true
+
+            Sets a WebDAV share property. For a list of properties, see 'help properties'.""")
+
+        self.add_property(
+            descr='Read only',
+            name='read_only',
+            get='properties.read_only',
+            list=True,
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
+            descr='Set permission to webdav user',
+            name='permission',
+            get='properties.permission',
+            list=True,
             type=ValueType.BOOLEAN
         )
 

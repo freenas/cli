@@ -530,22 +530,22 @@ class EchoCommand(Command):
 
 
 @description("Allows the user to scroll through output")
-class LessCommand(Command):
+class LessPipeCommand(PipeCommand):
     """
-    Usage: less <really long string of text>
-           <command> | less
+    Usage: <command> | less
 
     Examples: task list | less
+              account user show | less 
 
     Allows paging and scrolling through long outputs of text.
     """
-    def run(self, context, args, kwargs, opargs):
-        if len(args) == 0:
+    def run(self, context, args, kwargs, opargs, input=None):
+        if input is None:
             output_msg("")
+        elif isinstance(input, Table):
+            output_less(lambda: output_table(input))
         else:
-            less_output = ' '.join(args)
-            output_less(lambda: output_msg(less_output))
-
+            output_less(lambda: output_msg(input))
 
 def map_opargs(opargs, context):
     ns = context.ml.get_relative_object(context.ml.path[-1], [])

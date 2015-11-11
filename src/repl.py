@@ -59,7 +59,7 @@ from commands import (
     ExitCommand, PrintenvCommand, SetenvCommand, ShellCommand, ShutdownCommand,
     RebootCommand, EvalCommand, HelpCommand, ShowUrlsCommand, ShowIpsCommand,
     TopCommand, ClearCommand, HistoryCommand, SaveenvCommand, EchoCommand,
-    SourceCommand, LessCommand, SearchPipeCommand, ExcludePipeCommand,
+    SourceCommand, LessPipeCommand, SearchPipeCommand, ExcludePipeCommand,
     SortPipeCommand, LimitPipeCommand, SelectPipeCommand, LoginCommand
 )
 import collections
@@ -461,6 +461,7 @@ class MainLoop(object):
         'sort': SortPipeCommand(),
         'limit': LimitPipeCommand(),
         'select': SelectPipeCommand(),
+        'less': LessPipeCommand()
     }
     base_builtin_commands = {
         'login': LoginCommand(),
@@ -477,7 +478,6 @@ class MainLoop(object):
         'showips': ShowIpsCommand(),
         'showurls': ShowUrlsCommand(),
         'source': SourceCommand(),
-        'less': LessCommand(),
         'clear': ClearCommand(),
         'history': HistoryCommand(),
         'echo': EchoCommand(),

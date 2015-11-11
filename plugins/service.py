@@ -920,5 +920,42 @@ svc_cli_config = {
             'get': 'temp_critical',
             'type': ValueType.NUMBER
         },
+    ],
+    "webdav": [
+        {
+            'descr': 'Protocol',
+            'name': 'protocol',
+            'get': 'protocol',
+            'type': ValueType.SET,
+            'list': True,
+        },
+        {
+            'descr': 'HTTP Port',
+            'name': 'http_port',
+            'get': 'http_port',
+            'type': ValueType.NUMBER,
+        },
+        {
+            'descr': 'HTTPS Port',
+            'name': 'https_port',
+            'get': 'https_port',
+            'type': ValueType.NUMBER,
+        },
+        {
+            'descr': 'Password',
+            'name': 'password',
+            'get': 'password',
+            'type': ValueType.STRING
+        },
+        {
+            'descr': 'Authentication mode',
+            'name': 'authentication',
+            'get': 'authentication',
+            'enum': [
+                'BASIC',
+                'DIGEST',
+            ],
+            'type': ValueType.STRING
+        },
     ]
 }

@@ -383,8 +383,8 @@ class LDAPDirectoryNamespace(BaseDirectoryServiceNamespace):
 
         self.add_property(
             descr='Bind Name',
-            name='bindname',
-            get='bindname',
+            name='binddn',
+            get='binddn',
             type=ValueType.STRING,
             list=True
         ) 

@@ -397,6 +397,22 @@ class LDAPDirectoryNamespace(BaseDirectoryServiceNamespace):
             list=True
         ) 
 
+        self.add_property(
+            descr='Host Name',
+            name='host',
+            get='host',
+            type=ValueType.STRING,
+            list=False
+        )
+
+        self.add_property(
+            descr='Kerberos KDC',
+            name='kdchost',
+            get='kdchost',
+            type=ValueType.STRING,
+            list=False
+        )
+
         self.primary_key = self.get_mapping('name')
         self.primary_key_name = 'name'
         self.save_key_name = 'name'

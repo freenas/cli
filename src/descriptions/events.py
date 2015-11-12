@@ -44,6 +44,8 @@ def task_updated(context, args):
     translation = tasks.translate(context, task['name'], task['args'])
     return _("Task #{0} {1}: {2}".format(args['id'], _(args['state'].lower()), translation))
 
+# def service_toggeled(context, args):
+
 
 def entity_subscriber_changed(name, args, select=None):
     if not select:
@@ -67,16 +69,33 @@ def entity_subscriber_changed(name, args, select=None):
 
 
 events = {
-    'server.client_login': (_("User logged in"), lambda c, a: _("User {0} logged in").format(a['username'])),
-    'server.client_logout': (_("Client logged out"), lambda c, a: _("Client {0} logged out").format(a['username'])),
+    'server.client_login': (
+        _("User logged in"),
+        lambda c, a: _("User {0} logged in").format(a['username'])
+    ),
+    'server.client_logout': (
+        _("Client logged out"),
+        lambda c, a: _("Client {0} logged out").format(a['username'])
+    ),
     'task.created': (_("Task created"), task_created),
     'task.updated': (_("Task updated"), task_updated),
-    'entity-subscriber.volumes.changed': (_("Volume changed"), lambda c, a: entity_subscriber_changed(_("Volume"), a, lambda e: e.get('name'))),
+    'entity-subscriber.volumes.changed': (
+        _("Volume changed"),
+        lambda c, a: entity_subscriber_changed(_("Volume"), a, lambda e: e.get('name'))
+    ),
     'entity-subscriber.disks.changed': (
         _("Disk changed"),
         lambda c, a: entity_subscriber_changed(
             _("Disk"), a, lambda e: e.get('status').get('description') if e.get('status') else e.get('path')
         )
+    ),
+    'service.started': (
+        _("Service started"),
+        lambda c, a: _("Service {0} started".format(a.get('name')))
+    ),
+    'service.stopped': (
+        _("Service stopped"),
+        lambda c, a: _("Service {0} stopped".format(a.get('name')))
     )
 }
 

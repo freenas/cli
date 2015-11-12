@@ -27,6 +27,7 @@
 
 
 from namespace import ConfigNamespace, Command, description, CommandException
+from commands import RebootCommand
 from output import output_msg, ValueType, Table, output_table
 from datetime import datetime
 import icu
@@ -86,7 +87,7 @@ class CurrentTrainCommand(Command):
     Displays the current update train.
     """
     def run(self, context, args, kwargs, opargs):
-        output_msg(context.call_sync('update.get_current_train'))
+        return context.call_sync('update.get_current_train')
 
 
 @description("Lists the Available Update Trains")
@@ -157,11 +158,18 @@ def download_message_formatter(msg):
 @description("Updates the system and reboot it")
 class UpdateNowCommand(Command):
     """
-    Usage: update_now
+    Usage: update_now [reboot=False]
 
-    Installs updates if they are available and restarts the system if necessary.
+    Installs updates if they are available and restarts the system if told to do so.
+
+    Example: update_now
+             (This will not reboot the system post update)
+             update_now reboot=True
     """
     def run(self, context, args, kwargs, opargs):
+        reboot = None
+        if 'reboot' in kwargs and kwargs['reboot']:
+            reboot = RebootCommand()
         output_msg(_("Checking for new updates..."))
         update_ops = update_check_utility(context)
         if update_ops:
@@ -191,8 +199,12 @@ class UpdateNowCommand(Command):
         if apply_details['state'] != 'FINISHED':
             raise CommandException(_("Updates failed to apply"))
         else:
-            output_msg(_(
-                "System successfully updated. Please reboot now using the 'reboot' command"))
+            if reboot:
+                reboot.run(context, args, kwargs, opargs)
+            else:
+                output_msg(_(
+                    "System successfully updated. Please reboot now using the 'reboot' command"
+                ))
 
 
 @description("System Updates and their Configuration")

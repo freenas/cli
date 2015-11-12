@@ -45,6 +45,7 @@ import icu
 import getpass
 import traceback
 import queue
+from socket import error as socket_error
 from descriptions import events
 from namespace import Namespace, RootNamespace, Command, FilteringCommand, CommandException
 from parser import parse, Symbol, Set, CommandExpansion, Literal, BinaryExpr, PipeExpr
@@ -224,6 +225,7 @@ class Context(object):
         self.event_divert = False
         self.event_queue = queue.Queue()
         self.keepalive_timer = None
+        self.argparse_parser = None
         config.instance = self
 
     @property
@@ -235,7 +237,14 @@ class Context(object):
         self.connect()
 
     def connect(self):
-        self.connection.connect(self.hostname)
+        try:
+            self.connection.connect(self.hostname)
+        except socket_error as err:
+            output_msg(_(
+                "Could not connect to host: {0} due to error: {1}".format(self.hostname, err)
+            ))
+            self.argparse_parser.print_help()
+            sys.exit(1)
 
     def login(self, user, password):
         try:
@@ -994,6 +1003,7 @@ def main():
     parser.add_argument('-D', metavar='DEFINE', action='append')
     args = parser.parse_args()
     context = Context()
+    context.argparse_parser = parser
     context.hostname = args.hostname
     context.read_middleware_config_file(args.m)
     context.variables.load(args.c)

@@ -40,7 +40,7 @@ from namespace import (Command, PipeCommand, CommandException, description,
                        SingleItemNamespace, Namespace)
 from output import (
     Table, Object, output_dict, ValueType, output_msg, output_list,
-    output_lock, output_less, output_table, output_table_list
+    output_lock, output_less, output_table, output_table_list, read_value
     )
 from dispatcher.shell import ShellClient
 
@@ -551,7 +551,8 @@ def map_opargs(opargs, context):
     mapped_opargs = []
     for k, o, v in opargs:
         if ns.has_property(k):
-            mapped_opargs.append((ns.get_mapping(k).name,o,v))
+            mapping = ns.get_mapping(k)
+            mapped_opargs.append((mapping.name,o,read_value(v, mapping.type)))
         else:
             raise CommandException(_(
                 'Property {0} not found, valid properties are: {1}'.format(

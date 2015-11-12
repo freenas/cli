@@ -170,10 +170,10 @@ def read_value(value, tv=ValueType.STRING):
     if tv == ValueType.BOOLEAN:
         if type(value) is bool:
             return value
-        if value in ('true', 'True', 'yes', 'YES', 'on', 'ON', '1'):
+        if str(value) in ('true', 'True', 'yes', 'YES', 'on', 'ON', '1'):
             return True
 
-        if value in ('false', 'False', 'no', 'NO', 'off', 'OFF', '0'):
+        if str(value) in ('false', 'False', 'no', 'NO', 'off', 'OFF', '0'):
             return False
 
     if tv == ValueType.SIZE:
@@ -201,7 +201,7 @@ def read_value(value, tv=ValueType.STRING):
 
         return value.split(',')
 
-    raise ValueError('Invalid value')
+    raise ValueError('Invalid value {0}'.format(value))
 
 
 def format_value(value, vt=ValueType.STRING, fmt=None):

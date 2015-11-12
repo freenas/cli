@@ -248,7 +248,7 @@ class NFSSharesNamespace(BaseSharesNamespace):
             descr='Allowed hosts/networks',
             name='hosts',
             get='properties.hosts',
-            list=True,
+            list=False,
             type=ValueType.SET
         )
 
@@ -287,6 +287,7 @@ class AFPSharesNamespace(BaseSharesNamespace):
             descr='Allowed hosts/networks',
             name='hosts_allow',
             get='properties.hosts_allow',
+            list=False,
             type=ValueType.SET
         )
 
@@ -294,6 +295,7 @@ class AFPSharesNamespace(BaseSharesNamespace):
             descr='Denied hosts/networks',
             name='hosts_deny',
             get='properties.hosts_deny',
+            list=False,
             type=ValueType.SET
         )
 
@@ -301,6 +303,7 @@ class AFPSharesNamespace(BaseSharesNamespace):
             descr='Allowed users/groups',
             name='users_allow',
             get='properties.users_allow',
+            list=False,
             type=ValueType.SET
         )
 
@@ -308,6 +311,7 @@ class AFPSharesNamespace(BaseSharesNamespace):
             descr='Denied users/groups',
             name='users_deny',
             get='properties.users_deny',
+            list=False,
             type=ValueType.SET
         )
 
@@ -354,6 +358,7 @@ class SMBSharesNamespace(BaseSharesNamespace):
             descr='Allowed hosts',
             name='hosts_allow',
             get='properties.hosts_allow',
+            list=False,
             type=ValueType.SET
         )
 
@@ -361,6 +366,7 @@ class SMBSharesNamespace(BaseSharesNamespace):
             descr='Denied hosts',
             name='hosts_deny',
             get='properties.hosts_deny',
+            list=False,
             type=ValueType.SET
         )
 
@@ -434,7 +440,7 @@ class WebDAVSharesNamespace(BaseSharesNamespace):
         )
 
         self.add_property(
-            descr='Set permission to webdav user',
+            descr='Webdav user permission',
             name='permission',
             get='properties.permission',
             list=True,

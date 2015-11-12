@@ -45,7 +45,7 @@ import icu
 import getpass
 import traceback
 import queue
-from socket import error as socket_error
+from socket import gaierror as socket_error
 from descriptions import events
 from namespace import Namespace, RootNamespace, Command, FilteringCommand, CommandException
 from parser import parse, Symbol, Set, CommandExpansion, Literal, BinaryExpr, PipeExpr

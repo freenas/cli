@@ -216,4 +216,91 @@ Volume name   Status   Mount point   Last scrub time   Last scrub errors
 tank          ONLINE   /mnt/tank     none              none           
 ```
 
+## Sharing
+
+After you have created your volume, you can now setup shares on your volume to share files with the rest of your network.  The shares namespace is split into 4 sets of commands for different share types, NFS, AFP, SMB and iSCSI with a main `shares` namespace to view them all from.
+
+### AFP shares
+
+One basic type of share you can create are AFP shares.  AFP is typically used for sharing files with Macintosh computers.  AFP shares are created with the command `share afp create`.  A basic AFP share can be created as follows:
+
+```
+127.0.0.1:>share afp create foo volume=tank
+```
+
+When it is created you will be able to see it in two different places, the shares overview and the afp share namespace.
+
+```
+127.0.0.1:>share show
+Share Name   Share Type   Volume   Dataset Path   Description 
+foo          afp          tank     tank/afp/foo       
+
+127.0.0.1:>share afp show
+Share name   Target volume   Compression   Read only   Time machine 
+foo          tank            lz4           no          no           
+```
+
+To see more details on the AFP share you can use the show command on the share itself:
+
+```
+127.0.0.1:>share afp foo show
+Share name (name)                      foo  
+Share type (type)                      afp  
+Target volume (volume)                 tank 
+Compression (compression)              lz4  
+Allowed hosts/networks (hosts_allow)   none 
+Denied hosts/networks (hosts_deny)     none 
+Allowed users/groups (users_allow)     none 
+Denied users/groups (users_deny)       none 
+Read only (read_only)                  no   
+Time machine (time_machine)            no 
+```
+
+If you want to set one of these properties of your share, use the `set` command:
+
+```
+127.0.0.1:>share afp foo set read_only=true
+127.0.0.1:>share afp foo set users_allow=tom, frank
+127.0.0.1:>share afp foo set users_deny=bob
+127.0.0.1:>share afp foo set hosts_allow=192.168.1.100,foobar.local
+127.0.0.1:>share afp foo show
+Share name (name)                      foo           
+Share type (type)                      afp           
+Target volume (volume)                 tank          
+Compression (compression)              lz4           
+Allowed hosts/networks (hosts_allow)   192.168.1.100 
+                                       foobar.local  
+Denied hosts/networks (hosts_deny)     none          
+Allowed users/groups (users_allow)     tom           
+                                       frank         
+Denied users/groups (users_deny)       bob           
+Read only (read_only)                  yes           
+Time machine (time_machine)            no
+```
+
+Now that you have a share, you must enable the AFP service:
+
+```
+127.0.0.1:>service afp config set enable=yes
+```
+
+You can further configure the AFP service by using the set command:
+
+```
+127.0.0.1:>service afp config set bind_addresses=192.168.1.50
+127.0.0.1:>service afp config set guest_enable=yes
+127.0.0.1:>service afp config show
+Enabled (enable)                        yes          
+Share Home Directory (homedir_enable)   no           
+Home Directory Path (homedir_path)      none         
+Home Directory Name (homedir_name)      none         
+Auxiliary Parameters (auxiliary)        none         
+Connections limit (connections_limit)   50           
+Guest user (guest_user)                 nobody       
+Enable guest user (guest_enable)        yes          
+Bind Addresses (bind_addresses)         192.168.1.50 
+Database Path (dbpath)                  none     
+```
+
+
 

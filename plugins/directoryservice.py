@@ -406,6 +406,14 @@ class LDAPDirectoryNamespace(BaseDirectoryServiceNamespace):
         )
 
         self.add_property(
+            descr='Base DN',
+            name='baseDN',
+            get='baseDN',
+            type=ValueType.STRING,
+            list=False
+        )
+
+        self.add_property(
             descr='Kerberos KDC',
             name='kdchost',
             get='kdchost',

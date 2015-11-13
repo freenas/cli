@@ -554,6 +554,7 @@ class RoutesNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
         self.primary_key = self.get_mapping('name')
 
 
+@description("IPMI configuration")
 class IPMINamespace(EntityNamespace):
     def __init__(self, name, context):
         super(IPMINamespace, self).__init__(name, context)

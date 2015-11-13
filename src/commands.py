@@ -324,7 +324,7 @@ class HelpCommand(Command):
                         Table.Column('Description', 'propdescr', ValueType.STRING),
                         Table.Column('Type', 'proptype', ValueType.STRING)])
 
-        if 'Command' in bases and obj.__doc__:
+        if isinstance(obj, Command) and obj.__doc__:
             command_name = obj.__class__.__name__
             if (
                 hasattr(obj, 'parent') and
@@ -334,9 +334,6 @@ class HelpCommand(Command):
                 output_msg(textwrap.dedent(obj.parent.localdoc[command_name]))
             else:
                 output_msg(inspect.getdoc(obj))
-
-        if 'PipeCommand' in bases and obj.__doc__:
-            output_msg(inspect.getdoc(obj))
 
         if isinstance(obj, Namespace):
             # First listing the Current Namespace's commands

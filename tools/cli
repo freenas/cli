@@ -3,5 +3,5 @@ trap : 2
 # The below is to tell the CLI that its running on FREENAS iteself
 FREENAS_SYSTEM=YES
 export FREENAS_SYSTEM
-exec python3 /usr/local/lib/freenascli/src/repl.py $*
+exec /usr/local/bin/freenas-cli $*
 trap 2

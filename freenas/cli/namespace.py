@@ -32,8 +32,8 @@ import traceback
 import errno
 import icu
 import sys
+from freenas.utils.query import wrap
 from .utils import post_save
-from fnutils.query import wrap
 from .output import (ValueType, Object, Table, output_list,
                     output_msg, read_value)
 import collections

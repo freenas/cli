@@ -55,7 +55,7 @@ from .output import (
 )
 from dispatcher.client import Client, ClientError
 from dispatcher.rpc import RpcException
-from fnutils.query import wrap
+from freenas.utils.query import wrap
 from .commands import (
     ExitCommand, PrintenvCommand, SetenvCommand, ShellCommand, ShutdownCommand,
     RebootCommand, EvalCommand, HelpCommand, ShowUrlsCommand, ShowIpsCommand,

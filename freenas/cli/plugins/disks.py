@@ -29,7 +29,7 @@
 import os
 from freenas.cli.namespace import Namespace, EntityNamespace, Command, RpcBasedLoadMixin, description
 from freenas.cli.output import ValueType, output_msg, output_table, read_value
-from fnutils import extend
+from freenas.utils import extend
 
 
 @description("Provides information about installed disks")

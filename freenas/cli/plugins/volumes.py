@@ -35,7 +35,7 @@ from freenas.cli.namespace import (
 )
 from freenas.cli.output import Table, ValueType, output_tree, output_msg, format_value
 from freenas.cli.utils import post_save, iterate_vdevs
-from fnutils import first_or_default, exclude, query
+from freenas.utils import first_or_default, exclude, query
 
 
 t = icu.Transliterator.createInstance("Any-Accents", icu.UTransDirection.FORWARD)

@@ -26,14 +26,14 @@
 #####################################################################
 
 
-from namespace import ConfigNamespace, Command, description, CommandException
-from commands import RebootCommand
-from output import output_msg, ValueType, Table, output_table
-from datetime import datetime
 import icu
 import time
 import copy
-from utils import post_save
+from datetime import datetime
+from freenas.cli.namespace import ConfigNamespace, Command, description, CommandException
+from freenas.cli.commands import RebootCommand
+from freenas.cli.output import output_msg, ValueType, Table, output_table
+from freenas.cli.utils import post_save
 
 t = icu.Transliterator.createInstance("Any-Accents", icu.UTransDirection.FORWARD)
 _ = t.transliterate

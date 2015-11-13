@@ -25,8 +25,8 @@
 #
 #####################################################################
 
-from namespace import Namespace, EntityNamespace, Command, RpcBasedLoadMixin, TaskBasedSaveMixin, description
-from output import ValueType
+from freenas.cli.namespace import Namespace, EntityNamespace, Command, RpcBasedLoadMixin, TaskBasedSaveMixin, description
+from freenas.cli.output import ValueType
 
 
 @description("Tools for simulating disks")

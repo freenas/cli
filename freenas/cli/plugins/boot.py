@@ -28,12 +28,12 @@
 
 import re
 import icu
-from namespace import (
+from freenas.cli.namespace import (
     Namespace, EntityNamespace, Command, RpcBasedLoadMixin,
     IndexCommand, description, CommandException
 )
-from utils import iterate_vdevs, post_save
-from output import ValueType, Table, output_msg
+from freenas.cli.utils import iterate_vdevs, post_save
+from freenas.cli.output import ValueType, Table, output_msg
 import inspect
 
 t = icu.Transliterator.createInstance("Any-Accents", icu.UTransDirection.FORWARD)

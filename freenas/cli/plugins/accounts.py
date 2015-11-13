@@ -27,11 +27,11 @@
 
 
 import icu
-from namespace import (
+from freenas.cli.namespace import (
     Namespace, EntityNamespace, IndexCommand, TaskBasedSaveMixin,
     RpcBasedLoadMixin, description, CommandException
     )
-from output import ValueType
+from freenas.cli.output import ValueType
 
 t = icu.Transliterator.createInstance("Any-Accents", icu.UTransDirection.FORWARD)
 _ = t.transliterate

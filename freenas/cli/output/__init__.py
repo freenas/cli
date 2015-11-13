@@ -247,7 +247,7 @@ def output_tree(tree, children, label, fmt=None):
 
 
 def get_formatter(name):
-    module = importlib.import_module('output.' + name)
+    module = importlib.import_module('freenas.cli.output.' + name)
     return module._formatter()
 
 

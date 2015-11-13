@@ -68,7 +68,7 @@ class Namespace(object):
     def commands(self):
         # lazy import to avoid circular import hell
         # TODO: can this be avoided? If so please!
-        from commands import HelpCommand
+        from .commands import HelpCommand
         return {
             '?': IndexCommand(self),
             'help': HelpCommand(),

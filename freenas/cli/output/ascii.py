@@ -28,14 +28,14 @@
 
 import sys
 import time
-import config
 import icu
 import natural.date
 import natural.size
 from texttable import Texttable
 from columnize import columnize
 from termcolor import cprint
-from output import ValueType, get_terminal_size, resolve_cell
+from freenas.cli import config
+from freenas.cli.output import ValueType, get_terminal_size, resolve_cell
 
 
 t = icu.Transliterator.createInstance("Any-Accents", icu.UTransDirection.FORWARD)

@@ -26,9 +26,9 @@
 #####################################################################
 
 
-from namespace import ConfigNamespace, EntityNamespace, RpcBasedLoadMixin, Command, description
-from output import ValueType
-from utils import post_save
+from freenas.cli.namespace import ConfigNamespace, EntityNamespace, RpcBasedLoadMixin, Command, description
+from freenas.cli.output import ValueType
+from freenas.cli.utils import post_save
 
 
 @description("Start/stop/restart/reload a service")

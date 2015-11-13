@@ -26,10 +26,10 @@
 #####################################################################
 
 
-from namespace import ConfigNamespace, Command, description, RpcBasedLoadMixin, EntityNamespace
-from output import Table, Object, ValueType, output_dict
-from descriptions import events
-from utils import parse_query_args, post_save
+from freenas.cli.namespace import ConfigNamespace, Command, description, RpcBasedLoadMixin, EntityNamespace
+from freenas.cli.output import Table, Object, ValueType, output_dict
+from freenas.cli.descriptions import events
+from freenas.cli.utils import parse_query_args, post_save
 
 
 @description("Provides status information about the server")

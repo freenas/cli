@@ -25,7 +25,7 @@
 #
 #####################################################################
 
-from namespace import (
+from freenas.cli.namespace import (
     Command,
     IndexCommand,
     Namespace,
@@ -36,12 +36,12 @@ from namespace import (
     description
 )
 
-from output import (
+from freenas.cli.output import (
     output_msg,
     ValueType
 )
 
-from utils import post_save
+from freenas.cli.utils import post_save
 
 @description("Configure and manage directory service")
 class DirectoryServiceNamespace(Namespace):

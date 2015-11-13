@@ -27,8 +27,8 @@
 
 
 import os
-from namespace import Namespace, EntityNamespace, ConfigNamespace, Command, RpcBasedLoadMixin, TaskBasedSaveMixin, description
-from output import ValueType, output_msg, output_table, read_value, format_value
+from freenas.cli.namespace import Namespace, EntityNamespace, ConfigNamespace, Command, RpcBasedLoadMixin, TaskBasedSaveMixin, description
+from freenas.cli.output import ValueType, output_msg, output_table, read_value, format_value
 
 
 TASK_TYPES = {

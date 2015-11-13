@@ -27,8 +27,8 @@
 
 
 import os
-from namespace import Namespace, EntityNamespace, Command, RpcBasedLoadMixin, description
-from output import ValueType, output_msg, output_table, read_value
+from freenas.cli.namespace import Namespace, EntityNamespace, Command, RpcBasedLoadMixin, description
+from freenas.cli.output import ValueType, output_msg, output_table, read_value
 from fnutils import extend
 
 

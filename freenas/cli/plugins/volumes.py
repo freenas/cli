@@ -29,12 +29,12 @@ import re
 import copy
 import icu
 import inspect
-from namespace import (
+from freenas.cli.namespace import (
     EntityNamespace, Command, CommandException, SingleItemNamespace,
     RpcBasedLoadMixin, TaskBasedSaveMixin, description
-    )
-from output import Table, ValueType, output_tree, output_msg, format_value
-from utils import post_save, iterate_vdevs
+)
+from freenas.cli.output import Table, ValueType, output_tree, output_msg, format_value
+from freenas.cli.utils import post_save, iterate_vdevs
 from fnutils import first_or_default, exclude, query
 
 

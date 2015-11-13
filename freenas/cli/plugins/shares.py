@@ -26,12 +26,12 @@
 #####################################################################
 
 import icu
-from namespace import (
+from freenas.cli.namespace import (
     Namespace, EntityNamespace, Command, IndexCommand,
     RpcBasedLoadMixin, TaskBasedSaveMixin, description,
     CommandException, ListCommand
-    )
-from output import ValueType, Table
+)
+from freenas.cli.output import ValueType, Table
 from fnutils import first_or_default
 
 

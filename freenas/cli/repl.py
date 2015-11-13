@@ -271,8 +271,8 @@ class Context(object):
             # natively on freenas/truenas
             # can we generisize/improve this logic?
             plug_dirs = os.path.dirname(os.path.realpath(__file__))
-            plug_dirs = os.path.join(os.path.split(plug_dirs)[0], 'plugins')
-            self.plug_dirs += [plug_dirs]
+            plug_dirs = os.path.join(plug_dirs, 'plugins')
+            self.plugin_dirs += [plug_dirs]
             return
         try:
             f = open(file, 'r')

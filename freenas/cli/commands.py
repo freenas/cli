@@ -31,14 +31,14 @@ import inspect
 import termios
 import sys
 import select
-import sandbox
 import readline
 import icu
 import re
 import textwrap
-from namespace import (Command, PipeCommand, CommandException, description,
+from . import sandbox
+from .namespace import (Command, PipeCommand, CommandException, description,
                        SingleItemNamespace, Namespace)
-from output import (
+from .output import (
     Table, Object, output_dict, ValueType, output_msg, output_list,
     output_lock, output_less, output_table, output_table_list, read_value
     )

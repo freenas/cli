@@ -38,7 +38,6 @@ import struct
 import fcntl
 import platform
 from termios import TIOCGWINSZ
-import config
 import json
 import time
 import icu
@@ -46,17 +45,18 @@ import getpass
 import traceback
 import queue
 from socket import gaierror as socket_error
-from descriptions import events
-from namespace import Namespace, RootNamespace, Command, FilteringCommand, CommandException
-from parser import parse, Symbol, Set, CommandExpansion, Literal, BinaryExpr, PipeExpr
-from output import (
+from .descriptions import events
+from . import config
+from .namespace import Namespace, RootNamespace, Command, FilteringCommand, CommandException
+from .parser import parse, Symbol, Set, CommandExpansion, Literal, BinaryExpr, PipeExpr
+from .output import (
     ValueType, Object, Table, ProgressBar, output_lock, output_msg, read_value, format_value,
     output_object, output_table
 )
 from dispatcher.client import Client, ClientError
 from dispatcher.rpc import RpcException
 from fnutils.query import wrap
-from commands import (
+from .commands import (
     ExitCommand, PrintenvCommand, SetenvCommand, ShellCommand, ShutdownCommand,
     RebootCommand, EvalCommand, HelpCommand, ShowUrlsCommand, ShowIpsCommand,
     TopCommand, ClearCommand, HistoryCommand, SaveenvCommand, EchoCommand,

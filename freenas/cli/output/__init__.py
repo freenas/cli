@@ -28,7 +28,6 @@
 import os
 import importlib
 import sys
-import config
 import icu
 import enum
 import string
@@ -37,6 +36,8 @@ import contextlib
 import io
 import pydoc
 import collections
+
+from .. import config
 
 
 output_lock = Lock()

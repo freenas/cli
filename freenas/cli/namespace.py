@@ -31,9 +31,9 @@ import copy
 import traceback
 import errno
 import icu
-from utils import post_save
+from .utils import post_save
 from fnutils.query import wrap
-from output import (ValueType, Object, Table, output_list,
+from .output import (ValueType, Object, Table, output_list,
                     output_msg, read_value)
 import collections
 

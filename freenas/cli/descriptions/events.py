@@ -27,7 +27,7 @@
 
 
 import icu
-from descriptions import tasks
+from . import tasks
 
 
 t = icu.Transliterator.createInstance("Any-Accents", icu.UTransDirection.FORWARD)

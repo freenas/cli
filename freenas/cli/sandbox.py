@@ -27,8 +27,8 @@
 #####################################################################
 
 
-from namespace import Command
-import config
+from . import config
+from .namespace import Command
 
 
 def exec_fn(name, *args, **kwargs):

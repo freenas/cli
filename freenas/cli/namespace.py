@@ -31,6 +31,7 @@ import copy
 import traceback
 import errno
 import icu
+import sys
 from .utils import post_save
 from fnutils.query import wrap
 from .output import (ValueType, Object, Table, output_list,
@@ -116,7 +117,10 @@ class CommandException(Exception):
         self.code = code
         self.message = message
         self.extra = extra
-        self.stacktrace = traceback.format_exc()
+        if sys.exc_info()[0]:
+            self.stacktrace = traceback.format_exc()
+        else:
+            self.stacktrace = ''
 
     def __str__(self):
         if self.code is None:

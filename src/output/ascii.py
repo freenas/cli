@@ -96,15 +96,18 @@ class AsciiOutputFormatter(object):
         widths = []
         number_columns = len(tab.columns)
         remaining_space = max_width
+        # set maximum column width based on the amount of terminal space minus the 3 pixel borders
         max_col_width = (remaining_space - number_columns * 3) / number_columns
         for i in range(0, number_columns):
             current_width = len(tab.columns[i].label)
-            for row in tab.data:
-                row_width = len(str(resolve_cell(row, tab.columns[i].accessor)))
-                if row_width > current_width:
-                    current_width = row_width
+            tab_cols_acc = tab.columns[i].accessor
+            max_row_width = max(
+                    [len(str(resolve_cell(row, tab_cols_acc))) for row in tab.data ]
+                    )
+            current_width = max_row_width if max_row_width > current_width else current_width
             if current_width < max_col_width:
                 widths.insert(i, current_width)
+                # reclaim space not used
                 remaining_columns = number_columns - i - 1
                 remaining_space = remaining_space - current_width - 3
                 if remaining_columns != 0:

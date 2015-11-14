@@ -89,9 +89,31 @@ class AsciiOutputFormatter(object):
 
     @staticmethod
     def output_table(tab):
-        table = Texttable(max_width=get_terminal_size()[1])
+        max_width = get_terminal_size()[1]
+        table = Texttable(max_width=max_width)
         table.set_deco(0)
         table.header([i.label for i in tab.columns])
+        widths = []
+        number_columns = len(tab.columns)
+        remaining_space = max_width
+        max_col_width = (remaining_space - number_columns * 3) / number_columns
+        for i in range(0, number_columns):
+            current_width = len(tab.columns[i].label)
+            for row in tab.data:
+                row_width = len(str(resolve_cell(row, tab.columns[i].accessor)))
+                if row_width > current_width:
+                    current_width = row_width
+            if current_width < max_col_width:
+                widths.insert(i, current_width)
+                remaining_columns = number_columns - i - 1
+                remaining_space = remaining_space - current_width - 3
+                if remaining_columns != 0:
+                    max_col_width = (remaining_space - remaining_columns * 3)/ remaining_columns
+            else:
+                widths.insert(i, max_col_width)
+                remaining_space = remaining_space - max_col_width - 3
+        table.set_cols_width(widths)
+
         table.add_rows([[AsciiOutputFormatter.format_value(resolve_cell(row, i.accessor), i.vt) for i in tab.columns] for row in tab.data], False)
         print(table.draw())
 

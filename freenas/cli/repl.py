@@ -266,31 +266,27 @@ class Context(object):
             self.connection.call_sync('management.ping')
 
     def read_middleware_config_file(self, file):
-        if file is None:
-            # This can only happen when we are NOT runnig the cli
-            # natively on freenas/truenas
-            # can we generisize/improve this logic?
+        """
+        If there is a cli['plugin-dirs'] in middleware.conf use that,
+        otherwise use the default plugins dir within cli namespace
+        """
+        plug_dirs = None
+        if file:
+            with open(file, 'r') as f:
+                data = json.load(f)
+
+            if 'cli' in data and 'plugin-dirs' in data['cli']:
+
+                if type(data['cli']['plugin-dirs']) != list:
+                    return
+
+                self.plugin_dirs += data['cli']['plugin-dirs']
+
+        if plug_dirs is None:
             plug_dirs = os.path.dirname(os.path.realpath(__file__))
             plug_dirs = os.path.join(plug_dirs, 'plugins')
             self.plugin_dirs += [plug_dirs]
-            return
-        try:
-            f = open(file, 'r')
-            data = json.load(f)
-            f.close()
-        except (IOError, ValueError):
-            raise
 
-        if 'cli' not in data:
-            return
-
-        if 'plugin-dirs' not in data['cli']:
-            return
-
-        if type(data['cli']['plugin-dirs']) != list:
-            return
-
-        self.plugin_dirs += data['cli']['plugin-dirs']
 
     def discover_plugins(self):
         for dir in self.plugin_dirs:

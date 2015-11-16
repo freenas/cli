@@ -36,6 +36,7 @@ install_requires = [
     'ply',
     'termcolor',
     'texttable',
+    'six',
 ]
 
 if sys.version_info.major == 3:
@@ -43,8 +44,13 @@ if sys.version_info.major == 3:
     dependency_links.append(
         'https://github.com/freenas/natural/tarball/py3k#egg=natural-0.1.5',
     )
+    if sys.version_info.minor < 4:
+        install_requires.append('enum34')
 else:
-    install_requires.append('natural')
+    install_requires.extend([
+        'enum34',
+        'natural',
+    ])
 
 setup(
     name='freenas.cli',

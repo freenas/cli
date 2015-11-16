@@ -23,19 +23,28 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 #####################################################################
+import sys
 from setuptools import setup, find_packages
 
 
+dependency_links = []
 install_requires = [
     'freenas.utils',
-    'dispatcher',
+    'dispatcher-client',
     'columnize',
     'PyICU',
-    'natural',
     'ply',
     'termcolor',
     'texttable',
 ]
+
+if sys.version_info.major == 3:
+    install_requires.append('natural==0.1.5')
+    dependency_links.append(
+        'https://github.com/freenas/natural/tarball/py3k#egg=natural-0.1.5',
+    )
+else:
+    install_requires.append('natural')
 
 setup(
     name='freenas.cli',
@@ -55,6 +64,7 @@ setup(
         'Programming Language :: Python :: 3',
     ],
     install_requires=install_requires,
+    dependency_links=dependency_links,
     entry_points = {
         'console_scripts': [
             'freenas-cli = freenas.cli.repl:main',

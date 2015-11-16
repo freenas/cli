@@ -43,7 +43,7 @@ import time
 import icu
 import getpass
 import traceback
-import queue
+import six
 from socket import gaierror as socket_error
 from .descriptions import events
 from . import config
@@ -223,7 +223,7 @@ class Context(object):
         self.root_ns = RootNamespace('')
         self.event_masks = ['*']
         self.event_divert = False
-        self.event_queue = queue.Queue()
+        self.event_queue = six.moves.queue.Queue()
         self.keepalive_timer = None
         self.argparse_parser = None
         config.instance = self
@@ -560,7 +560,7 @@ class MainLoop(object):
 
         while True:
             try:
-                line = input(self.__get_prompt()).strip()
+                line = six.moves.input(self.__get_prompt()).strip()
             except EOFError:
                 print()
                 return
@@ -1011,7 +1011,7 @@ def main():
 
     if args.hostname not in ('localhost', '127.0.0.1'):
         if args.l is None:
-            args.l = input('Please provide username: ')
+            args.l = six.moves.input('Please provide username: ')
         if args.p is None:
             args.p = getpass.getpass('Please provide password: ')
     if args.l:

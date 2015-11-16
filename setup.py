@@ -28,16 +28,15 @@ from setuptools import setup, find_packages
 
 install_requires = [
     'columnize',
-    'icu',
+    'PyICU',
     'natural',
     'ply',
-    'tables',
     'termcolor',
     'texttable',
 ]
 
 setup(
-    name='freenas-cli',
+    name='freenas.cli',
     version='10.2',
     url='http://github.com/freenas/middleware',
     packages=find_packages() + ['freenas.cli.plugins'],

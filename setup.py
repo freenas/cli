@@ -30,7 +30,7 @@ from setuptools import setup, find_packages
 dependency_links = []
 install_requires = [
     'freenas.utils',
-    'dispatcher-client',
+    'freenas.dispatcher',
     'columnize',
     'PyICU',
     'ply',

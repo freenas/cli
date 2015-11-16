@@ -27,6 +27,8 @@ from setuptools import setup, find_packages
 
 
 install_requires = [
+    'freenas.utils',
+    'dispatcher',
     'columnize',
     'PyICU',
     'natural',

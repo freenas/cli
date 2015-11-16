@@ -53,8 +53,8 @@ from .output import (
     ValueType, Object, Table, ProgressBar, output_lock, output_msg, read_value, format_value,
     output_object, output_table
 )
-from dispatcher.client import Client, ClientError
-from dispatcher.rpc import RpcException
+from freenas.dispatcher.client import Client, ClientError
+from freenas.dispatcher.rpc import RpcException
 from freenas.utils.query import wrap
 from .commands import (
     ExitCommand, PrintenvCommand, SetenvCommand, ShellCommand, ShutdownCommand,

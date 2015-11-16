@@ -42,7 +42,7 @@ from .output import (
     Table, Object, output_dict, ValueType, output_msg, output_list,
     output_lock, output_less, output_table, output_table_list, read_value
     )
-from dispatcher.shell import ShellClient
+from freenas.dispatcher.shell import ShellClient
 
 t = icu.Transliterator.createInstance("Any-Accents",
                                       icu.UTransDirection.FORWARD)

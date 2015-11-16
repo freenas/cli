@@ -26,6 +26,16 @@
 from setuptools import setup, find_packages
 
 
+install_requires = [
+    'columnize',
+    'icu',
+    'natural',
+    'ply',
+    'tables',
+    'termcolor',
+    'texttable',
+]
+
 setup(
     name='freenas-cli',
     version='10.2',
@@ -43,6 +53,7 @@ setup(
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
     ],
+    install_requires=install_requires,
     entry_points = {
         'console_scripts': [
             'freenas-cli = freenas.cli.repl:main',

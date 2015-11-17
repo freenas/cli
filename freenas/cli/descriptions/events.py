@@ -26,12 +26,12 @@
 #####################################################################
 
 
-import icu
+import gettext
 from . import tasks
 
 
-t = icu.Transliterator.createInstance("Any-Accents", icu.UTransDirection.FORWARD)
-_ = t.transliterate
+t = gettext.translation('freenas-cli', fallback=True)
+_ = t.gettext
 
 
 def task_created(context, args):

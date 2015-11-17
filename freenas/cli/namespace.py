@@ -30,7 +30,7 @@ import re
 import copy
 import traceback
 import errno
-import icu
+import gettext
 import sys
 from freenas.utils.query import wrap
 from .utils import post_save
@@ -38,8 +38,8 @@ from .output import (ValueType, Object, Table, output_list,
                     output_msg, read_value)
 import collections
 
-t = icu.Transliterator.createInstance("Any-Accents", icu.UTransDirection.FORWARD)
-_ = t.transliterate
+t = gettext.translation('freenas-cli', fallback=True)
+_ = t.gettext
 
 
 def description(descr):

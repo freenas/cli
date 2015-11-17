@@ -27,7 +27,7 @@
 
 
 import re
-import icu
+import gettext
 from freenas.cli.namespace import (
     Namespace, EntityNamespace, Command, RpcBasedLoadMixin,
     IndexCommand, description, CommandException
@@ -36,8 +36,8 @@ from freenas.cli.utils import iterate_vdevs, post_save
 from freenas.cli.output import ValueType, Table, output_msg
 import inspect
 
-t = icu.Transliterator.createInstance("Any-Accents", icu.UTransDirection.FORWARD)
-_ = t.transliterate
+t = gettext.translation('freenas-cli', fallback=True)
+_ = t.gettext
 
 
 @description("Boot Environment Management")

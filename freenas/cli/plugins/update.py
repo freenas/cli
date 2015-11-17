@@ -26,7 +26,7 @@
 #####################################################################
 
 
-import icu
+import gettext
 import time
 import copy
 from datetime import datetime
@@ -35,8 +35,9 @@ from freenas.cli.commands import RebootCommand
 from freenas.cli.output import output_msg, ValueType, Table, output_table
 from freenas.cli.utils import post_save
 
-t = icu.Transliterator.createInstance("Any-Accents", icu.UTransDirection.FORWARD)
-_ = t.transliterate
+
+t = gettext.translation('freenas-cli', fallback=True)
+_ = t.gettext
 
 
 def get_short_version(check_str):

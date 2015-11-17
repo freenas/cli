@@ -27,7 +27,7 @@
 
 import re
 import copy
-import icu
+import gettext
 import inspect
 from freenas.cli.namespace import (
     EntityNamespace, Command, CommandException, SingleItemNamespace,
@@ -38,8 +38,8 @@ from freenas.cli.utils import post_save, iterate_vdevs
 from freenas.utils import first_or_default, exclude, query
 
 
-t = icu.Transliterator.createInstance("Any-Accents", icu.UTransDirection.FORWARD)
-_ = t.transliterate
+t = gettext.translation('freenas-cli', fallback=True)
+_ = t.gettext
 
 
 # Global lists/dicts for create command and other stuff

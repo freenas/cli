@@ -40,7 +40,7 @@ import platform
 from termios import TIOCGWINSZ
 import json
 import time
-import icu
+import gettext
 import getpass
 import traceback
 import six
@@ -77,10 +77,9 @@ if os.environ.get('FREENAS_SYSTEM') == 'YES':
     CLI_LOG_DIR = '/var/tmp'
 
 DEFAULT_CLI_CONFIGFILE = os.path.join(os.getcwd(), '.freenascli.conf')
-t = icu.Transliterator.createInstance(
-    "Any-Accents",
-    icu.UTransDirection.FORWARD)
-_ = t.transliterate
+
+t = gettext.translation('freenas-cli', fallback=True)
+_ = t.gettext
 
 
 PROGRESS_CHARS = ['-', '\\', '|', '/']

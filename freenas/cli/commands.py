@@ -32,7 +32,7 @@ import termios
 import sys
 import select
 import readline
-import icu
+import gettext
 import re
 import textwrap
 from . import sandbox
@@ -44,9 +44,8 @@ from .output import (
     )
 from freenas.dispatcher.shell import ShellClient
 
-t = icu.Transliterator.createInstance("Any-Accents",
-                                      icu.UTransDirection.FORWARD)
-_ = t.transliterate
+t = gettext.translation('freenas-cli', fallback=True)
+_ = t.gettext
 
 
 @description("Sets variable value")

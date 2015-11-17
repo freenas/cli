@@ -27,7 +27,7 @@
 
 
 import time
-import icu
+import gettext
 import config
 import natural.date
 import natural.size
@@ -35,9 +35,8 @@ from texttable import Texttable
 from output import ValueType, get_terminal_size, resolve_cell
 
 
-t = icu.Transliterator.createInstance("Any-Accents",
-                                      icu.UTransDirection.FORWARD)
-_ = t.transliterate
+t = gettext.translation('freenas-cli', fallback=True)
+_ = t.gettext
 
 
 class TableOutputFormatter(object):

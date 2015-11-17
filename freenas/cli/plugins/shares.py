@@ -25,7 +25,7 @@
 #
 #####################################################################
 
-import icu
+import gettext
 from freenas.cli.namespace import (
     Namespace, EntityNamespace, Command, IndexCommand,
     RpcBasedLoadMixin, TaskBasedSaveMixin, description,
@@ -35,8 +35,8 @@ from freenas.cli.output import ValueType, Table
 from freenas.utils import first_or_default
 
 
-t = icu.Transliterator.createInstance("Any-Accents", icu.UTransDirection.FORWARD)
-_ = t.transliterate
+t = gettext.translation('freenas-cli', fallback=True)
+_ = t.gettext
 
 
 @description("Lists users connected to particular share")

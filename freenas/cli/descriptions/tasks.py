@@ -26,11 +26,11 @@
 #####################################################################
 
 
-import icu
+import gettext
 
 
-t = icu.Transliterator.createInstance("Any-Accents", icu.UTransDirection.FORWARD)
-_ = t.transliterate
+t = gettext.translation('freenas-cli', fallback=True)
+_ = t.gettext
 
 
 def get_username(context, uid):

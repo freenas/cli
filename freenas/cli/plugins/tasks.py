@@ -26,13 +26,14 @@
 #####################################################################
 
 
-import icu
+import gettext
 from freenas.cli.descriptions import tasks
 from freenas.cli.namespace import EntityNamespace, RpcBasedLoadMixin, Command, description
 from freenas.cli.output import ValueType
 
-t = icu.Transliterator.createInstance("Any-Accents", icu.UTransDirection.FORWARD)
-_ = t.transliterate
+
+t = gettext.translation('freenas-cli', fallback=True)
+_ = t.gettext
 
 
 @description("Submits new task")

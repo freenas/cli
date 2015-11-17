@@ -26,15 +26,15 @@
 #####################################################################
 
 
-import icu
+import gettext
 from freenas.cli.namespace import (
     Namespace, EntityNamespace, IndexCommand, TaskBasedSaveMixin,
     RpcBasedLoadMixin, description, CommandException
     )
 from freenas.cli.output import ValueType
 
-t = icu.Transliterator.createInstance("Any-Accents", icu.UTransDirection.FORWARD)
-_ = t.transliterate
+t = gettext.translation('freenas-cli', fallback=True)
+_ = t.gettext
 
 
 @description(_("System users"))

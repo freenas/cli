@@ -28,7 +28,7 @@
 import os
 import importlib
 import sys
-import icu
+import gettext
 import enum
 import string
 from threading import Lock
@@ -42,8 +42,8 @@ from .. import config
 
 
 output_lock = Lock()
-t = icu.Transliterator.createInstance("Any-Accents", icu.UTransDirection.FORWARD)
-_ = t.transliterate
+t = gettext.translation('freenas-cli', fallback=True)
+_ = t.gettext
 
 
 class ValueType(enum.Enum):

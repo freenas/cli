@@ -40,9 +40,9 @@ install_requires = [
 ]
 
 if sys.version_info.major == 3:
-    install_requires.append('natural==0.1.5')
+    install_requires.append('natural==0.1.6')
     dependency_links.append(
-        'https://github.com/freenas/natural/tarball/py3k#egg=natural-0.1.5',
+        'https://github.com/freenas/natural/tarball/py3k#egg=natural-0.1.6',
     )
     if sys.version_info.minor < 4:
         install_requires.append('enum34')

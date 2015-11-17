@@ -34,6 +34,7 @@ import string
 from threading import Lock
 import contextlib
 import io
+import six
 import pydoc
 import collections
 
@@ -273,6 +274,17 @@ def stdout_redirect(where):
         sys.stdout = sys.__stdout__
 
 
+class StringIO(io.StringIO):
+    """
+    Decode inputs so we can make it work in py2 and py3.
+    In py2 the print function automatically encode inputs.
+    """
+    def write(self, value, *args, **kwargs):
+        if six.PY2 and isinstance(value, str):
+            value = value.decode('utf8')
+        return super(StringIO, self).write(value, *args, **kwargs)
+
+
 def output_less(output_call_list):
     # First check if its either a list or a func (if not then raise TypeError)
     if hasattr(output_call_list, '__call__'):
@@ -289,7 +301,7 @@ def output_less(output_call_list):
                         ' a list of functions. Instead the following type ' +
                         'was received: {0}'.format(type(output_call_list)))
 
-    with stdout_redirect(io.StringIO()) as new_stdout:
+    with stdout_redirect(StringIO()) as new_stdout:
         for output_func_call in output_call_list:
             output_func_call()
 

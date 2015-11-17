@@ -72,7 +72,7 @@ class SetenvCommand(Command):
 @description("Prints variable value")
 class PrintenvCommand(Command):
     """
-    Usage: printenv [variable]
+    Usage: printenv <variable>
 
     Prints a list of environment variables and their values (if called without
     arguments) or value of single environment variable (if called with single
@@ -132,7 +132,7 @@ class EvalCommand(Command):
 @description("Spawns shell, enter \"!shell\" (example: \"!sh\")")
 class ShellCommand(Command):
     """
-    Usage: shell [command]
+    Usage: shell <command>
 
     Launches interactive shell on FreeNAS host. That means if CLI is
     used to connect to remote host, also remote shell will be used.
@@ -261,7 +261,7 @@ class ExitCommand(Command):
 @description("Provides help on commands")
 class HelpCommand(Command):
     """
-    Usage: help [command command ...]
+    Usage: help <command> <command> ...
 
     Provides usage information on particular command. If command can't be
     reached directly in current namespace, may be specified as chain,
@@ -412,7 +412,10 @@ class ClearCommand(Command):
 @description("Shows the CLI command history")
 class HistoryCommand(Command):
     """
-    Usage: history [histroy_range]
+    Usage: history <histroy_range>
+
+    Example: history
+             history 10
 
     Lists the list commands previously executed in this CLI instance.
     Optionally, one can provide an argument (history_range) for showing
@@ -563,7 +566,7 @@ def map_opargs(opargs, context):
 @description("Filters result set basing on specified conditions")
 class SearchPipeCommand(PipeCommand):
     """
-    Usage: <command> | search <key> [<op> <value> [...]]
+    Usage: <command> | search <key> <op> <value> ...
 
     Example: show | search name==foo
 
@@ -595,7 +598,7 @@ class SearchPipeCommand(PipeCommand):
 @description("Excludes certain results from result set basing on specified conditions")
 class ExcludePipeCommand(PipeCommand):
     """
-    Usage: <command> | exclude <key> <op> <value> [...]
+    Usage: <command> | exclude <key> <op> <value> ...
 
     Example: show | exclude name==foo
 

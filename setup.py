@@ -32,7 +32,6 @@ install_requires = [
     'freenas.utils',
     'freenas.dispatcher',
     'columnize',
-    'PyICU',
     'ply',
     'termcolor',
     'texttable',

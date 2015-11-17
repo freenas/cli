@@ -61,6 +61,89 @@ help  account  calendar          disk     service  simulator  task    volume
 ?     boot     directoryservice  network  share    system     update
 ```
 
+## Help command
+
+The help command is there to assist you with commands in the cli.  To get an overview of the available commands, simply type `help`.
+
+```
+127.0.0.1:>help
+    Command                               Description                         
+/                  Go to the root namespace                                   
+..                 Go up one namespace                                        
+-                  Go back to previous namespace                              
+?                  Provides list of commands in this namespace                
+help               Provides help on commands                                  
+share              Configure and manage shares                                
+task               Manage tasks                                               
+disk               Provides information about installed disks                 
+directoryservice   Configure and manage directory service                     
+update             System Updates and their Configuration                     
+calendar           Provides access to task scheduled on a regular basis       
+...
+```
+
+You will be given a scrollable list of the available commands and their descriptions in the current namespace.  To escape the help command press q.  You can also get help about individual commands and namespaces, for example:
+
+```
+127.0.0.1:>help help
+Usage: help <command> <command> ...
+
+Provides usage information on particular command. If command can't be
+reached directly in current namespace, may be specified as chain,
+eg: "account users show".
+
+Examples:
+    help
+    help printenv
+    help account users show
+
+To see the properties of a given namespace, use 'help properties'
+```
+
+Help on a higher level command will show the commands it expands to, for example:
+
+
+```
+127.0.0.1:>help account
+Command                               Description                             
+/         Go to the root namespace                                            
+..        Go up one namespace                                                 
+-         Go back to previous namespace                                       
+?         Provides list of commands in this namespace                         
+user      System users                                                        
+group     System groups                                                       
+
+127.0.0.1:>help account user
+Command                               Description                             
+/         Go to the root namespace                                            
+..        Go up one namespace                                                 
+-         Go back to previous namespace                                       
+delete    Removes item                                                        
+?         Provides list of commands in this namespace                         
+create    Creates new item                                                    
+show      Lists items                                                         
+```
+
+You can also get the properties of a namespace by adding the keyword "properties" to your help query, for example:
+
+```
+127.0.0.1:>help account user properties
+    Property           Description             Type        
+uid                 User ID             number (read only) 
+username            User name           string             
+fullname            Full name           string             
+group               Primary group       string             
+groups              Auxilliary groups   set                
+shell               Login shell         string             
+home                Home directory      string             
+password            Password            string             
+password_disabled   Password Disabled   boolean            
+locked              Locked              boolean            
+email               Email address       string             
+sudo                Sudo allowed        boolean            
+pubkey              SSH public key      string             
+```
+
 ## Volume creation and management
 
 Before you create a volume you should probably find out the names of the disks you will be creating the volume with.  You can do this by using the command `disk show`:

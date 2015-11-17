@@ -54,7 +54,6 @@ else:
 
 setup(
     name='freenas.cli',
-    version='10.2',
     url='http://github.com/freenas/middleware',
     packages=find_packages() + ['freenas.cli.plugins'],
     license='BSD',

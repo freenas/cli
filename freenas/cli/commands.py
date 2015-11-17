@@ -275,12 +275,12 @@ class HelpCommand(Command):
     To see the properties of a given namespace, use 'help properties'
     """
     def run(self, context, args, kwargs, opargs):
-        arg = args[0] if len(args) > 0 else None
+        arg = args[:]
         obj = context.ml.get_relative_object(context.ml.path[-1], args)
         bases = map(lambda x: x.__name__, obj.__class__.__bases__)
 
-        if arg:
-            if arg == "/":
+        if len(arg) > 0:
+            if "/" in arg:
                 output_msg(textwrap.dedent("""\
                     Usage: /
                     / <namespace>
@@ -289,19 +289,19 @@ class HelpCommand(Command):
                     Allows you to navigate or execute commands starting \
                     from the root namespace"""))
                 return
-            elif arg == "..":
+            elif ".." in arg:
                 output_msg(textwrap.dedent("""\
                     Usage: ..
 
                     Goes up one level of namespace"""))
                 return
-            elif arg == "-":
+            elif "-" in arg:
                 output_msg(textwrap.dedent("""\
                     Usage: -
 
                     Goes back to the previous namespace"""))
                 return
-            elif arg == "properties":
+            elif "properties" in arg:
                 # If the namespace has properties, display a list of the available properties
                 if hasattr(obj, 'property_mappings'):
                     prop_dict_list = []

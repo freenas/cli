@@ -101,10 +101,11 @@ class AsciiOutputFormatter(object):
         for i in range(0, number_columns):
             current_width = len(tab.columns[i].label)
             tab_cols_acc = tab.columns[i].accessor
-            max_row_width = max(
-                    [len(str(resolve_cell(row, tab_cols_acc))) for row in tab.data ]
-                    )
-            current_width = max_row_width if max_row_width > current_width else current_width
+            if len(tab.data) > 0:
+                max_row_width = max(
+                        [len(str(resolve_cell(row, tab_cols_acc))) for row in tab.data ]
+                        )
+                current_width = max_row_width if max_row_width > current_width else current_width
             if current_width < max_col_width:
                 widths.insert(i, current_width)
                 # reclaim space not used

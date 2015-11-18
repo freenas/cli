@@ -26,23 +26,26 @@
 #####################################################################
 
 import os
-import tty
 import inspect
-import termios
 import sys
 import select
 import readline
 import gettext
+import platform
 import re
 import textwrap
-from . import sandbox
-from .namespace import (Command, PipeCommand, CommandException, description,
-                       SingleItemNamespace, Namespace)
-from .output import (
+from freenas.cli import sandbox
+from freenas.cli.namespace import (Command, PipeCommand, CommandException, description,
+                                   SingleItemNamespace, Namespace)
+from freenas.cli.output import (
     Table, Object, output_dict, ValueType, output_msg, output_list,
     output_lock, output_less, output_table, output_table_list, read_value
-    )
+)
 from freenas.dispatcher.shell import ShellClient
+
+if platform.system() != 'Windows':
+    import tty
+    import termios
 
 t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
@@ -159,8 +162,10 @@ class ShellCommand(Command):
         shell.open()
 
         fd = sys.stdin.fileno()
-        old_settings = termios.tcgetattr(fd)
-        tty.setraw(fd)
+
+        if platform.system() != 'Windows':
+            old_settings = termios.tcgetattr(fd)
+            tty.setraw(fd)
 
         while not self.closed:
             r, w, x = select.select([fd], [], [], 0.1)
@@ -168,7 +173,8 @@ class ShellCommand(Command):
                 ch = os.read(fd, 1)
                 shell.write(ch)
 
-        termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+        if platform.system() != 'Windows':
+            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
 
 
 @description("Shuts the system down")

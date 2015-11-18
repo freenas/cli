@@ -979,12 +979,13 @@ def main():
     # create symlink to latest created cli log
     # but first check if previous exists and nuke it
     try:
-        latest_log = os.path.join(CLI_LOG_DIR, 'freenascli.latest.log')
-        if os.path.lexists(latest_log):
-            os.unlink(latest_log)
-        os.symlink(current_cli_logfile, latest_log)
-        # Try to set the permissions on this symlink to be readable, writable by all
-        os.chmod(latest_log, 0o777)
+        if platform.system() != 'Windows':
+            latest_log = os.path.join(CLI_LOG_DIR, 'freenascli.latest.log')
+            if os.path.lexists(latest_log):
+                os.unlink(latest_log)
+            os.symlink(current_cli_logfile, latest_log)
+            # Try to set the permissions on this symlink to be readable, writable by all
+            os.chmod(latest_log, 0o777)
     except OSError:
         # not there no probs or cannot make this symlink move on
         pass

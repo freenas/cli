@@ -282,8 +282,13 @@ class Context(object):
                 self.plugin_dirs += data['cli']['plugin-dirs']
 
         if plug_dirs is None:
-            plug_dirs = os.path.dirname(os.path.realpath(__file__))
-            plug_dirs = os.path.join(plug_dirs, 'plugins')
+            # Support for pyinstaller
+            if hasattr(sys, '_MEIPASS'):
+                plug_dirs = os.path.join(sys._MEIPASS, 'freenas/cli/plugins')
+            else:
+                plug_dirs = os.path.join(
+                    os.path.dirname(os.path.realpath(__file__)), 'plugins'
+                )
             self.plugin_dirs += [plug_dirs]
 
 

@@ -1011,6 +1011,9 @@ def main():
     ml = MainLoop(context)
     context.ml = ml
 
+    if os.environ.get('FREENAS_SYSTEM') != 'YES' and args.hostname == '127.0.0.1':
+        args.hostname = six.moves.input('Please provide FreeNAS IP: ')
+
     if args.hostname not in ('localhost', '127.0.0.1'):
         if args.l is None:
             args.l = six.moves.input('Please provide username: ')

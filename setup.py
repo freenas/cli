@@ -57,6 +57,8 @@ else:
 
 if platform.system() == 'Darwin':
     install_requires.append('gnureadline')
+elif platform.system() == 'Windows':
+    install_requires.append('pyreadline')
 
 setup(
     name='freenas.cli',

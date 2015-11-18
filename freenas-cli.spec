@@ -1,5 +1,6 @@
 # -*- mode: python -*-
 import glob
+import platform
 
 block_cipher = None
 
@@ -34,7 +35,9 @@ for f in glob.glob('freenas/cli/output/*'):
 
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
-exe = EXE(pyz,
+
+if platform.system() == 'Windows':
+    exe = EXE(pyz,
           a.binaries,
           a.datas,
           a.scripts,
@@ -44,3 +47,19 @@ exe = EXE(pyz,
           strip=None,
           upx=True,
           console=True )
+elif platform.system() == 'Darwin':
+    exe = EXE(pyz,
+          a.scripts,
+          exclude_binaries=True,
+          name='freenas-cli',
+          debug=False,
+          strip=None,
+          upx=True,
+          console=True )
+    app = BUNDLE(exe,
+         a.binaries,
+         a.zipfiles,
+         a.datas,
+         name='freenas-cli.app',
+         icon=None,
+         bundle_identifier=None)

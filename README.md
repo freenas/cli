@@ -365,6 +365,9 @@ Now that you have a share, you must enable the AFP service:
 
 ```
 127.0.0.1:>service afp config set enable=yes
+Service name (name)   afp     
+State (state)         RUNNING 
+Process ID (pid)      none 
 ```
 
 You can further configure the AFP service by using the set command:
@@ -385,5 +388,89 @@ Bind Addresses (bind_addresses)         192.168.1.50
 Database Path (dbpath)                  none     
 ```
 
+### NFS Shares
 
+Another basic type of share you can create are NFS shares.  NFS is typically used for sharing files with Unix systems.  NFS shares are created with the command `share nfs create`.  A basic NFS share can be created as follows:
+
+```
+127.0.0.1:>share nfs create bar volume=tank
+```
+
+Like AFP shares, you can also see the NFS share in the shares overview and the NFS share namespace.
+
+```
+127.0.0.1:>share show
+Share Name   Share Type   Volume   Dataset Path   Description 
+bar          nfs          tank     tank/nfs/bar       
+127.0.0.1:>share nfs show
+Share name     Target     Compressio   All direct   Read only   Security 
+               volume         n          ories                           
+bar          tank         lz4          no           no          none    
+```
+
+To see more details on the NFS share you can use the show command on the share itself:
+
+```
+127.0.0.1:>share nfs bar show
+Share name (name)                bar  
+Share type (type)                nfs  
+Target volume (volume)           tank 
+Compression (compression)        lz4  
+All directories (alldirs)        no   
+Read only (read_only)            no   
+Root user (root_user)            none 
+Root group (root_group)          none 
+All user (all_user)              none 
+All group (all_group)            none 
+Allowed hosts/networks (hosts)   none 
+Security (security)              none 
+```
+
+If you want to set one of these properties of your share, use the `set` command:
+
+```
+127.0.0.1:>share nfs bar set alldirs=true
+127.0.0.1:>share nfs bar set read_only=true
+127.0.0.1:>share nfs bar set hosts=foobar.local,10.0.0.101
+127.0.0.1:>share nfs bar show
+Share name (name)                bar          
+Share type (type)                nfs          
+Target volume (volume)           tank         
+Compression (compression)        lz4          
+All directories (alldirs)        yes          
+Read only (read_only)            yes          
+Root user (root_user)            none         
+Root group (root_group)          none         
+All user (all_user)              none         
+All group (all_group)            none         
+Allowed hosts/networks (hosts)   foobar.local 
+                                 10.0.0.101   
+Security (security)              none  
+```
+
+Now that you have a share, you must enable the NFS service:
+```
+127.0.0.1:>service nfs config set enable=yes
+127.0.0.1:>service nfs show
+Service name (name)   nfs     
+State (state)         RUNNING 
+Process ID (pid)      5760   
+```
+
+You can further configure the NFS service by using the set command:
+
+```
+127.0.0.1:>service nfs config set servers=3
+127.0.0.1:>service nfs config set v4=yes
+127.0.0.1:>service nfs config show
+Enabled (enable)                      yes  
+Number of servers (servers)           3    
+Enable UDP (udp)                      no   
+Enable NFSv4 (v4)                     yes  
+Enable NFSv4 Kerberos (v4_kerberos)   no   
+Bind addresses (bind_addresses)       none 
+Mountd port (mountd_port)             none 
+RPC statd port (rpcstatd_port)        none 
+RPC Lockd port (rpclockd_port)        none 
+```
 

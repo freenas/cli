@@ -51,6 +51,9 @@ else:
         'natural',
     ])
 
+if platform.system() == 'Darwin':
+    install_requires.append('gnureadline')
+
 setup(
     name='freenas.cli',
     url='http://github.com/freenas/middleware',

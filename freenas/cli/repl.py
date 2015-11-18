@@ -45,18 +45,18 @@ import getpass
 import traceback
 import six
 from socket import gaierror as socket_error
-from .descriptions import events
-from . import config
-from .namespace import Namespace, RootNamespace, Command, FilteringCommand, CommandException
-from .parser import parse, Symbol, Set, CommandExpansion, Literal, BinaryExpr, PipeExpr
-from .output import (
+from freenas.cli.descriptions import events
+from freenas.cli import config
+from freenas.cli.namespace import Namespace, RootNamespace, Command, FilteringCommand, CommandException
+from freenas.cli.parser import parse, Symbol, Set, CommandExpansion, Literal, BinaryExpr, PipeExpr
+from freenas.cli.output import (
     ValueType, Object, Table, ProgressBar, output_lock, output_msg, read_value, format_value,
     output_object, output_table
 )
 from freenas.dispatcher.client import Client, ClientError
 from freenas.dispatcher.rpc import RpcException
 from freenas.utils.query import wrap
-from .commands import (
+from freenas.cli.commands import (
     ExitCommand, PrintenvCommand, SetenvCommand, ShellCommand, ShutdownCommand,
     RebootCommand, EvalCommand, HelpCommand, ShowUrlsCommand, ShowIpsCommand,
     TopCommand, ClearCommand, HistoryCommand, SaveenvCommand, EchoCommand,

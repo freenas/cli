@@ -38,7 +38,7 @@ import six
 import pydoc
 import collections
 
-from .. import config
+from freenas.cli import config
 
 
 output_lock = Lock()

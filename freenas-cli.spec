@@ -15,7 +15,7 @@ a = Analysis(['freenas/cli/repl.py'],
              pathex=['/home/william/scm/middleware/src/cli'],
              binaries=None,
              datas=None,
-             hiddenimports=['freenas.cli.output', 'freenas.cli.output.ascii'],
+             hiddenimports=['freenas.cli.output.ascii', 'Queue'],
              hookspath=None,
              runtime_hooks=None,
              excludes=None,
@@ -24,9 +24,13 @@ a = Analysis(['freenas/cli/repl.py'],
              cipher=block_cipher)
 a.datas += [('freenas/cli/parser.py', resource_path('freenas/cli/parser.py'),  'DATA')]
 for f in glob.glob('freenas/cli/plugins/*'):
+    if not os.path.isfile(f):
+        continue
     a.datas += [(f, resource_path(f),  'DATA')]
-
-print a.datas
+for f in glob.glob('freenas/cli/output/*'):
+    if not os.path.isfile(f):
+        continue
+    a.datas += [(f, resource_path(f),  'DATA')]
 
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)

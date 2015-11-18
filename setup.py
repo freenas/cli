@@ -46,10 +46,13 @@ if sys.version_info.major == 3:
     )
     if sys.version_info.minor < 4:
         install_requires.append('enum34')
+    if sys.version_info.minor < 3:
+        install_requires.append('backports.shutil_get_terminal_size')
 else:
     install_requires.extend([
         'enum34',
         'natural',
+        'backports.shutil_get_terminal_size',
     ])
 
 if platform.system() == 'Darwin':

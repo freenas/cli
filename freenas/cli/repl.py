@@ -35,9 +35,7 @@ import imp
 import logging
 import errno
 import struct
-import fcntl
 import platform
-from termios import TIOCGWINSZ
 import json
 import time
 import gettext
@@ -64,6 +62,11 @@ from freenas.cli.commands import (
     SortPipeCommand, LimitPipeCommand, SelectPipeCommand, LoginCommand
 )
 import collections
+
+try:
+    from shutil import get_terminal_size
+except ImportError:
+    from backports.shutil_get_terminal_size import get_terminal_size
 
 if platform.system() == 'Darwin':
     import gnureadline as readline
@@ -290,7 +293,6 @@ class Context(object):
                     os.path.dirname(os.path.realpath(__file__)), 'plugins'
                 )
             self.plugin_dirs += [plug_dirs]
-
 
     def discover_plugins(self):
         for dir in self.plugin_dirs:
@@ -959,12 +961,7 @@ class MainLoop(object):
         pass
 
     def blank_readline(self):
-        rows, cols = struct.unpack('hh', fcntl.ioctl(
-            sys.stdout, TIOCGWINSZ, '1234'))
-
-        if cols == 0:
-            cols = 80
-
+        cols = get_terminal_size((80, 20)).columns
         text_len = len(readline.get_line_buffer()) + 2
         sys.stdout.write('\x1b[2K')
         sys.stdout.write('\x1b[1A\x1b[2K' * int(text_len / cols))

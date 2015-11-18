@@ -14,4 +14,4 @@ bin:
 	virtualenv-2.7 venv
 	./venv/bin/pip install -U https://github.com/pyinstaller/pyinstaller/archive/develop.zip
 	./venv/bin/pip install freenas.cli
-	./venv/bin/pyinstaller -y --clean --debug freenas-cli.spec
+	./venv/bin/pyinstaller -y --clean --onefile freenas-cli.spec

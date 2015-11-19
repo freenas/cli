@@ -42,12 +42,12 @@ if platform.system() == 'Windows':
         a.binaries,
         a.datas,
         a.scripts,
-        exclude_binaries=True,
+        exclude_binaries=False,
         name='freenas-cli',
         debug=False,
         strip=None,
         upx=True,
-        console=True )
+        console=True)
 elif platform.system() == 'Darwin':
     exe = EXE(pyz,
         a.scripts,

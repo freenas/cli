@@ -11,6 +11,7 @@ Requirements
 - Python 2.7 (Preferably in C:\Python2.7)
 - pip
 - virtualenv
+- Visual C++ For Python 2.7 (to build pycrypto)
 
 Build
 +++++

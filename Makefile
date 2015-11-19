@@ -11,7 +11,7 @@ install:
 	cp -R plugins/ ${PREFIX}/lib/freenascli/plugins/
 
 bin:
-	virtualenv-2.7 venv
+	virtualenv venv
 	./venv/bin/pip install -U https://github.com/pyinstaller/pyinstaller/archive/develop.zip
 	./venv/bin/pip install freenas.cli
-	./venv/bin/pyinstaller -y --clean --onefile freenas-cli.spec
+	./venv/bin/pyinstaller -y --clean --windowed freenas-cli.spec

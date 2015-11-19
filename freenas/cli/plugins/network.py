@@ -258,6 +258,16 @@ class InterfacesNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
             condition=lambda e: e['type'] == 'LAGG'
         )
 
+        self.add_property(
+            descr='Member interfaces',
+            name='members',
+            get='bridge.members',
+            list=False,
+            createsetable=False,
+            type=ValueType.SET,
+            condition=lambda e: e['type'] == 'BRIDGE'
+        )
+
         self.primary_key = self.get_mapping('name')
         self.entity_commands = lambda this: {
             'up': InterfaceManageCommand(this, True),

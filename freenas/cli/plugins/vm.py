@@ -161,12 +161,6 @@ class VMDisksNamespace(EntityNamespace):
         }
 
         self.add_property(
-            descr='Disk ID',
-            name='id',
-            get='id'
-        )
-
-        self.add_property(
             descr='Disk name',
             name='name',
             get='name'

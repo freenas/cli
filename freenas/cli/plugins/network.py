@@ -250,7 +250,7 @@ class InterfacesNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
 
         self.add_property(
             descr='Member interfaces',
-            name='members',
+            name='ports',
             get='lagg.ports',
             list=False,
             createsetable=False,

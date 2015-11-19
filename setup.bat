@@ -1,4 +1,4 @@
-set python="C:\Python2.7\python.exe"
+set python="C:\Python27\python.exe"
 set pip=".\venv\Scripts\pip.exe"
 
 %python% -m virtualenv venv

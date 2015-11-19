@@ -144,6 +144,63 @@ sudo                Sudo allowed        boolean
 pubkey              SSH public key      string             
 ```
 
+## Network configuration
+
+### Simple static IP setup
+
+By default FreeNAS is set to use a DHCP address, if you wish to set a static IP, first turn off DHCP for your network port:
+
+```
+127.0.0.1:>network interface em0 set dhcp=false
+```
+
+Then create an alias with the IP you wish to set your system's IP to:
+
+```
+127.0.0.1:>network interface em0 create 10.0.0.150 netmask=255.255.255.0
+```
+
+If you do network interface em0 show, you will see that DHCP is disabled and it is listening on the static IP:
+
+```
+127.0.0.1:>network interface em0 show
+Name (name)                              em0               
+Type (type)                              ETHER             
+Enabled (enabled)                        yes               
+DHCP (dhcp)                              no                
+IPv6 autoconfiguration (ipv6_autoconf)   no                
+Disable IPv6 (ipv6_disable)              no                
+Link address (link_address)              08:00:27:e4:ce:17 
+IP configuration (ip_config)             10.0.1.150/24     
+Link state (link_state)                  up                
+State (state)                            up                
+-- Interface addresses --
+Address family   IP address   Netmask   Broadcast address 
+INET             10.0.0.150   24        10.0.0.255      
+```
+
+Now set the default gateway and DNS server:
+
+```
+127.0.0.1:>network config ipv4_gateway=10.0.0.1 dns_servers=10.0.0.1
+127.0.0.1:>network config show
+IPv4 gateway (ipv4_gateway)                         10.0.0.1 
+IPv6 gateway (ipv6_gateway)                         none     
+DNS servers (dns_servers)                           10.0.0.1 
+DNS search domains (dns_search)                     empty    
+DHCP will assign default gateway (dhcp_gateway)     yes      
+DHCP will assign DNS servers addresses (dhcp_dns)   yes  
+```
+
+And finally set the default route for your network:
+
+```
+127.0.0.1:>network route create default gateway=10.0.0.1 network=10.0.0.0 netmask=255.255.255.0
+127.0.0.1:>network route show
+ Name     Address family   Gateway    Network    Subnet prefix 
+default   INET             10.0.0.1   10.0.0.0   24      
+```
+
 ## Volume creation and management
 
 Before you create a volume you should probably find out the names of the disks you will be creating the volume with.  You can do this by using the command `disk show`:

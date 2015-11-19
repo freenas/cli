@@ -37,13 +37,10 @@ install_requires = [
     'termcolor',
     'texttable',
     'six',
+    'natural>=0.1.6',
 ]
 
 if sys.version_info.major == 3:
-    install_requires.append('natural==0.1.6')
-    dependency_links.append(
-        'https://github.com/freenas/natural/tarball/py3k#egg=natural-0.1.6',
-    )
     if sys.version_info.minor < 4:
         install_requires.append('enum34')
     if sys.version_info.minor < 3:
@@ -51,7 +48,6 @@ if sys.version_info.major == 3:
 else:
     install_requires.extend([
         'enum34',
-        'natural',
         'backports.shutil_get_terminal_size',
     ])
 

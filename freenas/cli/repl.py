@@ -1001,6 +1001,10 @@ def main():
     parser.add_argument('-p', metavar='PASSWORD')
     parser.add_argument('-D', metavar='DEFINE', action='append')
     args = parser.parse_args()
+
+    if os.environ.get('FREENAS_SYSTEM') != 'YES' and args.hostname == '127.0.0.1':
+        args.hostname = six.moves.input('Please provide FreeNAS IP: ')
+
     context = Context()
     context.argparse_parser = parser
     context.hostname = args.hostname
@@ -1010,9 +1014,6 @@ def main():
 
     ml = MainLoop(context)
     context.ml = ml
-
-    if os.environ.get('FREENAS_SYSTEM') != 'YES' and args.hostname == '127.0.0.1':
-        args.hostname = six.moves.input('Please provide FreeNAS IP: ')
 
     if args.hostname not in ('localhost', '127.0.0.1'):
         if args.l is None:

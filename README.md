@@ -201,6 +201,38 @@ And finally set the default route for your network:
 default   INET             10.0.0.1   10.0.0.0   24      
 ```
 
+To undo the static IP settings go back to DHCP, you can delete the alias and route settings:
+
+```
+127.0.0.1:>network interface em0 delete 10.0.0.150
+127.0.0.1:>network route delete default
+```
+
+Then undo the gateway settings:
+
+```
+127.0.0.1:>network config set ipv4_gateway=none
+```
+
+And finally turn DHCP back on:
+
+```
+127.0.0.1:>network interface em0 set dhcp=yes
+127.0.0.1:>network interface em0 show
+Name (name)                              em0               
+Type (type)                              ETHER             
+Enabled (enabled)                        yes               
+DHCP (dhcp)                              yes               
+IPv6 autoconfiguration (ipv6_autoconf)   no                
+Disable IPv6 (ipv6_disable)              no                
+Link address (link_address)              08:00:27:e4:ce:17 
+IP configuration (ip_config)             10.0.0.145/24     
+Link state (link_state)                  up                
+State (state)                            up                
+-- Interface addresses --
+Address family   IP address   Netmask   Broadcast address
+```
+
 ## Volume creation and management
 
 Before you create a volume you should probably find out the names of the disks you will be creating the volume with.  You can do this by using the command `disk show`:

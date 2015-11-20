@@ -477,6 +477,12 @@ Bind Addresses (bind_addresses)         192.168.1.50
 Database Path (dbpath)                  none     
 ```
 
+And finally, to delete an AFP share, simply use the `delete` command, be aware this will also delete the dataset that the share is on:
+
+```
+127.0.0.1:>share afp delete foo
+```
+
 ### NFS Shares
 
 Another basic type of share you can create are NFS shares.  NFS is typically used for sharing files with Unix systems.  NFS shares are created with the command `share nfs create`.  A basic NFS share can be created as follows:
@@ -561,5 +567,11 @@ Bind addresses (bind_addresses)       none
 Mountd port (mountd_port)             none 
 RPC statd port (rpcstatd_port)        none 
 RPC Lockd port (rpclockd_port)        none 
+```
+
+And finally, to delete an NFS share, simply use the `delete` command, be aware this will also delete the dataset that the share is on:
+
+```
+127.0.0.1:>share nfs delete bar
 ```
 

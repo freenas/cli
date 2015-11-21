@@ -201,20 +201,7 @@ And finally set the default route for your network:
 default   INET             10.0.0.1   10.0.0.0   24      
 ```
 
-To undo the static IP settings go back to DHCP, you can delete the alias and route settings:
-
-```
-127.0.0.1:>network interface em0 delete 10.0.0.150
-127.0.0.1:>network route delete default
-```
-
-Then undo the gateway settings:
-
-```
-127.0.0.1:>network config set ipv4_gateway=none
-```
-
-And finally turn DHCP back on:
+To undo the static IP settings go back to DHCP, just reenable DHCP:
 
 ```
 127.0.0.1:>network interface em0 set dhcp=yes

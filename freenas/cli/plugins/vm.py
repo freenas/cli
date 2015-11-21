@@ -28,8 +28,8 @@
 import gettext
 from freenas.cli.namespace import (
     Namespace, EntityNamespace, Command, IndexCommand,
-    RpcBasedLoadMixin, TaskBasedSaveMixin, description,
-    CommandException, ListCommand
+    NestedObjectLoadMixin, NestedObjectSaveMixin, RpcBasedLoadMixin,
+    TaskBasedSaveMixin, description, CommandException, ListCommand
 )
 from freenas.cli.output import ValueType, Table
 from freenas.utils import first_or_default
@@ -126,8 +126,8 @@ class VMNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
 
         self.add_property(
             descr='CD image',
-            name='cdimage',
-            get='config.cdimage',
+            name='boot_device',
+            get='config.boot_device',
             list=False
         )
 
@@ -141,7 +141,8 @@ class VMNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
 
         self.primary_key = self.get_mapping('name')
         self.entity_namespaces = lambda this: [
-            VMDisksNamespace('disks', self.context, this)
+            VMDisksNamespace('disks', self.context, this),
+            VMNicsNamespace('nic', self.context, this)
         ]
 
         self.entity_commands = lambda this: {
@@ -151,10 +152,12 @@ class VMNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
         }
 
 
-class VMDisksNamespace(EntityNamespace):
+class VMDisksNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNamespace):
     def __init__(self, name, context, parent):
         super(VMDisksNamespace, self).__init__(name, context)
         self.parent = parent
+        self.extra_query_params = [('type', 'in', ['DISK', 'CDROM'])]
+        self.parent_path = 'devices'
         self.skeleton_entity = {
             'type': 'DISK',
             'properties': {}
@@ -167,32 +170,52 @@ class VMDisksNamespace(EntityNamespace):
         )
 
         self.add_property(
+            descr='Disk type',
+            name='type',
+            get='type',
+            enum=['DISK', 'CDROM']
+        )
+
+        self.add_property(
             descr='Disk size',
             name='size',
             get='properties.size',
-            type=ValueType.SIZE
+            type=ValueType.SIZE,
+            condition=lambda e: e['type'] == 'DISK'
         )
 
-    def get_one(self, name):
-        return first_or_default(lambda a: a['name'] == name, self.parent.entity.get('devices', []))
+        self.add_property(
+            descr='Image path',
+            name='path',
+            get='properties.path',
+            condition=lambda e: e['type'] == 'CDROM'
+        )
 
-    def query(self, params, options):
-        return self.parent.entity['devices'] or []
 
-    def save(self, this, new=False):
-        if new:
-            if self.parent.entity['devices'] is None:
-                 self.parent.entity['devices'] = []
-            self.parent.entity['devices'].append(this.entity)
-        else:
-            entity = first_or_default(lambda a: a['name'] == this.entity['name'], self.parent.entity['devices'])
-            entity.update(this.entity)
 
-        self.parent.save()
+class VMNicsNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNamespace):
+    def __init__(self, name, context, parent):
+        super(VMNicsNamespace, self).__init__(name, context)
+        self.parent = parent
+        self.extra_query_params = [('type', '=', 'NIC')]
+        self.parent_path = 'devices'
+        self.skeleton_entity = {
+            'type': 'NIC',
+            'properties': {}
+        }
 
-    def delete(self, name):
-        self.parent.entity['devices'] = [a for a in self.parent.entity['devices'] if a['name'] == name]
-        self.parent.save()
+        self.add_property(
+            descr='NIC name',
+            name='name',
+            get='name'
+        )
+
+        self.add_property(
+            descr='MAC address',
+            name='macaddr',
+            get='properties.macaddr',
+            type=ValueType.SIZE
+        )
 
 
 def _init(context):

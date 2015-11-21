@@ -32,6 +32,7 @@ import traceback
 import errno
 import gettext
 import sys
+from freenas.utils import first_or_default
 from freenas.utils.query import wrap
 from .utils import post_save
 from .output import (ValueType, Object, Table, output_list,
@@ -814,3 +815,43 @@ class TaskBasedSaveMixin(object):
             self.context.submit_task(self.delete_task, entity[self.save_key_name])
         else:
             output_msg("Cannot delete {0}, item does not exist".format(name))
+
+
+class NestedObjectLoadMixin(object):
+    def __init__(self, *args, **kwargs):
+        super(NestedObjectLoadMixin, self).__init__(*args, **kwargs)
+        self.primary_key_name = 'id'
+        self.extra_query_params = []
+
+    def query(self, params, options):
+        return self.parent.entity.get(self.parent_path, []).query(*(self.extra_query_params + params), **options)
+
+    def get_one(self, name):
+        return first_or_default(
+            lambda a: a[self.primary_key_name] == name,
+            self.parent.entity.get(self.parent_path, [])
+        )
+
+
+class NestedObjectSaveMixin(object):
+    def save(self, this, new=False):
+        if new:
+            if self.parent.entity[self.parent_path] is None:
+                 self.parent.entity[self.parent_path] = []
+
+            self.parent.entity[self.parent_path].append(this.entity)
+        else:
+            entity = first_or_default(
+                lambda a: a[self.primary_key_name] == this.entity['name'],
+                self.parent.entity[self.parent_path]
+            )
+            entity.update(this.entity)
+
+        self.parent.save()
+
+    def delete(self, name):
+        self.parent.entity['devices'] = filter(
+            lambda i: i[self.primary_key_name] == name,
+            self.parent.entity[self.parent_path]
+        )
+        self.parent.save()

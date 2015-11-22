@@ -125,9 +125,16 @@ class VMNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
         )
 
         self.add_property(
-            descr='CD image',
+            descr='Boot device',
             name='boot_device',
             get='config.boot_device',
+            list=False
+        )
+
+        self.add_property(
+            descr='Boot partition (for GRUB)',
+            name='boot_partition',
+            get='config.boot_partition',
             list=False
         )
 
@@ -156,6 +163,7 @@ class VMDisksNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNames
     def __init__(self, name, context, parent):
         super(VMDisksNamespace, self).__init__(name, context)
         self.parent = parent
+        self.primary_key_name = 'name'
         self.extra_query_params = [('type', 'in', ['DISK', 'CDROM'])]
         self.parent_path = 'devices'
         self.skeleton_entity = {
@@ -191,12 +199,14 @@ class VMDisksNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNames
             condition=lambda e: e['type'] == 'CDROM'
         )
 
+        self.primary_key = self.get_mapping('name')
 
 
 class VMNicsNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNamespace):
     def __init__(self, name, context, parent):
         super(VMNicsNamespace, self).__init__(name, context)
         self.parent = parent
+        self.primary_key_name = 'name'
         self.extra_query_params = [('type', '=', 'NIC')]
         self.parent_path = 'devices'
         self.skeleton_entity = {
@@ -216,6 +226,8 @@ class VMNicsNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNamesp
             get='properties.macaddr',
             type=ValueType.SIZE
         )
+
+        self.primary_key = self.get_mapping('name')
 
 
 def _init(context):

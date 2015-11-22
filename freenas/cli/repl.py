@@ -52,6 +52,7 @@ from freenas.cli.output import (
     output_object, output_table
 )
 from freenas.dispatcher.client import Client, ClientError
+from freenas.dispatcher.entity import EntitySubscriber
 from freenas.dispatcher.rpc import RpcException
 from freenas.utils.query import wrap
 from freenas.cli.commands import (
@@ -95,6 +96,14 @@ EVENT_MASKS = [
     'service.started',
     'entity-subscriber.volumes.changed',
     'entity-subscriber.disks.changed'
+]
+ENTITY_SUBSCRIBERS = [
+    'user',
+    'group',
+    'disk',
+    'volume',
+    'share',
+    'task'
 ]
 
 
@@ -238,6 +247,12 @@ class Context(object):
         self.discover_plugins()
         self.connect()
 
+    def start_entity_subscribers(self):
+        for i in ENTITY_SUBSCRIBERS:
+            e = EntitySubscriber(self.connection, i)
+            e.start()
+            self.entity_subscribers[i] = e
+
     def connect(self):
         try:
             self.connection.connect(self.hostname)
@@ -254,13 +269,13 @@ class Context(object):
             self.connection.subscribe_events(*EVENT_MASKS)
             self.connection.on_event(self.handle_event)
             self.connection.on_error(self.connection_error)
-
         except RpcException as e:
             if e.code == errno.EACCES:
                 self.connection.disconnect()
                 output_msg(_("Wrong username or password"))
                 sys.exit(1)
 
+        self.start_entity_subscribers()
         self.login_plugins()
 
     def keepalive(self):

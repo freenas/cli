@@ -790,6 +790,26 @@ class RpcBasedLoadMixin(object):
             {'single': True})
 
 
+class EntitySubscriberBasedLoadMixin(object):
+    def __init__(self, *args, **kwargs):
+        super(EntitySubscriberBasedLoadMixin, self).__init__(*args, **kwargs)
+        self.primary_key_name = 'id'
+        self.entity_subscriber_name = None
+        self.extra_query_params = []
+
+    def query(self, params, options):
+        return self.context.entity_subscribers[self.entity_subscriber_name].query(
+            *(self.extra_query_params + params),
+            **options
+        )
+
+    def get_one(self, name):
+        return self.context.entity_subscribers[self.entity_subscriber_name].query(
+            (self.primary_key_name, '=', name), *self.extra_query_params,
+            single=True
+        )
+
+
 class TaskBasedSaveMixin(object):
     def __init__(self, *args, **kwargs):
         super(TaskBasedSaveMixin, self).__init__(*args, **kwargs)

@@ -27,17 +27,17 @@
 
 
 import os
-from freenas.cli.namespace import Namespace, EntityNamespace, Command, RpcBasedLoadMixin, description
-from freenas.cli.output import ValueType, output_msg, output_table, read_value
+from freenas.cli.namespace import Namespace, EntityNamespace, Command, EntitySubscriberBasedLoadMixin, description
+from freenas.cli.output import ValueType
 from freenas.utils import extend
 
 
 @description("Provides information about installed disks")
-class DisksNamespace(RpcBasedLoadMixin, EntityNamespace):
+class DisksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
     def __init__(self, name, context):
         super(DisksNamespace, self).__init__(name, context)
 
-        self.query_call = 'disks.query'
+        self.entity_subscriber_name = 'disk'
         self.extra_query_params = [
             ('online', '=', True)
         ]

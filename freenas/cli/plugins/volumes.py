@@ -31,7 +31,7 @@ import gettext
 import inspect
 from freenas.cli.namespace import (
     EntityNamespace, Command, CommandException, SingleItemNamespace,
-    RpcBasedLoadMixin, TaskBasedSaveMixin, description
+    EntitySubscriberBasedLoadMixin, RpcBasedLoadMixin, TaskBasedSaveMixin, description
 )
 from freenas.cli.output import Table, ValueType, output_tree, output_msg, format_value
 from freenas.cli.utils import post_save, iterate_vdevs
@@ -838,7 +838,7 @@ class CreateVolumeCommand(Command):
 
 
 @description("Manage volumes")
-class VolumesNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
+class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):
     class ShowTopologyCommand(Command):
         def run(self, context, args, kwargs, opargs):
             pass
@@ -848,6 +848,7 @@ class VolumesNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
 
         self.primary_key_name = 'name'
         self.save_key_name = 'name'
+        self.entity_subscriber_name = 'volume'
         self.create_task = 'volume.create'
         self.update_task = 'volume.update'
         self.delete_task = 'volume.destroy'

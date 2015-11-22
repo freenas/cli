@@ -29,7 +29,7 @@
 import gettext
 from freenas.cli.namespace import (
     Namespace, EntityNamespace, IndexCommand, TaskBasedSaveMixin,
-    RpcBasedLoadMixin, description, CommandException
+    EntitySubscriberBasedLoadMixin, description, CommandException
     )
 from freenas.cli.output import ValueType
 
@@ -38,13 +38,13 @@ _ = t.gettext
 
 
 @description(_("System users"))
-class UsersNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
+class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):
 
     def __init__(self, name, context):
         super(UsersNamespace, self).__init__(name, context)
 
         self.primary_key_name = 'username'
-        self.query_call = 'users.query'
+        self.entity_subscriber_name = 'user'
         self.create_task = 'users.create'
         self.update_task = 'users.update'
         self.delete_task = 'users.delete'
@@ -67,7 +67,6 @@ class UsersNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
                       set groups=wheel, ftp, operator
 
             Sets a user property. For a list of properties, see 'help properties'.""")
-
 
         self.skeleton_entity = {
             'username': None,
@@ -171,9 +170,10 @@ class UsersNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
         self.primary_key = self.get_mapping('username')
 
     def display_group(self, entity):
-        group = self.context.call_sync(
-            'groups.query', [('id', '=', entity['group'])], {'single': True}
-            )
+        group = self.context.entity_subscribers['group'].query(
+            ('id', '=', entity['group']),
+            single=True
+        )
         return group['name'] if group else 'GID:{0}'.format(entity['group'])
 
     def set_group(self, entity, value):
@@ -184,9 +184,9 @@ class UsersNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
             raise CommandException(_('Group {0} does not exist.'.format(value)))
 
     def display_aux_groups(self, entity):
-        groups = self.context.call_sync(
-            'groups.query', [('id', 'in', entity['groups'])]
-            )
+        groups = self.context.entity_subscribers['group'].query(
+            ('id', 'in', entity['groups'])
+        )
         for group in groups:
             yield group['name'] if group else 'GID:{0}'.format(group['id'])
 
@@ -199,12 +199,12 @@ class UsersNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
 
 
 @description(_("System groups"))
-class GroupsNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
+class GroupsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):
     def __init__(self, name, context):
         super(GroupsNamespace, self).__init__(name, context)
 
         self.primary_key_name = 'name'
-        self.query_call = 'groups.query'
+        self.entity_subscriber_name = 'group'
         self.create_task = 'groups.create'
         self.update_task = 'groups.update'
         self.delete_task = 'groups.delete'

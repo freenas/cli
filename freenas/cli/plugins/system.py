@@ -93,7 +93,7 @@ class SessionsNamespace(RpcBasedLoadMixin, EntityNamespace):
 
         self.allow_create = False
         self.allow_edit = False
-        self.query_call = 'sessions.query'
+        self.query_call = 'session.query'
 
         self.add_property(
             descr='Session ID',

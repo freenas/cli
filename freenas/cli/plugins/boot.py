@@ -44,7 +44,7 @@ _ = t.gettext
 class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
     def __init__(self, name, context):
         super(BootEnvironmentNamespace, self).__init__(name, context)
-        self.query_call = 'boot.environments.query'
+        self.query_call = 'boot.environment.query'
         self.primary_key_name = 'name'
         self.allow_edit = False
         self.required_props = ['name']
@@ -139,12 +139,12 @@ class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
         )
 
     def delete(self, name):
-        self.context.submit_task('boot.environments.delete', [name])
+        self.context.submit_task('boot.environment.delete', [name])
 
     def save(self, this, new=False):
         if new:
             self.context.submit_task(
-                'boot.environments.create',
+                'boot.environment.create',
                 this.entity['id'],
                 callback=lambda s: post_save(this, s),
                 )
@@ -173,7 +173,7 @@ class RenameBootEnvCommand(Command):
         name_property.do_set(entity, new_be_name)
         self.parent.modified = True
         context.submit_task(
-            'boot.environments.rename',
+            'boot.environment.rename',
             old_be,
             new_be_name,
             callback=lambda s: post_save(self.parent, s)
@@ -192,7 +192,7 @@ class ActivateBootEnvCommand(Command):
 
     def run(self, context, args, kwargs, opargs):
         context.submit_task(
-            'boot.environments.activate',
+            'boot.environment.activate',
             self.parent.entity['id'],
             callback=lambda s: post_save(self.parent, s))
 

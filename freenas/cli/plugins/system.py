@@ -27,7 +27,7 @@
 
 
 from freenas.cli.namespace import ConfigNamespace, Command, description, RpcBasedLoadMixin, EntityNamespace
-from freenas.cli.output import Table, Object, ValueType, output_dict, output_less, output_msg
+from freenas.cli.output import Table, Object, ValueType, output_dict, output_less, output_msg, format_value
 from freenas.cli.descriptions import events
 from freenas.cli.utils import parse_query_args, post_save
 
@@ -40,7 +40,9 @@ class StatusCommand(Command):
     Displays status information about the server.
     """
     def run(self, context, args, kwargs, opargs):
-        output_dict(context.call_sync('management.status'))
+        status_dict = context.call_sync('management.status')
+        status_dict['up-since'] = format_value(status_dict['started-at'], vt=ValueType.TIME)
+        output_dict(status_dict)
 
 
 @description("Gets a list of valid timezones")

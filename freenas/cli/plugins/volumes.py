@@ -752,7 +752,7 @@ class FilesystemNamespace(EntityNamespace):
         )
 
 def check_disks(context, disks):
-    all_disks = [disk["path"] for disk in context.call_sync("disks.query")]
+    all_disks = [disk["path"] for disk in context.call_sync("disk.query")]
     available_disks = context.call_sync('volume.get_available_disks')
     if 'alldisks' in disks:
         return available_disks

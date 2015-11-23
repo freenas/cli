@@ -243,8 +243,8 @@ class BootPoolAttachDiskCommand(Command):
             return
         disk = args.pop(0)
         # The all_disks below is a temporary fix, use this after "select" is working
-        # all_disks = context.call_sync('disks.query', [], {"select":"path"})
-        all_disks = [d["path"] for d in context.call_sync("disks.query")]
+        # all_disks = context.call_sync('disk.query', [], {"select":"path"})
+        all_disks = [d["path"] for d in context.call_sync("disk.query")]
         available_disks = context.call_sync('volume.get_available_disks')
         if not re.match("^\/dev\/", disk):
             disk = "/dev/" + disk

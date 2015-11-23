@@ -34,10 +34,10 @@ class DisksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
     def __init__(self, name, context):
         super(DisksNamespace, self).__init__(name, context)
 
-        self.query_call = 'simulator.disks.query'
-        self.create_task = 'simulator.disks.create'
-        self.update_task = 'simulator.disks.update'
-        self.delete_task = 'simulator.disks.delete'
+        self.query_call = 'simulator.disk.query'
+        self.create_task = 'simulator.disk.create'
+        self.update_task = 'simulator.disk.update'
+        self.delete_task = 'simulator.disk.delete'
 
         self.add_property(
             descr='Disk name',

@@ -83,7 +83,7 @@ events = {
         _("Volume changed"),
         lambda c, a: entity_subscriber_changed(_("Volume"), a, lambda e: e.get('name'))
     ),
-    'entity-subscriber.disks.changed': (
+    'entity-subscriber.disk.changed': (
         _("Disk changed"),
         lambda c, a: entity_subscriber_changed(
             _("Disk"), a, lambda e: e.get('status').get('description') if e.get('status') else e.get('path')

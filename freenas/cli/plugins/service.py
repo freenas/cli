@@ -62,7 +62,7 @@ class ServiceManageCommand(Command):
 class ServicesNamespace(RpcBasedLoadMixin, EntityNamespace):
     def __init__(self, name, context):
         super(ServicesNamespace, self).__init__(name, context)
-        self.query_call = 'services.query'
+        self.query_call = 'service.query'
         self.extra_query_params = [('builtin', '=', False)]
 
         self.primary_key_name = 'name'
@@ -108,7 +108,7 @@ class ServiceConfigNamespace(ConfigNamespace):
     def __init__(self, name, context, parent):
         super(ServiceConfigNamespace, self).__init__(name, context)
         self.parent = parent
-        self.config_call = 'services.get_service_config'
+        self.config_call = 'service.get_service_config'
         self.config_extra_params = parent.name
 
         self.add_property(

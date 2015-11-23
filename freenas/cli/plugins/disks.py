@@ -97,7 +97,7 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
     def query(self, params, options):
         ret = super(DisksNamespace, self).query(params, options)
         disks = [d['path'] for d in ret]
-        allocations = self.context.call_sync('volumes.get_disks_allocation', disks)
+        allocations = self.context.call_sync('volume.get_disks_allocation', disks)
 
         return [extend(d, {
                 'allocation': allocations.get(d['path']) if d['online'] else None
@@ -110,7 +110,7 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             {'single': True})
 
         ret['allocation'] = self.context.call_sync(
-            'volumes.get_disks_allocation',
+            'volume.get_disks_allocation',
             [ret['path']]
         ).get(ret['path'])
 

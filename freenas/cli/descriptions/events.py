@@ -79,7 +79,7 @@ events = {
     ),
     'task.created': (_("Task created"), task_created),
     'task.updated': (_("Task updated"), task_updated),
-    'entity-subscriber.volumes.changed': (
+    'entity-subscriber.volume.changed': (
         _("Volume changed"),
         lambda c, a: entity_subscriber_changed(_("Volume"), a, lambda e: e.get('name'))
     ),

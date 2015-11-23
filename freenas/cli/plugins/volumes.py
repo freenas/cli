@@ -174,7 +174,7 @@ class ExtendVdevCommand(Command):
             raise CommandException(_("Invalid input: {0}".format(args)))
         
         disk = correct_disk_path(args[0])
-        if disk not in context.call_sync('volumes.get_available_disks'):
+        if disk not in context.call_sync('volume.get_available_disks'):
             raise CommandException(_("Disk {0} is not available".format(disk)))
 
         vdev = first_or_default(lambda v:
@@ -291,7 +291,7 @@ class FindVolumesCommand(Command):
     Finds volumes that can be imported.
     """
     def run(self, context, args, kwargs, opargs):
-        vols = context.call_sync('volumes.find')
+        vols = context.call_sync('volume.find')
         return Table(vols, [
             Table.Column('ID', 'id', vt=ValueType.STRING),
             Table.Column('Volume name', 'name'),
@@ -305,7 +305,7 @@ class FindMediaCommand(Command):
     Usage: find_media
     """
     def run(self, context, args, kwargs, opargs):
-        media = context.call_sync('volumes.find_media')
+        media = context.call_sync('volume.find_media')
         return Table(media, [
             Table.Column('Path', 'path'),
             Table.Column('Label', 'label'),
@@ -331,7 +331,7 @@ class ImportVolumeCommand(Command):
         oldname = args[0]
 
         if not args[0].isdigit():
-            vols = context.call_sync('volumes.find')
+            vols = context.call_sync('volume.find')
             vol = first_or_default(lambda v: v['name'] == args[0], vols)
             if not vol:
                 raise CommandException('Importable volume {0} not found'.format(args[0]))
@@ -661,7 +661,7 @@ class SnapshotsNamespace(RpcBasedLoadMixin, EntityNamespace):
     def __init__(self, name, context, parent):
         super(SnapshotsNamespace, self).__init__(name, context)
         self.parent = parent
-        self.query_call = 'volumes.snapshots.query'
+        self.query_call = 'volume.snapshots.query'
         self.primary_key_name = 'name'
         self.required_props = ['name', 'dataset']
         self.extra_query_params = [
@@ -753,7 +753,7 @@ class FilesystemNamespace(EntityNamespace):
 
 def check_disks(context, disks):
     all_disks = [disk["path"] for disk in context.call_sync("disks.query")]
-    available_disks = context.call_sync('volumes.get_available_disks')
+    available_disks = context.call_sync('volume.get_available_disks')
     if 'alldisks' in disks:
         return available_disks
     else:
@@ -861,7 +861,7 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
         }
 
         self.primary_key_name = 'name'
-        self.query_call = 'volumes.query'
+        self.query_call = 'volume.query'
 
         self.add_property(
             descr='Volume name',

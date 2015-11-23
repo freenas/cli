@@ -45,9 +45,9 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
 
         self.primary_key_name = 'username'
         self.entity_subscriber_name = 'user'
-        self.create_task = 'users.create'
-        self.update_task = 'users.update'
-        self.delete_task = 'users.delete'
+        self.create_task = 'user.create'
+        self.update_task = 'user.update'
+        self.delete_task = 'user.delete'
         self.save_key_name = 'id'
         self.required_props = ['username', ['password','password_disabled']]
 
@@ -177,7 +177,7 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
         return group['name'] if group else 'GID:{0}'.format(entity['group'])
 
     def set_group(self, entity, value):
-        group = self.context.call_sync('groups.query', [('name', '=', value)], {'single': True})
+        group = self.context.call_sync('group.query', [('name', '=', value)], {'single': True})
         if group:
             entity['group'] = group['id']
         else:
@@ -191,7 +191,7 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             yield group['name'] if group else 'GID:{0}'.format(group['id'])
 
     def set_aux_groups(self, entity, value):
-        groups = self.context.call_sync('groups.query', [('name', 'in', list(value))])
+        groups = self.context.call_sync('group.query', [('name', 'in', list(value))])
         diff_groups = set.difference(set([x['name'] for x in groups]), set(value))
         if len(diff_groups):
             raise CommandException(_('Groups {0} do not exist.'.format(diff_groups)))
@@ -205,9 +205,9 @@ class GroupsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
 
         self.primary_key_name = 'name'
         self.entity_subscriber_name = 'group'
-        self.create_task = 'groups.create'
-        self.update_task = 'groups.update'
-        self.delete_task = 'groups.delete'
+        self.create_task = 'group.create'
+        self.update_task = 'group.update'
+        self.delete_task = 'group.delete'
         self.required_props = ['name']
         self.localdoc['CreateEntityCommand'] = ("""\
             Usage: create <name>

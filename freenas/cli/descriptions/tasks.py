@@ -34,17 +34,17 @@ _ = t.gettext
 
 
 def get_username(context, uid):
-    u = context.call_sync('users.query', [('id', '=', uid)], {'single': True})
+    u = context.call_sync('user.query', [('id', '=', uid)], {'single': True})
     return u['username'] if u else '<unknown>'
 
 tasks = {
     'zfs.pool.scrub': (_("Scrub volume"), lambda c, a: _("Scrub volume {0}").format(a[0])),
     'service.manage': (_("Manage service"), lambda c, a: _("{0} service {1}".format(a[1].title(), a[0]))),
     'service.configure': (_("Update service configuration"), lambda c, a: _("Update configuration for service {0}".format(a[0]))),
-    'users.create': (_("Create user"), lambda c, a: _("Create user".format(a[0]['username']))),
-    'users.update': (_("Update user profile"), lambda c, a: _("Update user {0} profile".format(get_username(c, a[0])))),
-    'groups.create': (_("Create group"), lambda c, a: _("Create group {0}".format(a[0]['name']))),
-    'groups.update': (_("Update group"), lambda c, a: _("Update group {0}".format(a[0]))),
+    'user.create': (_("Create user"), lambda c, a: _("Create user".format(a[0]['username']))),
+    'user.update': (_("Update user profile"), lambda c, a: _("Update user {0} profile".format(get_username(c, a[0])))),
+    'group.create': (_("Create group"), lambda c, a: _("Create group {0}".format(a[0]['name']))),
+    'group.update': (_("Update group"), lambda c, a: _("Update group {0}".format(a[0]))),
     'volume.create': (_("Create volume"), lambda c, a: _("Create volume {0}".format(a[0]['name']))),
     'volume.create_auto': (_("Create volume"), lambda c, a: _("Create volume {0}".format(a[0]))),
     'volume.destroy': (_("Destroy volume"), lambda c, a: _("Destroy volume {0}".format(a[0]))),

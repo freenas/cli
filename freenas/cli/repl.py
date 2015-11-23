@@ -237,6 +237,7 @@ class Context(object):
         self.event_queue = six.moves.queue.Queue()
         self.keepalive_timer = None
         self.argparse_parser = None
+        self.entity_subscribers = {}
         config.instance = self
 
     @property

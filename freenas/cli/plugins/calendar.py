@@ -109,10 +109,10 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
     def __init__(self, name, context):
         super(CalendarTasksNamespace, self).__init__(name, context)
 
-        self.query_call = 'calendar_tasks.query'
-        self.create_task = 'calendar_tasks.create'
-        self.update_task = 'calendar_tasks.update'
-        self.delete_task = 'calendar_tasks.delete'
+        self.query_call = 'calendar_task.query'
+        self.create_task = 'calendar_task.create'
+        self.update_task = 'calendar_task.update'
+        self.delete_task = 'calendar_task.delete'
 
         self.add_property(
             descr='Task id',

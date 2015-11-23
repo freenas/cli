@@ -45,7 +45,7 @@ class ConnectedUsersCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        result = context.call_sync('shares.get_connected_clients', self.parent.entity['id'])
+        result = context.call_sync('share.get_connected_clients', self.parent.entity['id'])
         return Table(result, [
             Table.Column(_("IP address"), 'host', ValueType.STRING),
             Table.Column(_("User"), 'user', ValueType.STRING),
@@ -58,7 +58,7 @@ class SharesNamespace(RpcBasedLoadMixin, EntityNamespace):
     def __init__(self, name, context):
         super(SharesNamespace, self).__init__(name, context)
         self.context = context
-        self.query_call = 'shares.query'
+        self.query_call = 'share.query'
         self.primary_key_name = 'name'
 
         self.add_property(
@@ -127,7 +127,7 @@ class BaseSharesNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace
         super(BaseSharesNamespace, self).__init__(name, context)
 
         self.type_name = type_name
-        self.query_call = 'shares.query'
+        self.query_call = 'share.query'
         self.extra_query_params = [('type', '=', type_name)]
         self.create_task = 'share.create'
         self.update_task = 'share.update'
@@ -452,7 +452,7 @@ class WebDAVSharesNamespace(BaseSharesNamespace):
 class ISCSIPortalsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
     def __init__(self, name, context):
         super(ISCSIPortalsNamespace, self).__init__(name, context)
-        self.query_call = 'shares.iscsi.portal.query'
+        self.query_call = 'share.iscsi.portal.query'
         self.create_task = 'share.iscsi.portal.create'
         self.update_task = 'share.iscsi.portal.update'
         self.delete_task = 'share.iscsi.portal.delete'
@@ -516,7 +516,7 @@ class ISCSIPortalsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespa
 class ISCSIAuthGroupsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
     def __init__(self, name, context):
         super(ISCSIAuthGroupsNamespace, self).__init__(name, context)
-        self.query_call = 'shares.iscsi.auth.query'
+        self.query_call = 'share.iscsi.auth.query'
         self.create_task = 'share.iscsi.auth.create'
         self.update_task = 'share.iscsi.auth.update'
         self.delete_task = 'share.iscsi.auth.delete'
@@ -635,7 +635,7 @@ class ISCSIUsersNamespace(EntityNamespace):
 class ISCSITargetsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
     def __init__(self, name, context):
         super(ISCSITargetsNamespace, self).__init__(name, context)
-        self.query_call = 'shares.iscsi.target.query'
+        self.query_call = 'share.iscsi.target.query'
         self.create_task = 'share.iscsi.target.create'
         self.update_task = 'share.iscsi.target.update'
         self.delete_task = 'share.iscsi.target.delete'

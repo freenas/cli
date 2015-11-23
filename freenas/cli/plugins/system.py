@@ -27,7 +27,7 @@
 
 
 from freenas.cli.namespace import ConfigNamespace, Command, description, RpcBasedLoadMixin, EntityNamespace
-from freenas.cli.output import Table, Object, ValueType, output_dict
+from freenas.cli.output import Table, Object, ValueType, output_dict, output_less, output_msg
 from freenas.cli.descriptions import events
 from freenas.cli.utils import parse_query_args, post_save
 
@@ -41,6 +41,18 @@ class StatusCommand(Command):
     """
     def run(self, context, args, kwargs, opargs):
         output_dict(context.call_sync('management.status'))
+
+
+@description("Gets a list of valid timezones")
+class TimezonesCommand(Command):
+    """
+    Usage: timezones
+
+    Displays a list of valid timezones for the timezone setting.
+    """
+
+    def run(self, context, args, kwargs, opargs):
+        output_less(lambda: output_msg('\n'.join(context.call_sync('system.general.timezones'))))
 
 
 @description("Provides information about running system")
@@ -390,6 +402,7 @@ class SystemNamespace(ConfigNamespace):
         self.extra_commands = {
             'status': StatusCommand(),
             'version': VersionCommand(),
+            'timezones': TimezonesCommand(),
             'info': InfoCommand(),
         }
 

@@ -307,12 +307,3 @@ def output_less(output_call_list):
 
     new_stdout.seek(0)
     pydoc.pager(new_stdout.read())
-
-
-def sizeof_fmt(num, suffix='B'):
-    for unit in ['','Ki','Mi','Gi','Ti','Pi','Ei','Zi']:
-        if abs(num) < 1024.0:
-            return "%3.1f%s%s" % (num, unit, suffix)
-        num /= 1024.0
-    return "%.1f%s%s" % (num, 'Yi', suffix)
-

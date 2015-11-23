@@ -30,8 +30,9 @@ import time
 import gettext
 import config
 import natural.date
+import natural.size
 from texttable import Texttable
-from output import ValueType, get_terminal_size, resolve_cell, sizeof_fmt
+from output import ValueType, get_terminal_size, resolve_cell
 
 
 t = gettext.translation('freenas-cli', fallback=True)
@@ -64,7 +65,7 @@ class TableOutputFormatter(object):
             return hex(value)
 
         if vt == ValueType.SIZE:
-            return sizeof_fmt(value)
+            return natural.size.binarysize(value)
 
         if vt == ValueType.TIME:
             fmt = config.instance.variables.get('datetime_format')

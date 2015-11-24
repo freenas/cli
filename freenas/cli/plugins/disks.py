@@ -38,6 +38,7 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         super(DisksNamespace, self).__init__(name, context)
 
         self.entity_subscriber_name = 'disk'
+        self.query_call = 'disk.query'
         self.extra_query_params = [
             ('online', '=', True)
         ]

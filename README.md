@@ -697,3 +697,45 @@ And finally, to delete an NFS share, simply use the `delete` command, be aware t
 127.0.0.1:>share nfs delete bar
 ```
 
+## Containers
+
+### Preface
+
+Virtual machine support is experimental feature and it's not fully supported in the CLI. If you want to be able to access Internet from your VMs, you need to create a bridge interface and add your main network interface to it (please refer to network configuration section to learn how to do that) and then issue following command:
+
+```
+127.0.0.1:>!dsutil config-set container.bridge '"bridgeX"'
+```
+
+where `bridgeX` is name of previously created bridge interface.
+
+### VMs
+
+To create a BHyVe virtual machine called `myvm` running inside FreeNAS, use following command:
+
+```
+127.0.0.1:>vm create name=myvm volume=tank bootloader=GRUB
+```
+
+Pass volume name where you want your VM data disks to be stored as `volume` parameter. You also need to set bootloader type: either `BHYVELOAD` (if you're installing a FreeBSD VM) or `GRUB` (which is suitable for most Linux distributions and FreeNAS).
+
+When VM is created,  you can add data disk and CD images to the VM by going to `vm myvm disks` namespace:
+
+```
+127.0.0.1:>vm myvm disks create name=disk1 type=DISK size=8G
+127.0.0.1:>vm myvm disks create name=cdrom1 type=CDROM path=/mnt/tank/path/to/installer/image.iso
+```
+
+Last step is setting boot device, in this example we want to boot off CD image to install operating system on the VM:
+
+```
+127.0.0.1:>vm myvm set boot_device=cdrom1
+```
+
+Virtual machine is ready to be started:
+
+```
+127.0.0.1:>vm myvm start
+```
+
+To see virtual machine console, go to `http://<freenas-ip>:8180/vm` page and select VM from dropdown list.

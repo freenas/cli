@@ -144,6 +144,141 @@ sudo                Sudo allowed        boolean
 pubkey              SSH public key      string             
 ```
 
+## System information and configuration
+
+### System information
+
+You can get information and change various system settings with the `system` top level command.  For instance you can see your hardware specs with `system info`:
+
+```
+127.0.0.1:>system info
+cpu_cores=1         cpu_model=Intel(R) Core(TM) i5-3570 CPU @ 3.40GHz
+cpu_clockrate=3400  memory_size=6413496320
+```
+
+You can get information about your version of FreeNAS with `system version`:
+
+```
+127.0.0.1:>system version
+FreeNAS version (freenas_version)      FreeNAS-10.2-ALPHA-201511231130      
+System version (system_version)        FreeBSD freenas.local 10.2-STABLE    
+                                       FreeBSD 10.2-STABLE #0               
+                                       ab9925e(freebsd10): Sat Nov 21       
+                                       00:05:53 PST 2015     root@build.ixs 
+                                       ystems.com:/tank/home/nightlies      
+                                       /freenas-                            
+                                       build/_BE/objs/tank/home/nightlies   
+                                       /freenas-                            
+                                       build/_BE/trueos/sys/FreeNAS.amd64   
+                                       amd64 
+```
+
+If you want to know things like system up-time and the number of clients connected, use `system status`:
+
+```
+127.0.0.1:>system status
+connected-clients=12  started-at=1448327368.791504  up-since=18 minutes ago
+```
+
+You can view system sessions with the `system session` top level command:
+
+```
+127.0.0.1:>system session show
+Session ID   IP Address     User name        Started at          Ended at     
+1            127.0.0.1    dispatcherctl   4 hours ago        4 hours ago      
+2            unix         task.130        4 hours ago        none             
+3            unix         task.129        4 hours ago        an hour ago      
+4            unix         task.132        4 hours ago        none             
+5            unix         task.131        4 hours ago        none             
+6            127.0.0.1    dispatcherctl   4 hours ago        4 hours ago      
+7            127.0.0.1    dispatcherctl   4 hours ago        4 hours ago      
+8            127.0.0.1    etcd            4 hours ago        none             
+9            127.0.0.1    dispatcherctl   4 hours ago        4 hours ago      
+...
+```
+
+You can view system events with the `system event` top level command:
+
+```
+127.0.0.1:>system session show     
+Session ID   IP Address     User name        Started at          Ended at     
+1            127.0.0.1    dispatcherctl   4 hours ago        4 hours ago      
+2            unix         task.130        4 hours ago        none             
+3            unix         task.129        4 hours ago        an hour ago      
+4            unix         task.132        4 hours ago        none             
+5            unix         task.131        4 hours ago        none             
+6            127.0.0.1    dispatcherctl   4 hours ago        4 hours ago      
+7            127.0.0.1    dispatcherctl   4 hours ago        4 hours ago      
+8            127.0.0.1    etcd            4 hours ago        none             
+9            127.0.0.1    dispatcherctl   4 hours ago        4 hours ago      
+10           127.0.0.1    dispatcherctl   4 hours ago        4 hours ago      
+11           127.0.0.1    dispatcherctl   4 hours ago        4 hours ago 
+...
+```
+
+### System configuration
+
+The `system` top level command also has commands for configuring various aspects of your system.  At the `system` level you can configure things like hostname, timezone, syslog server and language options with the `set` command:
+
+```
+127.0.0.1:>system set timezone=America/Los_Angeles
+127.0.0.1:>system set hostname=myfreenas.local 
+127.0.0.1:>system show
+Time zone (timezone)              America/Los_Angeles 
+Hostname (hostname)               myfreenas.local     
+Syslog Server (syslog_server)     none                
+Language (language)               en                  
+Console Keymap (console_keymap)   us.iso
+```
+
+If you need help figuring out what time zone options are available, you can use the `system timezones` command, this will give you a scrollable list of valid options.
+
+To configure email options, use the `system mail` command:
+
+```
+127.0.0.1:>system mail set email=admin@foo.com 
+127.0.0.1:>system mail set server=mail.foo.com
+127.0.0.1:>system mail set username=admin@foo.com
+127.0.0.1:>system mail set password=mypassword
+127.0.0.1:>system mail show
+Email address (email)                    admin@foo.com 
+Email server (server)                    mail.foo.com  
+SMTP port (port)                         25            
+Authentication required (auth)           no            
+Encryption type (encryption)             PLAIN         
+Username for Authentication (username)   admin@foo.com 
+```
+
+And finally for powerusers, there is a set of advanced options in `system advanced`:
+
+```
+127.0.0.1:>system advanced set console_screensaver=yes
+127.0.0.1:>system advanced show
+Enable Console CLI (console_cli)       yes                                  
+Enable Console Screensaver             yes                                   
+(console_screensaver)                                                       
+Enable Serial Console                  no                                   
+(serial_console)                                                            
+Serial Console Port (serial_port)      none                                 
+Serial Port Speed (serial_speed)       none                                 
+Enable powerd (powerd)                 no                                   
+Default swap on drives (swapondrive)   2                                    
+Enable Debug Kernel (debugkernel)      no                                   
+Automatically upload crash dumps to    yes                                  
+iXsystems (uploadcrash)                                                     
+Message of the day (motd)              FreeBSD ?.?.?  (UNKNOWN)             
+                                       FreeNAS (c) 2009-2015, The FreeNAS   
+                                       Development Team                     
+                                       All rights reserved.                 
+                                       FreeNAS is released under the        
+                                       modified BSD license.                
+                                       For more information, documentation, 
+                                       help or support, go here:            
+                                       http://freenas.org                   
+Periodic Notify User UID               0                                    
+(periodic_notify_user) 
+```
+
 ## Network configuration
 
 ### Simple static IP setup

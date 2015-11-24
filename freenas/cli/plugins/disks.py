@@ -38,7 +38,6 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         super(DisksNamespace, self).__init__(name, context)
 
         self.entity_subscriber_name = 'disk'
-        self.query_call = 'disk.query'
         self.extra_query_params = [
             ('online', '=', True)
         ]
@@ -105,11 +104,11 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             }) for d in ret]
 
     def get_one(self, name):
-        ret = self.context.call_sync(
-            self.query_call,
-            [('path', '=', os.path.join('/dev', name))],
-            {'single': True})
-
+        ret = self.context.entity_subscribers[self.entity_subscriber_name].query(
+            ('path', '=', os.path.join('/dev', name)), *self.extra_query_params,
+            single=True
+        )
+        
         ret['allocation'] = self.context.call_sync(
             'volume.get_disks_allocation',
             [ret['path']]

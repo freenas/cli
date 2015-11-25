@@ -2,19 +2,21 @@
 
 ## Introduction
 
-With FreeNAS 10 we completely redisgned the CLI such that it should be at full feature parity with the GUI (and even more to include advance user commands). It was our goal to eliminate the need to use the shell as much as possible, by giving the user a much fine grained control over the appliance while still maintaining the transactions in the database. It supports TAB autocompletion and other sexy features!
+In FreeNAS 10, we have created an entirely new CLI which is intended to offer full feature parity with the GUI and well beyond, offering advanced user commands which would only add complexity and confusion to the GUI.  Our goal was also to eliminate the need to use the Unix shell for that purpose as much as possible, giving users both high-level and more fine grained control over the appliance while still maintaining database integrity and logging these transactions properly. This CLI supports TAB autocompletion, inline help, and other sexy features that we hope will encourage its use!
 
 ## Getting Started
 
 **Ways to get to the cli:**
 
-* From the console of the physical/VM box that you installed freenas on. By default the cli would be accessible directly from there.
+* From the console of the physical/VM box that you installed freenas on. By default, the cli is directly accessible from the console.
 
 * By sshing to the box and typing `cli` from the shell
 
 * By accessing it from the webgui's console page: freenas_10_ip/console
 
-Ok so now that you have reached the cli it will greet you with the following:
+* By running it directly on your client machine and connecting to a remote FreeNAS instance (still to be documented)
+
+One way or the other, once you have invoked the cli it will greet you with the following text:
 
 ```
 Welcome to the FreeNAS CLI! Type 'help' to get started.
@@ -24,6 +26,7 @@ http://fe80::20c:29ff:fe23:3173  http://192.168.221.136
 http://192.168.221.152           http://fe80::20c:29ff:fe23:3169
 127.0.0.1:>
 ```
+[Note:  There may or may not be some kind of animal ASCII art involved here too.  Do not worry, it is for your own protection.]
 
 The urls you see here are the various interfaces's providing you access to your freenas box's webgui.
 (Note: You may only see one (IPv4 and IPv6) pair if you just have one interface.)
@@ -701,7 +704,7 @@ And finally, to delete an NFS share, simply use the `delete` command, be aware t
 
 ### Preface
 
-Virtual machine support is experimental feature and it's not fully supported in the CLI. If you want to be able to access Internet from your VMs, you need to create a bridge interface and add your main network interface to it (please refer to network configuration section to learn how to do that) and then issue following command:
+Virtual machine support is experimental feature which is not yet fully supported in the CLI.  For example, if you want to be able to access Internet from your VMs, you will need to create a bridge interface and add your main network interface to it (please refer to network configuration section to learn how to do that) and then issue the following command manually (for now):
 
 ```
 127.0.0.1:>!dsutil config-set container.bridge '"bridgeX"'

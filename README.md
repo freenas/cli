@@ -7,17 +7,17 @@
 3. [General Navigation, TAB Autocomplete and Global Commands](#section-3)
 4. [Help command](#section-4)
 5. [System information and configuration](#section-5)
-  a. [System information](#section-5a)
-  b. [System configuration](#section-5b)
+  1. [System information](#section-5-1)
+  2. [System configuration](#section-5-2)
 6. [Network configuration](#section-6)
-  a. [Simple static IP setup](#section-6a)
+  1. [Simple static IP setup](#section-6-1)
 7. [Volume creation and management](#section-7)
 8. [Sharing](#section-8)
-  a. [AFP Shares](#section-8a)
-  b. [NFS Shares](#section-8b)
+  1. [AFP Shares](#section-8-1)
+  2. [NFS Shares](#section-8-2)
 9. [Containers](#section-9)
-  a. [Preface](#section-9a)
-  b. [VMs](#section-9b)
+  1. [Preface](#section-9-1)
+  2. [VMs](#section-9-2)
 
 ## Introduction <a id="section-1"></a>
 
@@ -168,7 +168,7 @@ pubkey              SSH public key      string
 
 ## System information and configuration <a id="section-5"></a>  
 
-### System information <a id="section-5a"></a>
+### System information <a id="section-5-1"></a>
 
 You can get information and change various system settings with the `system` top level command.  For instance you can see your hardware specs with `system info`:
 
@@ -238,7 +238,7 @@ Session ID   IP Address     User name        Started at          Ended at
 ...
 ```
 
-### System configuration <a id="section-5b"></a>
+### System configuration <a id="section-5-2"></a>
 
 The `system` top level command also has commands for configuring various aspects of your system.  At the `system` level you can configure things like hostname, timezone, syslog server and language options with the `set` command:
 
@@ -303,7 +303,7 @@ Periodic Notify User UID               0
 
 ## Network configuration <a id="section-6"></a>
 
-### Simple static IP setup <a id="section-6a"></a>
+### Simple static IP setup <a id="section-6-1"></a>
 
 By default FreeNAS is set to use a DHCP address, if you wish to set a static IP, first turn off DHCP for your network port:
 
@@ -536,7 +536,7 @@ tank          ONLINE   /mnt/tank     none              none
 
 After you have created your volume, you can now setup shares on your volume to share files with the rest of your network.  The shares namespace is split into 4 sets of commands for different share types, NFS, AFP, SMB and iSCSI with a main `shares` namespace to view them all from.
 
-### AFP shares <a id="section-8a"></a>
+### AFP shares <a id="section-8-1"></a>
 
 One basic type of share you can create are AFP shares.  AFP is typically used for sharing files with Macintosh computers.  AFP shares are created with the command `share afp create`.  A basic AFP share can be created as follows:
 
@@ -627,7 +627,7 @@ And finally, to delete an AFP share, simply use the `delete` command, be aware t
 127.0.0.1:>share afp delete foo
 ```
 
-### NFS Shares <a id="section-8b"></a>
+### NFS Shares <a id="section-8-2"></a>
 
 Another basic type of share you can create are NFS shares.  NFS is typically used for sharing files with Unix systems.  NFS shares are created with the command `share nfs create`.  A basic NFS share can be created as follows:
 
@@ -721,7 +721,7 @@ And finally, to delete an NFS share, simply use the `delete` command, be aware t
 
 ## Containers <a id="section-9"></a>
 
-### Preface <a id="section-9a"></a>
+### Preface <a id="section-9-1"></a>
 
 Virtual machine support is experimental feature which is not yet fully supported in the CLI.  For example, if you want to be able to access Internet from your VMs, you will need to create a bridge interface and add your main network interface to it (please refer to network configuration section to learn how to do that) and then issue the following command manually (for now):
 
@@ -731,7 +731,7 @@ Virtual machine support is experimental feature which is not yet fully supported
 
 where `bridgeX` is name of previously created bridge interface.
 
-### VMs <a id="section-9b"></a>
+### VMs <a id="section-9-2"></a>
 
 To create a BHyVe virtual machine called `myvm` running inside FreeNAS, use following command:
 

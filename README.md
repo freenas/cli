@@ -1,10 +1,29 @@
 # Welcome to FreeNAS X CLI!
 
-## Introduction
+## Table of Contents
+
+1. [Introduction](#section-1)
+2. [Getting Started](#section-2)
+3. [General Navigation, TAB Autocomplete and Global Commands](#section-3)
+4. [Help command](#section-4)
+5. [System information and configuration](#section-5)
+  a. [System information](#section-5a)
+  b. [System configuration](#section-5b)
+6. [Network configuration](#section-6)
+  a. [Simple static IP setup](#section-6a)
+7. [Volume creation and management](#section-7)
+8. [Sharing](#section-8)
+  a. [AFP Shares](#section-8a)
+  b. [NFS Shares](#section-8b)
+9. [Containers](#section-9)
+  a. [Preface](#section-9a)
+  b. [VMs](#section-9b)
+
+## Introduction <a id="section-1"></a>
 
 In FreeNAS 10, we have created an entirely new CLI which is intended to offer full feature parity with the GUI and well beyond, offering advanced user commands which would only add complexity and confusion to the GUI.  Our goal was also to eliminate the need to use the Unix shell for that purpose as much as possible, giving users both high-level and more fine grained control over the appliance while still maintaining database integrity and logging these transactions properly. This CLI supports TAB autocompletion, inline help, and other sexy features that we hope will encourage its use!
 
-## Getting Started
+## Getting Started <a id="section-2"></a>
 
 **Ways to get to the cli:**
 
@@ -47,7 +66,7 @@ If you are running the cli from the shell (post sshing into the machine) you can
 [root@myfreenas] ~# 
 ```
 
-## General Navigation, TAB Autocomplete and Global Commands
+## General Navigation, TAB Autocomplete and Global commands <a id="section-3"></a>
 
 At any point or place in the cli to see the list of available commands and namespaces, one can enter the `?` character (or better referenced henceforth as the List Command). Also the very top level namespace that you are dropped into upon first invoking the cli is called as the RootNamespace from here on forward for purpose of this HOWTO document.
 
@@ -64,7 +83,7 @@ help  account  calendar          disk     service  simulator  task    volume
 ?     boot     directoryservice  network  share    system     update
 ```
 
-## Help command
+## Help command <a id="section-4"></a>
 
 The help command is there to assist you with commands in the cli.  To get an overview of the available commands, simply type `help`.
 
@@ -147,9 +166,9 @@ sudo                Sudo allowed        boolean
 pubkey              SSH public key      string             
 ```
 
-## System information and configuration
+## System information and configuration <a id="section-5"></a>  
 
-### System information
+### System information <a id="section-5a"></a>
 
 You can get information and change various system settings with the `system` top level command.  For instance you can see your hardware specs with `system info`:
 
@@ -219,7 +238,7 @@ Session ID   IP Address     User name        Started at          Ended at
 ...
 ```
 
-### System configuration
+### System configuration <a id="section-5b"></a>
 
 The `system` top level command also has commands for configuring various aspects of your system.  At the `system` level you can configure things like hostname, timezone, syslog server and language options with the `set` command:
 
@@ -282,9 +301,9 @@ Periodic Notify User UID               0
 (periodic_notify_user) 
 ```
 
-## Network configuration
+## Network configuration <a id="section-6"></a>
 
-### Simple static IP setup
+### Simple static IP setup <a id="section-6a"></a>
 
 By default FreeNAS is set to use a DHCP address, if you wish to set a static IP, first turn off DHCP for your network port:
 
@@ -358,7 +377,7 @@ State (state)                            up
 Address family   IP address   Netmask   Broadcast address
 ```
 
-## Volume creation and management
+## Volume creation and management <a id="section-7"></a>
 
 Before you create a volume you should probably find out the names of the disks you will be creating the volume with.  You can do this by using the command `disk show`:
 
@@ -513,11 +532,11 @@ Volume name   Status   Mount point   Last scrub time   Last scrub errors
 tank          ONLINE   /mnt/tank     none              none           
 ```
 
-## Sharing
+## Sharing <a id="section-8"></a>
 
 After you have created your volume, you can now setup shares on your volume to share files with the rest of your network.  The shares namespace is split into 4 sets of commands for different share types, NFS, AFP, SMB and iSCSI with a main `shares` namespace to view them all from.
 
-### AFP shares
+### AFP shares <a id="section-8a"></a>
 
 One basic type of share you can create are AFP shares.  AFP is typically used for sharing files with Macintosh computers.  AFP shares are created with the command `share afp create`.  A basic AFP share can be created as follows:
 
@@ -608,7 +627,7 @@ And finally, to delete an AFP share, simply use the `delete` command, be aware t
 127.0.0.1:>share afp delete foo
 ```
 
-### NFS Shares
+### NFS Shares <a id="section-8b"></a>
 
 Another basic type of share you can create are NFS shares.  NFS is typically used for sharing files with Unix systems.  NFS shares are created with the command `share nfs create`.  A basic NFS share can be created as follows:
 
@@ -700,9 +719,9 @@ And finally, to delete an NFS share, simply use the `delete` command, be aware t
 127.0.0.1:>share nfs delete bar
 ```
 
-## Containers
+## Containers <a id="section-9"></a>
 
-### Preface
+### Preface <a id="section-9a"></a>
 
 Virtual machine support is experimental feature which is not yet fully supported in the CLI.  For example, if you want to be able to access Internet from your VMs, you will need to create a bridge interface and add your main network interface to it (please refer to network configuration section to learn how to do that) and then issue the following command manually (for now):
 
@@ -712,7 +731,7 @@ Virtual machine support is experimental feature which is not yet fully supported
 
 where `bridgeX` is name of previously created bridge interface.
 
-### VMs
+### VMs <a id="section-9b"></a>
 
 To create a BHyVe virtual machine called `myvm` running inside FreeNAS, use following command:
 

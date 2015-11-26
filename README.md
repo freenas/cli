@@ -15,9 +15,12 @@
 8. [Sharing](#section-8)
   1. [AFP Shares](#section-8-1)
   2. [NFS Shares](#section-8-2)
-9. [Containers](#section-9)
-  1. [Preface](#section-9-1)
-  2. [VMs](#section-9-2)
+9. [Account management](#section-9)
+  1. [Users](#section-9-1)
+  2. [Groups](#section-9-2)
+10. [Containers](#section-10)
+  1. [Preface](#section-10-1)
+  2. [VMs](#section-10-2)
 
 ## Introduction <a id="section-1"></a>
 
@@ -719,9 +722,118 @@ And finally, to delete an NFS share, simply use the `delete` command, be aware t
 127.0.0.1:>share nfs delete bar
 ```
 
-## Containers <a id="section-9"></a>
+## Account management <a id="section-9"></a>
 
-### Preface <a id="section-9-1"></a>
+FreeNAS has users and groups with various permissions similar to those you would find on a Unix platform.  In this section you will learn how to manage users and groups using the `account` top level command.
+
+### Users <a id="section-9-1">
+
+Under the `account user` command you can create and set properties of a user.  To create a user use `account user create`:
+
+```
+127.0.0.1:>account user create foo password=mypassword
+127.0.0.1:>account user foo show
+User ID (uid)                           1000         
+User name (username)                    foo          
+Full name (fullname)                    User &       
+Primary group (group)                   foo          
+Auxilliary groups (groups)              empty        
+Login shell (shell)                     /bin/sh      
+Home directory (home)                   /nonexistent 
+Password Disabled (password_disabled)   no           
+Locked (locked)                         no           
+Email address (email)                   none         
+Sudo allowed (sudo)                     no           
+SSH public key (pubkey)                 none 
+```
+
+An account must either have a password set upon creation or have the property `password_disabled` turned on.  If you do not specify a group for your user upon creation it will attempt to create a group with the same name as the username for that user.
+
+If you want to change a property of a user, use the `set` command:
+
+```
+127.0.0.1:>account user foo set email=foo@foobar.com
+127.0.0.1:>account user foo show
+User ID (uid)                           1000           
+User name (username)                    foo            
+Full name (fullname)                    User &         
+Primary group (group)                   foo            
+Auxilliary groups (groups)              empty          
+Login shell (shell)                     /bin/sh        
+Home directory (home)                   /nonexistent   
+Password Disabled (password_disabled)   no             
+Locked (locked)                         no             
+Email address (email)                   foo@foobar.com 
+Sudo allowed (sudo)                     no             
+SSH public key (pubkey)                 none 
+```
+
+To delete a user, use the `delete` command:
+
+```
+127.0.0.1:>account user delete foo
+```
+
+### Groups <a id="section-9-2">
+
+Groups are managed by the `account group` commands.  To create a group use `account group create`:
+
+```
+127.0.0.1:>account group create bar
+127.0.0.1:>account group bar show
+Group name (name)         bar  
+Group ID (gid)            1001 
+Builtin group (builtin)   no   
+```
+
+To change a group's name use the `set` command:
+
+```
+127.0.0.1:>account group bar set name=baz
+```
+
+User to group relationships are handled at the user level, so if to add a user to a group you must use `account user`.  Users have 2 properties for groups, `group` and `groups`.  The singular `group` property contains the user's primary group and `groups` is a set property that contains the auxiliary groups.
+
+Suppose we want to create a user named foo and we want to add it to our group "baz":
+
+```
+127.0.0.1:>account user create foo group=baz password=mypassword
+```
+
+Then suppose we want to give this user admin privileges so we add it to the "wheel" group:
+
+```
+127.0.0.1:>account user foo set groups=wheel
+```
+
+The user should then look like this after the `show` command:
+
+```
+127.0.0.1:>account user foo show
+User ID (uid)                           1000         
+User name (username)                    foo          
+Full name (fullname)                    User &       
+Primary group (group)                   baz          
+Auxilliary groups (groups)              wheel        
+Login shell (shell)                     /bin/sh      
+Home directory (home)                   /nonexistent 
+Password Disabled (password_disabled)   no           
+Locked (locked)                         no           
+Email address (email)                   none         
+Sudo allowed (sudo)                     no           
+SSH public key (pubkey)                 none
+```
+
+And finally, to delete a group use the `delete` command:
+
+```
+127.0.0.1:>account group delete baz
+```
+
+
+## Containers <a id="section-10"></a>
+
+### Preface <a id="section-10-1"></a>
 
 Virtual machine support is experimental feature which is not yet fully supported in the CLI.  For example, if you want to be able to access Internet from your VMs, you will need to create a bridge interface and add your main network interface to it (please refer to network configuration section to learn how to do that) and then issue the following command manually (for now):
 
@@ -731,7 +843,7 @@ Virtual machine support is experimental feature which is not yet fully supported
 
 where `bridgeX` is name of previously created bridge interface.
 
-### VMs <a id="section-9-2"></a>
+### VMs <a id="section-10-2"></a>
 
 To create a BHyVe virtual machine called `myvm` running inside FreeNAS, use following command:
 

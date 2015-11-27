@@ -102,7 +102,9 @@ ENTITY_SUBSCRIBERS = [
     'group',
     'disk',
     'volume',
-    'share'
+    'share',
+    'task',
+    'alert'
 ]
 
 

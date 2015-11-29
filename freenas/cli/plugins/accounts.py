@@ -77,7 +77,6 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             descr='User ID',
             name='uid',
             get='id',
-            set=None,
             list=True,
             type=ValueType.NUMBER)
 

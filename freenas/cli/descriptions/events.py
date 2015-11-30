@@ -44,29 +44,6 @@ def task_updated(context, args):
     translation = tasks.translate(context, task['name'], task['args'])
     return _("Task #{0} {1}: {2}".format(args['id'], _(args['state'].lower()), translation))
 
-# def service_toggeled(context, args):
-
-
-def entity_subscriber_changed(name, args, select=None):
-    if not select:
-        select = lambda e: e['id']
-
-    key = 'ids' if args['operation'] == 'delete' else 'entities'
-
-    if len(args[key]) > 1:
-        name += "s"
-
-    if args['operation'] == 'delete':
-        items = ', '.join(args[key])
-    else:
-        items = ', '.join(map(select, args[key]))
-
-    if args['operation'] == 'create':
-        return _("{0} {1} created".format(name, items))
-
-    if args['operation'] == 'delete':
-        return _("{0} {1} deleted".format(name, items))
-
 
 events = {
     'server.client_login': (
@@ -79,16 +56,6 @@ events = {
     ),
     'task.created': (_("Task created"), task_created),
     'task.updated': (_("Task updated"), task_updated),
-    'entity-subscriber.volume.changed': (
-        _("Volume changed"),
-        lambda c, a: entity_subscriber_changed(_("Volume"), a, lambda e: e.get('name'))
-    ),
-    'entity-subscriber.disk.changed': (
-        _("Disk changed"),
-        lambda c, a: entity_subscriber_changed(
-            _("Disk"), a, lambda e: e.get('status').get('description') if e.get('status') else e.get('path')
-        )
-    ),
     'service.started': (
         _("Service started"),
         lambda c, a: _("Service {0} started".format(a.get('name')))

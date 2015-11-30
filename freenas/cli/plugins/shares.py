@@ -27,8 +27,8 @@
 
 import gettext
 from freenas.cli.namespace import (
-    Namespace, EntityNamespace, Command, IndexCommand,
-    RpcBasedLoadMixin, TaskBasedSaveMixin, description,
+    EntityNamespace, Command, IndexCommand, RpcBasedLoadMixin,
+    EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, description,
     CommandException, ListCommand
 )
 from freenas.cli.output import ValueType, Table
@@ -54,11 +54,11 @@ class ConnectedUsersCommand(Command):
 
 
 @description("Configure and manage shares")
-class SharesNamespace(RpcBasedLoadMixin, EntityNamespace):
+class SharesNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
     def __init__(self, name, context):
         super(SharesNamespace, self).__init__(name, context)
         self.context = context
-        self.query_call = 'share.query'
+        self.entity_subscriber_name = 'share'
         self.primary_key_name = 'name'
 
         self.add_property(
@@ -122,12 +122,12 @@ class SharesNamespace(RpcBasedLoadMixin, EntityNamespace):
         ]
 
 
-class BaseSharesNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
+class BaseSharesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):
     def __init__(self, name, type_name, context):
         super(BaseSharesNamespace, self).__init__(name, context)
 
         self.type_name = type_name
-        self.query_call = 'share.query'
+        self.entity_subscriber_name = 'share'
         self.extra_query_params = [('type', '=', type_name)]
         self.create_task = 'share.create'
         self.update_task = 'share.update'

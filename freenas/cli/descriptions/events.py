@@ -69,7 +69,7 @@ events = {
 
 def translate(context, name, args=None):
     if name not in list(events.keys()):
-        return name
+        return
 
     first, second = events[name]
 

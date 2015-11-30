@@ -25,11 +25,9 @@
 #
 #####################################################################
 
-
 import gettext
 from freenas.cli.descriptions import tasks
-from freenas.cli.namespace import EntityNamespace, RpcBasedLoadMixin, Command, description
-from freenas.cli.output import ValueType
+from freenas.cli.namespace import EntityNamespace, EntitySubscriberBasedLoadMixin, Command, description
 
 
 t = gettext.translation('freenas-cli', fallback=True)
@@ -69,13 +67,13 @@ class AbortCommand(Command):
 
 
 @description("Manage tasks")
-class TasksNamespace(RpcBasedLoadMixin, EntityNamespace):
+class TasksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
     def __init__(self, name, context):
         super(TasksNamespace, self).__init__(name, context)
 
         self.allow_create = False
         self.allow_edit = False
-        self.query_call = 'task.query'
+        self.entity_subscriber_name = 'task'
 
         self.add_property(
             descr='ID',

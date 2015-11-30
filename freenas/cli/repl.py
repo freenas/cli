@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# +
+#
 # Copyright 2014 iXsystems, Inc.
 # All rights reserved
 #
@@ -93,15 +93,14 @@ EVENT_MASKS = [
     'task.updated',
     'task.progress',
     'service.stopped',
-    'service.started',
-    'entity-subscriber.volumes.changed',
-    'entity-subscriber.disks.changed'
+    'service.started'
 ]
 ENTITY_SUBSCRIBERS = [
     'user',
     'group',
     'disk',
     'volume',
+    'volume.snapshot',
     'share',
     'task',
     'alert'

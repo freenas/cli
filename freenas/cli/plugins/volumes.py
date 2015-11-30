@@ -657,12 +657,12 @@ class DatasetsNamespace(EntityNamespace):
 
 
 @description("Snapshots")
-class SnapshotsNamespace(RpcBasedLoadMixin, EntityNamespace):
+class SnapshotsNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
     def __init__(self, name, context, parent):
         super(SnapshotsNamespace, self).__init__(name, context)
         self.parent = parent
-        self.query_call = 'volume.snapshot.query'
-        self.primary_key_name = 'name'
+        self.entity_subscriber_name = 'volume.snapshot'
+        self.primary_key_name = 'id'
         self.required_props = ['name', 'dataset']
         self.extra_query_params = [
             ('pool', '=', self.parent.name)

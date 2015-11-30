@@ -21,6 +21,9 @@
 10. [Containers](#section-10)
   1. [Preface](#section-10-1)
   2. [VMs](#section-10-2)
+11. [Services](#section-11)
+  1. [Controlling services](#section-11-1)
+  2. [Configuring services](#section-11-2)
 
 ## Introduction <a id="section-1"></a>
 
@@ -873,3 +876,117 @@ Virtual machine is ready to be started:
 ```
 
 To see virtual machine console, go to `http://<freenas-ip>:8180/vm` page and select VM from dropdown list.
+
+## Services <a id="section-11"></a>
+
+FreeNAS has various services that run on it for sharing files, monitoring your NAS, and other purposes.  In this section you will learn how to configure and control these services through the CLI.
+
+### Controlling Services <a id="section-11-1"></a>
+
+The command `service show` will give you a list of all the currently running services:
+
+```
+127.0.0.1:>service show
+Service name    State    Process ID 
+smartd         STOPPED   none       
+afp            STOPPED   none       
+haproxy        STOPPED   none       
+lldp           STOPPED   none       
+sshd           RUNNING   1054       
+tftpd          STOPPED   none
+...
+```
+
+To view the status of an individual service, use `service <service name> show`, for example:
+
+```
+127.0.0.1:>service ftp show
+Service name (name)   ftp     
+State (state)         STOPPED 
+Process ID (pid)      none
+```
+
+To enable the service, use `service <service name> config set enable=true`, for exmaple:
+
+```
+127.0.0.1:>service ftp config set enable=true 
+127.0.0.1:>service ftp show
+Service name (name)   ftp     
+State (state)         RUNNING 
+Process ID (pid)      3959
+```
+
+Notice that when the service was enabled, it was also started.  If you want to stop the service but leave it enabled upon reboot, use `service <service name> stop`, for example:
+
+```
+127.0.0.1:>service ftp stop
+127.0.0.1:>service ftp show
+Service name (name)   ftp     
+State (state)         STOPPED 
+Process ID (pid)      none 
+```
+
+To start the service back up, use `service <service name> start`:
+
+```
+127.0.0.1:>service ftp start 
+127.0.0.1:>service ftp show
+Service name (name)   ftp     
+State (state)         RUNNING 
+Process ID (pid)      4218  
+```
+
+To restart a servce, use `service <service name> restart`:
+
+```
+127.0.0.1:>service ftp restart
+127.0.0.1:>service ftp show
+Service name (name)   ftp     
+State (state)         RUNNING 
+Process ID (pid)      4457
+```
+
+Notice that it has a different pid since the service was restarted.  To have a service do a graceful reload, use `service <service name> reload`:
+
+```
+127.0.0.1:>service ftp reload
+Service name (name)   ftp     
+State (state)         RUNNING 
+Process ID (pid)      4457
+```
+
+### Configuring Services <a id="section-11-2"></a>
+
+To view the configuration of a service, use the `service <service name> config show` command:
+
+```
+127.0.0.1:>service sshd config show
+Enabled (enable)                                      yes   
+sftp log facility (sftp_log_facility)                 AUTH  
+Allow public key authentication (allow_pubkey_auth)   yes   
+Enable compression (compression)                      no    
+Allow password authentication (allow_password_auth)   yes   
+Allow port forwarding (allow_port_forwarding)         no    
+Permit root login (permit_root_login)                 yes   
+sftp log level (sftp_log_level)                       ERROR 
+Port (port)                                           22 
+```
+
+Along with being able to enable a service from this namespace, you are also able to set various properties of the service with the `service <service name> config set` command:
+
+```
+127.0.0.1:>service sshd config set allow_port_forwarding=true 
+127.0.0.1:>service sshd config show
+Enabled (enable)                                      yes   
+sftp log facility (sftp_log_facility)                 AUTH  
+Allow public key authentication (allow_pubkey_auth)   yes   
+Enable compression (compression)                      no    
+Allow password authentication (allow_password_auth)   yes   
+Allow port forwarding (allow_port_forwarding)         yes   
+Permit root login (permit_root_login)                 yes   
+sftp log level (sftp_log_level)                       ERROR 
+Port (port)                                           22 
+```
+
+Note: some services like sshd will restart upon setting a property, while others will do a graceful reload, depending on what the service supports.
+

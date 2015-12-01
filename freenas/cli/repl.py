@@ -34,7 +34,6 @@ import shlex
 import imp
 import logging
 import errno
-import struct
 import platform
 import json
 import time
@@ -758,7 +757,7 @@ class MainLoop(object):
                         raise SyntaxError("Pipe command {0} not found".format(p[0].name))
                     finally:
                         self.path = oldpath
-                if pipe_cmd.must_be_last and not top_of_stack: 
+                if pipe_cmd.must_be_last and not top_of_stack:
                     try:
                         raise SyntaxError(_("The {0} command must be used at the end of the pipe list").format(p[0].name))
                     finally:

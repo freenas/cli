@@ -1,4 +1,4 @@
-#+
+# #+
 # Copyright 2015 iXsystems, Inc.
 # All rights reserved
 #
@@ -47,7 +47,7 @@ class Symbol(object):
 class Set(object):
     def __init__(self, value):
         self.value = value
-    
+
     def __str__(self):
         return "<Set '{0}'>".format(self.value)
 
@@ -62,7 +62,8 @@ class BinaryExpr(object):
         self.right = right
 
     def __str__(self):
-        return "<BinaryExpr left '{0}' op '{1}' right '{2}'>".format(self.left, self.op, self.right)
+        return "<BinaryExpr left '{0}' op '{1}' right '{2}'>".format(
+                self.left, self.op, self.right)
 
     def __repr__(self):
         return str(self)
@@ -233,6 +234,7 @@ def p_binary(p):
     """
     p[0] = BinaryExpr(p[1], p[2], p[3])
 
+
 def p_set(p):
     """
     set : ATOM COMMA set
@@ -246,6 +248,7 @@ def p_set(p):
         p[0] = Set(p[1] + p[2] + right)
     else:
         p[0] = Symbol(p[1])
+
 
 def p_symbol(p):
     """

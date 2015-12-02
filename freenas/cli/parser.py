@@ -240,6 +240,7 @@ def p_assignment_stmt(p):
     """
     assignment_stmt : ATOM ASSIGN expr
     assignment_stmt : ATOM ASSIGN command
+    assignment_stmt : subscript ASSIGN expr
     """
     p[0] = AssignmentStatement(p[1], p[3], line=p.lineno(1), column=p.lexpos(1))
 
@@ -321,9 +322,14 @@ def p_expr(p):
 
 def p_array_literal(p):
     """
+    array_literal : LBRACKET RBRACKET
     array_literal : LBRACKET expr_list RBRACKET
     """
-    p[0] = Literal(p[2], type(p[2]))
+    if len(p) == 3:
+        p[0] = Literal([], list)
+        return
+
+    p[0] = Literal(p[2], list)
 
 
 def p_literal(p):

@@ -734,6 +734,13 @@ class MainLoop(object):
 
         if isinstance(token, AssignmentStatement):
             expr = self.eval(token.expr)
+
+            if isinstance(token.name, Subscript):
+                array = self.eval(token.name.expr, env)
+                index = self.eval(token.name.index, env)
+                array[index] = expr
+                return
+
             env[token.name] = expr
             return
 

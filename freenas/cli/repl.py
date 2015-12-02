@@ -953,8 +953,9 @@ class MainLoop(object):
             return
 
         try:
-            i = parse(line)[0]
-            format_output(self.eval(i))
+            tokens = parse(line)
+            for i in tokens:
+                format_output(self.eval(i))
         except SyntaxError as e:
             output_msg(_('Syntax error: {0}'.format(str(e))))
         except CommandException as e:

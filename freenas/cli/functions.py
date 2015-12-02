@@ -47,8 +47,19 @@ operators = {
 }
 
 
+def array_resize(array, length):
+    if length > len(array):
+        array.extend([None] * (length - len(array)))
+    else:
+        del array[:len(array) - length]
+
+
 functions = {
     'print': format_output,
     'range': range,
-    'str': str
+    'str': str,
+    'length': len,
+    'append': lambda a, i: a.append(i),
+    'remove': lambda a, i: a.remove(i),
+    'resize': array_resize
 }

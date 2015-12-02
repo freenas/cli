@@ -26,6 +26,8 @@
 #
 #####################################################################
 
+import copy
+import enum
 import sys
 import os
 import glob
@@ -34,7 +36,6 @@ import shlex
 import imp
 import logging
 import errno
-import struct
 import platform
 import json
 import time
@@ -44,12 +45,17 @@ import traceback
 import six
 from socket import gaierror as socket_error
 from freenas.cli.descriptions import events
+from freenas.cli import functions
 from freenas.cli import config
 from freenas.cli.namespace import Namespace, RootNamespace, Command, FilteringCommand, CommandException
-from freenas.cli.parser import parse, Symbol, Set, CommandExpansion, Literal, BinaryExpr, PipeExpr
+from freenas.cli.parser import (
+    parse, Symbol, Set, Literal, BinaryExpr, PipeExpr, AssignmentStatement, IfStatement, ForStatement,
+    WhileStatement, FunctionCall, CommandCall, Subscript, ExpressionExpansion, FunctionDefinition,
+    ReturnStatement, BreakStatement, UndefStatement
+)
 from freenas.cli.output import (
-    ValueType, Object, Table, ProgressBar, output_lock, output_msg, read_value, format_value,
-    output_object, output_table
+    ValueType, ProgressBar, output_lock, output_msg, read_value, format_value,
+    format_output
 )
 from freenas.dispatcher.client import Client, ClientError
 from freenas.dispatcher.entity import EntitySubscriber
@@ -123,6 +129,11 @@ def sort_args(args):
         positional.append(i)
 
     return positional, kwargs, opargs
+
+
+class FlowControlInstructionType(enum.Enum):
+    RETURN = 'RETURN'
+    BREAK = 'BREAK'
 
 
 class VariableStore(object):
@@ -238,6 +249,9 @@ class Context(object):
         self.keepalive_timer = None
         self.argparse_parser = None
         self.entity_subscribers = {}
+        self.builtin_operators = functions.operators
+        self.builtin_functions = functions.functions
+        self.global_env = Environment(self)
         config.instance = self
 
     @property
@@ -480,6 +494,71 @@ class Context(object):
         self.event_divert = False
         return tid
 
+    def eval(self, *args, **kwargs):
+        return self.ml.eval(*args, **kwargs)
+
+
+class FlowControlInstruction(object):
+    def __init__(self, type, payload=None):
+        self.type = type
+        self.payload = payload
+
+
+class Function(object):
+    def __init__(self, context, param_names, exp, env):
+        self.context = context
+        self.param_names = param_names
+        self.exp = exp
+        self.env = env
+
+    def __call__(self, *args):
+        env = Environment(self.context, self.env, zip(self.param_names, args))
+        print(env)
+        for i in self.exp:
+            self.context.eval(i, env)
+
+    def __str__(self):
+        return "<user-defined function>"
+
+    def __repr__(self):
+        return str(self)
+
+
+class BuiltinFunction(object):
+    def __init__(self, context, name, f):
+        self.context = context
+        self.name = name
+        self.f = f
+
+    def __call__(self, *args):
+        return self.f(*args)
+
+    def __str__(self):
+        return "<built-in function '{0}'>".format(self.name)
+
+    def __repr__(self):
+        return str(self)
+
+
+class Environment(dict):
+    def __init__(self, context, outer=None, iterable=None):
+        super(Environment, self).__init__()
+        self.context = context
+        self.outer = outer
+        if iterable:
+            for k, v in iterable:
+                self[k] = v
+
+    def find(self, var):
+        if var in self:
+            return self[var]
+
+        if self.outer:
+            return self.outer.find(var)
+
+        if var in self.context.builtin_functions:
+            return BuiltinFunction(self.context, var, self.context.builtin_functions.get(var))
+
 
 class MainLoop(object):
     pipe_commands = {
@@ -593,23 +672,16 @@ class MainLoop(object):
 
             self.process(line)
 
-    def find_in_scope(self, token):
+    def find_in_scope(self, token, cwd=None):
+        if not cwd:
+            cwd = self.cwd
+
         if token in list(self.builtin_commands.keys()):
             return self.builtin_commands[token]
 
-        cwd_namespaces = self.cached_values['scope_namespaces']
-        cwd_commands = self.cached_values['scope_commands']
-        if (
-            self.cached_values['scope_cwd'] != self.cwd or
-            self.cached_values['scope_namespaces'] is not None
-           ):
-            cwd_namespaces = self.cwd.namespaces()
-            cwd_commands = list(self.cwd.commands().items())
-            self.cached_values.update({
-                'scope_cwd': self.cwd,
-                'scope_namespaces': cwd_namespaces,
-                'scope_commands': cwd_commands,
-                })
+        cwd_namespaces = cwd.namespaces()
+        cwd_commands = list(cwd.commands().items())
+
         for ns in cwd_namespaces:
             if token == ns.get_name():
                 return ns
@@ -620,121 +692,137 @@ class MainLoop(object):
 
         return None
 
-    def convert_literals(self, tokens):
-        for i in tokens:
-            if isinstance(i, Symbol):
-                # Convert symbol to string
-                yield i.name
+    def eval_block(self, block, env=None):
+        pass
 
-            if isinstance(i, Set):
-                yield i.value
-
-            if isinstance(i, Literal):
-                yield i.value
-
-            if isinstance(i, BinaryExpr):
-                if isinstance(i.right, Literal):
-                    yield (i.left, i.op, i.right.value)
-
-                if isinstance(i.right, Symbol):
-                    # Convert symbol to string
-                    yield (i.left, i.op, i.right.name)
-
-                if isinstance(i.right, Set):
-                    yield (i.left, i.op, i.right.value)
-
-                if isinstance(i.right, CommandExpansion):
-                    yield (i.left, i.op, self.eval(i.right.expr))
-
-    def format_output(self, object):
-        if isinstance(object, list):
-            for i in object:
-                self.format_output(i)
-
-        if isinstance(object, Object):
-            output_object(object)
-
-        if isinstance(object, Table):
-            output_table(object)
-
-        if isinstance(object, (str, int, bool)):
-            output_msg(object)
-
-    def eval(self, tokens):
+    def eval(self, token, env=None, path=None):
+        print(token)
         oldpath = self.path[:]
         if self.start_from_root:
             self.path = self.root_path[:]
             self.start_from_root = False
+
         command = None
         pipe_stack = []
         args = []
+        cwd = path[-1] if path else self.cwd
+        path = path or []
 
-        while tokens:
-            token = tokens.pop(0)
+        if not env:
+            env = self.context.global_env
 
-            if isinstance(token, Symbol):
-                if token.name == '..':
-                    self.cd_up()
-                    continue
+        if isinstance(token, BinaryExpr):
+            left = self.eval(token.left, env)
+            right = self.eval(token.right, env)
+            return self.context.builtin_operators[token.op](left, right)
 
-                item = self.find_in_scope(token.name)
+        if isinstance(token, Literal):
+            return token.value
 
-                if command:
-                    args.append(token)
-                    continue
+        if isinstance(token, Symbol):
+            item = env.find(token.name)
+            if item is not None:
+                return item
 
-                if isinstance(item, Namespace):
-                    self.cd(item)
-                    continue
+            item = self.find_in_scope(token.name, cwd=cwd)
+            if item is not None:
+                return item
 
-                if isinstance(item, Command):
-                    command = item
-                    continue
+            raise SyntaxError("Command or namespace {0} not found".format(token.name))
 
-                try:
-                    raise SyntaxError("Command or namespace {0} not found".format(token.name))
-                finally:
-                    self.path = oldpath
+        if isinstance(token, AssignmentStatement):
+            expr = self.eval(token.expr)
+            env[token.name] = expr
+            return
 
-            if isinstance(token, CommandExpansion):
-                if not command:
-                    try:
-                        raise SyntaxError("Command expansion cannot replace command or namespace name")
-                    finally:
-                        self.path = oldpath
+        if isinstance(token, IfStatement):
+            expr = self.eval(token.expr)
+            body = token.body if expr else token.else_body
+            local_env = Environment(self.context, outer=env)
+            for i in body:
+                self.eval(i, local_env)
 
-                result = self.eval(token.expr)
-                if not isinstance(result, str):
-                    try:
-                        raise SyntaxError("Can only use command expansion with commands returning single value")
-                    finally:
-                        self.path = oldpath
+        if isinstance(token, ForStatement):
+            local_env = Environment(self.context, outer=env)
+            expr = self.eval(token.expr, env)
+            for i in expr:
+                local_env[token.var] = i
+                for i in token.body:
+                    self.eval(i, local_env)
 
-                args.append(Literal(result, type(result)))
-                continue
+        if isinstance(token, WhileStatement):
+            local_env = Environment(self.context, outer=env)
+            while True:
+                expr = self.eval(token.expr)
+                if not expr:
+                    break
 
-            if isinstance(token, Set):
-                if not command:
-                    try:
-                        raise SyntaxError(_('Command or namespace "{0}" not found'.format(token.value)))
-                    finally:
-                        self.path = oldpath
+                for i in token.body:
+                    self.eval(i, local_env)
 
-                continue
+        if isinstance(token, ReturnStatement):
+            return FlowControlInstruction(
+                FlowControlInstructionType.RETURN,
+                self.eval(token.expr, env)
+            )
 
-            if isinstance(token, (Literal, BinaryExpr)):
-                if not command and isinstance(token, Literal):
-                    item = self.find_in_scope(token.value)
-                    if isinstance(item, Namespace):
-                        self.cd(item)
-                        continue
+        if isinstance(token, BreakStatement):
+            return FlowControlInstruction(FlowControlInstructionType.BREAK)
 
-                args.append(token)
-                continue
+        if isinstance(token, UndefStatement):
+            del env[token.name]
 
-            if isinstance(token, PipeExpr):
-                pipe_stack.append(token.right)
-                tokens += token.left
+        if isinstance(token, ExpressionExpansion):
+            expr = self.eval(token.expr, env)
+            return expr
+
+        if isinstance(token, CommandCall):
+            token = copy.deepcopy(token)
+
+            if len(token.args) == 0:
+                for i in path:
+                    self.cd(i)
+
+                return
+
+            top = token.args.pop(0)
+            item = self.eval(top, env, path=path)
+
+            if isinstance(item, (six.string_types, int, bool)):
+                item = self.find_in_scope(str(item), cwd=cwd)
+
+            if isinstance(item, Namespace):
+                return self.eval(token, env, path=path+[item])
+
+            if isinstance(item, Command):
+                args, kwargs, opargs = sort_args(args)
+                return item.run(self.context, args, kwargs, opargs)
+
+            raise SyntaxError("Command or namespace {0} not found".format(top.name))
+
+        if isinstance(token, FunctionCall):
+            args = list(map(lambda a: self.eval(a, env), token.args))
+            func = env.find(token.name)
+            if func:
+                return func(*args)
+
+            raise SyntaxError("Function {0} not found".format(token.name))
+
+        if isinstance(token, Subscript):
+            expr = self.eval(token.expr, env)
+            index = self.eval(token.index, env)
+            return expr[index]
+
+        if isinstance(token, FunctionDefinition):
+            env[token.name] = Function(self.context, token.args, token.body, env)
+            return
+
+        if isinstance(token, Set):
+            return
+
+        if isinstance(token, PipeExpr):
+            pipe_stack.append(token.right)
+            tokens += token.left
 
         args = list(self.convert_literals(args))
         args, kwargs, opargs = sort_args(args)
@@ -839,8 +927,8 @@ class MainLoop(object):
             return
 
         try:
-            i = parse(line)
-            self.format_output(self.eval(i))
+            i = parse(line)[0]
+            format_output(self.eval(i))
         except SyntaxError as e:
             output_msg(_('Syntax error: {0}'.format(str(e))))
         except CommandException as e:

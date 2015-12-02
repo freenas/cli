@@ -92,6 +92,12 @@ class Table(object):
         self.data = data
         self.columns = columns
 
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, item):
+        return self.data[item]
+
 
 class ProgressBar(object):
     def __init__(self):
@@ -307,3 +313,18 @@ def output_less(output_call_list):
 
     new_stdout.seek(0)
     pydoc.pager(new_stdout.read())
+
+
+def format_output(object):
+    if isinstance(object, list):
+        for i in object:
+            format_output(i)
+
+    if isinstance(object, Object):
+        output_object(object)
+
+    if isinstance(object, Table):
+        output_table(object)
+
+    if isinstance(object, (str, int, bool)):
+        output_msg(object)

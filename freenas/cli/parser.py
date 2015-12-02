@@ -304,6 +304,7 @@ def p_expr_list(p):
 def p_expr(p):
     """
     expr : literal
+    expr : array_literal
     expr : binary_expr
     expr : set
     expr : call
@@ -316,6 +317,13 @@ def p_expr(p):
         return
 
     p[0] = p[1]
+
+
+def p_array_literal(p):
+    """
+    array_literal : LBRACKET expr_list RBRACKET
+    """
+    p[0] = Literal(p[2], type(p[2]))
 
 
 def p_literal(p):

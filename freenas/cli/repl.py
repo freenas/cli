@@ -716,6 +716,9 @@ class MainLoop(object):
             return self.context.builtin_operators[token.op](left, right)
 
         if isinstance(token, Literal):
+            if token.type is list:
+                return [self.eval(i, env) for i in token.value]
+
             return token.value
 
         if isinstance(token, Symbol):

@@ -47,12 +47,8 @@ operators = {
 }
 
 
-def hello():
-    print('hello world')
-
-
 functions = {
-    'hello': hello,
     'print': format_output,
-    'range': range
+    'range': range,
+    'str': str
 }

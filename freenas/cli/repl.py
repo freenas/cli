@@ -789,6 +789,13 @@ class MainLoop(object):
                 return
 
             top = token.args.pop(0)
+            if top == '..':
+                if not path:
+                    self.cd_up()
+                    return
+
+                return self.eval(token, env, path=path[:-1])
+
             item = self.eval(top, env, path=path)
 
             if isinstance(item, (six.string_types, int, bool)):

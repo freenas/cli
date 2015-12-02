@@ -91,7 +91,7 @@ tokens = list(reserved.values()) + [
     'ATOM', 'NUMBER', 'HEXNUMBER', 'BINNUMBER', 'OCTNUMBER', 'STRING',
     'ASSIGN', 'LPAREN', 'RPAREN', 'EQ', 'NE', 'GT', 'GE', 'LT', 'LE',
     'REGEX', 'UP', 'PIPE', 'LIST', 'COMMA', 'INC', 'DEC', 'PLUS', 'MINUS',
-    'MUL', 'DIV', 'BOOL', 'NULL', 'DOLLAR', 'EOPEN',
+    'MUL', 'DIV', 'BOOL', 'NULL', 'EOPEN',
     'SEMICOLON', 'LBRACE', 'RBRACE', 'LBRACKET', 'RBRACKET'
 ]
 
@@ -155,7 +155,6 @@ t_EOPEN = r'\$\('
 t_LPAREN = r'\('
 t_RPAREN = r'\)'
 t_ASSIGN = r'='
-t_DOLLAR = '\$'
 t_INC = r'=\+'
 t_DEC = r'=-'
 t_EQ = r'=='
@@ -405,6 +404,8 @@ def p_parameter_list(p):
 
 def p_parameter(p):
     """
+    parameter : UP
+    parameter : LIST
     parameter : symbol
     parameter : unary_parameter
     parameter : binary_parameter

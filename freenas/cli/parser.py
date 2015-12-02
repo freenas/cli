@@ -139,7 +139,7 @@ def t_NULL(t):
 
 
 def t_ATOM(t):
-    r'[0-9a-zA-Z_\/-\/][0-9a-zA-Z_\_\-\.\/#@\:]*'
+    r'[0-9a-zA-Z_\/-\/][0-9a-zA-Z_\-\.\/#@\:]*'
     t.type = reserved.get(t.value, 'ATOM')
     return t
 
@@ -201,8 +201,8 @@ def p_stmt(p):
     stmt : return_stmt
     stmt : break_stmt
     stmt : undef_stmt
-    stmt : expr
     stmt : command
+    stmt : expr
     """
     p[0] = p[1]
 
@@ -247,20 +247,23 @@ def p_assignment_stmt(p):
 
 def p_function_definition_stmt(p):
     """
+    function_definition_stmt : FUNCTION ATOM LPAREN RPAREN block
     function_definition_stmt : FUNCTION ATOM LPAREN function_argument_list RPAREN block
     """
-    p[0] = FunctionDefinition(p[2], p[4], p[6], line=p.lineno(1), column=p.lexpos(1))
+    p[0] = FunctionDefinition(
+        p[2],
+        p[4] if len(p) == 7 else [],
+        p[6] if len(p) == 7 else p[5],
+        line=p.lineno(1),
+        column=p.lexpos(1)
+    )
 
 
 def p_function_argument_list(p):
     """
-    function_argument_list :
     function_argument_list : ATOM
     function_argument_list : ATOM function_argument_list
     """
-    if len(p) == 1:
-        p[0] = []
-
     if len(p) == 2:
         p[0] = [p[1]]
 
@@ -304,10 +307,10 @@ def p_expr_list(p):
 
 def p_expr(p):
     """
+    expr : symbol
     expr : literal
     expr : array_literal
     expr : binary_expr
-    expr : set
     expr : call
     expr : subscript
     expr : EOPEN command RPAREN
@@ -390,25 +393,26 @@ def p_binary_expr(p):
 
 def p_command(p):
     """
-    command : parameter_list
-    command : parameter_list PIPE command
+    command : symbol
+    command : symbol parameter_list
+    command : symbol parameter_list PIPE command
     """
-    if len(p) == 4:
+    if len(p) == 5:
         p[0] = PipeExpr(CommandCall(p[1]), p[3], line=p.lineno(1), column=p.lexpos(1))
         return
 
-    p[0] = CommandCall(p[1], line=p.lineno(1), column=p.lexpos(1))
+    if len(p) == 2:
+        p[0] = CommandCall([p[1]], line=p.lineno(1), column=p.lexpos(1))
+        return
+
+    p[0] = CommandCall([p[1]] + p[2], line=p.lineno(1), column=p.lexpos(1))
 
 
 def p_parameter_list(p):
     """
-    parameter_list :
     parameter_list : parameter
     parameter_list : parameter parameter_list
     """
-    if len(p) == 1:
-        p[0] = []
-
     if len(p) == 2:
         p[0] = [p[1]]
 
@@ -455,27 +459,12 @@ def p_binary_parameter(p):
     p[0] = BinaryParameter(p[1], p[2], p[3], line=p.lineno(1), column=p.lexpos(1))
 
 
-def p_set(p):
-    """
-    set : ATOM COMMA set
-    set : ATOM
-    """
-    if len(p) > 2:
-        if isinstance(p[3], Set):
-            right = p[3].value
-        else:
-            right = p[3].name
-        p[0] = Set(p[1] + p[2] + right)
-    else:
-        p[0] = Symbol(p[1])
-
-
 def p_error(p):
     print("error: {0}".format(p))
 
 
 lex.lex()
-yacc.yacc(debug=False)
+yacc.yacc()
 
 
 def parse(s):

@@ -49,9 +49,9 @@ from freenas.cli import functions
 from freenas.cli import config
 from freenas.cli.namespace import Namespace, RootNamespace, Command, FilteringCommand, CommandException
 from freenas.cli.parser import (
-    parse, Symbol, Set, Literal, BinaryExpr, PipeExpr, AssignmentStatement, IfStatement, ForStatement,
-    WhileStatement, FunctionCall, CommandCall, Subscript, ExpressionExpansion, FunctionDefinition,
-    ReturnStatement, BreakStatement, UndefStatement
+    parse, Symbol, Set, Literal, BinaryParameter, BinaryExpr, PipeExpr, AssignmentStatement,
+    IfStatement, ForStatement, WhileStatement, FunctionCall, CommandCall, Subscript,
+    ExpressionExpansion, FunctionDefinition, ReturnStatement, BreakStatement, UndefStatement
 )
 from freenas.cli.output import (
     ValueType, ProgressBar, output_lock, output_msg, read_value, format_value,
@@ -704,7 +704,6 @@ class MainLoop(object):
 
         command = None
         pipe_stack = []
-        args = []
         cwd = path[-1] if path else self.cwd
         path = path or []
 
@@ -750,6 +749,8 @@ class MainLoop(object):
                 for i in token.body:
                     self.eval(i, local_env)
 
+            return
+
         if isinstance(token, WhileStatement):
             local_env = Environment(self.context, outer=env)
             while True:
@@ -759,6 +760,8 @@ class MainLoop(object):
 
                 for i in token.body:
                     self.eval(i, local_env)
+
+            return
 
         if isinstance(token, ReturnStatement):
             return FlowControlInstruction(
@@ -795,7 +798,8 @@ class MainLoop(object):
                 return self.eval(token, env, path=path+[item])
 
             if isinstance(item, Command):
-                args, kwargs, opargs = sort_args(args)
+                args, kwargs, opargs = sort_args([self.eval(i, env) for i in token.args])
+                cwd.on_enter()
                 return item.run(self.context, args, kwargs, opargs)
 
             raise SyntaxError("Command or namespace {0} not found".format(top.name))
@@ -820,9 +824,14 @@ class MainLoop(object):
         if isinstance(token, Set):
             return
 
+        if isinstance(token, BinaryParameter):
+            return token.left, token.op, self.eval(token.right, env)
+
         if isinstance(token, PipeExpr):
             pipe_stack.append(token.right)
             tokens += token.left
+
+        raise SyntaxError("Unknown AST token: {0}".format(token))
 
         args = list(self.convert_literals(args))
         args, kwargs, opargs = sort_args(args)

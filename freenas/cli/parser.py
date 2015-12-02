@@ -421,7 +421,7 @@ def p_unary_parameter(p):
         p[0] = ExpressionExpansion(p[2], line=p.lineno(1), column=p.lexpos(1))
         return
 
-    p[0] = Literal(p[1], type(p[1]), line=p.lineno(1), column=p.lexpos(1))
+    p[0] = p[1]
 
 
 def p_binary_parameter(p):

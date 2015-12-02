@@ -313,7 +313,7 @@ def p_expr(p):
     expr : binary_expr
     expr : call
     expr : subscript
-    expr : EOPEN command RPAREN
+    expr : expr_expansion
     expr : LPAREN expr RPAREN
     """
     if len(p) == 4:
@@ -321,6 +321,20 @@ def p_expr(p):
         return
 
     p[0] = p[1]
+
+
+def p_expr_expansion_1(p):
+    """
+    expr_expansion : EOPEN symbol RPAREN
+    """
+    p[0] = CommandCall([p[2]])
+
+
+def p_expr_expansion_2(p):
+    """
+    expr_expansion : EOPEN command RPAREN
+    """
+    p[0] = p[2]
 
 
 def p_array_literal(p):
@@ -393,7 +407,6 @@ def p_binary_expr(p):
 
 def p_command(p):
     """
-    command : symbol
     command : symbol parameter_list
     command : symbol parameter_list PIPE command
     """

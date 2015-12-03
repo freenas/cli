@@ -91,7 +91,7 @@ tokens = list(reserved.values()) + [
     'ATOM', 'NUMBER', 'HEXNUMBER', 'BINNUMBER', 'OCTNUMBER', 'STRING',
     'ASSIGN', 'LPAREN', 'RPAREN', 'EQ', 'NE', 'GT', 'GE', 'LT', 'LE',
     'REGEX', 'UP', 'PIPE', 'LIST', 'COMMA', 'INC', 'DEC', 'PLUS', 'MINUS',
-    'MUL', 'DIV', 'BOOL', 'NULL', 'EOPEN',
+    'MUL', 'DIV', 'BOOL', 'NULL', 'EOPEN', 'COPEN',
     'SEMICOLON', 'LBRACE', 'RBRACE', 'LBRACKET', 'RBRACKET'
 ]
 
@@ -152,6 +152,7 @@ t_LBRACKET = r'\['
 t_RBRACKET = r'\]'
 t_PIPE = r'\|'
 t_EOPEN = r'\$\('
+t_COPEN = r'\$\{'
 t_LPAREN = r'\('
 t_RPAREN = r'\)'
 t_ASSIGN = r'='
@@ -447,7 +448,7 @@ def p_parameter(p):
 def p_unary_parameter(p):
     """
     unary_parameter : literal
-    unary_parameter : EOPEN expr RPAREN
+    unary_parameter : COPEN expr RBRACE
     """
     if len(p) == 4:
         p[0] = ExpressionExpansion(p[2], line=p.lineno(1), column=p.lexpos(1))

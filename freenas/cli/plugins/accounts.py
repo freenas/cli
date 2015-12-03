@@ -54,7 +54,7 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
         self.localdoc['CreateEntityCommand'] = ("""\
             Usage: create <name> password=<password> <property>=<value> ...
 
-            Examples: create foo password=bar home=/tank/foo
+            Examples: create foo password=bar home=/mnt/tank/foo
                       create bar group=bar password_disabled=true
 
             Creates a user account. For a list of properties, see 'help properties'.""")

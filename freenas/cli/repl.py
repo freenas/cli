@@ -249,6 +249,7 @@ class Context(object):
         self.keepalive_timer = None
         self.argparse_parser = None
         self.entity_subscribers = {}
+        self.call_stack = [CallStackEntry('<stdin>', [], '<stdin>', 0, 0)]
         self.builtin_operators = functions.operators
         self.builtin_functions = functions.functions
         self.global_env = Environment(self)
@@ -504,21 +505,39 @@ class FlowControlInstruction(object):
         self.payload = payload
 
 
+class CallStackEntry(object):
+    def __init__(self, func, args, file, line, column):
+        self.func = func
+        self.args = args
+        self.file = file
+        self.line = line
+        self.column = column
+
+    def __str__(self):
+        return "at {0}({1}), file {2}, line {3}, column {4}".format(
+            self.func,
+            ', '.join([str(i) for i in self.args]),
+            self.file,
+            self.line,
+            self.column
+        )
+
+
 class Function(object):
-    def __init__(self, context, param_names, exp, env):
+    def __init__(self, context, name, param_names, exp, env):
         self.context = context
+        self.name = name
         self.param_names = param_names
         self.exp = exp
         self.env = env
 
     def __call__(self, *args):
         env = Environment(self.context, self.env, zip(self.param_names, args))
-        print(env)
         for i in self.exp:
             self.context.eval(i, env)
 
     def __str__(self):
-        return "<user-defined function>"
+        return "<user-defined function '{0}'>".format(self.name)
 
     def __repr__(self):
         return str(self)
@@ -710,143 +729,153 @@ class MainLoop(object):
         if not env:
             env = self.context.global_env
 
-        if isinstance(token, BinaryExpr):
-            left = self.eval(token.left, env)
-            right = self.eval(token.right, env)
-            return self.context.builtin_operators[token.op](left, right)
+        try:
+            if isinstance(token, BinaryExpr):
+                left = self.eval(token.left, env)
+                right = self.eval(token.right, env)
+                return self.context.builtin_operators[token.op](left, right)
 
-        if isinstance(token, Literal):
-            if token.type is list:
-                return [self.eval(i, env) for i in token.value]
+            if isinstance(token, Literal):
+                if token.type is list:
+                    return [self.eval(i, env) for i in token.value]
 
-            return token.value
+                return token.value
 
-        if isinstance(token, Symbol):
-            item = env.find(token.name)
-            if item is not None:
-                return item
+            if isinstance(token, Symbol):
+                item = env.find(token.name)
+                if item is not None:
+                    return item
 
-            item = self.find_in_scope(token.name, cwd=cwd)
-            if item is not None:
-                return item
+                item = self.find_in_scope(token.name, cwd=cwd)
+                if item is not None:
+                    return item
 
-            raise SyntaxError("Command or namespace {0} not found".format(token.name))
+                raise SyntaxError("Command or namespace {0} not found".format(token.name))
 
-        if isinstance(token, AssignmentStatement):
-            expr = self.eval(token.expr)
-
-            if isinstance(token.name, Subscript):
-                array = self.eval(token.name.expr, env)
-                index = self.eval(token.name.index, env)
-                array[index] = expr
-                return
-
-            env[token.name] = expr
-            return
-
-        if isinstance(token, IfStatement):
-            expr = self.eval(token.expr)
-            body = token.body if expr else token.else_body
-            local_env = Environment(self.context, outer=env)
-            for i in body:
-                self.eval(i, local_env)
-
-        if isinstance(token, ForStatement):
-            local_env = Environment(self.context, outer=env)
-            expr = self.eval(token.expr, env)
-            for i in expr:
-                local_env[token.var] = i
-                for i in token.body:
-                    self.eval(i, local_env)
-
-            return
-
-        if isinstance(token, WhileStatement):
-            local_env = Environment(self.context, outer=env)
-            while True:
+            if isinstance(token, AssignmentStatement):
                 expr = self.eval(token.expr)
-                if not expr:
-                    break
 
-                for i in token.body:
-                    self.eval(i, local_env)
-
-            return
-
-        if isinstance(token, ReturnStatement):
-            return FlowControlInstruction(
-                FlowControlInstructionType.RETURN,
-                self.eval(token.expr, env)
-            )
-
-        if isinstance(token, BreakStatement):
-            return FlowControlInstruction(FlowControlInstructionType.BREAK)
-
-        if isinstance(token, UndefStatement):
-            del env[token.name]
-
-        if isinstance(token, ExpressionExpansion):
-            expr = self.eval(token.expr, env)
-            return expr
-
-        if isinstance(token, CommandCall):
-            token = copy.deepcopy(token)
-
-            if len(token.args) == 0:
-                for i in path:
-                    self.cd(i)
-
-                return
-
-            top = token.args.pop(0)
-            if top == '..':
-                if not path:
-                    self.cd_up()
+                if isinstance(token.name, Subscript):
+                    array = self.eval(token.name.expr, env)
+                    index = self.eval(token.name.index, env)
+                    array[index] = expr
                     return
 
-                return self.eval(token, env, path=path[:-1])
+                env[token.name] = expr
+                return
 
-            item = self.eval(top, env, path=path)
+            if isinstance(token, IfStatement):
+                expr = self.eval(token.expr)
+                body = token.body if expr else token.else_body
+                local_env = Environment(self.context, outer=env)
+                for i in body:
+                    self.eval(i, local_env)
 
-            if isinstance(item, (six.string_types, int, bool)):
-                item = self.find_in_scope(str(item), cwd=cwd)
+            if isinstance(token, ForStatement):
+                local_env = Environment(self.context, outer=env)
+                expr = self.eval(token.expr, env)
+                for i in expr:
+                    local_env[token.var] = i
+                    for i in token.body:
+                        self.eval(i, local_env)
 
-            if isinstance(item, Namespace):
-                return self.eval(token, env, path=path+[item])
+                return
 
-            if isinstance(item, Command):
-                args, kwargs, opargs = sort_args([self.eval(i, env) for i in token.args])
-                cwd.on_enter()
-                return item.run(self.context, args, kwargs, opargs)
+            if isinstance(token, WhileStatement):
+                local_env = Environment(self.context, outer=env)
+                while True:
+                    expr = self.eval(token.expr)
+                    if not expr:
+                        break
 
-            raise SyntaxError("Command or namespace {0} not found".format(top.name))
+                    for i in token.body:
+                        self.eval(i, local_env)
 
-        if isinstance(token, FunctionCall):
-            args = list(map(lambda a: self.eval(a, env), token.args))
-            func = env.find(token.name)
-            if func:
-                return func(*args)
+                return
 
-            raise SyntaxError("Function {0} not found".format(token.name))
+            if isinstance(token, ReturnStatement):
+                return FlowControlInstruction(
+                    FlowControlInstructionType.RETURN,
+                    self.eval(token.expr, env)
+                )
 
-        if isinstance(token, Subscript):
-            expr = self.eval(token.expr, env)
-            index = self.eval(token.index, env)
-            return expr[index]
+            if isinstance(token, BreakStatement):
+                return FlowControlInstruction(FlowControlInstructionType.BREAK)
 
-        if isinstance(token, FunctionDefinition):
-            env[token.name] = Function(self.context, token.args, token.body, env)
+            if isinstance(token, UndefStatement):
+                del env[token.name]
+
+            if isinstance(token, ExpressionExpansion):
+                expr = self.eval(token.expr, env)
+                return expr
+
+            if isinstance(token, CommandCall):
+                token = copy.deepcopy(token)
+
+                if len(token.args) == 0:
+                    for i in path:
+                        self.cd(i)
+
+                    return
+
+                top = token.args.pop(0)
+                if top == '..':
+                    if not path:
+                        self.cd_up()
+                        return
+
+                    return self.eval(token, env, path=path[:-1])
+
+                item = self.eval(top, env, path=path)
+
+                if isinstance(item, (six.string_types, int, bool)):
+                    item = self.find_in_scope(str(item), cwd=cwd)
+
+                if isinstance(item, Namespace):
+                    return self.eval(token, env, path=path+[item])
+
+                if isinstance(item, Command):
+                    args, kwargs, opargs = sort_args([self.eval(i, env) for i in token.args])
+                    cwd.on_enter()
+                    return item.run(self.context, args, kwargs, opargs)
+
+                raise SyntaxError("Command or namespace {0} not found".format(top.name))
+
+            if isinstance(token, FunctionCall):
+                args = list(map(lambda a: self.eval(a, env), token.args))
+                func = env.find(token.name)
+                if func:
+                    self.context.call_stack.append(CallStackEntry(func.name, args, token.file, token.line, token.column))
+                    result = func(*args)
+                    self.context.call_stack.pop()
+                    return result
+
+                raise SyntaxError("Function {0} not found".format(token.name))
+
+            if isinstance(token, Subscript):
+                expr = self.eval(token.expr, env)
+                index = self.eval(token.index, env)
+                return expr[index]
+
+            if isinstance(token, FunctionDefinition):
+                env[token.name] = Function(self.context, token.name, token.args, token.body, env)
+                return
+
+            if isinstance(token, Set):
+                return
+
+            if isinstance(token, BinaryParameter):
+                return token.left, token.op, self.eval(token.right, env)
+
+            if isinstance(token, PipeExpr):
+                pipe_stack.append(token.right)
+                tokens += token.left
+        except BaseException as err:
+            output_msg('Error: {0}'.format(str(err)))
+            output_msg('Call stack: ')
+            for i in self.context.call_stack:
+                output_msg('  ' + str(i))
             return
-
-        if isinstance(token, Set):
-            return
-
-        if isinstance(token, BinaryParameter):
-            return token.left, token.op, self.eval(token.right, env)
-
-        if isinstance(token, PipeExpr):
-            pipe_stack.append(token.right)
-            tokens += token.left
 
         raise SyntaxError("Unknown AST token: {0}".format(token))
 

@@ -39,6 +39,7 @@ import pydoc
 import collections
 
 from freenas.cli import config
+from freenas.utils import first_or_default
 
 
 output_lock = Lock()
@@ -69,6 +70,13 @@ class Object(list):
             raise ValueError('Can only add Object.Item instances')
 
         super(Object, self).append(p_object)
+
+    def __getitem__(self, item):
+        i = first_or_default(lambda x: x.name == item, self)
+        if i:
+            return i.value
+
+        raise KeyError(item)
 
     def __setitem__(self, key, value):
         if not isinstance(value, self.Item):

@@ -550,15 +550,15 @@ class SingleItemNamespace(ItemNamespace):
 @description("Lists items")
 class ListCommand(FilteringCommand):
     """
-    Usage: show [<field> <operator> <value> ...] [limit=<n>] [sort=<field>,-<field2>]
+    Usage: show
 
     Lists items in current namespace, optinally doing filtering and sorting.
 
     Examples:
         show
-        show username=root
-        show uid>1000
-        show fullname~="John" sort=fullname
+        show | search username == root
+        show | search uid > 1000
+        show | search fullname~="John" | sort fullname
     """
     def __init__(self, parent):
         if hasattr(parent, 'leaf_entity') and parent.leaf_entity:

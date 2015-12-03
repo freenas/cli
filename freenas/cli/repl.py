@@ -568,6 +568,7 @@ class MainLoop(object):
         if not self.cwd.on_leave():
             return
 
+        self.prev_path = self.path[:]
         self.path.append(ns)
         self.cwd.on_enter()
 
@@ -575,6 +576,7 @@ class MainLoop(object):
         if not self.cwd.on_leave():
             return
 
+        self.prev_path = self.path[:]
         if len(self.path) > 1:
             del self.path[-1]
         self.cwd.on_enter()
@@ -881,6 +883,7 @@ class MainLoop(object):
             token = tokens.pop(0)
 
             if token == '..' and len(self.path) > 1:
+                self.prev_path = self.path[:]
                 ptr = self.path[-2]
 
             if issubclass(type(ptr), Namespace):

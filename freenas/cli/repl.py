@@ -226,6 +226,7 @@ class Context(object):
     def __init__(self):
         self.uri = None
         self.parsed_uri = None
+        self.hostname = None
         self.connection = Client()
         self.ml = None
         self.logger = logging.getLogger('cli')
@@ -1042,6 +1043,10 @@ def main():
     if context.parsed_uri.scheme == 'ws':
         context.uri = context.parsed_uri.hostname
     username = None
+    if context.parsed_uri.hostname == None:
+        context.hostname = 'localhost'
+    else:
+        context.hostname = context.parsed_uri.hostname
     if context.parsed_uri.scheme != 'unix' \
             and context.parsed_uri.netloc not in (
                     'localhost', '127.0.0.1', None):

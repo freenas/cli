@@ -35,6 +35,7 @@ import platform
 import re
 import textwrap
 from freenas.cli import sandbox
+from freenas.cli.parser import parse
 from freenas.cli.namespace import (Command, PipeCommand, CommandException, description,
                                    SingleItemNamespace, Namespace)
 from freenas.cli.output import (
@@ -461,22 +462,19 @@ class SourceCommand(Command):
 
     def run(self, context, args, kwargs, opargs):
         if len(args) == 0:
-            output_msg(_("Usage: source <filename>"))
+            raise CommandException(_("Usage: source <filename>"))
         else:
             for arg in args:
                 if os.path.isfile(arg):
-                    path = context.ml.path[:]
-                    context.ml.path = [context.root_ns]
                     try:
                         with open(arg, 'r') as f:
-                            for line in f:
-                                context.ml.process(line.strip())
+                            ast = parse(f.read(), arg)
+                            for i in ast:
+                                context.eval(i)
                     except UnicodeDecodeError as e:
-                        output_msg(_("Incorrect filetype, cannot parse file: {0}".format(str(e))))
-                    finally:
-                        context.ml.path = path
+                        raise CommandException(_("Incorrect filetype, cannot parse file: {0}".format(str(e))))
                 else:
-                    output_msg(_("File " + arg + " does not exist."))
+                    raise CommandException(_("File " + arg + " does not exist."))
 
 
 @description("Prints the provided message to the output")

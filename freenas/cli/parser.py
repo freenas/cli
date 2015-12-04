@@ -37,12 +37,14 @@ def ASTObject(name, *args):
             ' '.join(["{0} '{1}'".format(i, getattr(self, i)) for i in args])
         )
 
-    def init(self, *values, line=None, column=None):
+    def init(self, *values, p=None):
         for idx, i in enumerate(values):
             setattr(self, args[idx], i)
 
-        self.line = line
-        self.column = column
+        if p:
+            self.file = p.parser.filename
+            self.line = p.lineno(1)
+            self.column = p.lexpos(1)
 
     dct = {k: None for k in args}
     dct['__init__'] = init
@@ -91,8 +93,8 @@ tokens = list(reserved.values()) + [
     'ATOM', 'NUMBER', 'HEXNUMBER', 'BINNUMBER', 'OCTNUMBER', 'STRING',
     'ASSIGN', 'LPAREN', 'RPAREN', 'EQ', 'NE', 'GT', 'GE', 'LT', 'LE',
     'REGEX', 'UP', 'PIPE', 'LIST', 'COMMA', 'INC', 'DEC', 'PLUS', 'MINUS',
-    'MUL', 'DIV', 'BOOL', 'NULL', 'EOPEN', 'COPEN',
-    'SEMICOLON', 'LBRACE', 'RBRACE', 'LBRACKET', 'RBRACKET'
+    'MUL', 'DIV', 'BOOL', 'NULL', 'EOPEN', 'COPEN', 'SEMICOLON', 'LBRACE',
+    'RBRACE', 'LBRACKET', 'RBRACKET'
 ]
 
 
@@ -174,6 +176,11 @@ t_UP = r'\.\.'
 t_LIST = r'\?'
 
 
+def t_newline(t):
+    r'\n+'
+    t.lexer.lineno += len(t.value)
+
+
 def t_error(t):
     print("Illegal character '%s'" % t.value[0])
     t.lexer.skip(1)
@@ -182,8 +189,7 @@ def t_error(t):
 def p_stmt_list(p):
     """
     stmt_list : stmt
-    stmt_list : stmt SEMICOLON
-    stmt_list : stmt SEMICOLON stmt_list
+    stmt_list : stmt stmt_list
     """
     if len(p) in (2, 3):
         p[0] = [p[1]]
@@ -197,13 +203,13 @@ def p_stmt(p):
     stmt : if_stmt
     stmt : for_stmt
     stmt : while_stmt
-    stmt : assignment_stmt
+    stmt : assignment_stmt SEMICOLON
     stmt : function_definition_stmt
-    stmt : return_stmt
-    stmt : break_stmt
-    stmt : undef_stmt
+    stmt : return_stmt SEMICOLON
+    stmt : break_stmt SEMICOLON
+    stmt : undef_stmt SEMICOLON
     stmt : command
-    stmt : expr
+    stmt : expr SEMICOLON
     """
     p[0] = p[1]
 
@@ -220,21 +226,21 @@ def p_if_stmt(p):
     if_stmt : IF LPAREN expr RPAREN block
     if_stmt : IF LPAREN expr RPAREN block ELSE block
     """
-    p[0] = IfStatement(p[3], p[5], p[7] if len(p) == 8 else [], line=p.lineno(1), column=p.lexpos(1))
+    p[0] = IfStatement(p[3], p[5], p[7] if len(p) == 8 else [], p=p)
 
 
 def p_for_stmt(p):
     """
     for_stmt : FOR LPAREN ATOM IN expr RPAREN block
     """
-    p[0] = ForStatement(p[3], p[5], p[7], line=p.lineno(1), column=p.lexpos(1))
+    p[0] = ForStatement(p[3], p[5], p[7], p=p)
 
 
 def p_while_stmt(p):
     """
     while_stmt : WHILE LPAREN expr RPAREN block
     """
-    p[0] = WhileStatement(p[3], p[5], line=p.lineno(1), column=p.lexpos(1))
+    p[0] = WhileStatement(p[3], p[5], p=p)
 
 
 def p_assignment_stmt(p):
@@ -243,7 +249,7 @@ def p_assignment_stmt(p):
     assignment_stmt : ATOM ASSIGN command
     assignment_stmt : subscript ASSIGN expr
     """
-    p[0] = AssignmentStatement(p[1], p[3], line=p.lineno(1), column=p.lexpos(1))
+    p[0] = AssignmentStatement(p[1], p[3], p=p)
 
 
 def p_function_definition_stmt(p):
@@ -255,8 +261,7 @@ def p_function_definition_stmt(p):
         p[2],
         p[4] if len(p) == 7 else [],
         p[6] if len(p) == 7 else p[5],
-        line=p.lineno(1),
-        column=p.lexpos(1)
+        p=p
     )
 
 
@@ -277,21 +282,21 @@ def p_return_stmt(p):
     return_stmt : RETURN
     return_stmt : RETURN expr
     """
-    p[0] = ReturnStatement(p[2], line=p.lineno(1), column=p.lexpos(1))
+    p[0] = ReturnStatement(p[2], p=p)
 
 
 def p_break_stmt(p):
     """
     break_stmt : BREAK
     """
-    p[0] = BreakStatement(line=p.lineno(1), column=p.lexpos(1))
+    p[0] = BreakStatement(p=p)
 
 
 def p_undef_stmt(p):
     """
     undef_stmt : UNDEF ATOM
     """
-    p[0] = UndefStatement(p[2], line=p.lineno(1), column=p.lexpos(1))
+    p[0] = UndefStatement(p[2], p=p)
 
 
 def p_expr_list(p):
@@ -360,7 +365,7 @@ def p_literal(p):
     literal : BOOL
     literal : NULL
     """
-    p[0] = Literal(p[1], type(p[1]), line=p.lineno(1), column=p.lexpos(1))
+    p[0] = Literal(p[1], type(p[1]), p=p)
 
 
 def p_symbol(p):
@@ -376,14 +381,14 @@ def p_call(p):
     call : ATOM LPAREN RPAREN
     call : ATOM LPAREN expr_list RPAREN
     """
-    p[0] = FunctionCall(p[1], p[3] if len(p) == 5 else [], line=p.lineno(1), column=p.lexpos(1))
+    p[0] = FunctionCall(p[1], p[3] if len(p) == 5 else [], p=p)
 
 
 def p_subscript(p):
     """
     subscript : expr LBRACKET expr RBRACKET
     """
-    p[0] = Subscript(p[1], p[3], line=p.lineno(1), column=p.lexpos(1))
+    p[0] = Subscript(p[1], p[3], p=p)
 
 
 def p_binary_expr(p):
@@ -403,7 +408,7 @@ def p_binary_expr(p):
     binary_expr : expr OR expr
     binary_expr : expr NOT expr
     """
-    p[0] = BinaryExpr(p[1], p[2], p[3], line=p.lineno(1), column=p.lexpos(1))
+    p[0] = BinaryExpr(p[1], p[2], p[3], p=p)
 
 
 def p_command(p):
@@ -412,14 +417,14 @@ def p_command(p):
     command : symbol parameter_list PIPE command
     """
     if len(p) == 5:
-        p[0] = PipeExpr(CommandCall(p[1]), p[3], line=p.lineno(1), column=p.lexpos(1))
+        p[0] = PipeExpr(CommandCall(p[1]), p[3], p=p)
         return
 
     if len(p) == 2:
-        p[0] = CommandCall([p[1]], line=p.lineno(1), column=p.lexpos(1))
+        p[0] = CommandCall([p[1]], p=p)
         return
 
-    p[0] = CommandCall([p[1]] + p[2], line=p.lineno(1), column=p.lexpos(1))
+    p[0] = CommandCall([p[1]] + p[2], p=p)
 
 
 def p_parameter_list(p):
@@ -451,7 +456,7 @@ def p_unary_parameter(p):
     unary_parameter : COPEN expr RBRACE
     """
     if len(p) == 4:
-        p[0] = ExpressionExpansion(p[2], line=p.lineno(1), column=p.lexpos(1))
+        p[0] = ExpressionExpansion(p[2], p=p)
         return
 
     p[0] = p[1]
@@ -470,16 +475,17 @@ def p_binary_parameter(p):
     binary_parameter : ATOM INC parameter
     binary_parameter : ATOM DEC parameter
     """
-    p[0] = BinaryParameter(p[1], p[2], p[3], line=p.lineno(1), column=p.lexpos(1))
+    p[0] = BinaryParameter(p[1], p[2], p[3], p=p)
 
 
 def p_error(p):
     print("error: {0}".format(p))
 
 
-lex.lex()
-yacc.yacc()
+lexer = lex.lex()
+parser = yacc.yacc()
 
 
-def parse(s):
-    return yacc.parse(s)
+def parse(s, filename):
+    parser.filename = filename
+    return parser.parse(s, lexer=lexer)

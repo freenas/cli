@@ -982,7 +982,7 @@ class MainLoop(object):
             return
 
         try:
-            tokens = parse(line)
+            tokens = parse(line, '<stdin>')
             for i in tokens:
                 format_output(self.eval(i))
         except SyntaxError as e:

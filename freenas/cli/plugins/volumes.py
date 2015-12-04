@@ -865,7 +865,7 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
 
             Example: delete tank
 
-            Deletes a tank.""")
+            Deletes a volume.""")
 
         self.skeleton_entity = {
             'type': 'zfs',

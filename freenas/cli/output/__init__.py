@@ -324,15 +324,18 @@ def output_less(output_call_list):
 
 
 def format_output(object):
-    if isinstance(object, list):
-        for i in object:
-            format_output(i)
-
     if isinstance(object, Object):
         output_object(object)
 
-    if isinstance(object, Table):
+    elif isinstance(object, Table):
         output_table(object)
 
-    if isinstance(object, (str, int, bool)):
+    elif isinstance(object, (str, int, bool)):
         output_msg(object)
+
+    elif isinstance(object, list):
+        for i in object:
+            format_output(i)
+
+    elif object is not None:
+        print(object)

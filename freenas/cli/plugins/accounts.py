@@ -235,7 +235,9 @@ class GroupsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
             descr='Group ID',
             name='gid',
             get='id',
-            set=None,
+            set='id',
+            usersetable=False,            
+            type=ValueType.NUMBER,
             list=True)
 
         self.add_property(

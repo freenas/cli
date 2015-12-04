@@ -154,10 +154,10 @@ class IndexCommand(Command):
         obj = context.ml.get_relative_object(context.ml.path[-1], args)
         if obj.__class__.__name__ == 'RootNamespace':
             output_msg('Builtin items:', attrs=['bold'])
-            output_list(list(context.ml.builtin_commands.keys()))
+            output_list(sorted(list(context.ml.builtin_commands.keys())))
 
         output_msg('Current namespace items:', attrs=['bold'])
-        out = list(cmds.keys())
+        out = sorted(list(cmds.keys()))
         out += [ns.get_name() for ns in sorted(nss, key=lambda i: i.get_name())]
         output_list(out)
 

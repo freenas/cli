@@ -62,6 +62,12 @@ class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
             Example: set name=foo
 
             Set the name of the current boot environment""")
+        self.localdoc['DeleteEntityCommand'] = ("""\
+            Usage: delete <bootenv name>
+
+            Example: delete foo
+
+            Deletes a boot environment.""")
 
         self.skeleton_entity = {
             'name': None,

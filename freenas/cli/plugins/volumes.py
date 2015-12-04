@@ -491,6 +491,14 @@ class DatasetsNamespace(EntityNamespace):
                    
             Creates a dataset.""")
 
+        self.localdoc['DeleteEntityCommand'] = ("""\
+            Usage: delete <volume>/<dataset>
+
+            Example: delete tank/foo
+                     delete tank/foo/bar
+
+            Deletes a dataset.""")
+
         self.skeleton_entity = {
             'type': 'FILESYSTEM',
             'properties': {}
@@ -852,6 +860,12 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
         self.create_task = 'volume.create'
         self.update_task = 'volume.update'
         self.delete_task = 'volume.destroy'
+        self.localdoc['DeleteEntityCommand'] = ("""\
+            Usage: delete <volume>
+
+            Example: delete tank
+
+            Deletes a tank.""")
 
         self.skeleton_entity = {
             'type': 'zfs',

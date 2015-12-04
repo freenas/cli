@@ -133,6 +133,12 @@ class BaseSharesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, En
         self.update_task = 'share.update'
         self.delete_task = 'share.delete'
         self.required_props = ['name', 'volume']
+        self.localdoc['DeleteEntityCommand'] = ("""\
+            Usage: delete <share name>
+
+            Example: delete foo
+
+            Deletes a share.""")
 
         self.skeleton_entity = {
             'type': type_name,

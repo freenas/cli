@@ -26,6 +26,7 @@
 #
 #####################################################################
 
+import copy
 import operator
 from freenas.cli.output import format_output
 
@@ -62,4 +63,6 @@ functions = {
     'append': lambda a, i: a.append(i),
     'remove': lambda a, i: a.remove(i),
     'resize': array_resize
+    'resize': array_resize,
+    'copy': copy.deepcopy
 }

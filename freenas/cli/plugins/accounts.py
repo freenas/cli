@@ -74,6 +74,17 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
 
             Deletes a user.""")
 
+        self.localdoc['ListCommand'] = ("""\
+            Usage: show
+
+            Lists users, optionally doing filtering and sorting.
+
+            Examples:
+                show
+                show | search username == root
+                show | search uid > 1000
+                show | search fullname~="John" | sort fullname""")
+
         self.skeleton_entity = {
             'username': None,
             'group': None
@@ -232,6 +243,15 @@ class GroupsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
             Example: delete smbusers
 
             Deletes a group.""")
+        self.localdoc['ListCommand'] = ("""\
+            Usage: show
+
+            Lists groups, optionally doing filtering and sorting.
+            Examples:
+                show
+                show | search name == wheel
+                show | search gid > 1000
+                show | search builtin == no""")
 
         self.skeleton_entity = {
             'name': None,

@@ -61,6 +61,16 @@ class SharesNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         self.entity_subscriber_name = 'share'
         self.primary_key_name = 'name'
 
+        self.localdoc['ListCommand'] = ("""\
+            Usage: show
+
+            Lists shares, optionally doing filtering and sorting.
+
+            Examples:
+                show
+                show | search name == foo
+                show | search volume == tank | sort name""")
+
         self.add_property(
             descr='Share Name',
             name='name',
@@ -139,6 +149,15 @@ class BaseSharesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, En
             Example: delete foo
 
             Deletes a share.""")
+        self.localdoc['ListCommand'] = ("""\
+            Usage: show
+
+            Lists shares, optionally doing filtering and sorting.
+
+            Examples:
+                show
+                show | search name == foo
+                show | search volume == tank | sort name""")
 
         self.skeleton_entity = {
             'type': type_name,

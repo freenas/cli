@@ -499,6 +499,16 @@ class DatasetsNamespace(EntityNamespace):
 
             Deletes a dataset.""")
 
+        self.localdoc['ListCommand'] = ("""\
+            Usage: show
+
+            Lists datasets, optionally doing filtering and sorting.
+
+            Examples:
+                show
+                show | search name ~= tank
+                show | search compression == lz4 | sort name""")
+
         self.skeleton_entity = {
             'type': 'FILESYSTEM',
             'properties': {}
@@ -866,6 +876,15 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
             Example: delete tank
 
             Deletes a volume.""")
+        self.localdoc['ListCommand'] = ("""\
+            Usage: show
+
+            Lists volumes, optionally doing filtering and sorting.
+
+            Examples:
+                show
+                show | search name == tank
+                show | search status == ONLINE | sort name""")
 
         self.skeleton_entity = {
             'type': 'zfs',

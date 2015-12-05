@@ -333,7 +333,7 @@ def format_output(object):
     elif isinstance(object, (str, int, bool)):
         output_msg(object)
 
-    elif isinstance(object, list):
+    elif isinstance(object, (list, tuple)):
         for i in object:
             format_output(i)
 

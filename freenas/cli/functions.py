@@ -56,13 +56,12 @@ def array_resize(array, length):
 
 
 functions = {
-    'print': format_output,
+    'print': lambda *a: format_output(a),
     'range': range,
     'str': str,
     'length': len,
     'append': lambda a, i: a.append(i),
     'remove': lambda a, i: a.remove(i),
-    'resize': array_resize
     'resize': array_resize,
     'copy': copy.deepcopy
 }

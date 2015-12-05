@@ -1020,6 +1020,9 @@ class MainLoop(object):
 
         try:
             tokens = parse(line, '<stdin>')
+            if not tokens:
+                return
+
             for i in tokens:
                 format_output(self.eval(i))
         except SyntaxError as e:

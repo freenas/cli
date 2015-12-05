@@ -739,6 +739,9 @@ class MainLoop(object):
                 if token.type is list:
                     return [self.eval(i, env) for i in token.value]
 
+                if token.type is dict:
+                    return {k: self.eval(v, env) for k, v in token.value.items()}
+
                 return token.value
 
             if isinstance(token, Symbol):

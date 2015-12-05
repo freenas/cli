@@ -94,7 +94,7 @@ tokens = list(reserved.values()) + [
     'ASSIGN', 'LPAREN', 'RPAREN', 'EQ', 'NE', 'GT', 'GE', 'LT', 'LE',
     'REGEX', 'UP', 'PIPE', 'LIST', 'COMMA', 'INC', 'DEC', 'PLUS', 'MINUS',
     'MUL', 'DIV', 'BOOL', 'NULL', 'EOPEN', 'COPEN', 'LBRACE',
-    'RBRACE', 'LBRACKET', 'RBRACKET', 'NEWLINE',
+    'RBRACE', 'LBRACKET', 'RBRACKET', 'NEWLINE', 'COLON'
 ]
 
 
@@ -178,6 +178,7 @@ t_REGEX = r'~='
 t_COMMA = r'\,'
 t_UP = r'\.\.'
 t_LIST = r'\?'
+t_COLON = ':'
 
 
 def t_ESCAPENL(t):
@@ -356,6 +357,7 @@ def p_expr(p):
     expr : symbol
     expr : literal
     expr : array_literal
+    expr : dict_literal
     expr : binary_expr
     expr : call
     expr : subscript
@@ -386,6 +388,39 @@ def p_array_literal(p):
         return
 
     p[0] = Literal(p[2], list)
+
+
+def p_dict_literal_1(p):
+    """
+    dict_literal : LBRACKET COLON RBRACKET
+    """
+    p[0] = Literal(dict(), dict)
+
+
+def p_dict_literal_2(p):
+    """
+    dict_literal : LBRACKET dict_pair_list RBRACKET
+    """
+    p[0] = Literal(dict(p[2]), dict)
+
+
+def p_dict_pair_list(p):
+    """
+    dict_pair_list : dict_pair
+    dict_pair_list : dict_pair COMMA dict_pair_list
+    """
+    if len(p) == 2:
+        p[0] = [p[1]]
+        return
+
+    p[0] = [p[1]] + p[3]
+
+
+def p_dict_pair(p):
+    """
+    dict_pair : STRING COLON expr
+    """
+    p[0] = (p[1], p[3])
 
 
 def p_literal(p):

@@ -505,6 +505,8 @@ def p_command(p):
 
 def p_command_item_1(p):
     """
+    command_item : UP
+    command_item : LIST
     command_item : symbol
     """
     p[0] = p[1]

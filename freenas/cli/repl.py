@@ -498,8 +498,11 @@ class Context(object):
     def eval(self, *args, **kwargs):
         return self.ml.eval(*args, **kwargs)
 
+    def eval_block(self, *args, **kwargs):
+        return self.ml.eval_block(*args, **kwargs)
 
-class FlowControlInstruction(object):
+
+class FlowControlInstruction(BaseException):
     def __init__(self, type, payload=None):
         self.type = type
         self.payload = payload
@@ -533,8 +536,13 @@ class Function(object):
 
     def __call__(self, *args):
         env = Environment(self.context, self.env, zip(self.param_names, args))
-        for i in self.exp:
-            self.context.eval(i, env)
+        try:
+            self.context.eval_block(self.exp, env, False)
+        except FlowControlInstruction as f:
+            if f.type == FlowControlInstructionType.RETURN:
+                return f.payload
+
+            raise f
 
     def __str__(self):
         return "<user-defined function '{0}'>".format(self.name)
@@ -711,17 +719,24 @@ class MainLoop(object):
 
         return None
 
-    def eval_block(self, block, env=None):
-        pass
+    def eval_block(self, block, env=None, allow_break=False):
+        if not env:
+            env = self.context.global_env
+
+        for stmt in block:
+            ret = self.eval(stmt, env)
+            if type(ret) is FlowControlInstruction:
+                if ret.type == FlowControlInstructionType.BREAK:
+                    if not allow_break:
+                        raise SyntaxError("'break' cannot be used in this block")
+
+                raise ret
 
     def eval(self, token, env=None, path=None):
-        print(token)
-        oldpath = self.path[:]
         if self.start_from_root:
             self.path = self.root_path[:]
             self.start_from_root = False
 
-        command = None
         pipe_stack = []
         cwd = path[-1] if path else self.cwd
         path = path or []
@@ -771,8 +786,7 @@ class MainLoop(object):
                 expr = self.eval(token.expr)
                 body = token.body if expr else token.else_body
                 local_env = Environment(self.context, outer=env)
-                for i in body:
-                    self.eval(i, local_env)
+                self.eval_block(body, local_env, False)
 
             if isinstance(token, ForStatement):
                 local_env = Environment(self.context, outer=env)
@@ -781,13 +795,23 @@ class MainLoop(object):
                     for k, v in expr.items():
                         local_env[token.var[0]] = k
                         local_env[token.var[1]] = v
-                        for stmt in token.body:
-                            self.eval(stmt, local_env)
+                        try:
+                            self.eval_block(token.body, local_env, True)
+                        except FlowControlInstruction as f:
+                            if f.type == FlowControlInstructionType.BREAK:
+                                return
+
+                            raise f
                 else:
                     for i in expr:
                         local_env[token.var] = i
-                        for stmt in token.body:
-                            self.eval(stmt, local_env)
+                        try:
+                            self.eval_block(token.body, local_env, True)
+                        except FlowControlInstruction as f:
+                            if f.type == FlowControlInstructionType.BREAK:
+                                return
+
+                            raise f
 
                 return
 
@@ -796,12 +820,15 @@ class MainLoop(object):
                 while True:
                     expr = self.eval(token.expr)
                     if not expr:
-                        break
+                        return
 
-                    for i in token.body:
-                        self.eval(i, local_env)
+                    try:
+                        self.eval_block(token.body, local_env, True)
+                    except FlowControlInstruction as f:
+                        if f.type == FlowControlInstructionType.BREAK:
+                            return
 
-                return
+                        raise f
 
             if isinstance(token, ReturnStatement):
                 return FlowControlInstruction(

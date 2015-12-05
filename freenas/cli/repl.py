@@ -131,6 +131,19 @@ def sort_args(args):
     return positional, kwargs, opargs
 
 
+def convert_to_literals(tokens):
+    def conv(t):
+        if isinstance(t, Symbol):
+            return Literal(t.name, str)
+
+        if isinstance(t, BinaryParameter):
+            t.right = conv(t.right)
+
+        return t
+
+    return [conv(i) for i in tokens]
+
+
 class FlowControlInstructionType(enum.Enum):
     RETURN = 'RETURN'
     BREAK = 'BREAK'
@@ -872,7 +885,8 @@ class MainLoop(object):
                     return self.eval(token, env, path=path+[item])
 
                 if isinstance(item, Command):
-                    args, kwargs, opargs = sort_args([self.eval(i, env) for i in token.args])
+                    token_args = convert_to_literals(token.args)
+                    args, kwargs, opargs = sort_args([self.eval(i, env) for i in token_args])
                     cwd.on_enter()
                     return item.run(self.context, args, kwargs, opargs)
 

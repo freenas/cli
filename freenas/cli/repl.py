@@ -249,7 +249,7 @@ class Context(object):
         self.keepalive_timer = None
         self.argparse_parser = None
         self.entity_subscribers = {}
-        self.call_stack = [CallStackEntry('<stdin>', [], '<stdin>', 0, 0)]
+        self.call_stack = [CallStackEntry('<stdin>', [], '<stdin>', 1, 1)]
         self.builtin_operators = functions.operators
         self.builtin_functions = functions.functions
         self.global_env = Environment(self)

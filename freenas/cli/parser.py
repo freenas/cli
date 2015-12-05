@@ -93,9 +93,14 @@ tokens = list(reserved.values()) + [
     'ATOM', 'NUMBER', 'HEXNUMBER', 'BINNUMBER', 'OCTNUMBER', 'STRING',
     'ASSIGN', 'LPAREN', 'RPAREN', 'EQ', 'NE', 'GT', 'GE', 'LT', 'LE',
     'REGEX', 'UP', 'PIPE', 'LIST', 'COMMA', 'INC', 'DEC', 'PLUS', 'MINUS',
-    'MUL', 'DIV', 'BOOL', 'NULL', 'EOPEN', 'COPEN', 'SEMICOLON', 'LBRACE',
-    'RBRACE', 'LBRACKET', 'RBRACKET'
+    'MUL', 'DIV', 'BOOL', 'NULL', 'EOPEN', 'COPEN', 'LBRACE',
+    'RBRACE', 'LBRACKET', 'RBRACKET', 'NEWLINE',
 ]
+
+
+def t_COMMENT(t):
+    r'\#.*'
+    pass
 
 
 def t_HEXNUMBER(t):
@@ -147,7 +152,6 @@ def t_ATOM(t):
 
 
 t_ignore = ' \t'
-t_SEMICOLON = r';'
 t_LBRACE = r'\{'
 t_RBRACE = r'\}'
 t_LBRACKET = r'\['
@@ -176,9 +180,16 @@ t_UP = r'\.\.'
 t_LIST = r'\?'
 
 
-def t_newline(t):
-    r'\n+'
+def t_ESCAPENL(t):
+    r'\\\s*[\n\#]'
+    t.lexer.lineno += 1
+    pass
+
+
+def t_NEWLINE(t):
+    r'[\n;]+'
     t.lexer.lineno += len(t.value)
+    return t
 
 
 def t_error(t):
@@ -189,7 +200,8 @@ def t_error(t):
 def p_stmt_list(p):
     """
     stmt_list : stmt
-    stmt_list : stmt stmt_list
+    stmt_list : stmt NEWLINE
+    stmt_list : stmt NEWLINE stmt_list
     """
     if len(p) in (2, 3):
         p[0] = [p[1]]
@@ -198,18 +210,25 @@ def p_stmt_list(p):
     p[0] = [p[1]] + p[3]
 
 
+def p_stmt_list_2(p):
+    """
+    stmt_list : NEWLINE stmt_list
+    """
+    p[0] = p[2]
+
+
 def p_stmt(p):
     """
     stmt : if_stmt
     stmt : for_stmt
     stmt : while_stmt
-    stmt : assignment_stmt SEMICOLON
+    stmt : assignment_stmt
     stmt : function_definition_stmt
-    stmt : return_stmt SEMICOLON
-    stmt : break_stmt SEMICOLON
-    stmt : undef_stmt SEMICOLON
+    stmt : return_stmt
+    stmt : break_stmt
+    stmt : undef_stmt
     stmt : command
-    stmt : expr SEMICOLON
+    stmt : call
     """
     p[0] = p[1]
 
@@ -219,6 +238,13 @@ def p_block(p):
     block : LBRACE stmt_list RBRACE
     """
     p[0] = p[2]
+
+
+def p_block_2(p):
+    """
+    block : LBRACE NEWLINE stmt_list RBRACE
+    """
+    p[0] = p[3]
 
 
 def p_if_stmt(p):
@@ -246,23 +272,37 @@ def p_while_stmt(p):
 def p_assignment_stmt(p):
     """
     assignment_stmt : ATOM ASSIGN expr
-    assignment_stmt : ATOM ASSIGN command
     assignment_stmt : subscript ASSIGN expr
     """
     p[0] = AssignmentStatement(p[1], p[3], p=p)
 
 
-def p_function_definition_stmt(p):
+def p_function_definition_stmt_1(p):
     """
     function_definition_stmt : FUNCTION ATOM LPAREN RPAREN block
+    """
+    p[0] = FunctionDefinition(p[2], [], p[5], p=p)
+
+
+def p_function_definition_stmt_2(p):
+    """
     function_definition_stmt : FUNCTION ATOM LPAREN function_argument_list RPAREN block
     """
-    p[0] = FunctionDefinition(
-        p[2],
-        p[4] if len(p) == 7 else [],
-        p[6] if len(p) == 7 else p[5],
-        p=p
-    )
+    p[0] = FunctionDefinition(p[2], p[4], p[6], p=p)
+
+
+def p_function_definition_stmt_3(p):
+    """
+    function_definition_stmt : FUNCTION ATOM LPAREN RPAREN NEWLINE block
+    """
+    p[0] = FunctionDefinition(p[2], [], p[6], p=p)
+
+
+def p_function_definition_stmt_4(p):
+    """
+    function_definition_stmt : FUNCTION ATOM LPAREN function_argument_list RPAREN NEWLINE block
+    """
+    p[0] = FunctionDefinition(p[2], p[4], p[7], p=p)
 
 
 def p_function_argument_list(p):
@@ -329,14 +369,7 @@ def p_expr(p):
     p[0] = p[1]
 
 
-def p_expr_expansion_1(p):
-    """
-    expr_expansion : EOPEN symbol RPAREN
-    """
-    p[0] = CommandCall([p[2]])
-
-
-def p_expr_expansion_2(p):
+def p_expr_expansion(p):
     """
     expr_expansion : EOPEN command RPAREN
     """
@@ -413,8 +446,9 @@ def p_binary_expr(p):
 
 def p_command(p):
     """
-    command : symbol parameter_list
-    command : symbol parameter_list PIPE command
+    command : command_item
+    command : command_item parameter_list
+    command : command_item parameter_list PIPE command
     """
     if len(p) == 5:
         p[0] = PipeExpr(CommandCall(p[1]), p[3], p=p)
@@ -425,6 +459,20 @@ def p_command(p):
         return
 
     p[0] = CommandCall([p[1]] + p[2], p=p)
+
+
+def p_command_item_1(p):
+    """
+    command_item : symbol
+    """
+    p[0] = p[1]
+
+
+def p_command_item_2(p):
+    """
+    command_item : COPEN expr RBRACE
+    """
+    p[0] = ExpressionExpansion(p[2], p=p)
 
 
 def p_parameter_list(p):
@@ -487,5 +535,6 @@ parser = yacc.yacc()
 
 
 def parse(s, filename):
+    lexer.lineno = 1
     parser.filename = filename
     return parser.parse(s, lexer=lexer)

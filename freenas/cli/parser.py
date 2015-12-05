@@ -399,14 +399,14 @@ def p_array_literal(p):
 
 def p_dict_literal_1(p):
     """
-    dict_literal : LBRACKET COLON RBRACKET
+    dict_literal : LBRACE RBRACE
     """
     p[0] = Literal(dict(), dict)
 
 
 def p_dict_literal_2(p):
     """
-    dict_literal : LBRACKET dict_pair_list RBRACKET
+    dict_literal : LBRACE dict_pair_list RBRACE
     """
     p[0] = Literal(dict(p[2]), dict)
 

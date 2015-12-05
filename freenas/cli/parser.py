@@ -256,11 +256,18 @@ def p_if_stmt(p):
     p[0] = IfStatement(p[3], p[5], p[7] if len(p) == 8 else [], p=p)
 
 
-def p_for_stmt(p):
+def p_for_stmt_1(p):
     """
     for_stmt : FOR LPAREN ATOM IN expr RPAREN block
     """
     p[0] = ForStatement(p[3], p[5], p[7], p=p)
+
+
+def p_for_stmt_2(p):
+    """
+    for_stmt : FOR LPAREN ATOM COMMA ATOM IN expr RPAREN block
+    """
+    p[0] = ForStatement((p[3], p[5]), p[7], p[9], p=p)
 
 
 def p_while_stmt(p):

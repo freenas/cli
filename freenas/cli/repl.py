@@ -777,10 +777,17 @@ class MainLoop(object):
             if isinstance(token, ForStatement):
                 local_env = Environment(self.context, outer=env)
                 expr = self.eval(token.expr, env)
-                for i in expr:
-                    local_env[token.var] = i
-                    for i in token.body:
-                        self.eval(i, local_env)
+                if isinstance(token.var, tuple):
+                    for k, v in expr.items():
+                        local_env[token.var[0]] = k
+                        local_env[token.var[1]] = v
+                        for stmt in token.body:
+                            self.eval(stmt, local_env)
+                else:
+                    for i in expr:
+                        local_env[token.var] = i
+                        for stmt in token.body:
+                            self.eval(stmt, local_env)
 
                 return
 

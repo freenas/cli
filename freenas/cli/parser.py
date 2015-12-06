@@ -486,21 +486,28 @@ def p_binary_expr(p):
     p[0] = BinaryExpr(p[1], p[2], p[3], p=p)
 
 
-def p_command(p):
+def p_command_1(p):
     """
     command : command_item
     command : command_item parameter_list
-    command : command_item parameter_list PIPE command
     """
-    if len(p) == 5:
-        p[0] = PipeExpr(CommandCall(p[1]), p[3], p=p)
-        return
-
     if len(p) == 2:
         p[0] = CommandCall([p[1]], p=p)
         return
 
     p[0] = CommandCall([p[1]] + p[2], p=p)
+
+
+def p_command_2(p):
+    """
+    command : command_item PIPE command
+    command : command_item parameter_list PIPE command
+    """
+    if len(p) == 4:
+        p[0] = PipeExpr(CommandCall([p[1]], p=p), p[3], p=p)
+        return
+
+    p[0] = PipeExpr(CommandCall([p[1]] + p[2], p=p), p[4], p=p)
 
 
 def p_command_item_1(p):
@@ -535,15 +542,30 @@ def p_parameter(p):
     """
     parameter : UP
     parameter : LIST
-    parameter : symbol
-    parameter : unary_parameter
+    parameter : set_parameter
     parameter : binary_parameter
     """
     p[0] = p[1]
 
 
+def p_set_parameter(p):
+    """
+    set_parameter : unary_parameter
+    set_parameter : unary_parameter COMMA set_parameter
+    """
+    if len(p) == 4:
+        if isinstance(p[3], list):
+            p[0] = [p[1]] + p[3]
+        else:
+            p[0] = [p[1], p[3]]
+        return
+
+    p[0] = p[1]
+
+
 def p_unary_parameter(p):
     """
+    unary_parameter : symbol
     unary_parameter : literal
     unary_parameter : COPEN expr RBRACE
     """

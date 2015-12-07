@@ -1,4 +1,4 @@
-#+
+# #+
 # Copyright 2014 iXsystems, Inc.
 # All rights reserved
 #
@@ -26,7 +26,9 @@
 #####################################################################
 
 
-from freenas.cli.namespace import ConfigNamespace, EntityNamespace, RpcBasedLoadMixin, Command, description
+from freenas.cli.namespace import (
+        ConfigNamespace, EntityNamespace, RpcBasedLoadMixin,
+        Command, description)
 from freenas.cli.output import ValueType
 from freenas.cli.utils import post_save
 
@@ -679,7 +681,7 @@ svc_cli_config = {
             'name': 'servers',
             'get': 'servers',
             'type': ValueType.NUMBER
-        },        
+        },
         {
             'descr': 'Enable UDP',
             'name': 'udp',
@@ -772,14 +774,14 @@ svc_cli_config = {
             'descr': 'Frontend mode',
             'name': 'frontend_mode',
             'get': 'frontend_mode',
-            'enum': ['HTTP','TCP'],
+            'enum': ['HTTP', 'TCP'],
             'type': ValueType.STRING
         },
         {
             'descr': 'Backend mode',
             'name': 'backend_mode',
             'get': 'backend_mode',
-            'enum': ['HTTP','TCP'],
+            'enum': ['HTTP', 'TCP'],
             'type': ValueType.STRING
         },
     ],
@@ -795,7 +797,7 @@ svc_cli_config = {
             'name': 'pool_space_threshold',
             'get': 'pool_space_threshold',
             'type': ValueType.NUMBER
-        },        
+        },
         {
             'descr': 'ISNS servers',
             'name': 'isns_servers',

@@ -43,6 +43,8 @@ import gettext
 import getpass
 import traceback
 import six
+import paramiko
+from urllib.parse import urlparse
 from socket import gaierror as socket_error
 from freenas.cli.descriptions import events
 from freenas.cli import functions
@@ -247,6 +249,8 @@ class VariableStore(object):
 
 class Context(object):
     def __init__(self):
+        self.uri = None
+        self.parsed_uri = None
         self.hostname = None
         self.connection = Client()
         self.ml = None
@@ -272,9 +276,9 @@ class Context(object):
     def is_interactive(self):
         return os.isatty(sys.stdout.fileno())
 
-    def start(self):
+    def start(self, password=None):
         self.discover_plugins()
-        self.connect()
+        self.connect(password)
 
     def start_entity_subscribers(self):
         for i in ENTITY_SUBSCRIBERS:
@@ -282,14 +286,24 @@ class Context(object):
             e.start()
             self.entity_subscribers[i] = e
 
-    def connect(self):
+    def connect(self, password=None):
         try:
-            self.connection.connect(self.hostname)
+            self.connection.connect(self.uri, password=password)
         except socket_error as err:
             output_msg(_(
-                "Could not connect to host: {0} due to error: {1}".format(self.hostname, err)
+                "Could not connect to host: {0} due to error: {1}".format(
+                    self.parsed_uri.hostname, err)
             ))
             self.argparse_parser.print_help()
+            sys.exit(1)
+        except paramiko.ssh_exception.AuthenticationException as err:
+            output_msg(_(
+                "Incorrect username or password"))
+            sys.exit(1)
+        except ConnectionRefusedError as err:
+            output_msg(_(
+                "Connection refused by host: {0}".format(
+                    self.parsed_uri.hostname)))
             sys.exit(1)
 
     def login(self, user, password):
@@ -374,9 +388,10 @@ class Context(object):
             retries += 1
             try:
                 time.sleep(2)
-                self.connect()
+                self.connect(getpass.getpass())
                 try:
-                    if self.hostname == '127.0.0.1':
+                    if self.parsed_uri.hostname == '127.0.0.1' or \
+                            self.parsed_uri.scheme == 'unix':
                         self.connection.login_user(getpass.getuser(), '')
                     else:
                         self.connection.login_token(self.connection.token)
@@ -656,7 +671,7 @@ class MainLoop(object):
     def __get_prompt(self):
         variables = {
             'path': '/'.join([str(x.get_name()) for x in self.path]),
-            'host': self.context.hostname
+            'host': self.context.uri
         }
         return self.context.variables.get('prompt').format(**variables)
 
@@ -673,6 +688,7 @@ class MainLoop(object):
         if not self.cwd.on_leave():
             return
 
+        self.prev_path = self.path[:]
         self.path.append(ns)
         self.cwd.on_enter()
 
@@ -680,6 +696,7 @@ class MainLoop(object):
         if not self.cwd.on_leave():
             return
 
+        self.prev_path = self.path[:]
         if len(self.path) > 1:
             del self.path[-1]
         self.cwd.on_enter()
@@ -1028,6 +1045,7 @@ class MainLoop(object):
             token = tokens.pop(0)
 
             if token == '..' and len(self.path) > 1:
+                self.prev_path = self.path[:]
                 ptr = self.path[-2]
 
             if issubclass(type(ptr), Namespace):
@@ -1167,39 +1185,65 @@ def main():
         # not there no probs or cannot make this symlink move on
         pass
     parser = argparse.ArgumentParser()
-    parser.add_argument('hostname', metavar='HOSTNAME', nargs='?',
-                        default='127.0.0.1')
+    parser.add_argument('uri', metavar='URI', nargs='?',
+                        default='unix:')
     parser.add_argument('-m', metavar='MIDDLEWARECONFIG',
                         default=DEFAULT_MIDDLEWARE_CONFIGFILE)
     parser.add_argument('-c', metavar='CONFIG', default=DEFAULT_CLI_CONFIGFILE)
     parser.add_argument('-e', metavar='COMMANDS')
     parser.add_argument('-f', metavar='INPUT')
-    parser.add_argument('-l', metavar='LOGIN')
     parser.add_argument('-p', metavar='PASSWORD')
     parser.add_argument('-D', metavar='DEFINE', action='append')
     args = parser.parse_args()
 
-    if os.environ.get('FREENAS_SYSTEM') != 'YES' and args.hostname == '127.0.0.1':
-        args.hostname = six.moves.input('Please provide FreeNAS IP: ')
+    if os.environ.get('FREENAS_SYSTEM') != 'YES' and args.uri == 'unix:':
+        args.uri = six.moves.input('Please provide FreeNAS IP: ')
 
     context = Context()
     context.argparse_parser = parser
-    context.hostname = args.hostname
+    context.uri = args.uri
+    context.parsed_uri = urlparse(args.uri)
+    if context.parsed_uri.scheme == '':
+        context.parsed_uri = urlparse("ws://" + args.uri)
+    if context.parsed_uri.scheme == 'ws':
+        context.uri = context.parsed_uri.hostname
+    username = None
+    if context.parsed_uri.hostname == None:
+        context.hostname = 'localhost'
+    else:
+        context.hostname = context.parsed_uri.hostname
+    if context.parsed_uri.scheme != 'unix' \
+            and context.parsed_uri.netloc not in (
+                    'localhost', '127.0.0.1', None):
+        if context.parsed_uri.username is None:
+            username = six.moves.input('Please provide a username: ')
+            if context.parsed_uri.scheme == 'ssh':
+                context.uri = 'ssh://{0}@{1}'.format(
+                        username,
+                        context.parsed_uri.hostname)
+                if context.parsed_uri.port is not None:
+                    context.uri = "{0}:{1}".format(
+                            context.uri,
+                            context.parsed_uri.port)
+                context.parsed_uri = urlparse(context.uri)
+        else:
+            username = context.parsed_uri.username
+        if args.p is None:
+            args.p = getpass.getpass('Please provide a password: ')
+        else:
+            args.p = args.p
+            
     context.read_middleware_config_file(args.m)
     context.variables.load(args.c)
-    context.start()
+    context.start(args.p)
 
     ml = MainLoop(context)
     context.ml = ml
 
-    if args.hostname not in ('localhost', '127.0.0.1'):
-        if args.l is None:
-            args.l = six.moves.input('Please provide username: ')
-        if args.p is None:
-            args.p = getpass.getpass('Please provide password: ')
-    if args.l:
-        context.login(args.l, args.p)
-    elif args.l is None and args.p is None and args.hostname in ('127.0.0.1', 'localhost'):
+    if username is not None:
+        context.login(username, args.p)
+    elif context.parsed_uri.netloc in ('127.0.0.1', 'localhost') \
+            or context.parsed_uri.scheme == 'unix':
         context.login(getpass.getuser(), '')
 
     if args.D:

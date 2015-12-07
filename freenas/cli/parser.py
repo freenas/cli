@@ -523,12 +523,18 @@ def p_command_item_1(p):
     """
     command_item : UP
     command_item : LIST
+    """
+    p[0] = Symbol(p[1], p=p)
+
+
+def p_command_item_2(p):
+    """
     command_item : symbol
     """
     p[0] = p[1]
 
 
-def p_command_item_2(p):
+def p_command_item_3(p):
     """
     command_item : COPEN expr RBRACE
     """
@@ -549,8 +555,6 @@ def p_parameter_list(p):
 
 def p_parameter(p):
     """
-    parameter : UP
-    parameter : LIST
     parameter : set_parameter
     parameter : binary_parameter
     """

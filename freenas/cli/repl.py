@@ -47,9 +47,9 @@ from socket import gaierror as socket_error
 from freenas.cli.descriptions import events
 from freenas.cli import functions
 from freenas.cli import config
-from freenas.cli.namespace import Namespace, RootNamespace, Command, FilteringCommand, CommandException
+from freenas.cli.namespace import Namespace, RootNamespace, Command, FilteringCommand, PipeCommand, CommandException
 from freenas.cli.parser import (
-    parse, Symbol, Set, Literal, BinaryParameter, BinaryExpr, PipeExpr, AssignmentStatement,
+    parse, Symbol, Literal, BinaryParameter, BinaryExpr, PipeExpr, AssignmentStatement,
     IfStatement, ForStatement, WhileStatement, FunctionCall, CommandCall, Subscript,
     ExpressionExpansion, FunctionDefinition, ReturnStatement, BreakStatement, UndefStatement
 )
@@ -745,12 +745,13 @@ class MainLoop(object):
 
                 raise ret
 
-    def eval(self, token, env=None, path=None):
+    def eval(self, token, env=None, path=None, serialize_filter=None, input_data=None, dry_run=False):
+        print(token)
+
         if self.start_from_root:
             self.path = self.root_path[:]
             self.start_from_root = False
 
-        pipe_stack = []
         cwd = path[-1] if path else self.cwd
         path = path or []
 
@@ -888,6 +889,21 @@ class MainLoop(object):
                     token_args = convert_to_literals(token.args)
                     args, kwargs, opargs = sort_args([self.eval(i, env) for i in token_args])
                     cwd.on_enter()
+
+                    if dry_run:
+                        return item, args, kwargs, opargs
+
+                    if isinstance(item, PipeCommand):
+                        if serialize_filter:
+                            ret = item.serialize_filter(self.context, args, kwargs, opargs)
+                            if 'filter' in ret:
+                                serialize_filter['filter'] += ret['filter']
+
+                            if 'params' in ret:
+                                serialize_filter['params'].update(ret['params'])
+
+                        return item.run(self.context, args, kwargs, opargs, input=input_data)
+
                     return item.run(self.context, args, kwargs, opargs)
 
                 raise SyntaxError("Command or namespace {0} not found".format(top.name))
@@ -912,101 +928,40 @@ class MainLoop(object):
                 env[token.name] = Function(self.context, token.name, token.args, token.body, env)
                 return
 
-            if isinstance(token, Set):
-                return
-
             if isinstance(token, BinaryParameter):
                 return token.left, token.op, self.eval(token.right, env)
 
             if isinstance(token, PipeExpr):
-                pipe_stack.append(token.right)
-                tokens += token.left
+                if serialize_filter:
+                    self.eval(token.left, serialize_filter=serialize_filter)
+                    self.eval(token.right, serialize_filter=serialize_filter)
+                    return
+
+                cmd, args, kwargs, opargs = self.eval(token.left, dry_run=True)
+                if isinstance(cmd, FilteringCommand):
+                    # Do serialize_filter pass
+                    filt = {"filter": [], "params": {}}
+                    self.eval(token.right, serialize_filter=filt)
+                    result = cmd.run(self.context, args, kwargs, opargs, filtering=filt)
+                else:
+                    result = cmd.run(self.context, args, kwargs, opargs)
+
+                return result
+                #return self.eval(token.right, input_data=result)
+
         except BaseException as err:
             output_msg('Error: {0}'.format(str(err)))
             output_msg('Call stack: ')
             for i in self.context.call_stack:
                 output_msg('  ' + str(i))
+
+            if self.context.variables.get('debug'):
+                output_msg('Python call stack: ')
+                output_msg(traceback.format_exc())
+
             return
 
         raise SyntaxError("Unknown AST token: {0}".format(token))
-
-        args = list(self.convert_literals(args))
-        args, kwargs, opargs = sort_args(args)
-        filter_ops = []
-        filter_params = {}
-
-        if not command:
-            if len(args) > 0:
-                raise SyntaxError('No command specified')
-
-            return
-
-        tmpath = self.path[:]
-
-        if isinstance(command, FilteringCommand):
-            top_of_stack = True
-            for p in pipe_stack[:]:
-                pipe_cmd = self.find_in_scope(p[0].name)
-                if not pipe_cmd:
-                    try:
-                        raise SyntaxError("Pipe command {0} not found".format(p[0].name))
-                    finally:
-                        self.path = oldpath
-                if pipe_cmd.must_be_last and not top_of_stack: 
-                    try:
-                        raise SyntaxError(_("The {0} command must be used at the end of the pipe list").format(p[0].name))
-                    finally:
-                        self.path = oldpath
-                top_of_stack = False
-
-                pipe_args = self.convert_literals(p[1:])
-                try:
-                    ret = pipe_cmd.serialize_filter(self.context, *sort_args(pipe_args))
-
-                    if 'filter' in ret:
-                        filter_ops += ret['filter']
-
-                    if 'params' in ret:
-                        filter_params.update(ret['params'])
-
-                except NotImplementedError:
-                    continue
-                except CommandException:
-                    raise
-                finally:
-                    self.path = oldpath
-
-                # If serializing filter succeeded, remove it from pipe stack
-                pipe_stack.remove(p)
-
-            ret = command.run(self.context, args, kwargs, opargs, filtering={
-                'filter': filter_ops,
-                'params': filter_params
-            })
-        else:
-            try:
-                ret = command.run(self.context, args, kwargs, opargs)
-            finally:
-                self.path = oldpath
-
-        for i in pipe_stack:
-            pipe_cmd = self.find_in_scope(i[0].name)
-            pipe_args = self.convert_literals(i[1:])
-            try:
-                ret = pipe_cmd.run(self.context, *sort_args(pipe_args), input=ret)
-            except CommandException:
-                raise
-            except Exception as e:
-                raise CommandException(_('Unexpected Error: {0}'.format(str(e))))
-            finally:
-                self.path = oldpath
-
-        if self.path != tmpath:
-            # Command must have modified the path
-            return ret
-
-        self.path = oldpath
-        return ret
 
     def process(self, line):
         if len(line) == 0:

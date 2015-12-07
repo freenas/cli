@@ -576,11 +576,7 @@ class SearchPipeCommand(PipeCommand):
     Returns an element in a list that matches the given key value.
     """
     def run(self, context, args, kwargs, opargs, input=None):
-        if isinstance(input, Table):
-            pass
-
-        if isinstance(input, Object):
-            pass
+        return input
 
     def serialize_filter(self, context, args, kwargs, opargs):
         mapped_opargs = map_opargs(opargs, context)
@@ -608,7 +604,7 @@ class ExcludePipeCommand(PipeCommand):
     Returns all the elements of a list that do not match the given key value.
     """
     def run(self, context, args, kwargs, opargs, input=None):
-        pass
+        return input
 
     def serialize_filter(self, context, args, kwargs, opargs):
         mapped_opargs = map_opargs(opargs, context)

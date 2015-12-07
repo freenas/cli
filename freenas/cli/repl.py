@@ -888,10 +888,11 @@ class MainLoop(object):
                 if isinstance(item, Command):
                     token_args = convert_to_literals(token.args)
                     args, kwargs, opargs = sort_args([self.eval(i, env) for i in token_args])
-                    cwd.on_enter()
 
                     if dry_run:
                         return item, args, kwargs, opargs
+
+                    cwd.on_enter()
 
                     if isinstance(item, PipeCommand):
                         if serialize_filter:
@@ -938,16 +939,18 @@ class MainLoop(object):
                     return
 
                 cmd, args, kwargs, opargs = self.eval(token.left, env, path, dry_run=True)
+                cwd.on_enter()
                 if isinstance(cmd, FilteringCommand):
                     # Do serialize_filter pass
                     filt = {"filter": [], "params": {}}
                     self.eval(token.right, env, path, serialize_filter=filt)
                     result = cmd.run(self.context, args, kwargs, opargs, filtering=filt)
+                elif isinstance(cmd, PipeCommand):
+                    result = cmd.run(self.context, args, kwargs, opargs, input=input_data)
                 else:
                     result = cmd.run(self.context, args, kwargs, opargs)
 
-                return result
-                #return self.eval(token.right, input_data=result)
+                return self.eval(token.right, input_data=result)
 
         except BaseException as err:
             output_msg('Error: {0}'.format(str(err)))

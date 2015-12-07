@@ -746,8 +746,6 @@ class MainLoop(object):
                 raise ret
 
     def eval(self, token, env=None, path=None, serialize_filter=None, input_data=None, dry_run=False):
-        print(token)
-
         if self.start_from_root:
             self.path = self.root_path[:]
             self.start_from_root = False
@@ -786,7 +784,7 @@ class MainLoop(object):
                 if item is not None:
                     return item
 
-                raise SyntaxError("Command or namespace {0} not found".format(token.name))
+                return None
 
             if isinstance(token, AssignmentStatement):
                 expr = self.eval(token.expr)

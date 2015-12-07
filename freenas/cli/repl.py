@@ -883,7 +883,7 @@ class MainLoop(object):
                     item = self.find_in_scope(str(item), cwd=cwd)
 
                 if isinstance(item, Namespace):
-                    return self.eval(token, env, path=path+[item])
+                    return self.eval(token, env, path=path+[item], dry_run=dry_run)
 
                 if isinstance(item, Command):
                     token_args = convert_to_literals(token.args)

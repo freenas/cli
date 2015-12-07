@@ -359,10 +359,14 @@ class Context(object):
             retries += 1
             try:
                 time.sleep(2)
-                self.connect(getpass.getpass())
+                if self.parsed_uri.scheme == 'ssh':
+                    self.connect(getpass.getpass())
+                else:
+                    self.connect()
                 try:
-                    if self.parsed_uri.hostname == '127.0.0.1' or \
-                            self.parsed_uri.scheme == 'unix':
+                    if self.parsed_uri.scheme != 'unix' \
+                            and self.parsed_uri.netloc not in (
+                            'localhost', '127.0.0.1', None):
                         self.connection.login_user(getpass.getuser(), '')
                     else:
                         self.connection.login_token(self.connection.token)

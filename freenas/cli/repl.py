@@ -384,22 +384,36 @@ class Context(object):
 
         output_msg(_('Connection lost! Trying to reconnect...'))
         retries = 0
+        if self.parsed_uri.scheme == 'ssh':
+            password = getpass.getpass()
+        else:
+            password = None
+
         while True:
             retries += 1
             try:
                 time.sleep(2)
-                self.connect(getpass.getpass())
                 try:
-                    if self.parsed_uri.hostname == '127.0.0.1' or \
-                            self.parsed_uri.scheme == 'unix':
+                    self.connection.connect(self.uri, password=password)
+                except paramiko.ssh_exception.AuthenticationException:
+                    output_msg(_("Incorrect password"))
+                    password = getpass.getpass()
+                    continue
+                except Exception as e:
+                    output_msg(_(
+                        "Error reconnecting to host {0}: {1}".format(
+                            self.hostname, e)))
+                    continue
+                try:
+                    if self.hostname in ('127.0.0.1', 'localhost') \
+                            or self.parsed_uri.scheme == 'unix':
                         self.connection.login_user(getpass.getuser(), '')
                     else:
                         self.connection.login_token(self.connection.token)
 
                     self.connection.subscribe_events(*EVENT_MASKS)
                 except RpcException:
-                    output_msg(_("Reauthentication failed (most likely token expired or server was restarted)"))
-                    sys.exit(1)
+                    output_msg(_("Reauthentication failed (most likely token expired or server was restarted), use the 'login' command to log back in."))
                 break
             except Exception as e:
                 output_msg(_('Cannot reconnect: {0}'.format(str(e))))

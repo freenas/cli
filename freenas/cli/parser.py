@@ -55,6 +55,7 @@ def ASTObject(name, *args):
 
 Symbol = ASTObject('Symbol', 'name')
 Set = ASTObject('Set', 'value')
+UnaryExpr = ASTObject('UnaryExpr', 'expr', 'op')
 BinaryExpr = ASTObject('BinaryExpr', 'left', 'op', 'right')
 BinaryParameter = ASTObject('BinaryParameter', 'left', 'op', 'right')
 Literal = ASTObject('Literal', 'value', 'type')
@@ -365,6 +366,7 @@ def p_expr(p):
     expr : literal
     expr : array_literal
     expr : dict_literal
+    expr : unary_expr
     expr : binary_expr
     expr : call
     expr : subscript
@@ -464,6 +466,13 @@ def p_subscript(p):
     subscript : expr LBRACKET expr RBRACKET
     """
     p[0] = Subscript(p[1], p[3], p=p)
+
+
+def p_unary_expr(p):
+    """
+    unary_expr : NOT expr
+    """
+    p[0] = UnaryExpr(p[2], p[1], p=p)
 
 
 def p_binary_expr(p):

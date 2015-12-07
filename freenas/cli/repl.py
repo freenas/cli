@@ -49,7 +49,7 @@ from freenas.cli import functions
 from freenas.cli import config
 from freenas.cli.namespace import Namespace, RootNamespace, Command, FilteringCommand, PipeCommand, CommandException
 from freenas.cli.parser import (
-    parse, Symbol, Literal, BinaryParameter, BinaryExpr, PipeExpr, AssignmentStatement,
+    parse, Symbol, Literal, BinaryParameter, UnaryExpr, BinaryExpr, PipeExpr, AssignmentStatement,
     IfStatement, ForStatement, WhileStatement, FunctionCall, CommandCall, Subscript,
     ExpressionExpansion, FunctionDefinition, ReturnStatement, BreakStatement, UndefStatement
 )
@@ -759,6 +759,10 @@ class MainLoop(object):
             env = self.context.global_env
 
         try:
+            if isinstance(token, UnaryExpr):
+                expr = self.eval(token.expr, env)
+                return self.context.builtin_operators[token.op](expr)
+
             if isinstance(token, BinaryExpr):
                 left = self.eval(token.left, env)
                 right = self.eval(token.right, env)

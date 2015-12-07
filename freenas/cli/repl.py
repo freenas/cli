@@ -933,15 +933,15 @@ class MainLoop(object):
 
             if isinstance(token, PipeExpr):
                 if serialize_filter:
-                    self.eval(token.left, serialize_filter=serialize_filter)
-                    self.eval(token.right, serialize_filter=serialize_filter)
+                    self.eval(token.left, env, path, serialize_filter=serialize_filter)
+                    self.eval(token.right, env, path, serialize_filter=serialize_filter)
                     return
 
-                cmd, args, kwargs, opargs = self.eval(token.left, dry_run=True)
+                cmd, args, kwargs, opargs = self.eval(token.left, env, path, dry_run=True)
                 if isinstance(cmd, FilteringCommand):
                     # Do serialize_filter pass
                     filt = {"filter": [], "params": {}}
-                    self.eval(token.right, serialize_filter=filt)
+                    self.eval(token.right, env, path, serialize_filter=filt)
                     result = cmd.run(self.context, args, kwargs, opargs, filtering=filt)
                 else:
                     result = cmd.run(self.context, args, kwargs, opargs)

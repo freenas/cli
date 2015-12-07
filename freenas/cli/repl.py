@@ -892,7 +892,7 @@ class MainLoop(object):
                     args, kwargs, opargs = sort_args([self.eval(i, env) for i in token_args])
 
                     if dry_run:
-                        return item, args, kwargs, opargs
+                        return item, cwd, args, kwargs, opargs
 
                     cwd.on_enter()
 
@@ -940,8 +940,9 @@ class MainLoop(object):
                     self.eval(token.right, env, path, serialize_filter=serialize_filter)
                     return
 
-                cmd, args, kwargs, opargs = self.eval(token.left, env, path, dry_run=True)
+                cmd, cwd, args, kwargs, opargs = self.eval(token.left, env, path, dry_run=True)
                 cwd.on_enter()
+                self.context.pipe_cwd = cwd
                 if isinstance(cmd, FilteringCommand):
                     # Do serialize_filter pass
                     filt = {"filter": [], "params": {}}
@@ -952,7 +953,9 @@ class MainLoop(object):
                 else:
                     result = cmd.run(self.context, args, kwargs, opargs)
 
-                return self.eval(token.right, input_data=result)
+                ret = self.eval(token.right, input_data=result)
+                self.context.pipe_cwd = None
+                return ret
 
         except BaseException as err:
             output_msg('Error: {0}'.format(str(err)))

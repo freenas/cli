@@ -550,7 +550,7 @@ class LessPipeCommand(PipeCommand):
 
 
 def map_opargs(opargs, context):
-    ns = context.ml.get_relative_object(context.ml.path[-1], [])
+    ns = context.pipe_cwd
     mapped_opargs = []
     for k, o, v in opargs:
         if ns.has_property(k):

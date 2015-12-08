@@ -911,6 +911,9 @@ class MainLoop(object):
 
                     return self.eval(token, env, path=path[:-1])
 
+                if isinstance(top, Literal):
+                    top = Symbol(top.value)
+
                 item = self.eval(top, env, path=path)
 
                 if isinstance(item, (six.string_types, int, bool)):

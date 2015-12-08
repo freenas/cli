@@ -523,6 +523,7 @@ def p_command_2(p):
 def p_command_item_1(p):
     """
     command_item : LIST
+    command_item : NUMBER
     """
     p[0] = Symbol(p[1], p=p)
 

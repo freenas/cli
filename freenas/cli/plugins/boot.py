@@ -154,7 +154,7 @@ class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
             self.query_call, [('id', '=', name)], {'single': True}
         )
 
-    def delete(self, name):
+    def delete(self, name, kwargs):
         self.context.submit_task('boot.environment.delete', [name])
 
     def save(self, this, new=False):

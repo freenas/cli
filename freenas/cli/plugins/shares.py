@@ -651,7 +651,7 @@ class ISCSIUsersNamespace(EntityNamespace):
 
         self.parent.save()
 
-    def delete(self, name):
+    def delete(self, name, kwargs):
         self.parent.entity['users'] = [a for a in self.parent.entity['users'] if a['name'] == name]
         self.parent.save()
 
@@ -757,7 +757,7 @@ class ISCSITargetMapingNamespace(EntityNamespace):
             
         self.parent.save()
 
-    def delete(self, name):
+    def delete(self, name, kwargs):
         self.parent.entity['extents'] = [a for a in self.parent.entity['extents'] if a['name'] == name]
         self.parent.save()
 

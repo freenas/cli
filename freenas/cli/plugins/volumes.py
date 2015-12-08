@@ -637,8 +637,13 @@ class DatasetsNamespace(EntityNamespace):
         self.parent.load()
         return first_or_default(lambda d: d['name'] == name, self.parent.entity['datasets'])
 
-    def delete(self, name):
-        self.context.submit_task('volume.dataset.delete', self.parent.entity['name'], name)
+    def delete(self, name, kwargs):
+        self.context.submit_task(
+            'volume.dataset.delete',
+            self.parent.entity['name'],
+            name,
+            kwargs.pop('recursive', False)
+        )
 
     def save(self, this, new=False):
         if new:
@@ -747,7 +752,7 @@ class SnapshotsNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             callback=lambda s: post_save(this, s)
         )
 
-    def delete(self, name):
+    def delete(self, name, kwargs):
         entity = self.get_one(name)
         self.context.submit_task(
             'volume.snapshot.delete',

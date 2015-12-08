@@ -708,7 +708,7 @@ class DeleteEntityCommand(Command):
     def run(self, context, args, kwargs, opargs):
         if len(args) == 0:
             raise CommandException(_("Please specify item to delete."))
-        self.parent.delete(args[0])
+        self.parent.delete(args[0], kwargs)
 
 
 class EntityNamespace(Namespace):
@@ -829,7 +829,7 @@ class TaskBasedSaveMixin(object):
             this.get_diff(),
             callback=lambda s: post_save(this, s))
 
-    def delete(self, name):
+    def delete(self, name, kwargs):
         entity = self.get_one(name)
         if entity:
             self.context.submit_task(self.delete_task, entity[self.save_key_name])
@@ -869,8 +869,8 @@ class NestedObjectSaveMixin(object):
 
         self.parent.save()
 
-    def delete(self, name):
-        self.parent.entity['devices'] = filter(
+    def delete(self, name, kwargs):
+        self.parent.entity[self.parent_path] = filter(
             lambda i: i[self.primary_key_name] == name,
             self.parent.entity[self.parent_path]
         )

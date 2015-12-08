@@ -182,6 +182,19 @@ t_LIST = r'\?'
 t_COLON = ':'
 
 
+precedence = (
+    ('left', 'MINUS', 'PLUS'),
+    ('left', 'MUL', 'DIV'),
+    ('left', 'AND', 'OR'),
+    ('right', 'NOT'),
+    ('left', 'REGEX'),
+    ('left', 'GT', 'LT'),
+    ('left', 'GE', 'LE'),
+    ('left', 'EQ', 'NE'),
+    ('left', 'INC', 'DEC')
+)
+
+
 def t_ESCAPENL(t):
     r'\\\s*[\n\#]'
     t.lexer.lineno += 1
@@ -612,7 +625,7 @@ def p_error(p):
 
 
 lexer = lex.lex()
-parser = yacc.yacc(debug=False)
+parser = yacc.yacc()
 
 
 def parse(s, filename):

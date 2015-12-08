@@ -31,6 +31,7 @@ import time
 import gettext
 import natural.date
 import natural.size
+from dateutil.parser import parse
 from texttable import Texttable
 from columnize import columnize
 from termcolor import cprint
@@ -73,7 +74,7 @@ class AsciiOutputFormatter(object):
         if vt == ValueType.TIME:
             fmt = config.instance.variables.get('datetime_format')
             if fmt == 'natural':
-                return natural.date.duration(value)
+                return natural.date.duration(parse(value))
 
             return time.strftime(fmt, time.localtime(value))
 

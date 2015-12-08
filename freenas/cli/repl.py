@@ -135,6 +135,9 @@ def sort_args(args):
 
 def convert_to_literals(tokens):
     def conv(t):
+        if isinstance(t, list):
+            return [conv(i) for i in t]
+
         if isinstance(t, Symbol):
             return Literal(t.name, str)
 
@@ -788,6 +791,9 @@ class MainLoop(object):
             env = self.context.global_env
 
         try:
+            if isinstance(token, list):
+                return [self.eval(i, env, path) for i in token]
+
             if isinstance(token, UnaryExpr):
                 expr = self.eval(token.expr, env)
                 return self.context.builtin_operators[token.op](expr)

@@ -826,8 +826,7 @@ class CreateVolumeCommand(Command):
         if 'disks' not in kwargs:
             raise CommandException(_("Please specify one or more disks using the disks property"))
         else:
-            disks = kwargs.pop('disks').split(',')
-        
+            disks = kwargs.pop('disks')
 
         if len(disks) < DISKS_PER_TYPE[volume_type]:
             raise CommandException(_("Volume type {0} requires at least {1} disks".format(volume_type, DISKS_PER_TYPE)))

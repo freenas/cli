@@ -870,8 +870,9 @@ class NestedObjectSaveMixin(object):
         self.parent.save()
 
     def delete(self, name, kwargs):
-        self.parent.entity[self.parent_path] = filter(
-            lambda i: i[self.primary_key_name] == name,
+        self.parent.entity[self.parent_path] = list(filter(
+            lambda i: i[self.primary_key_name] != name,
             self.parent.entity[self.parent_path]
-        )
+        ))
+
         self.parent.save()

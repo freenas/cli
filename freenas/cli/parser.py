@@ -611,7 +611,7 @@ def p_error(p):
 
 
 lexer = lex.lex()
-parser = yacc.yacc()
+parser = yacc.yacc(debug=False)
 
 
 def parse(s, filename):

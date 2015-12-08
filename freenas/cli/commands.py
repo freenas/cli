@@ -668,7 +668,7 @@ class SelectPipeCommand(PipeCommand):
     Returns only the output of the specific field for a list.
     """
     def run(self, context, args, kwargs, opargs, input=None):
-        ns = context.ml.get_relative_object(context.ml.path[-1], [])
+        ns = context.pipe_cwd
         available_props = [x.name for x in ns.property_mappings if x.list]
         if len(args) == 0:
             raise CommandException(_(

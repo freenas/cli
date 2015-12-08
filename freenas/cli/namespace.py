@@ -110,7 +110,7 @@ class PipeCommand(Command):
         pass
 
     def serialize_filter(self, context, args, kwargs, opargs):
-        raise NotImplementedError()
+        pass
 
 
 class CommandException(Exception):

@@ -934,11 +934,12 @@ class MainLoop(object):
                     if isinstance(item, PipeCommand):
                         if serialize_filter:
                             ret = item.serialize_filter(self.context, args, kwargs, opargs)
-                            if 'filter' in ret:
-                                serialize_filter['filter'] += ret['filter']
+                            if ret is not None:
+                                if 'filter' in ret:
+                                    serialize_filter['filter'] += ret['filter']
 
-                            if 'params' in ret:
-                                serialize_filter['params'].update(ret['params'])
+                                if 'params' in ret:
+                                    serialize_filter['params'].update(ret['params'])
 
                         return item.run(self.context, args, kwargs, opargs, input=input_data)
 

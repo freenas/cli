@@ -834,6 +834,7 @@ class MainLoop(object):
                 body = token.body if expr else token.else_body
                 local_env = Environment(self.context, outer=env)
                 self.eval_block(body, local_env, False)
+                return
 
             if isinstance(token, ForStatement):
                 local_env = Environment(self.context, outer=env)

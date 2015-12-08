@@ -372,6 +372,7 @@ def p_expr(p):
     expr : subscript
     expr : expr_expansion
     expr : LPAREN expr RPAREN
+    expr : COPEN expr RBRACE
     """
     if len(p) == 4:
         p[0] = p[2]

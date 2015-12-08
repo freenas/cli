@@ -988,6 +988,9 @@ class MainLoop(object):
                 self.context.pipe_cwd = None
                 return ret
 
+        except SystemExit as err:
+            sys.exit(err)
+
         except BaseException as err:
             output_msg('Error: {0}'.format(str(err)))
             output_msg('Call stack: ')

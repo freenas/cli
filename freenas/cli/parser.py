@@ -25,7 +25,7 @@
 #
 #####################################################################
 
-
+import six
 import ply.lex as lex
 import ply.yacc as yacc
 
@@ -634,36 +634,79 @@ def parse(s, filename):
     return parser.parse(s, lexer=lexer)
 
 
-def unparse(token):
+def unparse(token, indent=0):
+    def ind(s):
+        return '\t' * indent + s
+
     if isinstance(token, list):
-        return '\n'.join(unparse(i) for i in token)
+        return '\n'.join(ind(unparse(i)) for i in token)
 
     if isinstance(token, Literal):
         if token.value is None:
-            return 'none'
+            return ind('none')
 
         if token.type is str:
-            return '"{0}"'.format(token.value)
+            return ind('"{0}"'.format(token.value))
 
         if token.type is bool:
-            return 'true' if token.value else 'false'
+            return ind('true' if token.value else 'false')
 
         if token.type is int:
-            return str(token.value)
+            return ind(str(token.value))
 
         if token.type is list:
-            return '[' + ', '.join(unparse(i) for i in token.value) + ']'
+            return ind('[' + ', '.join(unparse(i) for i in token.value) + ']')
 
         if token.type is dict:
-            return '{' + ', '.join('{0}: {1}'.format(unparse(k), unparse(v)) for k, v in token.value.items()) + '}'
+            return ind('{' + ', '.join('{0}: {1}'.format(unparse(k), unparse(v)) for k, v in token.value.items()) + '}')
 
         return str(token.value)
 
     if isinstance(token, BinaryParameter):
-        return ''.join([token.left.value, token.op, unparse(token.right)])
+        return ind(''.join([token.left.value, token.op, unparse(token.right)]))
 
     if isinstance(token, Symbol):
-        return token.name
+        return ind(token.name)
 
     if isinstance(token, CommandCall):
-        return ' '.join(unparse(i) for i in token.args)
+        return ind(' '.join(unparse(i) for i in token.args))
+
+    if isinstance(token, Subscript):
+        return ind('{0}[{1}]'.format(unparse(token.expr), unparse(token.index)))
+
+    if isinstance(token, AssignmentStatement):
+        if isinstance(token.name, six.string_types):
+            lhs = token.name
+        else:
+            lhs = unparse(token.name)
+
+        return ind('{0} = {1}'.format(lhs, unparse(token.expr)))
+
+    if isinstance(token, BinaryExpr):
+        return ind(' '.join([unparse(token.left), token.op, unparse(token.right)]))
+
+    if isinstance(token, IfStatement):
+        lines = [ind('if ({0}) {{'.format(unparse(token.expr)))]
+        for i in token.body:
+            lines.append(unparse(i, indent + 1))
+
+        lines.append(ind('}'))
+        return '\n'.join(lines)
+
+    if isinstance(token, WhileStatement):
+        lines = [ind('while ({0}) {{'.format(unparse(token.expr)))]
+        for i in token.body:
+            lines.append(unparse(i, indent + 1))
+
+        lines.append(ind('}'))
+        return '\n'.join(lines)
+
+    if isinstance(token, FunctionDefinition):
+        lines = [ind('function {0}({1}) {{'.format(token.name, ', '.join(token.args)))]
+        for i in token.body:
+            lines.append(unparse(i, indent + 1))
+
+        lines.append(ind('}'))
+        return '\n'.join(lines)
+
+    return ''

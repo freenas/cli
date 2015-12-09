@@ -29,6 +29,7 @@
 import copy
 import operator
 from freenas.cli.output import format_output, output_msg
+from freenas.cli.parser import unparse, FunctionDefinition
 
 
 operators = {
@@ -62,8 +63,17 @@ def print_(*items):
     output_msg('')
 
 
+def unparse_(fn):
+    output_msg(unparse(FunctionDefinition(
+        fn.name,
+        fn.param_names,
+        fn.exp
+    )))
+
+
 functions = {
     'print': print_,
+    'unparse': unparse_,
     'range': range,
     'str': str,
     'length': len,

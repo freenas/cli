@@ -225,27 +225,27 @@ def format_value(value, vt=ValueType.STRING, fmt=None):
     return get_formatter(fmt).format_value(value, vt)
 
 
-def output_value(value, fmt=None):
+def output_value(value, fmt=None, **kwargs):
     fmt = fmt or config.instance.variables.get('output_format')
     return get_formatter(fmt).output_value(value)
 
 
-def output_list(data, label=_("Items"), fmt=None):
+def output_list(data, label=_("Items"), fmt=None, **kwargs):
     fmt = fmt or config.instance.variables.get('output_format')
     return get_formatter(fmt).output_list(data, label)
 
 
-def output_dict(data, key_label=_("Key"), value_label=_("Value"), fmt=None):
+def output_dict(data, key_label=_("Key"), value_label=_("Value"), fmt=None, **kwargs):
     fmt = fmt or config.instance.variables.get('output_format')
     return get_formatter(fmt).output_dict(data, key_label, value_label)
 
 
-def output_table(table, fmt=None):
+def output_table(table, fmt=None, **kwagrs):
     fmt = fmt or config.instance.variables.get('output_format')
     return get_formatter(fmt).output_table(table)
 
 
-def output_table_list(tables, fmt=None):
+def output_table_list(tables, fmt=None, **kwargs):
     fmt = fmt or config.instance.variables.get('output_format')
     return get_formatter(fmt).output_table_list(tables)
 
@@ -256,7 +256,7 @@ def output_object(item, **kwargs):
     return get_formatter(fmt).output_object(item)
 
 
-def output_tree(tree, children, label, fmt=None):
+def output_tree(tree, children, label, fmt=None, **kwargs):
     fmt = fmt or config.instance.variables.get('output_format')
     return get_formatter(fmt).output_tree(tree, children, label)
 
@@ -323,19 +323,12 @@ def output_less(output_call_list):
     pydoc.pager(new_stdout.read())
 
 
-def format_output(object):
+def format_output(object, **kwargs):
     if isinstance(object, Object):
-        output_object(object)
+        output_object(object, **kwargs)
 
     elif isinstance(object, Table):
-        output_table(object)
+        output_table(object, **kwargs)
 
-    elif isinstance(object, (str, int, bool)):
-        output_msg(object)
-
-    elif isinstance(object, (list, tuple)):
-        for i in object:
-            format_output(i)
-
-    elif object is not None:
-        print(object)
+    else:
+        output_msg(object, **kwargs)

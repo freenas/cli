@@ -25,7 +25,7 @@
 #
 #####################################################################
 
-
+import six
 import sys
 import time
 import gettext
@@ -41,6 +41,34 @@ from freenas.cli.output import ValueType, get_terminal_size, resolve_cell
 
 t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
+
+
+def format_literal(value, **kwargs):
+    if isinstance(value, six.string_types):
+        if kwargs.get('quoted'):
+            return '"{0}"'.format(value)
+        else:
+            return value
+
+    if isinstance(value, bool):
+        return 'true' if value else 'false'
+
+    if isinstance(value, six.integer_types):
+        return str(value)
+
+    if isinstance(value, list):
+        return '[' + ', '.join(format_literal(i, **kwargs) for i in value) + ']'
+
+    if isinstance(value, dict):
+        return '{' + ', '.join('{0}: {1}'.format(
+            format_literal(k, **kwargs),
+            format_literal(v, **kwargs)
+        ) for k, v in value.items()) + '}'
+
+    if value is None:
+        return 'none'
+
+    return str(value)
 
 
 class AsciiOutputFormatter(object):
@@ -172,7 +200,7 @@ class AsciiOutputFormatter(object):
 
     @staticmethod
     def output_msg(message, **kwargs):
-        cprint(str(message), attrs=kwargs.pop('attrs', None))
+        print(format_literal(message, **kwargs), end=('\n' if kwargs.get('newline', True) else ' '))
 
 
 def _formatter():

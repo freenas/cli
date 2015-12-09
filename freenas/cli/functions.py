@@ -28,7 +28,7 @@
 
 import copy
 import operator
-from freenas.cli.output import format_output
+from freenas.cli.output import format_output, output_msg
 
 
 operators = {
@@ -55,8 +55,15 @@ def array_resize(array, length):
         del array[:len(array) - length]
 
 
+def print_(*items):
+    for i in items:
+        format_output(i, newline=False)
+
+    output_msg('')
+
+
 functions = {
-    'print': lambda *a: format_output(a),
+    'print': print_,
     'range': range,
     'str': str,
     'length': len,

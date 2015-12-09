@@ -34,8 +34,7 @@ import gettext
 import platform
 import re
 import textwrap
-from freenas.cli import sandbox
-from freenas.cli.parser import parse
+from freenas.cli.parser import parse, unparse
 from freenas.cli.namespace import (Command, PipeCommand, CommandException, description,
                                    SingleItemNamespace, Namespace)
 from freenas.cli.output import (
@@ -463,6 +462,13 @@ class SourceCommand(Command):
                         raise CommandException(_("Incorrect filetype, cannot parse file: {0}".format(str(e))))
                 else:
                     raise CommandException(_("File " + arg + " does not exist."))
+
+
+@description("Dumps namespace configuration to a series of CLI commands")
+class DumpCommand(Command):
+    def run(self, context, args, kwargs, opargs):
+        if getattr(context.ml.cwd, 'serialize'):
+            return unparse(context.ml.cwd.serialize())
 
 
 @description("Prints the provided message to the output")

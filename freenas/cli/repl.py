@@ -1013,16 +1013,7 @@ class MainLoop(object):
             sys.exit(err)
 
         except BaseException as err:
-            output_msg('Error: {0}'.format(str(err)))
-            output_msg('Call stack: ')
-            for i in self.context.call_stack:
-                output_msg('  ' + str(i))
-
-            if self.context.variables.get('debug'):
-                output_msg('Python call stack: ')
-                output_msg(traceback.format_exc())
-
-            return
+            raise err
 
         raise SyntaxError("Unknown AST token: {0}".format(token))
 
@@ -1056,7 +1047,20 @@ class MainLoop(object):
                 return
 
             for i in tokens:
-                ret = self.eval(i)
+                try:
+                    ret = self.eval(i)
+                except BaseException as err:
+                    output_msg('Error: {0}'.format(str(err)))
+                    output_msg('Call stack: ')
+                    for i in self.context.call_stack:
+                        output_msg('  ' + str(i))
+
+                    if self.context.variables.get('debug'):
+                        output_msg('Python call stack: ')
+                        output_msg(traceback.format_exc())
+
+                    return
+
                 if ret:
                     format_output(ret)
         except SyntaxError as e:

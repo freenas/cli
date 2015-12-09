@@ -621,11 +621,11 @@ def p_binary_parameter(p):
 
 
 def p_error(p):
-    print("error: {0}".format(p))
+    raise SyntaxError(str(p))
 
 
 lexer = lex.lex()
-parser = yacc.yacc()
+parser = yacc.yacc(debug=False)
 
 
 def parse(s, filename):

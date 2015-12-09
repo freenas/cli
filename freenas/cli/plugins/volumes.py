@@ -527,13 +527,6 @@ class DatasetsNamespace(EntityNamespace):
             list=True)
 
         self.add_property(
-            descr='Share type',
-            name='share_type',
-            get='share_type',
-            list=False,
-            condition=lambda o: o['type'] == 'FILESYSTEM')
-
-        self.add_property(
             descr='Permissions type',
             name='permissions_type',
             get='permissions_type',

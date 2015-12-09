@@ -120,18 +120,6 @@ class SaveenvCommand(Command):
                 'Environment Variables Saved to file: {0}'.format(args[0]))
 
 
-@description("Evaluates Python code")
-class EvalCommand(Command):
-    """
-    Usage: eval <Python code fragment>
-
-    Examples:
-        eval "print 'hello world'"
-    """
-    def run(self, context, args, kwargs, opargs):
-        sandbox.evaluate(args[0])
-
-
 @description("Spawns shell, enter \"!shell\" (example: \"!sh\")")
 class ShellCommand(Command):
     """

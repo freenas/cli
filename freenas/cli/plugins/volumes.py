@@ -910,6 +910,7 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
             descr='Mount point',
             name='mountpoint',
             get='mountpoint',
+            set=None,
             list=True)
 
         self.add_property(

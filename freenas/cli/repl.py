@@ -65,10 +65,11 @@ from freenas.dispatcher.rpc import RpcException
 from freenas.utils.query import wrap
 from freenas.cli.commands import (
     ExitCommand, PrintenvCommand, SetenvCommand, ShellCommand, ShutdownCommand,
-    RebootCommand, EvalCommand, HelpCommand, ShowUrlsCommand, ShowIpsCommand,
+    RebootCommand, HelpCommand, ShowUrlsCommand, ShowIpsCommand,
     TopCommand, ClearCommand, HistoryCommand, SaveenvCommand, EchoCommand,
     SourceCommand, LessPipeCommand, SearchPipeCommand, ExcludePipeCommand,
-    SortPipeCommand, LimitPipeCommand, SelectPipeCommand, LoginCommand
+    SortPipeCommand, LimitPipeCommand, SelectPipeCommand, LoginCommand,
+    DumpCommand
 )
 import collections
 
@@ -654,7 +655,6 @@ class MainLoop(object):
         'printenv': PrintenvCommand(),
         'saveenv': SaveenvCommand(),
         'shell': ShellCommand(),
-        'eval': EvalCommand(),
         'shutdown': ShutdownCommand(),
         'reboot': RebootCommand(),
         'help': HelpCommand(),
@@ -662,6 +662,7 @@ class MainLoop(object):
         'showips': ShowIpsCommand(),
         'showurls': ShowUrlsCommand(),
         'source': SourceCommand(),
+        'dump': DumpCommand(),
         'clear': ClearCommand(),
         'history': HistoryCommand(),
         'echo': EchoCommand(),

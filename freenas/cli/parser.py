@@ -595,6 +595,8 @@ def p_unary_parameter(p):
     """
     unary_parameter : symbol
     unary_parameter : literal
+    unary_parameter : array_literal
+    unary_parameter : dict_literal
     unary_parameter : COPEN expr RBRACE
     """
     if len(p) == 4:

@@ -613,13 +613,17 @@ class BuiltinFunction(object):
 
 
 class Environment(dict):
+    class Variable(object):
+        def __init__(self, value):
+            self.value = value
+
     def __init__(self, context, outer=None, iterable=None):
         super(Environment, self).__init__()
         self.context = context
         self.outer = outer
         if iterable:
             for k, v in iterable:
-                self[k] = v
+                self[k] = Environment.Variable(v)
 
     def find(self, var):
         if var in self:
@@ -630,6 +634,8 @@ class Environment(dict):
 
         if var in self.context.builtin_functions:
             return BuiltinFunction(self.context, var, self.context.builtin_functions.get(var))
+
+        raise KeyError(var)
 
 
 class MainLoop(object):
@@ -767,7 +773,7 @@ class MainLoop(object):
         return None
 
     def eval_block(self, block, env=None, allow_break=False):
-        if not env:
+        if env is None:
             env = self.context.global_env
 
         for stmt in block:
@@ -787,7 +793,7 @@ class MainLoop(object):
         cwd = path[-1] if path else self.cwd
         path = path or []
 
-        if not env:
+        if env is None:
             env = self.context.global_env
 
         try:
@@ -813,18 +819,18 @@ class MainLoop(object):
                 return token.value
 
             if isinstance(token, Symbol):
-                item = env.find(token.name)
-                if item is not None:
-                    return item
+                try:
+                    item = env.find(token.name)
+                    return item.value if isinstance(item, Environment.Variable) else item
+                except KeyError:
+                    item = self.find_in_scope(token.name, cwd=cwd)
+                    if item is not None:
+                        return item
 
-                item = self.find_in_scope(token.name, cwd=cwd)
-                if item is not None:
-                    return item
-
-                return None
+                    raise SyntaxError('{0} not found'.format(token.name))
 
             if isinstance(token, AssignmentStatement):
-                expr = self.eval(token.expr)
+                expr = self.eval(token.expr, env)
 
                 if isinstance(token.name, Subscript):
                     array = self.eval(token.name.expr, env)
@@ -832,11 +838,15 @@ class MainLoop(object):
                     array[index] = expr
                     return
 
-                env[token.name] = expr
+                try:
+                    env.find(token.name).value = expr
+                except KeyError:
+                    env[token.name] = Environment.Variable(expr)
+
                 return
 
             if isinstance(token, IfStatement):
-                expr = self.eval(token.expr)
+                expr = self.eval(token.expr, env)
                 body = token.body if expr else token.else_body
                 local_env = Environment(self.context, outer=env)
                 self.eval_block(body, local_env, False)
@@ -872,7 +882,7 @@ class MainLoop(object):
             if isinstance(token, WhileStatement):
                 local_env = Environment(self.context, outer=env)
                 while True:
-                    expr = self.eval(token.expr)
+                    expr = self.eval(token.expr, env)
                     if not expr:
                         return
 
@@ -1046,7 +1056,9 @@ class MainLoop(object):
                 return
 
             for i in tokens:
-                format_output(self.eval(i))
+                ret = self.eval(i)
+                if ret:
+                    format_output(ret)
         except SyntaxError as e:
             output_msg(_('Syntax error: {0}'.format(str(e))))
         except CommandException as e:

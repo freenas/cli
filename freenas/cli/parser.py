@@ -632,3 +632,38 @@ def parse(s, filename):
     lexer.lineno = 1
     parser.filename = filename
     return parser.parse(s, lexer=lexer)
+
+
+def unparse(token):
+    if isinstance(token, list):
+        return '\n'.join(unparse(i) for i in token)
+
+    if isinstance(token, Literal):
+        if token.value is None:
+            return 'none'
+
+        if token.type is str:
+            return '"{0}"'.format(token.value)
+
+        if token.type is bool:
+            return 'true' if token.value else 'false'
+
+        if token.type is int:
+            return str(token.value)
+
+        if token.type is list:
+            return '[' + ', '.join(unparse(i) for i in token.value) + ']'
+
+        if token.type is dict:
+            return '{' + ', '.join('{0}: {1}'.format(unparse(k), unparse(v)) for k, v in token.value.items()) + '}'
+
+        return str(token.value)
+
+    if isinstance(token, BinaryParameter):
+        return ''.join([token.left.value, token.op, unparse(token.right)])
+
+    if isinstance(token, Symbol):
+        return token.name
+
+    if isinstance(token, CommandCall):
+        return ' '.join(unparse(i) for i in token.args)

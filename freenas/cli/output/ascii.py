@@ -57,12 +57,12 @@ def format_literal(value, **kwargs):
         return str(value)
 
     if isinstance(value, list):
-        return '[' + ', '.join(format_literal(i, **kwargs) for i in value) + ']'
+        return '[' + ', '.join(format_literal(i, quoted=True) for i in value) + ']'
 
     if isinstance(value, dict):
         return '{' + ', '.join('{0}: {1}'.format(
-            format_literal(k, **kwargs),
-            format_literal(v, **kwargs)
+            format_literal(k, quoted=True),
+            format_literal(v, quoted=True)
         ) for k, v in value.items()) + '}'
 
     if value is None:

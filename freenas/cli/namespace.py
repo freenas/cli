@@ -70,6 +70,15 @@ class Namespace(object):
     def get_name(self):
         return self.name
 
+    def serialize(self):
+        yield Comment('Namespace: {0}'.format(self.name))
+        yield CommandCall([Symbol(self.name)])
+
+        for i in self.namespaces():
+            yield from i.serialize()
+
+        yield CommandCall([Symbol('..')])
+
     def commands(self):
         # lazy import to avoid circular import hell
         # TODO: can this be avoided? If so please!
@@ -453,6 +462,24 @@ class ConfigNamespace(ItemNamespace):
 
         return name if not self.modified else '[{0}]'.format(name)
 
+    def serialize(self):
+        self.on_enter()
+
+        def do_prop(prop):
+            value = prop.do_get(self.entity)
+            return CommandCall([
+                Symbol('set'),
+                BinaryParameter(
+                    Literal(prop.name), '=',
+                    Literal(value, type(value))
+                )
+            ])
+
+        yield Comment('Namespace: {0}'.format(self.name))
+        yield CommandCall([Symbol(self.name)])
+        yield from map(do_prop, self.property_mappings)
+        yield CommandCall([Symbol('..')])
+
     def commands(self):
         base = super(ConfigNamespace, self).commands()
 
@@ -518,6 +545,36 @@ class SingleItemNamespace(ItemNamespace):
             name = 'unnamed'
 
         return name if self.saved and not self.modified else '[{0}]'.format(name)
+
+    def serialize(self):
+        self.on_enter()
+        createable = True
+        if hasattr(self.parent, 'createable'):
+            createable = self.parent.createable(self.entity)
+
+        if createable:
+            ret = CommandCall([Symbol('create')])
+        else:
+            ret = CommandCall([
+                Symbol(self.primary_key),
+                Symbol('set')
+            ])
+
+        for mapping in self.property_mappings:
+            if not mapping.get:
+                continue
+
+            if not mapping.set:
+                continue
+
+            if mapping.condition is not None:
+                if not mapping.condition(self.entity):
+                    continue
+
+            value = mapping.do_get(self.entity)
+            ret.args.append(BinaryParameter(Literal(mapping.name, str), '=', Literal(value, type(value))))
+
+        yield ret
 
     def load(self):
         if self.saved:
@@ -720,7 +777,6 @@ class DeleteEntityCommand(Command):
 
 
 class EntityNamespace(Namespace):
-
     def __init__(self, name, context):
         super(EntityNamespace, self).__init__(name)
         self.context = context

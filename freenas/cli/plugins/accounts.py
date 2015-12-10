@@ -93,6 +93,8 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             'group': None
         }
 
+        self.createable = lambda entity: not entity['builtin']
+
         self.add_property(
             descr='User ID',
             name='uid',
@@ -263,6 +265,8 @@ class GroupsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
         self.skeleton_entity = {
             'name': None,
         }
+
+        self.createable = lambda entity: not entity['builtin']
 
         self.add_property(
             descr='Group name',

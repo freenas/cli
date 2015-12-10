@@ -472,8 +472,12 @@ class SourceCommand(Command):
 @description("Dumps namespace configuration to a series of CLI commands")
 class DumpCommand(Command):
     def run(self, context, args, kwargs, opargs):
+        result = []
         if getattr(context.ml.cwd, 'serialize'):
-            return unparse(context.ml.cwd.serialize())
+            for i in context.ml.cwd.serialize():
+                result.append(unparse(i))
+
+        return '\n'.join(result)
 
 
 @description("Prints the provided message to the output")

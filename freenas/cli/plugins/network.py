@@ -149,6 +149,8 @@ class InterfacesNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
             'ETHER': _("Ethernet")
         }
 
+        self.createable = lambda entity: entity['type'] != 'ETHER'
+
         self.add_property(
             descr='Name',
             name='name',

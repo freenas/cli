@@ -375,7 +375,13 @@ class HelpCommand(Command):
                         Table.Column('Global Command', 'cmd', ValueType.STRING),
                         Table.Column('Description', 'description', ValueType.STRING)
                     ]))
-            output_less(lambda: output_table_list(output_call_list))
+            help_message = ""
+            if obj.__doc__:
+                help_message = inspect.getdoc(obj)
+            elif isinstance(obj, SingleItemNamespace):
+                help_message = obj.entity_doc()
+            output_less(lambda: [output_table_list(output_call_list),
+                                 output_msg(help_message)])
 
 
 @description("Sends the user to the top level")

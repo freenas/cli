@@ -503,6 +503,11 @@ class SingleItemNamespace(ItemNamespace):
         if hasattr(parent, 'allow_edit'):
             self.allow_edit = parent.allow_edit
 
+    def entity_doc(self):
+        return (
+            "{0} '{1}', expands into commands for managing this entity.".format
+            (self.parent.get_name().title(), self.get_name()))
+
     @property
     def primary_key(self):
         return self.parent.primary_key.do_get(self.entity)

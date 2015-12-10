@@ -39,7 +39,10 @@ _ = t.gettext
 
 @description(_("System users"))
 class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):
-
+    """
+    Users top level command, expands into user entities and commands for
+    managing them.
+    """
     def __init__(self, name, context):
         super(UsersNamespace, self).__init__(name, context)
 
@@ -216,6 +219,10 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
 
 @description(_("System groups"))
 class GroupsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):
+    """
+    Groups top level command, expands into group entities and commands
+    for managing them.
+    """
     def __init__(self, name, context):
         super(GroupsNamespace, self).__init__(name, context)
 
@@ -285,6 +292,9 @@ class GroupsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
 
 @description(_("Manage system users and groups"))
 class AccountNamespace(Namespace):
+    """
+    System accounts top level command, expands into 'user' and 'group'.
+    """
     def __init__(self, name, context):
         super(AccountNamespace, self).__init__(name)
         self.context = context

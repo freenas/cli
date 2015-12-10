@@ -180,6 +180,9 @@ def resolve_cell(row, spec):
 
 def read_value(value, tv=ValueType.STRING):
     if value is None:
+        if tv == ValueType.SET:
+            return []
+
         return value
 
     if tv == ValueType.STRING:
@@ -219,8 +222,6 @@ def read_value(value, tv=ValueType.STRING):
     if tv == ValueType.SET:
         if type(value) is list:
             return value
-
-        return value.split(',')
 
     raise ValueError('Invalid value {0}'.format(value))
 

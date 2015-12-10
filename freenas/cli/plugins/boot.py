@@ -62,6 +62,22 @@ class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
             Example: set name=foo
 
             Set the name of the current boot environment""")
+        self.localdoc['DeleteEntityCommand'] = ("""\
+            Usage: delete <bootenv name>
+
+            Example: delete foo
+
+            Deletes a boot environment.""")
+        self.localdoc['ListCommand'] = ("""\
+            Usage: show
+
+            Lists boot environments, optionally doing filtering and sorting.
+
+            Examples:
+                show
+                show | search name == default
+                show | search active == no
+                show | search name~="FreeNAS" | sort name""")
 
         self.skeleton_entity = {
             'name': None,
@@ -138,7 +154,7 @@ class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
             self.query_call, [('id', '=', name)], {'single': True}
         )
 
-    def delete(self, name):
+    def delete(self, name, kwargs):
         self.context.submit_task('boot.environment.delete', [name])
 
     def save(self, this, new=False):

@@ -26,6 +26,7 @@
 #####################################################################
 
 import gettext
+from freenas.cli.output import ValueType
 from freenas.cli.descriptions import tasks
 from freenas.cli.namespace import EntityNamespace, EntitySubscriberBasedLoadMixin, Command, description
 
@@ -87,13 +88,15 @@ class TasksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             name='started_at',
             get='started_at',
             list=True,
+            type=ValueType.TIME
         )
 
         self.add_property(
             descr='Finished at',
             name='finished_at',
             get='finished_at',
-            list=True
+            list=True,
+            type=ValueType.TIME
         )
 
         self.add_property(

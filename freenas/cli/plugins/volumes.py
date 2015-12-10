@@ -491,6 +491,24 @@ class DatasetsNamespace(EntityNamespace):
                    
             Creates a dataset.""")
 
+        self.localdoc['DeleteEntityCommand'] = ("""\
+            Usage: delete <volume>/<dataset>
+
+            Example: delete tank/foo
+                     delete tank/foo/bar
+
+            Deletes a dataset.""")
+
+        self.localdoc['ListCommand'] = ("""\
+            Usage: show
+
+            Lists datasets, optionally doing filtering and sorting.
+
+            Examples:
+                show
+                show | search name ~= tank
+                show | search compression == lz4 | sort name""")
+
         self.skeleton_entity = {
             'type': 'FILESYSTEM',
             'properties': {}
@@ -507,13 +525,6 @@ class DatasetsNamespace(EntityNamespace):
             name='type',
             get='type',
             list=True)
-
-        self.add_property(
-            descr='Share type',
-            name='share_type',
-            get='share_type',
-            list=False,
-            condition=lambda o: o['type'] == 'FILESYSTEM')
 
         self.add_property(
             descr='Permissions type',
@@ -619,8 +630,13 @@ class DatasetsNamespace(EntityNamespace):
         self.parent.load()
         return first_or_default(lambda d: d['name'] == name, self.parent.entity['datasets'])
 
-    def delete(self, name):
-        self.context.submit_task('volume.dataset.delete', self.parent.entity['name'], name)
+    def delete(self, name, kwargs):
+        self.context.submit_task(
+            'volume.dataset.delete',
+            self.parent.entity['name'],
+            name,
+            kwargs.pop('recursive', False)
+        )
 
     def save(self, this, new=False):
         if new:
@@ -729,7 +745,7 @@ class SnapshotsNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             callback=lambda s: post_save(this, s)
         )
 
-    def delete(self, name):
+    def delete(self, name, kwargs):
         entity = self.get_one(name)
         self.context.submit_task(
             'volume.snapshot.delete',
@@ -803,8 +819,7 @@ class CreateVolumeCommand(Command):
         if 'disks' not in kwargs:
             raise CommandException(_("Please specify one or more disks using the disks property"))
         else:
-            disks = kwargs.pop('disks').split(',')
-        
+            disks = kwargs.pop('disks')
 
         if len(disks) < DISKS_PER_TYPE[volume_type]:
             raise CommandException(_("Volume type {0} requires at least {1} disks".format(volume_type, DISKS_PER_TYPE)))
@@ -852,6 +867,21 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
         self.create_task = 'volume.create'
         self.update_task = 'volume.update'
         self.delete_task = 'volume.destroy'
+        self.localdoc['DeleteEntityCommand'] = ("""\
+            Usage: delete <volume>
+
+            Example: delete tank
+
+            Deletes a volume.""")
+        self.localdoc['ListCommand'] = ("""\
+            Usage: show
+
+            Lists volumes, optionally doing filtering and sorting.
+
+            Examples:
+                show
+                show | search name == tank
+                show | search status == ONLINE | sort name""")
 
         self.skeleton_entity = {
             'type': 'zfs',
@@ -880,6 +910,7 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
             descr='Mount point',
             name='mountpoint',
             get='mountpoint',
+            set=None,
             list=True)
 
         self.add_property(

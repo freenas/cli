@@ -39,6 +39,7 @@ import pydoc
 import collections
 
 from freenas.cli import config
+from freenas.utils import first_or_default
 
 
 output_lock = Lock()
@@ -70,6 +71,13 @@ class Object(list):
 
         super(Object, self).append(p_object)
 
+    def __getitem__(self, item):
+        i = first_or_default(lambda x: x.name == item, self)
+        if i:
+            return i.value
+
+        raise KeyError(item)
+
     def __setitem__(self, key, value):
         if not isinstance(value, self.Item):
             raise ValueError('Can only add Object.Item instances')
@@ -91,6 +99,17 @@ class Table(object):
     def __init__(self, data, columns):
         self.data = data
         self.columns = columns
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, item):
+        return self.data[item]
+
+
+class Sequence(list):
+    def __init__(self, *items):
+        super(Sequence, self).__init__(items)
 
 
 class ProgressBar(object):
@@ -211,27 +230,27 @@ def format_value(value, vt=ValueType.STRING, fmt=None):
     return get_formatter(fmt).format_value(value, vt)
 
 
-def output_value(value, fmt=None):
+def output_value(value, fmt=None, **kwargs):
     fmt = fmt or config.instance.variables.get('output_format')
     return get_formatter(fmt).output_value(value)
 
 
-def output_list(data, label=_("Items"), fmt=None):
+def output_list(data, label=_("Items"), fmt=None, **kwargs):
     fmt = fmt or config.instance.variables.get('output_format')
     return get_formatter(fmt).output_list(data, label)
 
 
-def output_dict(data, key_label=_("Key"), value_label=_("Value"), fmt=None):
+def output_dict(data, key_label=_("Key"), value_label=_("Value"), fmt=None, **kwargs):
     fmt = fmt or config.instance.variables.get('output_format')
     return get_formatter(fmt).output_dict(data, key_label, value_label)
 
 
-def output_table(table, fmt=None):
+def output_table(table, fmt=None, **kwagrs):
     fmt = fmt or config.instance.variables.get('output_format')
     return get_formatter(fmt).output_table(table)
 
 
-def output_table_list(tables, fmt=None):
+def output_table_list(tables, fmt=None, **kwargs):
     fmt = fmt or config.instance.variables.get('output_format')
     return get_formatter(fmt).output_table_list(tables)
 
@@ -242,7 +261,7 @@ def output_object(item, **kwargs):
     return get_formatter(fmt).output_object(item)
 
 
-def output_tree(tree, children, label, fmt=None):
+def output_tree(tree, children, label, fmt=None, **kwargs):
     fmt = fmt or config.instance.variables.get('output_format')
     return get_formatter(fmt).output_tree(tree, children, label)
 
@@ -307,3 +326,18 @@ def output_less(output_call_list):
 
     new_stdout.seek(0)
     pydoc.pager(new_stdout.read())
+
+
+def format_output(object, **kwargs):
+    if isinstance(object, Object):
+        output_object(object, **kwargs)
+
+    elif isinstance(object, Table):
+        output_table(object, **kwargs)
+
+    elif isinstance(object, Sequence):
+        for i in object:
+            format_output(i, **kwargs)
+
+    else:
+        output_msg(object, **kwargs)

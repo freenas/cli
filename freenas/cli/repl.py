@@ -26,6 +26,8 @@
 #
 #####################################################################
 
+import copy
+import enum
 import sys
 import os
 import glob
@@ -41,14 +43,21 @@ import gettext
 import getpass
 import traceback
 import six
+import paramiko
+from urllib.parse import urlparse
 from socket import gaierror as socket_error
 from freenas.cli.descriptions import events
+from freenas.cli import functions
 from freenas.cli import config
-from freenas.cli.namespace import Namespace, RootNamespace, Command, FilteringCommand, CommandException
-from freenas.cli.parser import parse, Symbol, Set, CommandExpansion, Literal, BinaryExpr, PipeExpr
+from freenas.cli.namespace import Namespace, RootNamespace, Command, FilteringCommand, PipeCommand, CommandException
+from freenas.cli.parser import (
+    parse, Symbol, Literal, BinaryParameter, UnaryExpr, BinaryExpr, PipeExpr, AssignmentStatement,
+    IfStatement, ForStatement, WhileStatement, FunctionCall, CommandCall, Subscript,
+    ExpressionExpansion, FunctionDefinition, ReturnStatement, BreakStatement, UndefStatement
+)
 from freenas.cli.output import (
-    ValueType, Object, Table, ProgressBar, output_lock, output_msg, read_value, format_value,
-    output_object, output_table
+    ValueType, ProgressBar, output_lock, output_msg, read_value, format_value,
+    format_output
 )
 from freenas.dispatcher.client import Client, ClientError
 from freenas.dispatcher.entity import EntitySubscriber
@@ -56,10 +65,11 @@ from freenas.dispatcher.rpc import RpcException
 from freenas.utils.query import wrap
 from freenas.cli.commands import (
     ExitCommand, PrintenvCommand, SetenvCommand, ShellCommand, ShutdownCommand,
-    RebootCommand, EvalCommand, HelpCommand, ShowUrlsCommand, ShowIpsCommand,
+    RebootCommand, HelpCommand, ShowUrlsCommand, ShowIpsCommand,
     TopCommand, ClearCommand, HistoryCommand, SaveenvCommand, EchoCommand,
     SourceCommand, LessPipeCommand, SearchPipeCommand, ExcludePipeCommand,
-    SortPipeCommand, LimitPipeCommand, SelectPipeCommand, LoginCommand
+    SortPipeCommand, LimitPipeCommand, SelectPipeCommand, LoginCommand,
+    DumpCommand
 )
 import collections
 
@@ -122,6 +132,27 @@ def sort_args(args):
         positional.append(i)
 
     return positional, kwargs, opargs
+
+
+def convert_to_literals(tokens):
+    def conv(t):
+        if isinstance(t, list):
+            return [conv(i) for i in t]
+
+        if isinstance(t, Symbol):
+            return Literal(t.name, str)
+
+        if isinstance(t, BinaryParameter):
+            t.right = conv(t.right)
+
+        return t
+
+    return [conv(i) for i in tokens]
+
+
+class FlowControlInstructionType(enum.Enum):
+    RETURN = 'RETURN'
+    BREAK = 'BREAK'
 
 
 class VariableStore(object):
@@ -222,6 +253,8 @@ class VariableStore(object):
 
 class Context(object):
     def __init__(self):
+        self.uri = None
+        self.parsed_uri = None
         self.hostname = None
         self.connection = Client()
         self.ml = None
@@ -237,15 +270,19 @@ class Context(object):
         self.keepalive_timer = None
         self.argparse_parser = None
         self.entity_subscribers = {}
+        self.call_stack = [CallStackEntry('<stdin>', [], '<stdin>', 1, 1)]
+        self.builtin_operators = functions.operators
+        self.builtin_functions = functions.functions
+        self.global_env = Environment(self)
         config.instance = self
 
     @property
     def is_interactive(self):
         return os.isatty(sys.stdout.fileno())
 
-    def start(self):
+    def start(self, password=None):
         self.discover_plugins()
-        self.connect()
+        self.connect(password)
 
     def start_entity_subscribers(self):
         for i in ENTITY_SUBSCRIBERS:
@@ -253,14 +290,24 @@ class Context(object):
             e.start()
             self.entity_subscribers[i] = e
 
-    def connect(self):
+    def connect(self, password=None):
         try:
-            self.connection.connect(self.hostname)
+            self.connection.connect(self.uri, password=password)
         except socket_error as err:
             output_msg(_(
-                "Could not connect to host: {0} due to error: {1}".format(self.hostname, err)
+                "Could not connect to host: {0} due to error: {1}".format(
+                    self.parsed_uri.hostname, err)
             ))
             self.argparse_parser.print_help()
+            sys.exit(1)
+        except paramiko.ssh_exception.AuthenticationException as err:
+            output_msg(_(
+                "Incorrect username or password"))
+            sys.exit(1)
+        except ConnectionRefusedError as err:
+            output_msg(_(
+                "Connection refused by host: {0}".format(
+                    self.parsed_uri.hostname)))
             sys.exit(1)
 
     def login(self, user, password):
@@ -341,21 +388,36 @@ class Context(object):
 
         output_msg(_('Connection lost! Trying to reconnect...'))
         retries = 0
+        if self.parsed_uri.scheme == 'ssh':
+            password = getpass.getpass()
+        else:
+            password = None
+
         while True:
             retries += 1
             try:
                 time.sleep(2)
-                self.connect()
                 try:
-                    if self.hostname == '127.0.0.1':
+                    self.connection.connect(self.uri, password=password)
+                except paramiko.ssh_exception.AuthenticationException:
+                    output_msg(_("Incorrect password"))
+                    password = getpass.getpass()
+                    continue
+                except Exception as e:
+                    output_msg(_(
+                        "Error reconnecting to host {0}: {1}".format(
+                            self.hostname, e)))
+                    continue
+                try:
+                    if self.hostname in ('127.0.0.1', 'localhost') \
+                            or self.parsed_uri.scheme == 'unix':
                         self.connection.login_user(getpass.getuser(), '')
                     else:
                         self.connection.login_token(self.connection.token)
 
                     self.connection.subscribe_events(*EVENT_MASKS)
                 except RpcException:
-                    output_msg(_("Reauthentication failed (most likely token expired or server was restarted)"))
-                    sys.exit(1)
+                    output_msg(_("Reauthentication failed (most likely token expired or server was restarted), use the 'login' command to log back in."))
                 break
             except Exception as e:
                 output_msg(_('Cannot reconnect: {0}'.format(str(e))))
@@ -479,6 +541,103 @@ class Context(object):
         self.event_divert = False
         return tid
 
+    def eval(self, *args, **kwargs):
+        return self.ml.eval(*args, **kwargs)
+
+    def eval_block(self, *args, **kwargs):
+        return self.ml.eval_block(*args, **kwargs)
+
+
+class FlowControlInstruction(BaseException):
+    def __init__(self, type, payload=None):
+        self.type = type
+        self.payload = payload
+
+
+class CallStackEntry(object):
+    def __init__(self, func, args, file, line, column):
+        self.func = func
+        self.args = args
+        self.file = file
+        self.line = line
+        self.column = column
+
+    def __str__(self):
+        return "at {0}({1}), file {2}, line {3}, column {4}".format(
+            self.func,
+            ', '.join([str(i) for i in self.args]),
+            self.file,
+            self.line,
+            self.column
+        )
+
+
+class Function(object):
+    def __init__(self, context, name, param_names, exp, env):
+        self.context = context
+        self.name = name
+        self.param_names = param_names
+        self.exp = exp
+        self.env = env
+
+    def __call__(self, *args):
+        env = Environment(self.context, self.env, zip(self.param_names, args))
+        try:
+            self.context.eval_block(self.exp, env, False)
+        except FlowControlInstruction as f:
+            if f.type == FlowControlInstructionType.RETURN:
+                return f.payload
+
+            raise f
+
+    def __str__(self):
+        return "<user-defined function '{0}'>".format(self.name)
+
+    def __repr__(self):
+        return str(self)
+
+
+class BuiltinFunction(object):
+    def __init__(self, context, name, f):
+        self.context = context
+        self.name = name
+        self.f = f
+
+    def __call__(self, *args):
+        return self.f(*args)
+
+    def __str__(self):
+        return "<built-in function '{0}'>".format(self.name)
+
+    def __repr__(self):
+        return str(self)
+
+
+class Environment(dict):
+    class Variable(object):
+        def __init__(self, value):
+            self.value = value
+
+    def __init__(self, context, outer=None, iterable=None):
+        super(Environment, self).__init__()
+        self.context = context
+        self.outer = outer
+        if iterable:
+            for k, v in iterable:
+                self[k] = Environment.Variable(v)
+
+    def find(self, var):
+        if var in self:
+            return self[var]
+
+        if self.outer:
+            return self.outer.find(var)
+
+        if var in self.context.builtin_functions:
+            return BuiltinFunction(self.context, var, self.context.builtin_functions.get(var))
+
+        raise KeyError(var)
+
 
 class MainLoop(object):
     pipe_commands = {
@@ -496,7 +655,6 @@ class MainLoop(object):
         'printenv': PrintenvCommand(),
         'saveenv': SaveenvCommand(),
         'shell': ShellCommand(),
-        'eval': EvalCommand(),
         'shutdown': ShutdownCommand(),
         'reboot': RebootCommand(),
         'help': HelpCommand(),
@@ -504,6 +662,7 @@ class MainLoop(object):
         'showips': ShowIpsCommand(),
         'showurls': ShowUrlsCommand(),
         'source': SourceCommand(),
+        'dump': DumpCommand(),
         'clear': ClearCommand(),
         'history': HistoryCommand(),
         'echo': EchoCommand(),
@@ -536,7 +695,7 @@ class MainLoop(object):
     def __get_prompt(self):
         variables = {
             'path': '/'.join([str(x.get_name()) for x in self.path]),
-            'host': self.context.hostname
+            'host': self.context.uri
         }
         return self.context.variables.get('prompt').format(**variables)
 
@@ -553,6 +712,7 @@ class MainLoop(object):
         if not self.cwd.on_leave():
             return
 
+        self.prev_path = self.path[:]
         self.path.append(ns)
         self.cwd.on_enter()
 
@@ -560,6 +720,7 @@ class MainLoop(object):
         if not self.cwd.on_leave():
             return
 
+        self.prev_path = self.path[:]
         if len(self.path) > 1:
             del self.path[-1]
         self.cwd.on_enter()
@@ -592,23 +753,16 @@ class MainLoop(object):
 
             self.process(line)
 
-    def find_in_scope(self, token):
+    def find_in_scope(self, token, cwd=None):
+        if not cwd:
+            cwd = self.cwd
+
         if token in list(self.builtin_commands.keys()):
             return self.builtin_commands[token]
 
-        cwd_namespaces = self.cached_values['scope_namespaces']
-        cwd_commands = self.cached_values['scope_commands']
-        if (
-            self.cached_values['scope_cwd'] != self.cwd or
-            self.cached_values['scope_namespaces'] is not None
-           ):
-            cwd_namespaces = self.cwd.namespaces()
-            cwd_commands = list(self.cwd.commands().items())
-            self.cached_values.update({
-                'scope_cwd': self.cwd,
-                'scope_namespaces': cwd_namespaces,
-                'scope_commands': cwd_commands,
-                })
+        cwd_namespaces = cwd.namespaces()
+        cwd_commands = list(cwd.commands().items())
+
         for ns in cwd_namespaces:
             if token == ns.get_name():
                 return ns
@@ -619,199 +773,250 @@ class MainLoop(object):
 
         return None
 
-    def convert_literals(self, tokens):
-        for i in tokens:
-            if isinstance(i, Symbol):
-                # Convert symbol to string
-                yield i.name
+    def eval_block(self, block, env=None, allow_break=False):
+        if env is None:
+            env = self.context.global_env
 
-            if isinstance(i, Set):
-                yield i.value
+        for stmt in block:
+            ret = self.eval(stmt, env)
+            if type(ret) is FlowControlInstruction:
+                if ret.type == FlowControlInstructionType.BREAK:
+                    if not allow_break:
+                        raise SyntaxError("'break' cannot be used in this block")
 
-            if isinstance(i, Literal):
-                yield i.value
+                raise ret
 
-            if isinstance(i, BinaryExpr):
-                if isinstance(i.right, Literal):
-                    yield (i.left, i.op, i.right.value)
-
-                if isinstance(i.right, Symbol):
-                    # Convert symbol to string
-                    yield (i.left, i.op, i.right.name)
-
-                if isinstance(i.right, Set):
-                    yield (i.left, i.op, i.right.value)
-
-                if isinstance(i.right, CommandExpansion):
-                    yield (i.left, i.op, self.eval(i.right.expr))
-
-    def format_output(self, object):
-        if isinstance(object, list):
-            for i in object:
-                self.format_output(i)
-
-        if isinstance(object, Object):
-            output_object(object)
-
-        if isinstance(object, Table):
-            output_table(object)
-
-        if isinstance(object, (str, int, bool)):
-            output_msg(object)
-
-    def eval(self, tokens):
-        oldpath = self.path[:]
+    def eval(self, token, env=None, path=None, serialize_filter=None, input_data=None, dry_run=False):
         if self.start_from_root:
             self.path = self.root_path[:]
             self.start_from_root = False
-        command = None
-        pipe_stack = []
-        args = []
 
-        while tokens:
-            token = tokens.pop(0)
+        cwd = path[-1] if path else self.cwd
+        path = path or []
+
+        if env is None:
+            env = self.context.global_env
+
+        try:
+            if isinstance(token, list):
+                return [self.eval(i, env, path) for i in token]
+
+            if isinstance(token, UnaryExpr):
+                expr = self.eval(token.expr, env)
+                return self.context.builtin_operators[token.op](expr)
+
+            if isinstance(token, BinaryExpr):
+                left = self.eval(token.left, env)
+                right = self.eval(token.right, env)
+                return self.context.builtin_operators[token.op](left, right)
+
+            if isinstance(token, Literal):
+                if token.type is list:
+                    return [self.eval(i, env) for i in token.value]
+
+                if token.type is dict:
+                    return {k: self.eval(v, env) for k, v in token.value.items()}
+
+                return token.value
 
             if isinstance(token, Symbol):
-                if token.name == '..':
-                    self.cd_up()
-                    continue
+                try:
+                    item = env.find(token.name)
+                    return item.value if isinstance(item, Environment.Variable) else item
+                except KeyError:
+                    item = self.find_in_scope(token.name, cwd=cwd)
+                    if item is not None:
+                        return item
 
-                item = self.find_in_scope(token.name)
+                    raise SyntaxError('{0} not found'.format(token.name))
 
-                if command:
-                    args.append(token)
-                    continue
+            if isinstance(token, AssignmentStatement):
+                expr = self.eval(token.expr, env)
+
+                if isinstance(token.name, Subscript):
+                    array = self.eval(token.name.expr, env)
+                    index = self.eval(token.name.index, env)
+                    array[index] = expr
+                    return
+
+                try:
+                    env.find(token.name).value = expr
+                except KeyError:
+                    env[token.name] = Environment.Variable(expr)
+
+                return
+
+            if isinstance(token, IfStatement):
+                expr = self.eval(token.expr, env)
+                body = token.body if expr else token.else_body
+                local_env = Environment(self.context, outer=env)
+                self.eval_block(body, local_env, False)
+                return
+
+            if isinstance(token, ForStatement):
+                local_env = Environment(self.context, outer=env)
+                expr = self.eval(token.expr, env)
+                if isinstance(token.var, tuple):
+                    for k, v in expr.items():
+                        local_env[token.var[0]] = k
+                        local_env[token.var[1]] = v
+                        try:
+                            self.eval_block(token.body, local_env, True)
+                        except FlowControlInstruction as f:
+                            if f.type == FlowControlInstructionType.BREAK:
+                                return
+
+                            raise f
+                else:
+                    for i in expr:
+                        local_env[token.var] = i
+                        try:
+                            self.eval_block(token.body, local_env, True)
+                        except FlowControlInstruction as f:
+                            if f.type == FlowControlInstructionType.BREAK:
+                                return
+
+                            raise f
+
+                return
+
+            if isinstance(token, WhileStatement):
+                local_env = Environment(self.context, outer=env)
+                while True:
+                    expr = self.eval(token.expr, env)
+                    if not expr:
+                        return
+
+                    try:
+                        self.eval_block(token.body, local_env, True)
+                    except FlowControlInstruction as f:
+                        if f.type == FlowControlInstructionType.BREAK:
+                            return
+
+                        raise f
+
+            if isinstance(token, ReturnStatement):
+                return FlowControlInstruction(
+                    FlowControlInstructionType.RETURN,
+                    self.eval(token.expr, env)
+                )
+
+            if isinstance(token, BreakStatement):
+                return FlowControlInstruction(FlowControlInstructionType.BREAK)
+
+            if isinstance(token, UndefStatement):
+                del env[token.name]
+
+            if isinstance(token, ExpressionExpansion):
+                expr = self.eval(token.expr, env)
+                return expr
+
+            if isinstance(token, CommandCall):
+                token = copy.deepcopy(token)
+
+                if len(token.args) == 0:
+                    for i in path:
+                        self.cd(i)
+
+                    return
+
+                top = token.args.pop(0)
+                if top == '..':
+                    if not path:
+                        self.cd_up()
+                        return
+
+                    return self.eval(token, env, path=path[:-1])
+
+                if isinstance(top, Literal):
+                    top = Symbol(top.value)
+
+                item = self.eval(top, env, path=path)
+
+                if isinstance(item, (six.string_types, int, bool)):
+                    item = self.find_in_scope(str(item), cwd=cwd)
 
                 if isinstance(item, Namespace):
-                    self.cd(item)
-                    continue
+                    return self.eval(token, env, path=path+[item], dry_run=dry_run)
 
                 if isinstance(item, Command):
-                    command = item
-                    continue
+                    token_args = convert_to_literals(token.args)
+                    args, kwargs, opargs = sort_args([self.eval(i, env) for i in token_args])
 
-                try:
-                    raise SyntaxError("Command or namespace {0} not found".format(token.name))
-                finally:
-                    self.path = oldpath
+                    if dry_run:
+                        return item, cwd, args, kwargs, opargs
 
-            if isinstance(token, CommandExpansion):
-                if not command:
-                    try:
-                        raise SyntaxError("Command expansion cannot replace command or namespace name")
-                    finally:
-                        self.path = oldpath
+                    cwd.on_enter()
 
-                result = self.eval(token.expr)
-                if not isinstance(result, str):
-                    try:
-                        raise SyntaxError("Can only use command expansion with commands returning single value")
-                    finally:
-                        self.path = oldpath
+                    if isinstance(item, PipeCommand):
+                        if serialize_filter:
+                            ret = item.serialize_filter(self.context, args, kwargs, opargs)
+                            if ret is not None:
+                                if 'filter' in ret:
+                                    serialize_filter['filter'] += ret['filter']
 
-                args.append(Literal(result, type(result)))
-                continue
+                                if 'params' in ret:
+                                    serialize_filter['params'].update(ret['params'])
 
-            if isinstance(token, Set):
-                if not command:
-                    try:
-                        raise SyntaxError(_('Command or namespace "{0}" not found'.format(token.value)))
-                    finally:
-                        self.path = oldpath
+                        return item.run(self.context, args, kwargs, opargs, input=input_data)
 
-                continue
+                    return item.run(self.context, args, kwargs, opargs)
 
-            if isinstance(token, (Literal, BinaryExpr)):
-                if not command and isinstance(token, Literal):
-                    item = self.find_in_scope(token.value)
-                    if isinstance(item, Namespace):
-                        self.cd(item)
-                        continue
+                raise SyntaxError("Command or namespace {0} not found".format(top.name))
 
-                args.append(token)
-                continue
+            if isinstance(token, FunctionCall):
+                args = list(map(lambda a: self.eval(a, env), token.args))
+                func = env.find(token.name)
+                if func:
+                    self.context.call_stack.append(CallStackEntry(func.name, args, token.file, token.line, token.column))
+                    result = func(*args)
+                    self.context.call_stack.pop()
+                    return result
+
+                raise SyntaxError("Function {0} not found".format(token.name))
+
+            if isinstance(token, Subscript):
+                expr = self.eval(token.expr, env)
+                index = self.eval(token.index, env)
+                return expr[index]
+
+            if isinstance(token, FunctionDefinition):
+                env[token.name] = Function(self.context, token.name, token.args, token.body, env)
+                return
+
+            if isinstance(token, BinaryParameter):
+                return token.left, token.op, self.eval(token.right, env)
 
             if isinstance(token, PipeExpr):
-                pipe_stack.append(token.right)
-                tokens += token.left
+                if serialize_filter:
+                    self.eval(token.left, env, path, serialize_filter=serialize_filter)
+                    self.eval(token.right, env, path, serialize_filter=serialize_filter)
+                    return
 
-        args = list(self.convert_literals(args))
-        args, kwargs, opargs = sort_args(args)
-        filter_ops = []
-        filter_params = {}
+                cmd, cwd, args, kwargs, opargs = self.eval(token.left, env, path, dry_run=True)
+                cwd.on_enter()
+                self.context.pipe_cwd = cwd
+                if isinstance(cmd, FilteringCommand):
+                    # Do serialize_filter pass
+                    filt = {"filter": [], "params": {}}
+                    self.eval(token.right, env, path, serialize_filter=filt)
+                    result = cmd.run(self.context, args, kwargs, opargs, filtering=filt)
+                elif isinstance(cmd, PipeCommand):
+                    result = cmd.run(self.context, args, kwargs, opargs, input=input_data)
+                else:
+                    result = cmd.run(self.context, args, kwargs, opargs)
 
-        if not command:
-            if len(args) > 0:
-                raise SyntaxError('No command specified')
+                ret = self.eval(token.right, input_data=result)
+                self.context.pipe_cwd = None
+                return ret
 
-            return
+        except SystemExit as err:
+            sys.exit(err)
 
-        tmpath = self.path[:]
+        except BaseException as err:
+            raise err
 
-        if isinstance(command, FilteringCommand):
-            top_of_stack = True
-            for p in pipe_stack[:]:
-                pipe_cmd = self.find_in_scope(p[0].name)
-                if not pipe_cmd:
-                    try:
-                        raise SyntaxError("Pipe command {0} not found".format(p[0].name))
-                    finally:
-                        self.path = oldpath
-                if pipe_cmd.must_be_last and not top_of_stack:
-                    try:
-                        raise SyntaxError(_("The {0} command must be used at the end of the pipe list").format(p[0].name))
-                    finally:
-                        self.path = oldpath
-                top_of_stack = False
-
-                pipe_args = self.convert_literals(p[1:])
-                try:
-                    ret = pipe_cmd.serialize_filter(self.context, *sort_args(pipe_args))
-
-                    if 'filter' in ret:
-                        filter_ops += ret['filter']
-
-                    if 'params' in ret:
-                        filter_params.update(ret['params'])
-
-                except NotImplementedError:
-                    continue
-                except CommandException:
-                    raise
-                finally:
-                    self.path = oldpath
-
-                # If serializing filter succeeded, remove it from pipe stack
-                pipe_stack.remove(p)
-
-            ret = command.run(self.context, args, kwargs, opargs, filtering={
-                'filter': filter_ops,
-                'params': filter_params
-            })
-        else:
-            try:
-                ret = command.run(self.context, args, kwargs, opargs)
-            finally:
-                self.path = oldpath
-
-        for i in pipe_stack:
-            pipe_cmd = self.find_in_scope(i[0].name)
-            pipe_args = self.convert_literals(i[1:])
-            try:
-                ret = pipe_cmd.run(self.context, *sort_args(pipe_args), input=ret)
-            except CommandException:
-                raise
-            except Exception as e:
-                raise CommandException(_('Unexpected Error: {0}'.format(str(e))))
-            finally:
-                self.path = oldpath
-
-        if self.path != tmpath:
-            # Command must have modified the path
-            return ret
-
-        self.path = oldpath
-        return ret
+        raise SyntaxError("Unknown AST token: {0}".format(token))
 
     def process(self, line):
         if len(line) == 0:
@@ -838,8 +1043,27 @@ class MainLoop(object):
             return
 
         try:
-            i = parse(line)
-            self.format_output(self.eval(i))
+            tokens = parse(line, '<stdin>')
+            if not tokens:
+                return
+
+            for i in tokens:
+                try:
+                    ret = self.eval(i)
+                except BaseException as err:
+                    output_msg('Error: {0}'.format(str(err)))
+                    output_msg('Call stack: ')
+                    for i in self.context.call_stack:
+                        output_msg('  ' + str(i))
+
+                    if self.context.variables.get('debug'):
+                        output_msg('Python call stack: ')
+                        output_msg(traceback.format_exc())
+
+                    return
+
+                if ret:
+                    format_output(ret)
         except SyntaxError as e:
             output_msg(_('Syntax error: {0}'.format(str(e))))
         except CommandException as e:
@@ -866,6 +1090,7 @@ class MainLoop(object):
             token = tokens.pop(0)
 
             if token == '..' and len(self.path) > 1:
+                self.prev_path = self.path[:]
                 ptr = self.path[-2]
 
             if issubclass(type(ptr), Namespace):
@@ -979,7 +1204,7 @@ class MainLoop(object):
         cols = get_terminal_size((80, 20)).columns
         text_len = len(readline.get_line_buffer()) + 2
         sys.stdout.write('\x1b[2K')
-        sys.stdout.write('\x1b[1A\x1b[2K' * int(text_len / cols))
+        sys.stdout.write('\x1b[1A\x1b[2K' * int(text_len / (cols or 80)))
         sys.stdout.write('\x1b[0G')
 
     def restore_readline(self):
@@ -1005,39 +1230,65 @@ def main():
         # not there no probs or cannot make this symlink move on
         pass
     parser = argparse.ArgumentParser()
-    parser.add_argument('hostname', metavar='HOSTNAME', nargs='?',
-                        default='127.0.0.1')
+    parser.add_argument('uri', metavar='URI', nargs='?',
+                        default='unix:')
     parser.add_argument('-m', metavar='MIDDLEWARECONFIG',
                         default=DEFAULT_MIDDLEWARE_CONFIGFILE)
     parser.add_argument('-c', metavar='CONFIG', default=DEFAULT_CLI_CONFIGFILE)
     parser.add_argument('-e', metavar='COMMANDS')
     parser.add_argument('-f', metavar='INPUT')
-    parser.add_argument('-l', metavar='LOGIN')
     parser.add_argument('-p', metavar='PASSWORD')
     parser.add_argument('-D', metavar='DEFINE', action='append')
     args = parser.parse_args()
 
-    if os.environ.get('FREENAS_SYSTEM') != 'YES' and args.hostname == '127.0.0.1':
-        args.hostname = six.moves.input('Please provide FreeNAS IP: ')
+    if os.environ.get('FREENAS_SYSTEM') != 'YES' and args.uri == 'unix:':
+        args.uri = six.moves.input('Please provide FreeNAS IP: ')
 
     context = Context()
     context.argparse_parser = parser
-    context.hostname = args.hostname
+    context.uri = args.uri
+    context.parsed_uri = urlparse(args.uri)
+    if context.parsed_uri.scheme == '':
+        context.parsed_uri = urlparse("ws://" + args.uri)
+    if context.parsed_uri.scheme == 'ws':
+        context.uri = context.parsed_uri.hostname
+    username = None
+    if context.parsed_uri.hostname == None:
+        context.hostname = 'localhost'
+    else:
+        context.hostname = context.parsed_uri.hostname
+    if context.parsed_uri.scheme != 'unix' \
+            and context.parsed_uri.netloc not in (
+                    'localhost', '127.0.0.1', None):
+        if context.parsed_uri.username is None:
+            username = six.moves.input('Please provide a username: ')
+            if context.parsed_uri.scheme == 'ssh':
+                context.uri = 'ssh://{0}@{1}'.format(
+                        username,
+                        context.parsed_uri.hostname)
+                if context.parsed_uri.port is not None:
+                    context.uri = "{0}:{1}".format(
+                            context.uri,
+                            context.parsed_uri.port)
+                context.parsed_uri = urlparse(context.uri)
+        else:
+            username = context.parsed_uri.username
+        if args.p is None:
+            args.p = getpass.getpass('Please provide a password: ')
+        else:
+            args.p = args.p
+            
     context.read_middleware_config_file(args.m)
     context.variables.load(args.c)
-    context.start()
+    context.start(args.p)
 
     ml = MainLoop(context)
     context.ml = ml
 
-    if args.hostname not in ('localhost', '127.0.0.1'):
-        if args.l is None:
-            args.l = six.moves.input('Please provide username: ')
-        if args.p is None:
-            args.p = getpass.getpass('Please provide password: ')
-    if args.l:
-        context.login(args.l, args.p)
-    elif args.l is None and args.p is None and args.hostname in ('127.0.0.1', 'localhost'):
+    if username is not None:
+        context.login(username, args.p)
+    elif context.parsed_uri.netloc in ('127.0.0.1', 'localhost') \
+            or context.parsed_uri.scheme == 'unix':
         context.login(getpass.getuser(), '')
 
     if args.D:

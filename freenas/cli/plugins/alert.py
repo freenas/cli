@@ -54,6 +54,15 @@ class AlertNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         )
 
         self.add_property(
+            descr='Timestamp',
+            name='timestamp',
+            get='created_at',
+            set=None,
+            list=True,
+            type=ValueType.TIME
+        )
+
+        self.add_property(
             descr='Severity',
             name='severity',
             get='severity',

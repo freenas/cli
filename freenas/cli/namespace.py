@@ -32,12 +32,15 @@ import traceback
 import errno
 import gettext
 import sys
+import collections
 from freenas.utils import first_or_default
 from freenas.utils.query import wrap
-from .utils import post_save
-from .output import (ValueType, Object, Table, output_list,
-                    output_msg, read_value)
-import collections
+from freenas.cli.parser import CommandCall, Literal, Symbol, BinaryParameter, Comment
+from freenas.cli.utils import post_save
+from freenas.cli.output import (
+    ValueType, Object, Table, Sequence, output_list,
+    output_msg, read_value
+)
 
 t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
@@ -110,7 +113,7 @@ class PipeCommand(Command):
         pass
 
     def serialize_filter(self, context, args, kwargs, opargs):
-        raise NotImplementedError()
+        pass
 
 
 class CommandException(Exception):
@@ -154,10 +157,10 @@ class IndexCommand(Command):
         obj = context.ml.get_relative_object(context.ml.path[-1], args)
         if obj.__class__.__name__ == 'RootNamespace':
             output_msg('Builtin items:', attrs=['bold'])
-            output_list(list(context.ml.builtin_commands.keys()))
+            output_list(sorted(list(context.ml.builtin_commands.keys())))
 
         output_msg('Current namespace items:', attrs=['bold'])
-        out = list(cmds.keys())
+        out = sorted(list(cmds.keys()))
         out += [ns.get_name() for ns in sorted(nss, key=lambda i: i.get_name())]
         output_list(out)
 
@@ -277,11 +280,11 @@ class ItemNamespace(Namespace):
                 ))
             if self.parent.leaf_entity:
                 leaf_res = ListCommand(self.parent).run(context, args, kwargs, opargs, filtering)
-                return [
+                return Sequence(
                     values,
                     "-- {0} --".format(self.parent.leaf_ns.description),
                     leaf_res
-                ]
+                )
             return values
 
     @description("Prints single item value")
@@ -550,15 +553,15 @@ class SingleItemNamespace(ItemNamespace):
 @description("Lists items")
 class ListCommand(FilteringCommand):
     """
-    Usage: show [<field> <operator> <value> ...] [limit=<n>] [sort=<field>,-<field2>]
+    Usage: show
 
     Lists items in current namespace, optinally doing filtering and sorting.
 
     Examples:
         show
-        show username=root
-        show uid>1000
-        show fullname~="John" sort=fullname
+        show | search username == root
+        show | search uid > 1000
+        show | search fullname~="John" | sort fullname
     """
     def __init__(self, parent):
         if hasattr(parent, 'leaf_entity') and parent.leaf_entity:
@@ -708,7 +711,7 @@ class DeleteEntityCommand(Command):
     def run(self, context, args, kwargs, opargs):
         if len(args) == 0:
             raise CommandException(_("Please specify item to delete."))
-        self.parent.delete(args[0])
+        self.parent.delete(args[0], kwargs)
 
 
 class EntityNamespace(Namespace):
@@ -829,7 +832,7 @@ class TaskBasedSaveMixin(object):
             this.get_diff(),
             callback=lambda s: post_save(this, s))
 
-    def delete(self, name):
+    def delete(self, name, kwargs):
         entity = self.get_one(name)
         if entity:
             self.context.submit_task(self.delete_task, entity[self.save_key_name])
@@ -869,9 +872,10 @@ class NestedObjectSaveMixin(object):
 
         self.parent.save()
 
-    def delete(self, name):
-        self.parent.entity['devices'] = filter(
-            lambda i: i[self.primary_key_name] == name,
+    def delete(self, name, kwargs):
+        self.parent.entity[self.parent_path] = list(filter(
+            lambda i: i[self.primary_key_name] != name,
             self.parent.entity[self.parent_path]
-        )
+        ))
+
         self.parent.save()

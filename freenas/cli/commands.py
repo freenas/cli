@@ -34,7 +34,7 @@ import gettext
 import platform
 import re
 import textwrap
-from freenas.cli import sandbox
+from freenas.cli.parser import parse, unparse
 from freenas.cli.namespace import (Command, PipeCommand, CommandException, description,
                                    SingleItemNamespace, Namespace)
 from freenas.cli.output import (
@@ -117,18 +117,6 @@ class SaveenvCommand(Command):
             context.variables.save(args[0])
             output_msg(
                 'Environment Variables Saved to file: {0}'.format(args[0]))
-
-
-@description("Evaluates Python code")
-class EvalCommand(Command):
-    """
-    Usage: eval <Python code fragment>
-
-    Examples:
-        eval "print 'hello world'"
-    """
-    def run(self, context, args, kwargs, opargs):
-        sandbox.evaluate(args[0])
 
 
 @description("Spawns shell, enter \"!shell\" (example: \"!sh\")")
@@ -461,22 +449,26 @@ class SourceCommand(Command):
 
     def run(self, context, args, kwargs, opargs):
         if len(args) == 0:
-            output_msg(_("Usage: source <filename>"))
+            raise CommandException(_("Usage: source <filename>"))
         else:
             for arg in args:
                 if os.path.isfile(arg):
-                    path = context.ml.path[:]
-                    context.ml.path = [context.root_ns]
                     try:
                         with open(arg, 'r') as f:
-                            for line in f:
-                                context.ml.process(line.strip())
+                            ast = parse(f.read(), arg)
+                            for i in ast:
+                                context.eval(i)
                     except UnicodeDecodeError as e:
-                        output_msg(_("Incorrect filetype, cannot parse file: {0}".format(str(e))))
-                    finally:
-                        context.ml.path = path
+                        raise CommandException(_("Incorrect filetype, cannot parse file: {0}".format(str(e))))
                 else:
-                    output_msg(_("File " + arg + " does not exist."))
+                    raise CommandException(_("File " + arg + " does not exist."))
+
+
+@description("Dumps namespace configuration to a series of CLI commands")
+class DumpCommand(Command):
+    def run(self, context, args, kwargs, opargs):
+        if getattr(context.ml.cwd, 'serialize'):
+            return unparse(context.ml.cwd.serialize())
 
 
 @description("Prints the provided message to the output")
@@ -552,7 +544,7 @@ class LessPipeCommand(PipeCommand):
 
 
 def map_opargs(opargs, context):
-    ns = context.ml.get_relative_object(context.ml.path[-1], [])
+    ns = context.pipe_cwd
     mapped_opargs = []
     for k, o, v in opargs:
         if ns.has_property(k):
@@ -578,11 +570,7 @@ class SearchPipeCommand(PipeCommand):
     Returns an element in a list that matches the given key value.
     """
     def run(self, context, args, kwargs, opargs, input=None):
-        if isinstance(input, Table):
-            pass
-
-        if isinstance(input, Object):
-            pass
+        return input
 
     def serialize_filter(self, context, args, kwargs, opargs):
         mapped_opargs = map_opargs(opargs, context)
@@ -610,7 +598,7 @@ class ExcludePipeCommand(PipeCommand):
     Returns all the elements of a list that do not match the given key value.
     """
     def run(self, context, args, kwargs, opargs, input=None):
-        pass
+        return input
 
     def serialize_filter(self, context, args, kwargs, opargs):
         mapped_opargs = map_opargs(opargs, context)
@@ -674,7 +662,7 @@ class SelectPipeCommand(PipeCommand):
     Returns only the output of the specific field for a list.
     """
     def run(self, context, args, kwargs, opargs, input=None):
-        ns = context.ml.get_relative_object(context.ml.path[-1], [])
+        ns = context.pipe_cwd
         available_props = [x.name for x in ns.property_mappings if x.list]
         if len(args) == 0:
             raise CommandException(_(

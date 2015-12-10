@@ -61,6 +61,16 @@ class SharesNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         self.entity_subscriber_name = 'share'
         self.primary_key_name = 'name'
 
+        self.localdoc['ListCommand'] = ("""\
+            Usage: show
+
+            Lists shares, optionally doing filtering and sorting.
+
+            Examples:
+                show
+                show | search name == foo
+                show | search volume == tank | sort name""")
+
         self.add_property(
             descr='Share Name',
             name='name',
@@ -133,6 +143,21 @@ class BaseSharesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, En
         self.update_task = 'share.update'
         self.delete_task = 'share.delete'
         self.required_props = ['name', 'volume']
+        self.localdoc['DeleteEntityCommand'] = ("""\
+            Usage: delete <share name>
+
+            Example: delete foo
+
+            Deletes a share.""")
+        self.localdoc['ListCommand'] = ("""\
+            Usage: show
+
+            Lists shares, optionally doing filtering and sorting.
+
+            Examples:
+                show
+                show | search name == foo
+                show | search volume == tank | sort name""")
 
         self.skeleton_entity = {
             'type': type_name,
@@ -626,7 +651,7 @@ class ISCSIUsersNamespace(EntityNamespace):
 
         self.parent.save()
 
-    def delete(self, name):
+    def delete(self, name, kwargs):
         self.parent.entity['users'] = [a for a in self.parent.entity['users'] if a['name'] == name]
         self.parent.save()
 
@@ -732,7 +757,7 @@ class ISCSITargetMapingNamespace(EntityNamespace):
             
         self.parent.save()
 
-    def delete(self, name):
+    def delete(self, name, kwargs):
         self.parent.entity['extents'] = [a for a in self.parent.entity['extents'] if a['name'] == name]
         self.parent.save()
 

@@ -1,5 +1,5 @@
-#!/usr/bin/env python
-# +
+#
+#
 # Copyright 2014 iXsystems, Inc.
 # All rights reserved
 #
@@ -26,27 +26,59 @@
 #
 #####################################################################
 
-
-from . import config
-from .namespace import Command
-
-
-def exec_fn(name, *args, **kwargs):
-    context = config.instance
-
-    if type(name) is str:
-        name = name.split()
-
-    item = context.ml.get_relative_object(context.ml.path[-1], name)
-
-    if isinstance(item, Command):
-        item.run(context, args, kwargs, [])
+import copy
+import operator
+from freenas.cli.output import format_output, output_msg
+from freenas.cli.parser import unparse, FunctionDefinition
 
 
-functions_table = {
-    'call': exec_fn
+operators = {
+    '+': operator.add,
+    '-': operator.sub,
+    '*': operator.mul,
+    '/': operator.floordiv,
+    '==': operator.eq,
+    '!=': operator.ne,
+    '>': operator.gt,
+    '<': operator.lt,
+    '>=': operator.ge,
+    '<=': operator.le,
+    'and': operator.and_,
+    'or': operator.or_,
+    'not': operator.not_
 }
 
 
-def evaluate(code):
-    exec(code, functions_table)
+def array_resize(array, length):
+    if length > len(array):
+        array.extend([None] * (length - len(array)))
+    else:
+        del array[:len(array) - length]
+
+
+def print_(*items):
+    for i in items:
+        format_output(i, newline=False)
+
+    output_msg('')
+
+
+def unparse_(fn):
+    output_msg(unparse(FunctionDefinition(
+        fn.name,
+        fn.param_names,
+        fn.exp
+    )))
+
+
+functions = {
+    'print': print_,
+    'unparse': unparse_,
+    'range': range,
+    'str': str,
+    'length': len,
+    'append': lambda a, i: a.append(i),
+    'remove': lambda a, i: a.remove(i),
+    'resize': array_resize,
+    'copy': copy.deepcopy
+}

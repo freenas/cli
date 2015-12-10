@@ -31,7 +31,6 @@ import time
 import copy
 from datetime import datetime
 from freenas.cli.namespace import ConfigNamespace, Command, description, CommandException
-from freenas.cli.commands import RebootCommand
 from freenas.cli.output import output_msg, ValueType, Table, output_table
 from freenas.cli.utils import post_save
 
@@ -163,14 +162,13 @@ class UpdateNowCommand(Command):
 
     Installs updates if they are available and restarts the system if told to do so.
 
-    Example: update_now
-             (This will not reboot the system post update)
-             update_now reboot=True
+    Example: update_now (This will not reboot the system post update)
+             update_now reboot=True (This will reboot the system post update)
     """
     def run(self, context, args, kwargs, opargs):
-        reboot = None
+        reboot = False
         if 'reboot' in kwargs and kwargs['reboot']:
-            reboot = RebootCommand()
+            reboot = True
         output_msg(_("Checking for new updates..."))
         update_ops = update_check_utility(context)
         if update_ops:
@@ -191,7 +189,7 @@ class UpdateNowCommand(Command):
         if download_details['state'] != 'FINISHED':
             raise CommandException(_("Updates failed to download"))
         output_msg(_("System going for an update now..."))
-        apply_task_id = context.submit_task('update.update')
+        apply_task_id = context.submit_task('update.update', reboot)
         context.variables.set('tasks_blocking', original_tasks_blocking)
         apply_details = context.call_sync('task.status', apply_task_id)
         while apply_details['state'] == 'EXECUTING':
@@ -200,11 +198,10 @@ class UpdateNowCommand(Command):
         if apply_details['state'] != 'FINISHED':
             raise CommandException(_("Updates failed to apply"))
         else:
-            if reboot:
-                reboot.run(context, args, kwargs, opargs)
-            else:
+            if not reboot:
                 output_msg(_(
-                    "System successfully updated. Please reboot now using the 'reboot' command"
+                    "System successfully updated."
+                    " Please reboot now using the 'system reboot' command"
                 ))
 
 

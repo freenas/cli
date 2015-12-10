@@ -26,10 +26,40 @@
 #####################################################################
 
 
-from freenas.cli.namespace import ConfigNamespace, Command, description, RpcBasedLoadMixin, EntityNamespace
-from freenas.cli.output import Table, Object, ValueType, output_less, output_msg, format_value
+from freenas.cli.namespace import (
+    ConfigNamespace, Command, description, RpcBasedLoadMixin, EntityNamespace
+)
+from freenas.cli.output import Object, ValueType, output_less, output_msg, format_value
 from freenas.cli.descriptions import events
-from freenas.cli.utils import parse_query_args, post_save
+from freenas.cli.utils import post_save
+import gettext
+
+t = gettext.translation('freenas-cli', fallback=True)
+_ = t.gettext
+
+
+@description("Shuts the system down")
+class ShutdownCommand(Command):
+    """
+    Usage: shutdown
+
+    Shuts the system down.
+    """
+    def run(self, context, args, kwargs, opargs):
+        output_msg(_("System going for a shutdown..."))
+        context.submit_task('system.shutdown')
+
+
+@description("Reboots the system")
+class RebootCommand(Command):
+    """
+    Usage: reboot
+
+    Reboots the system.
+    """
+    def run(self, context, args, kwargs, opargs):
+        output_msg(_("System going for a reboot..."))
+        context.submit_task('system.reboot')
 
 
 @description("Provides status information about the server")
@@ -43,8 +73,10 @@ class StatusCommand(Command):
         status_dict = context.call_sync('management.status')
         status_dict['up-since'] = format_value(status_dict['started-at'], vt=ValueType.TIME)
         return Object(
-                Object.Item("Connected clients", 'connected-clients', 
-                    status_dict['connected-clients']),
+                Object.Item(
+                    "Connected clients", 'connected-clients',
+                    status_dict['connected-clients']
+                ),
                 Object.Item("Uptime", 'up-since', status_dict['up-since']),
                 Object.Item("Started at", 'started-at', status_dict['started-at']))
 
@@ -71,8 +103,10 @@ class InfoCommand(Command):
     def run(self, context, args, kwargs, opargs):
         info_dict = context.call_sync('system.info.hardware')
         return Object(
-            Object.Item("CPU Clockrate", 'cpu_clockrate', 
-                    info_dict['cpu_clockrate']),
+            Object.Item(
+                "CPU Clockrate", 'cpu_clockrate',
+                info_dict['cpu_clockrate']
+            ),
             Object.Item("CPU Model", 'cpu_model', info_dict['cpu_model']),
             Object.Item("CPU Cores", 'cpu_cores', info_dict['cpu_cores']),
             Object.Item("Memory size", 'memory_size', info_dict['memory_size']))
@@ -416,6 +450,8 @@ class SystemNamespace(ConfigNamespace):
             'version': VersionCommand(),
             'timezones': TimezonesCommand(),
             'info': InfoCommand(),
+            'reboot': RebootCommand(),
+            'shutdown': ShutdownCommand
         }
 
     def save(self):

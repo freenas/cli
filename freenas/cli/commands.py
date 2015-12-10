@@ -38,7 +38,7 @@ from freenas.cli.parser import parse, unparse
 from freenas.cli.namespace import (Command, PipeCommand, CommandException, description,
                                    SingleItemNamespace, Namespace)
 from freenas.cli.output import (
-    Table, Object, output_dict, ValueType, output_msg, output_list,
+    Table, output_dict, ValueType, output_msg, output_list,
     output_lock, output_less, output_table, output_table_list, read_value
 )
 from freenas.dispatcher.shell import ShellClient
@@ -164,30 +164,6 @@ class ShellCommand(Command):
 
         if platform.system() != 'Windows':
             termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-
-
-@description("Shuts the system down")
-class ShutdownCommand(Command):
-    """
-    Usage: shutdown
-
-    Shuts the system down.
-    """
-    def run(self, context, args, kwargs, opargs):
-        output_msg(_("System going for a shutdown..."))
-        context.submit_task('system.shutdown')
-
-
-@description("Reboots the system")
-class RebootCommand(Command):
-    """
-    Usage: reboot
-
-    Reboots the system.
-    """
-    def run(self, context, args, kwargs, opargs):
-        output_msg(_("System going for a reboot..."))
-        context.submit_task('system.reboot')
 
 
 @description("Displays the active IP addresses from all configured network interface")

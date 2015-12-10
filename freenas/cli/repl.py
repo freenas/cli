@@ -49,7 +49,9 @@ from socket import gaierror as socket_error
 from freenas.cli.descriptions import events
 from freenas.cli import functions
 from freenas.cli import config
-from freenas.cli.namespace import Namespace, RootNamespace, Command, FilteringCommand, PipeCommand, CommandException
+from freenas.cli.namespace import (
+    Namespace, RootNamespace, Command, FilteringCommand, PipeCommand, CommandException
+)
 from freenas.cli.parser import (
     parse, Symbol, Literal, BinaryParameter, UnaryExpr, BinaryExpr, PipeExpr, AssignmentStatement,
     IfStatement, ForStatement, WhileStatement, FunctionCall, CommandCall, Subscript,
@@ -64,12 +66,11 @@ from freenas.dispatcher.entity import EntitySubscriber
 from freenas.dispatcher.rpc import RpcException
 from freenas.utils.query import wrap
 from freenas.cli.commands import (
-    ExitCommand, PrintenvCommand, SetenvCommand, ShellCommand, ShutdownCommand,
-    RebootCommand, HelpCommand, ShowUrlsCommand, ShowIpsCommand,
-    TopCommand, ClearCommand, HistoryCommand, SaveenvCommand, EchoCommand,
-    SourceCommand, LessPipeCommand, SearchPipeCommand, ExcludePipeCommand,
-    SortPipeCommand, LimitPipeCommand, SelectPipeCommand, LoginCommand,
-    DumpCommand
+    ExitCommand, PrintenvCommand, SetenvCommand, ShellCommand, HelpCommand,
+    ShowUrlsCommand, ShowIpsCommand, TopCommand, ClearCommand, HistoryCommand,
+    SaveenvCommand, EchoCommand, SourceCommand, LessPipeCommand, SearchPipeCommand,
+    ExcludePipeCommand, SortPipeCommand, LimitPipeCommand, SelectPipeCommand,
+    LoginCommand, DumpCommand
 )
 import collections
 
@@ -655,8 +656,6 @@ class MainLoop(object):
         'printenv': PrintenvCommand(),
         'saveenv': SaveenvCommand(),
         'shell': ShellCommand(),
-        'shutdown': ShutdownCommand(),
-        'reboot': RebootCommand(),
         'help': HelpCommand(),
         'top': TopCommand(),
         'showips': ShowIpsCommand(),

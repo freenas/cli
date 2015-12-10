@@ -53,6 +53,7 @@ def ASTObject(name, *args):
     return type(name, (), dct)
 
 
+Comment = ASTObject('Comment', 'text')
 Symbol = ASTObject('Symbol', 'name')
 Set = ASTObject('Set', 'value')
 UnaryExpr = ASTObject('UnaryExpr', 'expr', 'op')
@@ -643,24 +644,30 @@ def unparse(token, indent=0):
     if isinstance(token, list):
         return '\n'.join(ind(unparse(i)) for i in token)
 
+    if isinstance(token, Comment):
+        return '# ' + token.text
+
     if isinstance(token, Literal):
         if token.value is None:
-            return ind('none')
+            return 'none'
 
         if token.type is str:
-            return ind('"{0}"'.format(token.value))
+            return '"{0}"'.format(token.value)
 
         if token.type is bool:
-            return ind('true' if token.value else 'false')
+            return 'true' if token.value else 'false'
 
         if token.type is int:
-            return ind(str(token.value))
+            return str(token.value)
 
-        if token.type is list:
-            return ind('[' + ', '.join(unparse(i) for i in token.value) + ']')
+        if issubclass(token.type, list):
+            return '[' + ', '.join(unparse(Literal(i, type(i))) for i in token.value) + ']'
 
-        if token.type is dict:
-            return ind('{' + ', '.join('{0}: {1}'.format(unparse(k), unparse(v)) for k, v in token.value.items()) + '}')
+        if issubclass(token.type, dict):
+            return '{' + ', '.join('{0}: {1}'.format(
+                unparse(Literal(k, type(k))),
+                unparse(Literal(v, type(v)))
+            ) for k, v in token.value.items()) + '}'
 
         return str(token.value)
 

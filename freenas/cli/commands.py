@@ -62,7 +62,8 @@ class SetenvCommand(Command):
     """
     def run(self, context, args, kwargs, opargs):
         if args:
-            raise CommandException("Incorrect syntax {0}".format(args))
+            raise CommandException("Incorrect syntax {0}\n".format(args) +
+                                   inspect.getdoc(self))
 
         for k, v in list(kwargs.items()):
             context.variables.set(k, v)
@@ -234,7 +235,8 @@ class LoginCommand(Command):
     """
     def run(self, context, args, kwargs, opargs):
         if len(args) < 2:
-            raise CommandException("Not enough arguments provided, usage: login <username> <password>")
+            raise CommandException("Not enough arguments provided.\n" +
+                                   inspect.getdoc(self))
         context.connection.login_user(args[0], args[1])
         context.connection.subscribe_events('*')
         context.login_plugins()
@@ -425,7 +427,8 @@ class HistoryCommand(Command):
         desired_range = None
         if args:
             if len(args) != 1:
-                raise CommandException(_("Invalid Syntax for history command. See help for usage"))
+                raise CommandException(_("Invalid Syntax for history command.\n" +
+                                       inspect.getdoc(self)))
             try:
                 desired_range = int(args[0])
             except ValueError:
@@ -454,7 +457,8 @@ class SourceCommand(Command):
 
     def run(self, context, args, kwargs, opargs):
         if len(args) == 0:
-            raise CommandException(_("Usage: source <filename>"))
+            raise CommandException(_("Please provide a filename.\n") +
+                                   inspect.getdoc(self))
         else:
             for arg in args:
                 if os.path.isfile(arg):
@@ -586,12 +590,14 @@ class SearchPipeCommand(PipeCommand):
 
         if len(kwargs) > 0:
             raise CommandException(_(
-                "Invalid syntax {0}, see 'help search' for more information.".format(kwargs)
+                "Invalid syntax {0}.\n".format(kwargs) +
+                inspect.getdoc(self)
             ))
 
         if len(args) > 0:
             raise CommandException(_(
-                "Invalid syntax {0}, see 'help search' for more information.".format(args)
+                "Invalid syntax {0}.\n".format(args) +
+                inspect.getdoc(self)
             ))
 
         return {"filter": mapped_opargs}
@@ -614,12 +620,14 @@ class ExcludePipeCommand(PipeCommand):
 
         if len(kwargs) > 0:
             raise CommandException(_(
-                "Invalid syntax {0}, see 'help exclude' for more information.".format(kwargs)
+                "Invalid syntax {0}.\n".format(kwargs) +
+                inspect.getdoc(self)
             ))
 
         if len(args) > 0:
             raise CommandException(_(
-                "Invalid syntax {0}, see 'help exclude' for more information.".format(args)
+                "Invalid syntax {0}.\n".format(args) +
+                inspect.getdoc(self)
             ))
 
         result = []
@@ -656,7 +664,8 @@ class LimitPipeCommand(PipeCommand):
             raise CommandException(_("Please specify a number to limit."))
         if not isinstance(args[0], int) or len(args) > 1:
             raise CommandException(_(
-                "Invalid input {0}. See 'help limit' for more information.".format(args)
+                "Invalid syntax {0}.\n".format(args) +
+                inspect.getdoc(self)
             ))
         return {"params": {"limit": args[0]}}
 

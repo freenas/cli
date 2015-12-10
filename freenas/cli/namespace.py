@@ -32,12 +32,15 @@ import traceback
 import errno
 import gettext
 import sys
+import collections
 from freenas.utils import first_or_default
 from freenas.utils.query import wrap
-from .utils import post_save
-from .output import (ValueType, Object, Table, output_list,
-                    output_msg, read_value)
-import collections
+from freenas.cli.parser import CommandCall, Literal, Symbol, BinaryParameter, Comment
+from freenas.cli.utils import post_save
+from freenas.cli.output import (
+    ValueType, Object, Table, Sequence, output_list,
+    output_msg, read_value
+)
 
 t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
@@ -277,11 +280,11 @@ class ItemNamespace(Namespace):
                 ))
             if self.parent.leaf_entity:
                 leaf_res = ListCommand(self.parent).run(context, args, kwargs, opargs, filtering)
-                return [
+                return Sequence(
                     values,
                     "-- {0} --".format(self.parent.leaf_ns.description),
                     leaf_res
-                ]
+                )
             return values
 
     @description("Prints single item value")

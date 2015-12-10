@@ -107,6 +107,11 @@ class Table(object):
         return self.data[item]
 
 
+class Sequence(list):
+    def __init__(self, *items):
+        super(Sequence, self).__init__(items)
+
+
 class ProgressBar(object):
     def __init__(self):
         self.message = None
@@ -329,6 +334,10 @@ def format_output(object, **kwargs):
 
     elif isinstance(object, Table):
         output_table(object, **kwargs)
+
+    elif isinstance(object, Sequence):
+        for i in object:
+            format_output(i, **kwargs)
 
     else:
         output_msg(object, **kwargs)

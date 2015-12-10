@@ -394,7 +394,7 @@ class ClearCommand(Command):
     """
     Usage: clear
 
-    Clears the CLI's stdout. Works exactly the same as its shell counterpart.
+    Clears the screen.
     """
     def run(self, context, args, kwargs, opargs):
         output_lock.acquire()

@@ -93,6 +93,24 @@ class InterfaceManageCommand(Command):
             )
 
 
+@description("Renews IP lease for network interface")
+class InterfaceRenewCommand(Command):
+    """
+    Usage: renew
+
+    Renews IP lease for network interface
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        context.submit_task(
+            'network.interface.renew',
+            self.parent.primary_key,
+            callback=lambda s: post_save(self.parent, s)
+        )
+
+
 @description("Network interfaces configuration")
 class InterfacesNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
     def __init__(self, name, context):
@@ -272,6 +290,7 @@ class InterfacesNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
         self.entity_commands = lambda this: {
             'up': InterfaceManageCommand(this, True),
             'down': InterfaceManageCommand(this, False),
+            'renew': InterfaceRenewCommand(this)
         }
 
         self.leaf_entity_namespace = lambda this: AliasesNamespace('aliases', self.context, this)

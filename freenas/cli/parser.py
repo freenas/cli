@@ -105,6 +105,12 @@ def t_COMMENT(t):
     pass
 
 
+def t_IPV4(t):
+    r'\d+\.\d+\.\d+\.\d+'
+    t.type = 'ATOM'
+    return t
+
+
 def t_HEXNUMBER(t):
     r'0x[0-9a-fA-F]+'
     t.value = int(t.value, 16)

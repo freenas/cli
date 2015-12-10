@@ -405,16 +405,15 @@ class ClearCommand(Command):
 @description("Shows the CLI command history")
 class HistoryCommand(Command):
     """
-    Usage: history <histroy_range>
+    Usage: history <number>
 
     Example: history
              history 10
 
-    Lists the list commands previously executed in this CLI instance.
-    Optionally, one can provide an argument (history_range) for showing
-    only the last `n` lines of history.
+    Lists the commands previously executed in this CLI instance.
+    Optionally, provide a number to specify
+    the number of lines, from the last line of history, to display.
 
-    Note: history_range is 1 indexed.
     """
     def run(self, context, args, kwargs, opargs):
         desired_range = None

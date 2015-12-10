@@ -1011,7 +1011,7 @@ class MainLoop(object):
                 return ret
 
         except SystemExit as err:
-            sys.exit(err)
+            raise err
 
         except BaseException as err:
             raise err
@@ -1050,6 +1050,8 @@ class MainLoop(object):
             for i in tokens:
                 try:
                     ret = self.eval(i)
+                except SystemExit as err:
+                    raise err
                 except BaseException as err:
                     output_msg('Error: {0}'.format(str(err)))
                     output_msg('Call stack: ')
@@ -1074,9 +1076,8 @@ class MainLoop(object):
         except RpcException as e:
             self.context.logger.error(str(e))
             output_msg(_('RpcException Error: {0}'.format(str(e))))
-        except SystemExit:
-            # We do not want to catch a user entered `exit` so...
-            raise
+        except SystemExit as e:
+            sys.exit(e)
         except Exception as e:
             output_msg(_('Unexpected Error: {0}'.format(str(e))))
             error_trace = traceback.format_exc()

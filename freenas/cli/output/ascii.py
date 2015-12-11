@@ -194,6 +194,7 @@ class AsciiOutputFormatter(object):
     @staticmethod
     def output_object(obj):
         table = Texttable(max_width=get_terminal_size()[1])
+        table.set_cols_dtype(['t', 't'])
         table.set_deco(0)
         for item in obj:
             table.add_row(['{0} ({1})'.format(item.descr, item.name), AsciiOutputFormatter.format_value(item.value, item.vt)])

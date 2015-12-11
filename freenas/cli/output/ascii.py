@@ -123,6 +123,7 @@ class AsciiOutputFormatter(object):
         table.set_deco(0)
         table.header([i.label for i in tab.columns])
         widths = []
+        ideal_widths = []
         number_columns = len(tab.columns)
         remaining_space = max_width
         # set maximum column width based on the amount of terminal space minus the 3 pixel borders
@@ -134,6 +135,7 @@ class AsciiOutputFormatter(object):
                 max_row_width = max(
                         [len(str(resolve_cell(row, tab_cols_acc))) for row in tab.data ]
                         )
+                ideal_widths.insert(i, max_row_width)
                 current_width = max_row_width if max_row_width > current_width else current_width
             if current_width < max_col_width:
                 widths.insert(i, current_width)
@@ -145,6 +147,18 @@ class AsciiOutputFormatter(object):
             else:
                 widths.insert(i, max_col_width)
                 remaining_space = remaining_space - max_col_width - 3
+        if remaining_space > 0:
+            for i in range(0, number_columns):
+                if remaining_space == 0:
+                    break
+                if ideal_widths[i] > widths[i]:
+                    needed_space = ideal_widths[i] - widths[i]
+                    if needed_space <= remaining_space:
+                        widths[i] = ideal_widths[i]
+                        remaining_space = remaining_space - needed_space
+                    elif needed_space > remaining_space:
+                        widths[i] = widths[i] + remaining_space
+                        remaining_space = 0
         table.set_cols_width(widths)
 
         table.add_rows([[AsciiOutputFormatter.format_value(resolve_cell(row, i.accessor), i.vt) for i in tab.columns] for row in tab.data], False)

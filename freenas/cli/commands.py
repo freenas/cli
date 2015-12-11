@@ -405,8 +405,9 @@ class HistoryCommand(Command):
         desired_range = None
         if args:
             if len(args) != 1:
-                raise CommandException(_("Invalid Syntax for history command.\n" +
-                                       inspect.getdoc(self)))
+                raise CommandException(_(
+                    "Invalid Syntax for history command.\n{0}".format(inspect.getdoc(self))
+                ))
             try:
                 desired_range = int(args[0])
             except ValueError:
@@ -421,7 +422,7 @@ class HistoryCommand(Command):
             history,
             [Table.Column('Command History', 'cmd', ValueType.STRING)]
         )
-        output_less(lambda: output_table(result_hist_table))
+        return result_hist_table
 
 
 @description("Imports a script for parsing")

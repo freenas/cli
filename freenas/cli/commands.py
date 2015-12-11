@@ -216,6 +216,7 @@ class LoginCommand(Command):
                                    inspect.getdoc(self))
         context.connection.login_user(args[0], args[1])
         context.connection.subscribe_events('*')
+        context.start_entity_subscribers()
         context.login_plugins()
 
 

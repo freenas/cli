@@ -210,7 +210,7 @@ class InterfacesNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
             name='link_address',
             get='status.link_address',
             createsetable=False,
-            list=True
+            list=False
         )
 
         self.add_property(

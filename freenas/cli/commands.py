@@ -39,7 +39,8 @@ from freenas.cli.namespace import (Command, PipeCommand, CommandException, descr
                                    SingleItemNamespace, Namespace)
 from freenas.cli.output import (
     Table, output_dict, ValueType, output_msg, output_list,
-    output_lock, output_less, output_table, output_table_list, read_value
+    output_lock, output_less, output_table, output_table_list, read_value,
+    format_output
 )
 from freenas.dispatcher.shell import ShellClient
 
@@ -535,7 +536,7 @@ class LessPipeCommand(PipeCommand):
         self.must_be_last = True
 
     def run(self, context, args, kwargs, opargs, input=None):
-        output_less(lambda: context.ml.format_output(input))
+        output_less(lambda: format_output(input))
 
 
 def map_opargs(opargs, context):

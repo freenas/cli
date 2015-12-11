@@ -100,14 +100,20 @@ class PrintenvCommand(Command):
 @description("Saves the Environment Variables to cli config file")
 class SaveenvCommand(Command):
     """
-    Usage: saveenv filename(Optional)
+    Usage: saveenv
+           saveenv <filename>
+
+    Examples:
+           saveenv
+           saveenv myclisave.conf
 
     Saves the current set of environment variables to the cli config
-    file. If not specified then this defaults to "~/.freenascli.conf".
-    If the cli was run with the config option (i.e. `cli -c path_to_file)
-    and that file existed and was a legitimate config file for the cli and was
-    loaded whilst initialization of the cli, then that file is used to dump
-    the current environment variables.
+    file. If a filename is not specified then this defaults to
+    "./.freenascli.conf".
+
+    Note: If the cli was run with the config option (i.e. cli -c path_to_file)
+    then that file is where the environment variables will be saved if a
+    filename was not specified.
     """
     def run(self, context, args, kwargs, opargs):
         if len(args) == 0:
@@ -119,6 +125,12 @@ class SaveenvCommand(Command):
             context.variables.save(args[0])
             output_msg(
                 'Environment Variables Saved to file: {0}'.format(args[0]))
+        if len(args) > 1:
+            output_msg(
+                'Incorrect syntax: {0}\n{1}'.format(
+                    args,
+                    inspect.getdoc(self))
+                )
 
 
 @description("Spawns shell, enter \"!shell\" (example: \"!sh\")")

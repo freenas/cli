@@ -127,19 +127,23 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             get=self.display_aux_groups,
             get_name='groups',
             set=self.set_aux_groups,
-            type=ValueType.SET
-            )
+            type=ValueType.SET,
+            list=False
+        )
 
         self.add_property(
             descr='Login shell',
             name='shell',
-            get='shell')
+            get='shell',
+            list=False
+        )
 
         self.add_property(
             descr='Home directory',
             name='home',
             get='home',
-            list=True)
+            list=False
+        )
 
         self.add_property(
             descr='Password',

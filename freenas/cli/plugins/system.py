@@ -134,6 +134,9 @@ class VersionCommand(Command):
 
 @description("View sessions")
 class SessionsNamespace(RpcBasedLoadMixin, EntityNamespace):
+    """
+    System sessions command, expands into commmands to show sessions.
+    """
     def __init__(self, name, context):
         super(SessionsNamespace, self).__init__(name, context)
 
@@ -179,6 +182,9 @@ class SessionsNamespace(RpcBasedLoadMixin, EntityNamespace):
 
 @description("View event history")
 class EventsNamespace(RpcBasedLoadMixin, EntityNamespace):
+    """
+    System events command, expands into commands to show events.
+    """
     def __init__(self, name, context):
         super(EventsNamespace, self).__init__(name, context)
         self.allow_create = False
@@ -221,6 +227,9 @@ class EventsNamespace(RpcBasedLoadMixin, EntityNamespace):
 
 @description("Time namespace")
 class TimeNamespace(ConfigNamespace):
+    """
+    System time command, expands into commands for setting and getting time.
+    """
     def __init__(self, name, context):
         super(TimeNamespace, self).__init__(name, context)
         self.config_call = 'system.info.time'
@@ -257,6 +266,9 @@ class TimeNamespace(ConfigNamespace):
 
 @description("Mail configuration")
 class MailNamespace(ConfigNamespace):
+    """
+    System mail command, expands into commands for configuring email settings.
+    """
     def __init__(self, name, context):
         super(MailNamespace, self).__init__(name, context)
         self.context = context
@@ -320,6 +332,10 @@ class MailNamespace(ConfigNamespace):
 
 @description("Advanced system configuration")
 class AdvancedNamespace(ConfigNamespace):
+    """
+    Advanced system configuration command, expands into commands for settings
+    for advanced users.
+    """
     def __init__(self, name, context):
         super(AdvancedNamespace, self).__init__(name, context)
         self.context = context
@@ -410,6 +426,10 @@ class AdvancedNamespace(ConfigNamespace):
 
 @description("System info and configuration")
 class SystemNamespace(ConfigNamespace):
+    """
+    System top level command, expands into commands for configuring system
+    settings and getting system information.
+    """
     def __init__(self, name, context):
         super(SystemNamespace, self).__init__(name, context)
         self.context = context

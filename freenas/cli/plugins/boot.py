@@ -42,6 +42,10 @@ _ = t.gettext
 
 @description("Boot Environment Management")
 class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
+    """
+    Boot environment command, expands into commands for managing boot
+    environments.
+    """
     def __init__(self, name, context):
         super(BootEnvironmentNamespace, self).__init__(name, context)
         self.query_call = 'boot.environment.query'
@@ -215,6 +219,9 @@ class ActivateBootEnvCommand(Command):
 
 @description("Boot pool management")
 class BootPoolNamespace(Namespace):
+    """
+    Boot pool command, expands into commands for managing your boot pool.
+    """
     def __init__(self, name, context):
         super(BootPoolNamespace, self).__init__(name)
 
@@ -292,6 +299,9 @@ class BootPoolDetachDiskCommand(Command):
 
 @description("Boot management")
 class BootNamespace(Namespace):
+    """
+    Boot command, expands into boot pool and boot environment commands.
+    """
     def __init__(self, name, context):
         super(BootNamespace, self).__init__(name)
         self.context = context

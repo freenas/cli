@@ -207,6 +207,10 @@ class UpdateNowCommand(Command):
 
 @description("System Updates and their Configuration")
 class UpdateNamespace(ConfigNamespace):
+    """
+    System update top level command, expands into commands for updating
+    and configuring system updates.
+    """
     def __init__(self, name, context):
         super(UpdateNamespace, self).__init__(name, context)
         self.context = context

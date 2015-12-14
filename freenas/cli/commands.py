@@ -254,12 +254,12 @@ class HelpCommand(Command):
 
     Provides usage information on particular command. If command can't be
     reached directly in current namespace, may be specified as chain,
-    eg: "account users show".
+    eg: "account user show".
 
     Examples:
         help
         help printenv
-        help account users show
+        help account user show
 
     To see the properties of a given namespace, use 'help properties'
     """

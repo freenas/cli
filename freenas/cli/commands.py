@@ -240,7 +240,8 @@ class ExitCommand(Command):
     """
     Usage: exit
 
-    Exits from the CLI.
+    Exits the CLI. Note that the CLI will restart if this command is run from the local console. The keyboard
+    shortcut for this command is (ctrl+d).
     """
     def run(self, context, args, kwargs, opargs):
         sys.exit(0)

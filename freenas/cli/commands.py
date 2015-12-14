@@ -496,7 +496,7 @@ class EchoCommand(Command):
     The echo utility writes any specified operands, separated by single blank
     (` ') characters and followed by a newline (`\\n') character, to the
     standard output. It also has the ability to expand and substitute
-    environment variables in place using the '$' or '${variable_name}' syntax/
+    environment variables in place using the '$' or '${variable_name}' syntax.
 
     Examples:
     echo Have a nice Day!

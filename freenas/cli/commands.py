@@ -474,21 +474,35 @@ class SourceCommand(Command):
 class DumpCommand(Command):
     """
     Usage: <namespace> dump
+           <namespace> dump <filename>
 
     Diplays configuration of either specified namespace or the current namespace.
     
     Examples:
     update dump
     dump | less
+    dump dumpfile.cli
     """
 
     def run(self, context, args, kwargs, opargs):
+        if len(args) > 1:
+            raise CommandException(_('Invalid syntax: {0}.\n{1}'.format(args, inspect.getdoc(self))))
         result = []
         if getattr(context.ml.cwd, 'serialize'):
             for i in context.ml.cwd.serialize():
                 result.append(unparse(i))
 
-        return '\n'.join(result)
+        contents = '\n'.join(result)
+        if len(args) == 1:
+            filename = args[0]
+            try:
+                with open(filename, 'w') as f:
+                    f.write(contents)
+            except IOError:
+                raise CommandException(_('Error writing to file {0}'.format(filename)))
+            return _('Configuration successfully dumped to file {0}'.format(filename))
+        else:
+            return contents
 
 
 @description("Prints the provided message to the output")

@@ -472,7 +472,7 @@ class DumpCommand(Command):
     """
     Usage: <namespace> dump
 
-    Diplays configuration of either specified namespace or all namespaces.
+    Diplays configuration of either specified namespace or the current namespace.
     
     Examples:
     update dump

@@ -936,6 +936,7 @@ class MainLoop(object):
                     item = self.find_in_scope(str(item), cwd=cwd)
 
                 if isinstance(item, Namespace):
+                    item.on_enter()
                     return self.eval(token, env, path=path+[item], dry_run=dry_run)
 
                 if isinstance(item, Command):
@@ -944,8 +945,6 @@ class MainLoop(object):
 
                     if dry_run:
                         return item, cwd, args, kwargs, opargs
-
-                    cwd.on_enter()
 
                     if isinstance(item, PipeCommand):
                         if serialize_filter:

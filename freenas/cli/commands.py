@@ -62,11 +62,11 @@ class SetenvCommand(Command):
     Sets value of environment variable.
     """
     def run(self, context, args, kwargs, opargs):
-        if not kwargs:
-            raise CommandException(inspect.getdoc(self))
         if args:
             raise CommandException("Incorrect syntax {0}\n".format(args) +
                                    inspect.getdoc(self))
+        if not kwargs:
+            raise CommandException(_('Please specify a variable to set.\n{0}'.format(inspect.getdoc(self))))
 
         for k, v in list(kwargs.items()):
             context.variables.set(k, v)

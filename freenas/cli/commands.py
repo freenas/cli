@@ -138,10 +138,8 @@ class ShellCommand(Command):
     """
     Usage: shell <command>
 
-    Launches interactive shell on FreeNAS host. That means if CLI is
-    used to connect to remote host, also remote shell will be used.
-    By default, launches current (logged in) user's login shell. Optional
-    positional argument may specify alternative command to run.
+    Launches current logged in user's login shell. Type "exit" to return to the CLI. If a command is specified,
+    runs the specified command or launches the specified shell.
     """
     def __init__(self):
         super(ShellCommand, self).__init__()

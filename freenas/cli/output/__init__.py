@@ -336,6 +336,9 @@ def format_output(object, **kwargs):
     elif isinstance(object, Table):
         output_table(object, **kwargs)
 
+    elif isinstance(object, dict):
+        output_dict(object, **kwargs)
+
     elif isinstance(object, Sequence):
         for i in object:
             format_output(i, **kwargs)

@@ -38,9 +38,8 @@ from freenas.cli.parser import parse, unparse
 from freenas.cli.namespace import (Command, PipeCommand, CommandException, description,
                                    SingleItemNamespace, Namespace)
 from freenas.cli.output import (
-    Table, output_dict, ValueType, output_msg, output_list,
-    output_lock, output_less, output_table, output_table_list, read_value,
-    format_output
+    Table, ValueType, output_msg, output_lock, output_less,
+     Sequence, output_table_list, read_value, format_output
 )
 from freenas.dispatcher.shell import ShellClient
 
@@ -54,6 +53,7 @@ _ = t.gettext
 
 @description("Sets variable value")
 class SetenvCommand(Command):
+
     """
     Usage: setenv <variable>=<value>
 
@@ -61,12 +61,16 @@ class SetenvCommand(Command):
 
     Sets value of environment variable.
     """
+
     def run(self, context, args, kwargs, opargs):
         if args:
-            raise CommandException("Incorrect syntax {0}\n".format(args) +
-                                   inspect.getdoc(self))
+            raise CommandException(_(
+                "Incorrect syntax {0}\n{1}".format(args, inspect.getdoc(self))
+            ))
         if not kwargs:
-            raise CommandException(_('Please specify a variable to set.\n{0}'.format(inspect.getdoc(self))))
+            raise CommandException(_(
+                'Please specify a variable to set.\n{0}'.format(inspect.getdoc(self))
+            ))
 
         for k, v in list(kwargs.items()):
             context.variables.set(k, v)
@@ -77,6 +81,7 @@ class SetenvCommand(Command):
 
 @description("Prints variable value")
 class PrintenvCommand(Command):
+
     """
     Usage: printenv <variable>
 
@@ -84,16 +89,13 @@ class PrintenvCommand(Command):
     arguments) or value of single environment variable (if called with single
     positional argument - variable name)
     """
+
     def run(self, context, args, kwargs, opargs):
         if len(args) == 0:
-            output_dict(dict(context.variables.get_all_printable()))
+            return dict(context.variables.get_all_printable())
 
         if len(args) == 1:
             try:
-                # Yes, the manual call to __str__() is needed as the output_msg
-                # in some formatters (ascii) replies on cprint instead of print
-                # thus making it a no-go to rely directly on __str__ to be
-                # invoked!
                 return context.variables.variables[args[0]].value
             except KeyError:
                 raise CommandException(_("No such Environment Variable exists"))
@@ -101,6 +103,7 @@ class PrintenvCommand(Command):
 
 @description("Saves the Environment Variables to cli config file")
 class SaveenvCommand(Command):
+
     """
     Usage: saveenv
            saveenv <filename>
@@ -117,37 +120,37 @@ class SaveenvCommand(Command):
     then that file is where the environment variables will be saved if a
     filename was not specified.
     """
+
     def run(self, context, args, kwargs, opargs):
         if len(args) == 0:
             context.variables.save()
-            output_msg(
-                'Environment Variables Saved to file: {0}'.format(
-                    context.variables.save_to_file))
+            return "Environment Variables Saved to file: {0}".format(
+                context.variables.save_to_file
+            )
         if len(args) == 1:
             context.variables.save(args[0])
-            output_msg(
-                'Environment Variables Saved to file: {0}'.format(args[0]))
+            return "Environment Variables Saved to file: {0}".format(args[0])
         if len(args) > 1:
-            output_msg(
-                'Incorrect syntax: {0}\n{1}'.format(
-                    args,
-                    inspect.getdoc(self))
-                )
+            raise CommandException(_(
+                "Incorrect syntax: {0}\n{1}".format(args, inspect.getdoc(self))
+            ))
 
 
 @description("Spawns shell, enter \"!shell\" (example: \"!sh\")")
 class ShellCommand(Command):
+
     """
     Usage: shell <command>
 
     Launches current logged in user's login shell. Type "exit" to return to the CLI. If a command is specified,
     runs the specified command then returns to the CLI. If the full path to an installed shell is
     specifed, launches the specified shell.
-    
-    Examples: 
+
+    Examples:
            shell /usr/local/bin/bash
            shell "tail /var/log/messages"
     """
+
     def __init__(self):
         super(ShellCommand, self).__init__()
         self.closed = False
@@ -186,27 +189,33 @@ class ShellCommand(Command):
 
 @description("Displays the active IP addresses from all configured network interface")
 class ShowIpsCommand(Command):
+
     """
     Usage: showips
 
     Displays the active IP addresses from all configured network interfaces.
     """
+
     def run(self, context, args, kwargs, opargs):
-        output_msg(_("These are the active ips from all the configured"
-                     " network interfaces"))
-        output_list(context.call_sync('network.config.get_my_ips'),
-                    _("IP Addresses"))
+        return Sequence(
+            _("These are the active ips from all the configured network interfaces"),
+            Table(
+                [{'ip': x} for x in context.call_sync('network.config.get_my_ips')],
+                [Table.Column(_("IP Addresses (ip)"), 'ip')]
+            )
+        )
 
 
 @description("Displays the URLs to access the web GUI from")
 class ShowUrlsCommand(Command):
+
     """
     Usage: showurls
 
     Displays the URLs to access the web GUI from.
     """
+
     def run(self, context, args, kwargs, opargs):
-        output_msg(_("You may try the following URLs to access the web user interface:"))
         my_ips = context.call_sync('network.config.get_my_ips')
         my_protocols = context.call_sync('system.ui.get_config')
         urls = []
@@ -215,18 +224,23 @@ class ShowUrlsCommand(Command):
             if proto_port is not None:
                 if proto_port in [80, 443]:
                     for x in my_ips:
-                        urls.append('{0}://{1}'.format(proto.lower(), x))
+                        urls.append({'url': '{0}://{1}'.format(proto.lower(), x)})
                 else:
                     for x in my_ips:
-                        urls.append('{0}://{1}:{2}'.format(proto.lower(), x, proto_port))
-        output_list(urls, label=_('URLs'))
+                        urls.append({'url': '{0}://{1}:{2}'.format(proto.lower(), x, proto_port)})
+        return Sequence(
+            _("You may try the following URLs to access the web user interface:"),
+            Table(urls, [Table.Column(_('URLs (url)'), 'url')])
+        )
 
 
 @description("Logs in to the server")
 class LoginCommand(Command):
+
     """
     Usage: login <username> <password>
     """
+
     def run(self, context, args, kwargs, opargs):
         if len(args) < 2:
             raise CommandException("Not enough arguments provided.\n" +
@@ -239,18 +253,21 @@ class LoginCommand(Command):
 
 @description("Exits the CLI, enter \"^D\" (ctrl+D)")
 class ExitCommand(Command):
+
     """
     Usage: exit
 
     Exits the CLI. Note that the CLI will restart if this command is run from the local console. The keyboard
     shortcut for this command is (ctrl+d).
     """
+
     def run(self, context, args, kwargs, opargs):
         sys.exit(0)
 
 
 @description("Provides help on commands")
 class HelpCommand(Command):
+
     """
     Usage: help <command> <command> ...
 
@@ -265,10 +282,10 @@ class HelpCommand(Command):
 
     To see the properties of a given namespace, use 'help properties'
     """
+
     def run(self, context, args, kwargs, opargs):
         arg = args[:]
         obj = context.ml.get_relative_object(context.ml.path[-1], args)
-        bases = map(lambda x: x.__name__, obj.__class__.__bases__)
 
         if len(arg) > 0:
             if "/" in arg:
@@ -419,6 +436,7 @@ class HistoryCommand(Command):
     the number of lines, from the last line of history, to display.
 
     """
+
     def run(self, context, args, kwargs, opargs):
         desired_range = None
         if args:
@@ -433,14 +451,10 @@ class HistoryCommand(Command):
         histroy_range = readline.get_current_history_length()
         if desired_range is not None and desired_range < histroy_range:
             histroy_range = desired_range + 1
-        history = [
-            {'cmd': readline.get_history_item(i)} for i in range(1, histroy_range)
-        ]
-        result_hist_table = Table(
-            history,
+        return Table(
+            [{'cmd': readline.get_history_item(i)} for i in range(1, histroy_range)],
             [Table.Column('Command History', 'cmd', ValueType.STRING)]
         )
-        return result_hist_table
 
 
 @description("Imports a script for parsing")
@@ -465,9 +479,11 @@ class SourceCommand(Command):
                             for i in ast:
                                 context.eval(i)
                     except UnicodeDecodeError as e:
-                        raise CommandException(_("Incorrect filetype, cannot parse file: {0}".format(str(e))))
+                        raise CommandException(_(
+                            "Incorrect filetype, cannot parse file: {0}".format(str(e))
+                        ))
                 else:
-                    raise CommandException(_("File " + arg + " does not exist."))
+                    raise CommandException(_("File {0} does not exist.".format(arg)))
 
 
 @description("Dumps namespace configuration to a series of CLI commands")
@@ -562,6 +578,7 @@ class EchoCommand(Command):
 
 @description("Allows the user to scroll through output")
 class LessPipeCommand(PipeCommand):
+
     """
     Usage: <command> | less
 
@@ -570,6 +587,7 @@ class LessPipeCommand(PipeCommand):
 
     Allows paging and scrolling through long outputs of text.
     """
+
     def __init__(self):
         self.must_be_last = True
 
@@ -583,7 +601,7 @@ def map_opargs(opargs, context):
     for k, o, v in opargs:
         if ns.has_property(k):
             mapping = ns.get_mapping(k)
-            mapped_opargs.append((mapping.name,o,read_value(v, mapping.type)))
+            mapped_opargs.append((mapping.name, o, read_value(v, mapping.type)))
         else:
             raise CommandException(_(
                 'Property {0} not found, valid properties are: {1}'.format(
@@ -596,6 +614,7 @@ def map_opargs(opargs, context):
 
 @description("Filters result set basing on specified conditions")
 class SearchPipeCommand(PipeCommand):
+
     """
     Usage: <command> | search <key> <op> <value> ...
 
@@ -603,6 +622,7 @@ class SearchPipeCommand(PipeCommand):
 
     Returns an element in a list that matches the given key value.
     """
+
     def run(self, context, args, kwargs, opargs, input=None):
         return input
 

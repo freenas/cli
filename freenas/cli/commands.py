@@ -139,7 +139,12 @@ class ShellCommand(Command):
     Usage: shell <command>
 
     Launches current logged in user's login shell. Type "exit" to return to the CLI. If a command is specified,
-    runs the specified command or launches the specified shell.
+    runs the specified command then returns to the CLI. If the full path to an installed shell is
+    specifed, launches the specified shell.
+    
+    Examples: 
+           shell /usr/local/bin/bash
+           shell "tail /var/log/messages"
     """
     def __init__(self):
         super(ShellCommand, self).__init__()

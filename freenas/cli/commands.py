@@ -470,9 +470,13 @@ class SourceCommand(Command):
 @description("Dumps namespace configuration to a series of CLI commands")
 class DumpCommand(Command):
     """
-    Usage: dump
+    Usage: <namespace> dump
 
-    Dumps namespace configuration to a series of CLI commands.
+    Diplays configuration of either specified namespace or all namespaces.
+    
+    Examples:
+    update dump
+    dump | less
     """
 
     def run(self, context, args, kwargs, opargs):

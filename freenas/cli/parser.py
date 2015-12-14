@@ -111,6 +111,12 @@ def t_IPV4(t):
     return t
 
 
+def t_SIZE(t):
+    r'\d+[kKmMgGtT]B?'
+    t.type = 'STRING'
+    return t
+
+
 def t_HEXNUMBER(t):
     r'0x[0-9a-fA-F]+'
     t.value = int(t.value, 16)

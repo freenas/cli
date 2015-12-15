@@ -827,7 +827,12 @@ class MainLoop(object):
                     if item is not None:
                         return item
 
-                    raise SyntaxError(_('{0} not found'.format(token.name)))
+                    # After all scope checks are done check if this is a
+                    # config environment var of the cli
+                    try:
+                        return self.context.variables.variables[token.name]
+                    except KeyError:
+                        raise SyntaxError(_('{0} not found'.format(token.name)))
 
             if isinstance(token, AssignmentStatement):
                 expr = self.eval(token.expr, env)
@@ -1259,7 +1264,7 @@ def main():
     if context.parsed_uri.scheme == 'ws':
         context.uri = context.parsed_uri.hostname
     username = None
-    if context.parsed_uri.hostname == None:
+    if context.parsed_uri.hostname is None:
         context.hostname = 'localhost'
     else:
         context.hostname = context.parsed_uri.hostname
@@ -1283,7 +1288,7 @@ def main():
             args.p = getpass.getpass('Please provide a password: ')
         else:
             args.p = args.p
-            
+
     context.read_middleware_config_file(args.m)
     context.variables.load(args.c)
     context.start(args.p)

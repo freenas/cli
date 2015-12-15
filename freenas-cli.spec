@@ -61,6 +61,6 @@ elif platform.system() == 'Darwin':
         a.binaries,
         a.zipfiles,
         a.datas,
-        name='freenas-cli.app',
+        name='freenas-cli.framework',
         icon=None,
         bundle_identifier='org.freenas.cli')

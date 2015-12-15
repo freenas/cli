@@ -94,6 +94,15 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         )
 
         self.add_property(
+            descr='Empty',
+            name='empty',
+            get='status.empty',
+            set=None,
+            list=True,
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
             descr='Allocation',
             name='allocation',
             get=self.get_allocation,

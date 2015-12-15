@@ -172,7 +172,7 @@ class ExtendVdevCommand(Command):
             raise CommandException(_("Please specify a disk to add to the vdev."))
         elif len(args) > 1:
             raise CommandException(_("Invalid input: {0}".format(args)))
-        
+
         disk = correct_disk_path(args[0])
         if disk not in context.call_sync('volume.get_available_disks'):
             raise CommandException(_("Disk {0} is not available".format(disk)))
@@ -481,14 +481,14 @@ class DatasetsNamespace(EntityNamespace):
         self.parent = parent
         self.path = name
         self.required_props = ['name']
-        
+
         self.localdoc['CreateEntityCommand'] = ("""\
             Usage: create <volume>/<dataset>
                    create <volume>/<dataset>/<dataset>
-                
+
             Examples: create tank/foo
                       create tank/foo/bar
-                   
+
             Creates a dataset.""")
 
         self.localdoc['DeleteEntityCommand'] = ("""\
@@ -784,10 +784,12 @@ def check_disks(context, disks):
 @description("Creates new volume")
 class CreateVolumeCommand(Command):
     """
-    Usage: create <name> type=<type> disks=<disks>
+    Usage: create <name> type=<type> disks=<disks> encryption=<encryption> password=<password>
 
     Example: create tank disks=ada1,ada2
              create tank type=raidz2 disks=ada1,ada2,ada3,ada4
+             create tank disks=ada1,ada2 encryption=yes
+             create tank disks=ada1,ada2 encryption=yes password=1234
 
     The types available for pool creation are: auto, disk, mirror, raidz1, raidz2 and raidz3
     The "auto" setting is used if a type is not specified.
@@ -809,7 +811,7 @@ class CreateVolumeCommand(Command):
             raise CommandException(_('Please specify a name for your pool'))
         else:
             name = kwargs.pop('name')
-        
+
         volume_type = kwargs.pop('type', 'auto')
         if volume_type not in VOLUME_TYPES:
             raise CommandException(_(
@@ -826,13 +828,21 @@ class CreateVolumeCommand(Command):
         if len(disks) > 1 and volume_type == 'disk':
             raise CommandException(_("Cannot create a volume of type disk with multiple disks"))
 
+        if kwargs.pop('encryption', 'no') == 'yes':
+            if 'password' in kwargs:
+                encryption = {'encryption': True, 'password': kwargs['password']}
+            else:
+                encryption = {'encryption': True}
+        else:
+            encryption = {'encryption': False}
+
         ns = SingleItemNamespace(None, self.parent)
         ns.orig_entity = query.wrap(copy.deepcopy(self.parent.skeleton_entity))
         ns.entity = query.wrap(copy.deepcopy(self.parent.skeleton_entity))
 
         disks = check_disks(context, disks)
         if volume_type == 'auto':
-            context.submit_task('volume.create_auto', name, 'zfs', disks)
+            context.submit_task('volume.create_auto', name, 'zfs', disks, encryption)
         else:
             ns.entity['name'] = name
             ns.entity['topology'] = {}
@@ -845,6 +855,7 @@ class CreateVolumeCommand(Command):
                     'type': volume_type,
                     'children': [{'type': 'disk', 'path': correct_disk_path(disk)} for disk in disks]
                 })
+            ns.entity['params'] = encryption
 
             self.parent.save(ns, new=True)
 

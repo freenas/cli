@@ -492,12 +492,13 @@ class DumpCommand(Command):
     Usage: <namespace> dump
            <namespace> dump <filename>
 
-    Diplays configuration of either specified namespace or the current namespace.
+    Diplays configuration of specified namespace or, when not specified, the current namespace. Optionally,
+    specify the name of the file to send the output to.
     
     Examples:
     update dump
     dump | less
-    dump dumpfile.cli
+    dump /root/mydumpfile.cli
     """
 
     def run(self, context, args, kwargs, opargs):

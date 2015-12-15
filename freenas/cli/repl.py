@@ -827,11 +827,18 @@ class MainLoop(object):
                     if item is not None:
                         return item
 
-                    raise SyntaxError('{0} not found'.format(token.name))
+                    raise SyntaxError(_('{0} not found'.format(token.name)))
 
             if isinstance(token, AssignmentStatement):
                 expr = self.eval(token.expr, env)
 
+                try:
+                    self.context.variables.variables[token.name]
+                    raise SyntaxError(_(
+                        "{0} is an Environment Variable. Use `setenv` command to set it".format(token.name)
+                    ))
+                except KeyError:
+                    pass
                 if isinstance(token.name, Subscript):
                     array = self.eval(token.name.expr, env)
                     index = self.eval(token.name.index, env)

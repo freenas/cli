@@ -827,12 +827,13 @@ class MainLoop(object):
                     if item is not None:
                         return item
 
-                    # After all scope checks are done check if this is a
-                    # config environment var of the cli
-                    try:
-                        return self.context.variables.variables[token.name]
-                    except KeyError:
-                        raise SyntaxError(_('{0} not found'.format(token.name)))
+                # After all scope checks are done check if this is a
+                # config environment var of the cli
+                try:
+                    return self.context.variables.variables[token.name]
+                except KeyError:
+                    pass
+                raise SyntaxError(_('{0} not found'.format(token.name)))
 
             if isinstance(token, AssignmentStatement):
                 expr = self.eval(token.expr, env)

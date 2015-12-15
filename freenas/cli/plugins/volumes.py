@@ -773,19 +773,12 @@ def check_disks(context, disks):
     if 'alldisks' in disks:
         return available_disks
     else:
-        if isinstance(disks, str):
-            disk = correct_disk_path(disks)
+        for disk in disks:
+            disk = correct_disk_path(disk)
             if disk not in all_disks:
                 raise CommandException(_("Disk {0} does not exist.".format(disk)))
             if disk not in available_disks:
                 raise CommandException(_("Disk {0} is not available.".format(disk)))
-        else:
-            for disk in disks:
-                disk = correct_disk_path(disk)
-                if disk not in all_disks:
-                    raise CommandException(_("Disk {0} does not exist.".format(disk)))
-                if disk not in available_disks:
-                    raise CommandException(_("Disk {0} is not available.".format(disk)))
     return disks
 
 @description("Creates new volume")
@@ -829,6 +822,8 @@ class CreateVolumeCommand(Command):
             raise CommandException(_("Please specify one or more disks using the disks property"))
         else:
             disks = kwargs.pop('disks')
+            if isinstance(disks, str):
+                disks = [disks]
 
         if len(disks) < DISKS_PER_TYPE[volume_type]:
             raise CommandException(_("Volume type {0} requires at least {1} disks".format(volume_type, DISKS_PER_TYPE)))

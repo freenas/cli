@@ -32,7 +32,6 @@ import select
 import readline
 import gettext
 import platform
-import re
 import textwrap
 from freenas.cli.parser import parse, unparse
 from freenas.cli.namespace import (Command, PipeCommand, CommandException, description,
@@ -41,6 +40,7 @@ from freenas.cli.output import (
     Table, ValueType, output_msg, output_lock, output_less,
      Sequence, output_table_list, read_value, format_output
 )
+from freenas.cli.output import Object as output_obj
 from freenas.dispatcher.shell import ShellClient
 
 if platform.system() != 'Windows':
@@ -523,21 +523,18 @@ class DumpCommand(Command):
 
 @description("Prints the provided message to the output")
 class EchoCommand(Command):
+
     """
     Usage: echo string_to_display
 
     The echo utility writes any specified operands, separated by single blank
-    (` ') characters and followed by a newline (`\\n') character, to the
+    (' ') characters and followed by a newline ('\\n') character, to the
     standard output. It also has the ability to expand and substitute
-    environment variables in place using the '$' or '${variable_name}' syntax.
+    variables in place using the '${variable_name}' syntax.
 
     Examples:
     echo Have a nice Day!
     output: Have a nice Day!
-
-    echo Hey \\n how are you?
-    output: Hey
-    how are you?
 
     echo Hello the current cli session timeout is $timeout seconds
     output: Hello the current cli session timeout is 10 seconds
@@ -545,35 +542,22 @@ class EchoCommand(Command):
     echo Hi there, you are using ${language}lang
     output Hi there, you are using Clang
     """
+
     def run(sef, context, args, kwargs, opargs):
         if len(args) == 0:
-            output_msg("")
+            return ""
         else:
-            curly_regex = "\$\{([\w]+)\}"
-            echo_output_list = ' '.join(args)
-            echo_output_list = echo_output_list.split('\\n')
-            for x, lst in enumerate(echo_output_list):
-                tmp_lst = lst.split(' ')
-                for y, word in enumerate(tmp_lst):
-                    occurences = re.findall(curly_regex, word)
-                    for r in occurences:
-                        try:
-                            value = context.variables.variables[r].__str__()
-                        except:
-                            output_msg(r + " " + _("No such Environment Variable exists"))
-                            return
-                        rep = "\$\{" + r + "\}"
-                        word = re.sub(rep, value, word)
-                    tmp_lst[y] = word
-                    if word.startswith('$'):
-                        try:
-                            tmp_lst[y] = context.variables.variables[word.strip()[1:]].__str__()
-                        except KeyError:
-                            output_msg(word[1:] + " " + _("No such Environment Variable exists"))
-                            return
-
-                echo_output_list[x] = ' '.join(tmp_lst)
-            list(map(output_msg, echo_output_list))
+            echo_seq = []
+            for i, item in enumerate(args):
+                if not (
+                    isinstance(item, (Table, output_obj, dict, Sequence, list)) or
+                    i == 0 or
+                    isinstance(args[i-1], (Table, output_obj, dict, Sequence, list))
+                ):
+                    echo_seq[-1] = ' '.join([echo_seq[-1], str(item)])
+                else:
+                    echo_seq.append(item)
+            return Sequence(*echo_seq)
 
 
 @description("Allows the user to scroll through output")

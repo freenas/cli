@@ -13,7 +13,7 @@ def resource_path(relative_path):
     return os.path.join(base_path, relative_path)
 
 a = Analysis(['freenas/cli/repl.py'],
-    pathex=['/home/william/scm/middleware/src/cli'],
+    pathex=['.'],
     binaries=None,
     datas=None,
     hiddenimports=['freenas.cli.output.ascii', 'Queue'],

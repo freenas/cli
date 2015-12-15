@@ -44,6 +44,7 @@ import getpass
 import traceback
 import six
 import paramiko
+from six.moves.urllib.parse import urlparse
 from socket import gaierror as socket_error
 from freenas.cli.descriptions import events
 from freenas.cli import functions
@@ -77,11 +78,6 @@ try:
     from shutil import get_terminal_size
 except ImportError:
     from backports.shutil_get_terminal_size import get_terminal_size
-
-try:
-    from urllib.parse import urlparse
-except ImportError:
-    from urlparse import urlparse
 
 if platform.system() == 'Darwin':
     import gnureadline as readline

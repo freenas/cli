@@ -773,12 +773,19 @@ def check_disks(context, disks):
     if 'alldisks' in disks:
         return available_disks
     else:
-        for disk in disks:
-            disk = correct_disk_path(disk)
+        if isinstance(disks, str):
+            disk = correct_disk_path(disks)
             if disk not in all_disks:
                 raise CommandException(_("Disk {0} does not exist.".format(disk)))
             if disk not in available_disks:
                 raise CommandException(_("Disk {0} is not available.".format(disk)))
+        else:
+            for disk in disks:
+                disk = correct_disk_path(disk)
+                if disk not in all_disks:
+                    raise CommandException(_("Disk {0} does not exist.".format(disk)))
+                if disk not in available_disks:
+                    raise CommandException(_("Disk {0} is not available.".format(disk)))
     return disks
 
 @description("Creates new volume")

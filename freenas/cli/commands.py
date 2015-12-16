@@ -259,7 +259,7 @@ class ExitCommand(Command):
     """
     Exit the CLI. Note that the CLI will restart if this command is run from the local console. The keyboard
     shortcut for this command is (ctrl+d).
-  
+
     Usage: exit
     """
 
@@ -274,9 +274,9 @@ class HelpCommand(Command):
     Provide usage information on particular command. If command can't be
     reached directly in current namespace, may be specified as chain,
     eg: "account user show".
-    
+
     To see the properties of a given namespace, use 'help properties'
-  
+
     Usage: help <command> <command> ...
 
     Examples:
@@ -287,7 +287,7 @@ class HelpCommand(Command):
 
     def run(self, context, args, kwargs, opargs):
         arg = args[:]
-        obj = context.ml.get_relative_object(context.ml.path[-1], args)
+        obj = context.ml.get_relative_object(kwargs.get('exec_path')[-1], args)
 
         if len(arg) > 0:
             if "/" in arg:

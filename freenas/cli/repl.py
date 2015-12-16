@@ -117,9 +117,9 @@ ENTITY_SUBSCRIBERS = [
 ]
 
 
-def sort_args(args):
+def sort_args(args, exec_path=[]):
     positional = []
-    kwargs = {}
+    kwargs = {'exec_path': exec_path}
     opargs = []
 
     for i in args:
@@ -962,7 +962,10 @@ class MainLoop(object):
 
                     if isinstance(item, Command):
                         token_args = convert_to_literals(token.args)
-                        args, kwargs, opargs = sort_args([self.eval(i, env) for i in token_args])
+                        args, kwargs, opargs = sort_args(
+                            [self.eval(i, env) for i in token_args],
+                            exec_path=path
+                        )
 
                         if dry_run:
                             return item, cwd, args, kwargs, opargs

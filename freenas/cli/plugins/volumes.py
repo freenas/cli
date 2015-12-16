@@ -32,7 +32,7 @@ from freenas.cli.namespace import (
     EntityNamespace, Command, CommandException, SingleItemNamespace,
     EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, description
 )
-from freenas.cli.output import Table, ValueType, output_tree, format_value
+from freenas.cli.output import Table, ValueType, output_tree, format_value, read_value
 from freenas.cli.utils import post_save, iterate_vdevs
 from freenas.utils import first_or_default, exclude, query
 
@@ -844,7 +844,7 @@ class CreateVolumeCommand(Command):
         if len(disks) > 1 and volume_type == 'disk':
             raise CommandException(_("Cannot create a volume of type disk with multiple disks"))
 
-        if kwargs.pop('encryption', False) is True:
+        if read_value(kwargs.pop('encryption', False), ValueType.BOOLEAN) is True:
             encryption = {'encryption': True}
             if 'password' in kwargs:
                 password = kwargs['password']

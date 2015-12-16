@@ -28,7 +28,7 @@
 
 import json
 import six
-from output import ValueType, resolve_cell
+from freenas.cli.output import ValueType, resolve_cell
 
 
 class JsonOutputFormatter(object):

@@ -29,11 +29,11 @@
 import time
 import six
 import gettext
-import config
 import natural.date
 import natural.size
 from texttable import Texttable
-from output import ValueType, get_terminal_size, resolve_cell
+from freenas.cli import config
+from freenas.cli.output import ValueType, get_terminal_size, resolve_cell
 
 
 t = gettext.translation('freenas-cli', fallback=True)

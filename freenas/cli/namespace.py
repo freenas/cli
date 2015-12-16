@@ -478,7 +478,8 @@ class ConfigNamespace(ItemNamespace):
 
         yield Comment('Namespace: {0}'.format(self.name))
         yield CommandCall([Symbol(self.name)])
-        yield from map(do_prop, self.property_mappings)
+        for j in map(do_prop, self.property_mappings):
+            yield j
         yield CommandCall([Symbol('..')])
 
     def commands(self):

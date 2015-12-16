@@ -37,10 +37,11 @@ def ASTObject(name, *args):
             ' '.join(["{0} '{1}'".format(i, getattr(self, i)) for i in args])
         )
 
-    def init(self, *values, p=None):
+    def init(self, *values, **kwargs):
         for idx, i in enumerate(values):
             setattr(self, args[idx], i)
 
+        p = kwargs.get('p')
         if p:
             self.file = p.parser.filename
             self.line = p.lineno(1)

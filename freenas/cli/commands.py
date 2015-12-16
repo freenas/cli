@@ -37,7 +37,7 @@ from freenas.cli.parser import parse, unparse
 from freenas.cli.namespace import (Command, PipeCommand, CommandException, description,
                                    SingleItemNamespace, Namespace)
 from freenas.cli.output import (
-    Table, ValueType, output_msg, output_lock, output_less,
+    Table, ValueType, output_msg, output_lock, output_less, format_value,
      Sequence, output_table_list, read_value, format_output
 )
 from freenas.cli.output import Object as output_obj
@@ -97,7 +97,7 @@ class PrintenvCommand(Command):
 
         if len(args) == 1:
             try:
-                return context.variables.variables[args[0]].value
+                return format_value(context.variables.variables[args[0]])
             except KeyError:
                 raise CommandException(_("No such Environment Variable exists"))
 

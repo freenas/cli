@@ -55,7 +55,7 @@ _ = t.gettext
 class SetenvCommand(Command):
 
     """
-    Sets value of environment variable.
+    Sets value of environment variable. Use printenv to display available variables and their current values.
 
     Usage: setenv <variable>=<value>
 
@@ -83,11 +83,12 @@ class SetenvCommand(Command):
 class PrintenvCommand(Command):
 
     """
-    Prints a list of environment variables and their values (if called without
-    arguments) or value of single environment variable (if called with single
-    positional argument - variable name)
+    Either prints a list of all environment variables and their values or the value of the specified
+    environment variable.
     
     Usage: printenv <variable>
+    
+    Example: printenv timeout
     """
 
     def run(self, context, args, kwargs, opargs):

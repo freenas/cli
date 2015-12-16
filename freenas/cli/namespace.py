@@ -75,7 +75,8 @@ class Namespace(object):
         yield CommandCall([Symbol(self.name)])
 
         for i in self.namespaces():
-            yield from i.serialize()
+            for j in i.serialize():
+                yield j
 
         yield CommandCall([Symbol('..')])
 

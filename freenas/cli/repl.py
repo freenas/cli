@@ -1065,9 +1065,10 @@ class MainLoop(object):
                     raise err
                 except BaseException as err:
                     output_msg('Error: {0}'.format(str(err)))
-                    output_msg('Call stack: ')
-                    for i in self.context.call_stack:
-                        output_msg('  ' + str(i))
+                    if len(self.context.call_stack) > 1:
+                        output_msg('Call stack: ')
+                        for i in self.context.call_stack:
+                            output_msg('  ' + str(i))
 
                     if self.context.variables.get('debug'):
                         output_msg('Python call stack: ')

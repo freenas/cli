@@ -106,20 +106,16 @@ class PrintenvCommand(Command):
 class SaveenvCommand(Command):
 
     """
-    Saves the current set of environment variables to the cli config
-    file. If a filename is not specified then this defaults to
-    "./.freenascli.conf".
-
-    Note: If the cli was run with the config option (i.e. cli -c path_to_file)
-    then that file is where the environment variables will be saved if a
-    filename was not specified.
+    Saves the current set of environment variables to either the specified filename or, when not specified,
+    to "/.freenascli.conf". To start the CLI with the saved variables, type "cli -c filename" from either shell
+    or an SSH session.
     
     Usage: saveenv
            saveenv <filename>
 
     Examples:
            saveenv
-           saveenv myclisave.conf
+           saveenv /root/myclisave.conf
     """
 
     def run(self, context, args, kwargs, opargs):

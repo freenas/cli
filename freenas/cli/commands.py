@@ -55,7 +55,7 @@ _ = t.gettext
 class SetenvCommand(Command):
 
     """
-    Sets value of environment variable. Use printenv to display available variables and their current values.
+    Set value of environment variable. Use printenv to display available variables and their current values.
 
     Usage: setenv <variable>=<value>
 
@@ -83,7 +83,7 @@ class SetenvCommand(Command):
 class PrintenvCommand(Command):
 
     """
-    Either prints a list of all environment variables and their values or the value of the specified
+    Either print a list of all environment variables and their values or the value of the specified
     environment variable.
     
     Usage: printenv <variable>
@@ -106,7 +106,7 @@ class PrintenvCommand(Command):
 class SaveenvCommand(Command):
 
     """
-    Saves the current set of environment variables to either the specified filename or, when not specified,
+    Save the current set of environment variables to either the specified filename or, when not specified,
     to "/.freenascli.conf". To start the CLI with the saved variables, type "cli -c filename" from either shell
     or an SSH session.
     
@@ -137,9 +137,9 @@ class SaveenvCommand(Command):
 class ShellCommand(Command):
 
     """
-    Launches current logged in user's login shell. Type "exit" to return to the CLI.
-    If a command is specified, runs the specified command then returns to the CLI.
-    If the full path to an installed shell is specifed, launches the specified shell.
+    Launch current logged in user's login shell. Type "exit" to return to the CLI.
+    If a command is specified, run the specified command then returns to the CLI.
+    If the full path to an installed shell is specifed, launch the specified shell.
   
     Usage: shell <command>
 
@@ -188,7 +188,7 @@ class ShellCommand(Command):
 class ShowIpsCommand(Command):
 
     """
-    Displays the active IP addresses from all configured network interfaces.
+    Display the IP addresses from all configured and active network interfaces.
 
     Usage: showips
     """
@@ -207,7 +207,7 @@ class ShowIpsCommand(Command):
 class ShowUrlsCommand(Command):
 
     """
-    Displays the URLs to access the web GUI from.
+    Display the URLs to access the web GUI from.
 
     Usage: showurls
     """
@@ -254,7 +254,7 @@ class LoginCommand(Command):
 class ExitCommand(Command):
 
     """
-    Exits the CLI. Note that the CLI will restart if this command is run from the local console. The keyboard
+    Exit the CLI. Note that the CLI will restart if this command is run from the local console. The keyboard
     shortcut for this command is (ctrl+d).
   
     Usage: exit
@@ -268,7 +268,7 @@ class ExitCommand(Command):
 class HelpCommand(Command):
 
     """
-    Provides usage information on particular command. If command can't be
+    Provide usage information on particular command. If command can't be
     reached directly in current namespace, may be specified as chain,
     eg: "account user show".
     
@@ -401,7 +401,7 @@ class HelpCommand(Command):
 @description("Sends the user to the top level")
 class TopCommand(Command):
     """
-    Sends you back to the top level of the command tree.
+    Go back to the root of the command tree.
 
     Usage: top
     """
@@ -412,7 +412,7 @@ class TopCommand(Command):
 @description("Clears the cli stdout")
 class ClearCommand(Command):
     """
-    Clears the screen.
+    Clear the screen.
 
     Usage: clear
     """
@@ -425,7 +425,7 @@ class ClearCommand(Command):
 @description("Shows the CLI command history")
 class HistoryCommand(Command):
     """
-    Lists the commands previously executed in this CLI instance.
+    List the commands previously executed in this CLI instance.
     Optionally, provide a number to specify
     the number of lines, from the last line of history, to display.
   
@@ -459,7 +459,7 @@ class HistoryCommand(Command):
 @description("Imports a script for parsing")
 class SourceCommand(Command):
     """
-    Imports scripts of cli commands for parsing.
+    Import scripts of CLI commands for parsing.
 
     Usage: source <filename>
            source <filename1> <filename2> <filename3>
@@ -487,7 +487,7 @@ class SourceCommand(Command):
 @description("Dumps namespace configuration to a series of CLI commands")
 class DumpCommand(Command):
     """
-    Diplays configuration of specified namespace or, when not specified, the current namespace. Optionally,
+    Diplay configuration of specified namespace or, when not specified, the current namespace. Optionally,
     specify the name of the file to send the output to.
     
     Usage: <namespace> dump
@@ -524,7 +524,7 @@ class DumpCommand(Command):
 class EchoCommand(Command):
 
     """
-    The echo utility writes any specified operands, separated by single blank
+    Write any specified operands, separated by single blank
     (' ') characters and followed by a newline ('\\n') character, to the
     standard output. It also has the ability to expand and substitute
     variables in place using the '${variable_name}' syntax.
@@ -563,7 +563,7 @@ class EchoCommand(Command):
 class LessPipeCommand(PipeCommand):
 
     """
-    Allows paging and scrolling through long outputs of text.
+    Allow paging and scrolling through long outputs of text.
 
     Usage: <command> | less
 
@@ -599,7 +599,7 @@ def map_opargs(opargs, context):
 class SearchPipeCommand(PipeCommand):
 
     """
-    Returns an element in a list that matches the given key value.
+    Return an element in a list that matches the given key value.
 
     Usage: <command> | search <key> <op> <value> ...
 
@@ -630,7 +630,7 @@ class SearchPipeCommand(PipeCommand):
 @description("Excludes certain results from result set basing on specified conditions")
 class ExcludePipeCommand(PipeCommand):
     """
-    Returns all the elements of a list that do not match the given key value.
+    Return all the elements of a list that do not match the given key value.
 
     Usage: <command> | exclude <key> <op> <value> ...
 
@@ -664,7 +664,7 @@ class ExcludePipeCommand(PipeCommand):
 @description("Sorts result set")
 class SortPipeCommand(PipeCommand):
     """
-    Sorts the elements of a list by the given key.
+    Sort the elements of a list by the given key.
 
     Usage: <command> | sort <field> [<-field> ...]
 
@@ -677,7 +677,7 @@ class SortPipeCommand(PipeCommand):
 @description("Limits output to <n> items")
 class LimitPipeCommand(PipeCommand):
     """
-    Returns only the n elements of a list.
+    Return only the n elements of a list.
 
     Usage: <command> | limit <n>
 
@@ -697,7 +697,7 @@ class LimitPipeCommand(PipeCommand):
 @description("Displays the output for a specific field")
 class SelectPipeCommand(PipeCommand):
     """
-    Returns only the output of the specific field for a list.
+    Return only the output of the specific field for a list.
 
     Usage: <command> | select <field>
 

@@ -532,10 +532,10 @@ class Context(object):
                             break
 
                         if data['state'] == 'FAILED':
-                            print()
+                            six.print_()
                             break
             except KeyboardInterrupt:
-                print()
+                six.print_()
                 output_msg(_("User requested task termination. Task abort signal sent"))
                 self.call_sync('task.abort', tid)
 
@@ -743,10 +743,10 @@ class MainLoop(object):
             try:
                 line = six.moves.input(self.__get_prompt()).strip()
             except EOFError:
-                print()
+                six.print_()
                 return
             except KeyboardInterrupt:
-                print()
+                six.print_()
                 output_msg(_('User terminated command'))
                 continue
 

@@ -27,6 +27,7 @@
 
 
 import time
+import six
 import gettext
 import config
 import natural.date
@@ -80,7 +81,7 @@ class TableOutputFormatter(object):
         table.set_deco(Texttable.BORDER | Texttable.VLINES | Texttable.HEADER)
         table.header([label])
         table.add_rows([[i] for i in data], False)
-        print(table.draw())
+        six.print_(table.draw())
 
     @staticmethod
     def output_dict(data, key_label, value_label, value_vt=ValueType.STRING):
@@ -88,7 +89,7 @@ class TableOutputFormatter(object):
         table.set_deco(Texttable.BORDER | Texttable.VLINES | Texttable.HEADER)
         table.header([key_label, value_label])
         table.add_rows([[row[0], TableOutputFormatter.format_value(row[1], value_vt)] for row in list(data.items())], False)
-        print(table.draw())
+        six.print_(table.draw())
 
     @staticmethod
     def output_table(data, columns):
@@ -96,7 +97,7 @@ class TableOutputFormatter(object):
         table.set_deco(Texttable.BORDER | Texttable.VLINES | Texttable.HEADER)
         table.header([i.label for i in columns])
         table.add_rows([[TableOutputFormatter.format_value(resolve_cell(row, i.accessor), i.vt) for i in columns] for row in data], False)
-        print(table.draw())
+        six.print_(table.draw())
 
     @staticmethod
     def output_object(items):
@@ -111,7 +112,7 @@ class TableOutputFormatter(object):
                 name, _, value, vt = i
                 table.add_row([name, TableOutputFormatter.format_value(value, vt)])
 
-        print(table.draw())
+        six.print_(table.draw())
 
     @staticmethod
     def output_tree(tree, children, label, label_vt=ValueType.STRING):
@@ -119,7 +120,7 @@ class TableOutputFormatter(object):
             for idx, i in enumerate(obj):
                 subtree = resolve_cell(i, children)
                 char = '+' if subtree else ('`' if idx == len(obj) - 1 else '|')
-                print('{0} {1}-- {2}'.format('    ' * indent, char, resolve_cell(i, label)))
+                six.print_('{0} {1}-- {2}'.format('    ' * indent, char, resolve_cell(i, label)))
                 if subtree:
                     branch(subtree, indent + 1)
 

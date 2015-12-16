@@ -26,10 +26,9 @@
 #####################################################################
 
 
-
 import json
-from texttable import Texttable
-from output import ValueType, get_terminal_size, resolve_cell
+import six
+from output import ValueType, resolve_cell
 
 
 class JsonOutputFormatter(object):
@@ -48,11 +47,11 @@ class JsonOutputFormatter(object):
 
     @staticmethod
     def output_list(data, label):
-        print(json.dumps(list(data), indent=4))
+        six.print_(json.dumps(list(data), indent=4))
 
     @staticmethod
     def output_dict(data, key_label, value_label):
-        print(json.dumps(dict(data), indent=4))
+        six.print_(json.dumps(dict(data), indent=4))
 
     @staticmethod
     def output_table(table):
@@ -64,29 +63,29 @@ class JsonOutputFormatter(object):
                     JsonOutputFormatter.format_value(resolve_cell(row, col.accessor), col.vt)})
             output.append(rowdata)
 
-        print(json.dumps(output, indent=4))
+        six.print_(json.dumps(output, indent=4))
 
     @staticmethod
     def output_table_list(tables):
         output = []
         for table in tables:
             output.append(JsonOutputFormatter.output_table(table))
-        print(output)
+        six.print_(output)
 
     @staticmethod
     def output_tree(data, children, label):
-        print(json.dumps(list(data), indent=4))
+        six.print_(json.dumps(list(data), indent=4))
 
     @staticmethod
     def output_msg(data, **kwargs):
-        print(json.dumps(data, indent=4))
+        six.print_(json.dumps(data, indent=4))
 
     @staticmethod
     def output_object(obj):
         output = {}
         for item in obj:
             output[item.name] = JsonOutputFormatter.format_value(item.value, item.vt)
-        print(json.dumps(output, indent=4))
+        six.print_(json.dumps(output, indent=4))
 
 
 def _formatter():

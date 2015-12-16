@@ -34,7 +34,6 @@ import natural.size
 from dateutil.parser import parse
 from texttable import Texttable
 from columnize import columnize
-from termcolor import cprint
 from freenas.cli import config
 from freenas.cli.output import ValueType, get_terminal_size, resolve_cell
 
@@ -162,7 +161,7 @@ class AsciiOutputFormatter(object):
         table.set_cols_width(widths)
 
         table.add_rows([[AsciiOutputFormatter.format_value(resolve_cell(row, i.accessor), i.vt) for i in tab.columns] for row in tab.data], False)
-        print(table.draw())
+        six.print_(table.draw())
 
     @staticmethod
     def output_table_list(tables):
@@ -189,7 +188,7 @@ class AsciiOutputFormatter(object):
             table.set_deco(0)
             table.header([i.label for i in tab.columns])
             table.add_rows([[AsciiOutputFormatter.format_value(resolve_cell(row, i.accessor), i.vt) for i in tab.columns] for row in tab.data], False)
-            print(table.draw() + "\n")
+            six.print_(table.draw() + "\n")
 
     @staticmethod
     def output_object(obj):
@@ -199,7 +198,7 @@ class AsciiOutputFormatter(object):
         for item in obj:
             table.add_row(['{0} ({1})'.format(item.descr, item.name), AsciiOutputFormatter.format_value(item.value, item.vt)])
 
-        print(table.draw())
+        six.print_(table.draw())
 
     @staticmethod
     def output_tree(tree, children, label, label_vt=ValueType.STRING):
@@ -207,7 +206,7 @@ class AsciiOutputFormatter(object):
             for idx, i in enumerate(obj):
                 subtree = resolve_cell(i, children)
                 char = '+' if subtree else ('`' if idx == len(obj) - 1 else '|')
-                print('{0} {1}-- {2}'.format('    ' * indent, char, resolve_cell(i, label)))
+                six.print_('{0} {1}-- {2}'.format('    ' * indent, char, resolve_cell(i, label)))
                 if subtree:
                     branch(subtree, indent + 1)
 
@@ -215,7 +214,7 @@ class AsciiOutputFormatter(object):
 
     @staticmethod
     def output_msg(message, **kwargs):
-        print(format_literal(message, **kwargs), end=('\n' if kwargs.get('newline', True) else ' '))
+        six.print_(format_literal(message, **kwargs), end=('\n' if kwargs.get('newline', True) else ' '))
 
 
 def _formatter():

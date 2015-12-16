@@ -846,10 +846,7 @@ class CreateVolumeCommand(Command):
 
         if read_value(kwargs.pop('encryption', False), ValueType.BOOLEAN) is True:
             encryption = {'encryption': True}
-            if 'password' in kwargs:
-                password = kwargs['password']
-            else:
-                password = None
+            password = kwargs.get('password', None)
         else:
             encryption = {'encryption': False}
             password = None

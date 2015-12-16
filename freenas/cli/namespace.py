@@ -190,7 +190,7 @@ class RootNamespace(Namespace):
 class PropertyMapping(object):
     def __init__(self, **kwargs):
         self.name = kwargs.pop('name')
-        self.descr = kwargs.pop('descr')
+        self.descr = kwargs.pop('descr', None)
         self.get = kwargs.pop('get')
         self.get_name = kwargs.pop('get_name', self.get)
         self.set = kwargs.pop('set', None) if 'set' in kwargs else self.get
@@ -651,7 +651,7 @@ class ListCommand(FilteringCommand):
                 if isinstance(prop.set, collections.Callable):
                     dummy_entity = {}
                     prop.set(dummy_entity, v)
-                    v = dummy_entity[prop.get_name] 
+                    v = dummy_entity[prop.get_name]
                 yield prop.get_name, op, v
 
     def run(self, context, args, kwargs, opargs, filtering=None):

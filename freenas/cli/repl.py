@@ -70,7 +70,7 @@ from freenas.cli.commands import (
     ShowUrlsCommand, ShowIpsCommand, TopCommand, ClearCommand, HistoryCommand,
     SaveenvCommand, EchoCommand, SourceCommand, LessPipeCommand, SearchPipeCommand,
     ExcludePipeCommand, SortPipeCommand, LimitPipeCommand, SelectPipeCommand,
-    LoginCommand, DumpCommand
+    LoginCommand, DumpCommand, WhoamiCommand
 )
 import collections
 
@@ -274,6 +274,7 @@ class Context(object):
         self.builtin_operators = functions.operators
         self.builtin_functions = functions.functions
         self.global_env = Environment(self)
+        self.user = None
         config.instance = self
 
     @property
@@ -411,7 +412,7 @@ class Context(object):
                 try:
                     if self.hostname in ('127.0.0.1', 'localhost') \
                             or self.parsed_uri.scheme == 'unix':
-                        self.connection.login_user(getpass.getuser(), '')
+                        self.connection.login_user(self.user, '')
                     else:
                         self.connection.login_token(self.connection.token)
 
@@ -664,6 +665,7 @@ class MainLoop(object):
         'clear': ClearCommand(),
         'history': HistoryCommand(),
         'echo': EchoCommand(),
+        'whoami': WhoamiCommand(),
     }
     builtin_commands = base_builtin_commands.copy()
     builtin_commands.update(pipe_commands)
@@ -1317,9 +1319,11 @@ def main():
 
     if username is not None:
         context.login(username, args.p)
+        context.user = username
     elif context.parsed_uri.netloc in ('127.0.0.1', 'localhost') \
             or context.parsed_uri.scheme == 'unix':
-        context.login(getpass.getuser(), '')
+        context.user = getpass.getuser()
+        context.login(context.user, '')
 
     if args.D:
         for i in args.D:

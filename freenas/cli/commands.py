@@ -267,6 +267,19 @@ class ExitCommand(Command):
         sys.exit(0)
 
 
+@description("Specifies the current cli session's user")
+class WhoamiCommand(Command):
+
+    """
+    Specifies the current cli session's user.
+
+    Usage: whoami
+    """
+
+    def run(self, context, args, kwargs, opargs):
+        return context.user
+
+
 @description("Provides help on commands")
 class HelpCommand(Command):
 

@@ -317,11 +317,13 @@ class FindMediaCommand(Command):
 @description("Imports given volume")
 class ImportVolumeCommand(Command):
     """
-    Usage: import <name|id> [newname=<new-name>]
+    Usage: import <name|id> [newname=<new-name>] key=<key> password=<password> disks=<disks>
 
     Example: import tank
+             import tank key=dasfer34tadsf23d/adf password=abcd disks=da1,da2
 
     Imports a detached volume.
+    When importing encrypted volume key and disks or key, password and disks must be provided.
     """
     def run(self, context, args, kwargs, opargs):
         if len(args) < 1:
@@ -339,7 +341,18 @@ class ImportVolumeCommand(Command):
             id = vol['id']
             oldname = vol['name']
 
-        context.submit_task('volume.import', id, kwargs.get('newname', oldname))
+        if 'key' in kwargs:
+            if 'disks' not in kwargs:
+                raise CommandException('You have to provide list of disks when importing an encrypted volume')
+            if 'password' in kwargs:
+                encryption = {'key': kwargs['key'],
+                              'password': kwargs['password'],
+                              'disks': kwargs['disks']}
+            else:
+                encryption = {'key': kwargs['key'],
+                              'disks': kwargs['disks']}
+
+        context.submit_task('volume.import', id, kwargs.get('newname', oldname), None, encryption)
 
 
 @description("Detaches given volume")

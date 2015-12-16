@@ -28,12 +28,11 @@
 import re
 import copy
 import gettext
-import inspect
 from freenas.cli.namespace import (
     EntityNamespace, Command, CommandException, SingleItemNamespace,
-    EntitySubscriberBasedLoadMixin, RpcBasedLoadMixin, TaskBasedSaveMixin, description
+    EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, description
 )
-from freenas.cli.output import Table, ValueType, output_tree, output_msg, format_value
+from freenas.cli.output import Table, ValueType, output_tree, format_value
 from freenas.cli.utils import post_save, iterate_vdevs
 from freenas.utils import first_or_default, exclude, query
 
@@ -178,10 +177,10 @@ class ExtendVdevCommand(Command):
             raise CommandException(_("Disk {0} is not available".format(disk)))
 
         vdev = first_or_default(lambda v:
-            v['path'] == vdev_ident or
-            vdev_ident in [i['path'] for i in v['children']],
-            self.parent.entity['topology']['data']
-        )
+                                v['path'] == vdev_ident or
+                                vdev_ident in [i['path'] for i in v['children']],
+                                self.parent.entity['topology']['data']
+                                )
 
         if vdev['type'] == 'disk':
             vdev['type'] = 'mirror'
@@ -780,6 +779,7 @@ class FilesystemNamespace(EntityNamespace):
             get='name'
         )
 
+
 def check_disks(context, disks):
     all_disks = [disk["path"] for disk in context.call_sync("disk.query")]
     available_disks = context.call_sync('volume.get_available_disks')
@@ -793,6 +793,7 @@ def check_disks(context, disks):
             if disk not in available_disks:
                 raise CommandException(_("Disk {0} is not available.".format(disk)))
     return disks
+
 
 @description("Creates new volume")
 class CreateVolumeCommand(Command):
@@ -843,13 +844,15 @@ class CreateVolumeCommand(Command):
         if len(disks) > 1 and volume_type == 'disk':
             raise CommandException(_("Cannot create a volume of type disk with multiple disks"))
 
-        if kwargs.pop('encryption', 'no') == 'yes':
+        if kwargs.pop('encryption', False) is True:
+            encryption = {'encryption': True}
             if 'password' in kwargs:
-                encryption = {'encryption': True, 'password': kwargs['password']}
+                password = kwargs['password']
             else:
-                encryption = {'encryption': True}
+                password = None
         else:
             encryption = {'encryption': False}
+            password = None
 
         ns = SingleItemNamespace(None, self.parent)
         ns.orig_entity = query.wrap(copy.deepcopy(self.parent.skeleton_entity))
@@ -857,7 +860,7 @@ class CreateVolumeCommand(Command):
 
         disks = check_disks(context, disks)
         if volume_type == 'auto':
-            context.submit_task('volume.create_auto', name, 'zfs', disks, encryption)
+            context.submit_task('volume.create_auto', name, 'zfs', disks, encryption, password)
         else:
             ns.entity['name'] = name
             ns.entity['topology'] = {}
@@ -872,7 +875,11 @@ class CreateVolumeCommand(Command):
                 })
             ns.entity['params'] = encryption
 
-            self.parent.save(ns, new=True)
+            context.submit_task(
+                self.parent.create_task,
+                ns.entity,
+                password,
+                callback=lambda s: post_save(ns, s))
 
     def complete(self, context, tokens):
         return ['name=', 'type=', 'disks=']
@@ -926,6 +933,23 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
             list=True)
 
         self.add_property(
+            descr='Encrypted',
+            name='encrypted',
+            get='encrypted',
+            set=None)
+
+        self.add_property(
+            descr='Locked',
+            name='locked',
+            get='locked',
+            set=None)
+
+        self.add_property(
+            name='password',
+            get=None,
+            set=self.set_password)
+
+        self.add_property(
             descr='Status',
             name='status',
             get='status',
@@ -961,17 +985,6 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
             'detach': DetachVolumeCommand(),
         }
 
-        self.entity_commands = lambda this: {
-            'show_topology': ShowTopologyCommand(this),
-            'show_disks': ShowDisksCommand(this),
-            'scrub': ScrubCommand(this),
-            'add_vdev': AddVdevCommand(this),
-            'delete_vdev': DeleteVdevCommand(this),
-            'offline': OfflineVdevCommand(this),
-            'online': OnlineVdevCommand(this),
-            'extend_vdev': ExtendVdevCommand(this)
-        }
-
         self.entity_namespaces = lambda this: [
             DatasetsNamespace('dataset', self.context, this),
             SnapshotsNamespace('snapshot', self.context, this)
@@ -981,6 +994,48 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
         cmds = super(VolumesNamespace, self).commands()
         cmds.update({'create': CreateVolumeCommand(self)})
         return cmds
+
+    def entity_commands(self, this):
+        commands = {
+            'show_topology': ShowTopologyCommand(this),
+            'show_disks': ShowDisksCommand(this),
+            'scrub': ScrubCommand(this),
+            'add_vdev': AddVdevCommand(this),
+            'delete_vdev': DeleteVdevCommand(this),
+            'offline': OfflineVdevCommand(this),
+            'online': OnlineVdevCommand(this),
+            'extend_vdev': ExtendVdevCommand(this),
+        }
+
+        #if this.entity['encrypted'] is True:
+        #    if this.entity['locked'] is True:
+        #        commands['unlock'] = UnlockVolumeCommand(this)
+        #        commands['restore_key'] = RestoreVolumeMasterKeyCommand(this)
+        #    else:
+        #        commands['lock'] = LockVolumeCommand(this)
+        #        commands['rekey'] = RekeyVolumeCommand(this)
+        #        commands['backup_key'] = BackupVolumeMasterKeyCommand(this)
+
+        return commands
+
+    def set_password(self, entity, password):
+        entity['password'] = password
+
+    def save(self, this, new=False):
+        if new:
+            self.context.submit_task(
+                self.create_task,
+                this.entity,
+                this.entity.get('password', None),
+                callback=lambda s: post_save(this, s))
+            return
+
+        self.context.submit_task(
+            self.update_task,
+            this.orig_entity[self.save_key_name],
+            this.get_diff(),
+            this.entity.get('password', None),
+            callback=lambda s: post_save(this, s))
 
 
 def _init(context):

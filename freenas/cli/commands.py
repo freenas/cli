@@ -473,8 +473,7 @@ class SourceCommand(Command):
                     try:
                         with open(arg, 'r') as f:
                             ast = parse(f.read(), arg)
-                            for i in ast:
-                                context.eval(i)
+                            context.eval_block(ast)
                     except UnicodeDecodeError as e:
                         raise CommandException(_(
                             "Incorrect filetype, cannot parse file: {0}".format(str(e))

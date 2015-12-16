@@ -178,16 +178,15 @@ class VariableStore(object):
     def __init__(self):
         self.save_to_file = DEFAULT_CLI_CONFIGFILE
         self.variables = {
-            'output_format': self.Variable('ascii', ValueType.STRING,
-                                           ['ascii', 'json', 'table']),
+            'output_format': self.Variable('ascii', ValueType.STRING, ['ascii', 'json', 'table']),
             'datetime_format': self.Variable('natural', ValueType.STRING),
-            'language': self.Variable(os.getenv('LANG', 'C'),
-                                      ValueType.STRING),
+            'language': self.Variable(os.getenv('LANG', 'C'), ValueType.STRING),
             'prompt': self.Variable('{host}:{path}>', ValueType.STRING),
             'timeout': self.Variable(10, ValueType.NUMBER),
             'tasks_blocking': self.Variable(False, ValueType.BOOLEAN),
             'show_events': self.Variable(True, ValueType.BOOLEAN),
-            'debug': self.Variable(False, ValueType.BOOLEAN)
+            'debug': self.Variable(False, ValueType.BOOLEAN),
+            'abort_on_errors': self.Variable(True, ValueType.BOOLEAN)
         }
 
     def load(self, filename):
@@ -777,7 +776,14 @@ class MainLoop(object):
             env = self.context.global_env
 
         for stmt in block:
-            ret = self.eval(stmt, env)
+            try:
+                ret = self.eval(stmt, env)
+            except BaseException as e:
+                if self.context.variables.get('abort_on_errors'):
+                    raise e
+
+                continue
+
             if type(ret) is FlowControlInstruction:
                 if ret.type == FlowControlInstructionType.BREAK:
                     if not allow_break:

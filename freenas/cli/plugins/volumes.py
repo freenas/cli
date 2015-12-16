@@ -331,27 +331,27 @@ class ImportVolumeCommand(Command):
         id = args[0]
         oldname = args[0]
 
-        if not args[0].isdigit():
-            vols = context.call_sync('volume.find')
-            vol = first_or_default(lambda v: v['name'] == args[0], vols)
-            if not vol:
-                raise CommandException('Importable volume {0} not found'.format(args[0]))
-
-            id = vol['id']
-            oldname = vol['name']
-
         if 'key' in kwargs:
             if 'disks' not in kwargs:
                 raise CommandException('You have to provide list of disks when importing an encrypted volume')
-            if 'password' in kwargs:
-                encryption = {'key': kwargs['key'],
-                              'password': kwargs['password'],
-                              'disks': kwargs['disks']}
-            else:
-                encryption = {'key': kwargs['key'],
-                              'disks': kwargs['disks']}
 
-        context.submit_task('volume.import', id, kwargs.get('newname', oldname), None, encryption)
+            encryption = {'key': kwargs['key'],
+                          'disks': kwargs['disks']}
+            password = kwargs.get('password', None)
+        else:
+            encryption = None
+            password = None
+
+            if not args[0].isdigit():
+                vols = context.call_sync('volume.find')
+                vol = first_or_default(lambda v: v['name'] == args[0], vols)
+                if not vol:
+                    raise CommandException('Importable volume {0} not found'.format(args[0]))
+
+                id = vol['id']
+                oldname = vol['name']
+
+        context.submit_task('volume.import', id, kwargs.get('newname', oldname), None, encryption, password)
 
 
 @description("Detaches given volume")

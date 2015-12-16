@@ -101,6 +101,9 @@ class PrintenvCommand(Command):
             except KeyError:
                 raise CommandException(_("No such Environment Variable exists"))
 
+    def complete(self, context, tokens):
+        return [k for k, foo in context.variables.get_all()]
+
 
 @description("Saves the Environment Variables to cli config file")
 class SaveenvCommand(Command):

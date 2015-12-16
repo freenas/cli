@@ -109,7 +109,7 @@ class InfoCommand(Command):
             ),
             Object.Item("CPU Model", 'cpu_model', info_dict['cpu_model']),
             Object.Item("CPU Cores", 'cpu_cores', info_dict['cpu_cores']),
-            Object.Item("Memory size", 'memory_size', info_dict['memory_size']))
+            Object.Item("Memory size", 'memory_size', info_dict['memory_size'], vt=ValueType.SIZE))
 
 
 @description("Prints FreeNAS version information")

@@ -925,54 +925,62 @@ class MainLoop(object):
 
             if isinstance(token, CommandCall):
                 token = copy.deepcopy(token)
+                success = True
 
-                if len(token.args) == 0:
-                    for i in path:
-                        self.cd(i)
+                try:
+                    if len(token.args) == 0:
+                        for i in path:
+                            self.cd(i)
 
-                    return
-
-                top = token.args.pop(0)
-                if top == '..':
-                    if not path:
-                        self.cd_up()
                         return
 
-                    return self.eval(token, env, path=path[:-1])
+                    top = token.args.pop(0)
+                    if top == '..':
+                        if not path:
+                            self.cd_up()
+                            return
 
-                if isinstance(top, Literal):
-                    top = Symbol(top.value)
+                        return self.eval(token, env, path=path[:-1])
 
-                item = self.eval(top, env, path=path)
+                    if isinstance(top, Literal):
+                        top = Symbol(top.value)
 
-                if isinstance(item, (six.string_types, int, bool)):
-                    item = self.find_in_scope(str(item), cwd=cwd)
+                    item = self.eval(top, env, path=path)
 
-                if isinstance(item, Namespace):
-                    item.on_enter()
-                    return self.eval(token, env, path=path+[item], dry_run=dry_run)
+                    if isinstance(item, (six.string_types, int, bool)):
+                        item = self.find_in_scope(str(item), cwd=cwd)
 
-                if isinstance(item, Command):
-                    token_args = convert_to_literals(token.args)
-                    args, kwargs, opargs = sort_args([self.eval(i, env) for i in token_args])
+                    if isinstance(item, Namespace):
+                        item.on_enter()
+                        return self.eval(token, env, path=path+[item], dry_run=dry_run)
 
-                    if dry_run:
-                        return item, cwd, args, kwargs, opargs
+                    if isinstance(item, Command):
+                        token_args = convert_to_literals(token.args)
+                        args, kwargs, opargs = sort_args([self.eval(i, env) for i in token_args])
 
-                    if isinstance(item, PipeCommand):
-                        if serialize_filter:
-                            ret = item.serialize_filter(self.context, args, kwargs, opargs)
-                            if ret is not None:
-                                if 'filter' in ret:
-                                    serialize_filter['filter'] += ret['filter']
+                        if dry_run:
+                            return item, cwd, args, kwargs, opargs
 
-                                if 'params' in ret:
-                                    serialize_filter['params'].update(ret['params'])
+                        if isinstance(item, PipeCommand):
+                            if serialize_filter:
+                                ret = item.serialize_filter(self.context, args, kwargs, opargs)
+                                if ret is not None:
+                                    if 'filter' in ret:
+                                        serialize_filter['filter'] += ret['filter']
 
-                        return item.run(self.context, args, kwargs, opargs, input=input_data)
+                                    if 'params' in ret:
+                                        serialize_filter['params'].update(ret['params'])
 
-                    return item.run(self.context, args, kwargs, opargs)
+                            return item.run(self.context, args, kwargs, opargs, input=input_data)
 
+                        return item.run(self.context, args, kwargs, opargs)
+                except BaseException as err:
+                    success = False
+                    raise err
+                finally:
+                    env['_success'] = Environment.Variable(success)
+
+                env['_success'] = Environment.Variable(False)
                 raise SyntaxError("Command or namespace {0} not found".format(top.name))
 
             if isinstance(token, FunctionCall):

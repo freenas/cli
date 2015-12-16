@@ -137,9 +137,9 @@ class SaveenvCommand(Command):
 class ShellCommand(Command):
 
     """
-    Launches current logged in user's login shell. Type "exit" to return to the CLI. If a command is specified,
-    runs the specified command then returns to the CLI. If the full path to an installed shell is
-    specifed, launches the specified shell.
+    Launches current logged in user's login shell. Type "exit" to return to the CLI.
+    If a command is specified, runs the specified command then returns to the CLI.
+    If the full path to an installed shell is specifed, launches the specified shell.
   
     Usage: shell <command>
 

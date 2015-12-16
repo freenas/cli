@@ -235,6 +235,8 @@ class ShowUrlsCommand(Command):
 class LoginCommand(Command):
 
     """
+    Login to the CLI as the specified user.
+    
     Usage: login <username> <password>
     """
 

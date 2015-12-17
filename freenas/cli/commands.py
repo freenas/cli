@@ -272,7 +272,7 @@ class ExitCommand(Command):
 class WhoamiCommand(Command):
 
     """
-    Specifies the current cli session's user.
+    Display the current CLI user.
 
     Usage: whoami
     """

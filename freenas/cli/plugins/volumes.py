@@ -382,6 +382,144 @@ class DetachVolumeCommand(Command):
                             str(result['result']))
 
 
+@description("Unlocks encrypted volume")
+class UnlockVolumeCommand(Command):
+    """
+    Usage: unlock
+
+    Example: unlock
+
+    Unlocks an encrypted volume.
+    If your volume is password protected you have to provide it's password
+    first by typing:
+
+    set password=<password>
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        if self.parent.entity['locked'] is False:
+            raise CommandException('Volume is already unlocked')
+        password = self.parent.entity.get('password', None)
+        name = self.parent.entity['name']
+        context.submit_task('volume.unlock', name, password)
+
+
+@description("Locks encrypted volume")
+class LockVolumeCommand(Command):
+    """
+    Usage: lock
+
+    Example: lock
+
+    Locks an encrypted volume.
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        if self.parent.entity['locked'] is True:
+            raise CommandException('Volume is already locked')
+        name = self.parent.entity['name']
+        context.submit_task('volume.lock', name)
+
+
+@description("Generates new user key for encrypted volume")
+class RekeyVolumeCommand(Command):
+    """
+    Usage: rekey password=<password>
+
+    Example: rekey
+             rekey password=new_password
+
+    Generates a new user key for an encrypted volume.
+    Your volume must be unlocked to perform this operation.
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        if self.parent.entity['locked'] is True:
+            raise CommandException('You must unlock your volume first')
+        password = kwargs.get('password', None)
+        name = self.parent.entity['name']
+        context.submit_task('volume.rekey', name, password)
+
+
+@description("Creates an encrypted file containing copy of metadatas of all disks related to an encrypted volume")
+class BackupVolumeMasterKeyCommand(Command):
+    """
+    Usage: backup-key path=<path_to_output_file>
+
+    Example: backup-key path="/mnt/foo/bar"
+
+    Creates an encrypted file containing copy of metadatas of all disks related
+    to an encrypted volume.
+    Your volume must be unlocked to perform this operation.
+
+    Command is writing to file selected by user and then returns automatically
+    generated password protecting this file.
+    Remember, or write down your backup password to a secure location.
+
+    WARNING! You are performing this operation at your own risk! Matadata's
+             backup is ALWAYS valid thus it can be always used to restore your
+             volume's data! 'rekey' of volume does not make previous backups
+             invalid as there is always only one master key! Every leak
+             of a backup file or writing it to a copy-on-write filesystem like
+             ZFS can possibly lower or even void encrypted volume security.
+             If you want to get best security from encrypted volumes you should
+             never backup their metadata and be prepared for eventual data loss
+             due to metadata corruption.
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        if self.parent.entity['locked'] is True:
+            raise CommandException('You must unlock your volume first')
+
+        path = kwargs.get('path', None)
+        if path is None:
+            raise CommandException('You must provide an output path for a backup file')
+
+        name = self.parent.entity['name']
+        result = context.call_task_sync('volume.keys.backup', name, path)
+        return Sequence("Backup password:",
+                        str(result['result']))
+
+
+@description("Restores metadata of all disks related to an encrypted volume from a backup file")
+class RestoreVolumeMasterKeyCommand(Command):
+    """
+    Usage: restore-key path=<path_to_input_file> password=<password>
+
+    Example: restore-key path="/mnt/foo/bar" password=abcd-asda-fdsd-cxbvs
+
+    Restores metadata of all disks related to an encrypted volume
+    from a backup file.
+
+    Your volume must locked to perform this operation.
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        if self.parent.entity['locked'] is False:
+            raise CommandException('You must lock your volume first')
+
+        path = kwargs.get('path', None)
+        if path is None:
+            raise CommandException('You must provide an input path containing a backup file')
+
+        password = kwargs.get('password', None)
+        if password is None:
+            raise CommandException('You must provide a password protecting a backup file')
+
+        name = self.parent.entity['name']
+        context.submit_task('volume.keys.restore', name, password, path)
+
+
 @description("Shows volume topology")
 class ShowTopologyCommand(Command):
     """
@@ -1018,14 +1156,14 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
             'extend_vdev': ExtendVdevCommand(this),
         }
 
-        #if this.entity['encrypted'] is True:
-        #    if this.entity['locked'] is True:
-        #        commands['unlock'] = UnlockVolumeCommand(this)
-        #        commands['restore_key'] = RestoreVolumeMasterKeyCommand(this)
-        #    else:
-        #        commands['lock'] = LockVolumeCommand(this)
-        #        commands['rekey'] = RekeyVolumeCommand(this)
-        #        commands['backup_key'] = BackupVolumeMasterKeyCommand(this)
+        if this.entity['encrypted'] is True:
+            if this.entity['locked'] is True:
+                commands['unlock'] = UnlockVolumeCommand(this)
+                commands['restore-key'] = RestoreVolumeMasterKeyCommand(this)
+            else:
+                commands['lock'] = LockVolumeCommand(this)
+                commands['rekey'] = RekeyVolumeCommand(this)
+                commands['backup-key'] = BackupVolumeMasterKeyCommand(this)
 
         return commands
 

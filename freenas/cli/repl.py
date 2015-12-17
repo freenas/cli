@@ -966,7 +966,7 @@ class MainLoop(object):
                         token_args = convert_to_literals(token.args)
                         args, kwargs, opargs = sort_args(
                             [self.eval(i, env) for i in token_args],
-                            exec_path=path if len(path) > 1 else self.path
+                            exec_path=path if len(path) >= 1 else self.path
                         )
 
                         if dry_run:

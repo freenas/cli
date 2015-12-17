@@ -32,7 +32,7 @@ from freenas.cli.namespace import (
     EntityNamespace, Command, CommandException, SingleItemNamespace,
     EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, description
 )
-from freenas.cli.output import Table, ValueType, output_tree, format_value, read_value
+from freenas.cli.output import Table, ValueType, output_tree, format_value, read_value, Sequence
 from freenas.cli.utils import post_save, iterate_vdevs
 from freenas.utils import first_or_default, exclude, query
 
@@ -319,7 +319,7 @@ class ImportVolumeCommand(Command):
     Usage: import <name|id> [newname=<new-name>] key=<key> password=<password> disks=<disks>
 
     Example: import tank
-             import tank key=dasfer34tadsf23d/adf password=abcd disks=da1,da2
+             import tank key="dasfer34tadsf23d/adf" password=abcd disks=da1,da2
 
     Imports a detached volume.
     When importing encrypted volume key and disks or key, password and disks must be provided.
@@ -335,11 +335,19 @@ class ImportVolumeCommand(Command):
             if 'disks' not in kwargs:
                 raise CommandException('You have to provide list of disks when importing an encrypted volume')
 
+            disks = kwargs['disks']
+            if isinstance(disks, str):
+                disks = [disks]
+
+            correct_disks = []
+            for dname in disks:
+                correct_disks.append(correct_disk_path(dname))
+
             encryption = {'key': kwargs['key'],
-                          'disks': kwargs['disks']}
+                          'disks': correct_disks}
             password = kwargs.get('password', None)
         else:
-            encryption = None
+            encryption = {}
             password = None
 
             if not args[0].isdigit():
@@ -351,7 +359,7 @@ class ImportVolumeCommand(Command):
                 id = vol['id']
                 oldname = vol['name']
 
-        context.submit_task('volume.import', id, kwargs.get('newname', oldname), None, encryption, password)
+        context.submit_task('volume.import', id, kwargs.get('newname', oldname), {}, encryption, password)
 
 
 @description("Detaches given volume")
@@ -367,7 +375,11 @@ class DetachVolumeCommand(Command):
         if len(args) < 1:
             raise CommandException('Not enough arguments passed')
 
-        context.submit_task('volume.detach', args[0])
+        result = context.call_task_sync('volume.detach', args[0])
+        if result.get('result', None) is not None:
+            return Sequence("Detached volume {0} was encrypted!".format(args[0]),
+                            "You must save user key listed below to be able to import volume in the future",
+                            str(result['result']))
 
 
 @description("Shows volume topology")

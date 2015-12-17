@@ -55,8 +55,8 @@ _ = t.gettext
 class SetenvCommand(Command):
 
     """
-    Set value of environment variable. Use printenv to display available variables
-    and their current values.
+    Set value of environment variable. Use printenv to display
+    available variables and their current values.
 
     Usage: setenv <variable>=<value>
 
@@ -84,8 +84,8 @@ class SetenvCommand(Command):
 class PrintenvCommand(Command):
 
     """
-    Either print a list of all environment variables and their values or the value
-    of the specified environment variable.
+    Either print a list of all environment variables and their values
+    or the value of the specified environment variable.
     
     Usage: printenv <variable>
     
@@ -513,8 +513,9 @@ class SourceCommand(Command):
 @description("Dumps namespace configuration to a series of CLI commands")
 class DumpCommand(Command):
     """
-    Diplay configuration of specified namespace or, when not specified, the current
-    namespace. Optionally, specify the name of the file to send the output to.
+    Diplay configuration of specified namespace or, when not specified,
+    the current namespace. Optionally, specify the name of the file to
+    send the output to.
     
     Usage: <namespace> dump
            <namespace> dump <filename>

@@ -576,15 +576,18 @@ class EchoCommand(Command):
 
 
 @description("Allows the user to scroll through output")
-class LessPipeCommand(PipeCommand):
+class MorePipeCommand(PipeCommand):
 
     """
     Allow paging and scrolling through long outputs of text.
+    It has an alias of 'less' i.e. 'more' and 'less' do the same thing.
 
-    Usage: <command> | less
+    Usage: <command> | more
+           <command> | less
 
-    Examples: task show | less
-              account user show | less
+    Examples: task show | more
+              account user show | more
+              system advanced show | less
     """
 
     def __init__(self):

@@ -68,7 +68,7 @@ from freenas.utils.query import wrap
 from freenas.cli.commands import (
     ExitCommand, PrintenvCommand, SetenvCommand, ShellCommand, HelpCommand,
     ShowUrlsCommand, ShowIpsCommand, TopCommand, ClearCommand, HistoryCommand,
-    SaveenvCommand, EchoCommand, SourceCommand, LessPipeCommand, SearchPipeCommand,
+    SaveenvCommand, EchoCommand, SourceCommand, MorePipeCommand, SearchPipeCommand,
     ExcludePipeCommand, SortPipeCommand, LimitPipeCommand, SelectPipeCommand,
     LoginCommand, DumpCommand, WhoamiCommand
 )
@@ -647,7 +647,8 @@ class MainLoop(object):
         'sort': SortPipeCommand(),
         'limit': LimitPipeCommand(),
         'select': SelectPipeCommand(),
-        'less': LessPipeCommand()
+        'more': MorePipeCommand(),
+        'less': MorePipeCommand()
     }
     base_builtin_commands = {
         'login': LoginCommand(),

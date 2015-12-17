@@ -31,7 +31,6 @@ import operator
 from freenas.cli.output import format_output, output_msg
 from freenas.cli.parser import unparse, FunctionDefinition
 
-
 operators = {
     '+': operator.add,
     '-': operator.sub,

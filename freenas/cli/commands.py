@@ -480,10 +480,15 @@ class HistoryCommand(Command):
 @description("Imports a script for parsing")
 class SourceCommand(Command):
     """
-    Import scripts of CLI commands for parsing.
+    Run specified file\(s\), where each file contains a list
+    of CLI commands. When creating the source file, separate
+    each CLI command with a semicolon \";\" or place each
+    CLI command on its own line. If multiple files are
+    specified, they are run in the order given. If a CLI
+    command fails, the source operation aborts.
 
-    Usage: source <filename>
-           source <filename1> <filename2> <filename3>
+    Usage: source </path/filename>
+           source </path/filename1> </path/filename2> </path/filename3>
     """
 
     def run(self, context, args, kwargs, opargs):

@@ -635,7 +635,7 @@ class SearchPipeCommand(PipeCommand):
 
     Usage: <command> | search <key> <op> <value> ...
 
-    Example: show | search name==foo
+    Example: account user show | search username==root
     """
 
     def run(self, context, args, kwargs, opargs, input=None):
@@ -644,6 +644,7 @@ class SearchPipeCommand(PipeCommand):
     def serialize_filter(self, context, args, kwargs, opargs):
         mapped_opargs = map_opargs(opargs, context)
 
+        kwargs.pop('exec_path')
         if len(kwargs) > 0:
             raise CommandException(_(
                 "Invalid syntax {0}.\n".format(kwargs) +

@@ -933,12 +933,14 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
             descr='Encrypted',
             name='encrypted',
             get='encrypted',
+            type=ValueType.BOOLEAN,
             set=None)
 
         self.add_property(
             descr='Locked',
             name='locked',
             get='locked',
+            type=ValueType.BOOLEAN,
             set=None)
 
         self.add_property(

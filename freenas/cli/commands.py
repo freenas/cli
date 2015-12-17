@@ -89,7 +89,8 @@ class PrintenvCommand(Command):
     
     Usage: printenv <variable>
     
-    Example: printenv timeout
+    Example: printenv
+             printenv timeout
     """
 
     def run(self, context, args, kwargs, opargs):
@@ -292,7 +293,8 @@ class HelpCommand(Command):
     To see the available properties for the current or specified namespace,
     use 'help properties'.
 
-    Usage: help <command>
+    Usage: help
+           help <command>
            help <namespace>
            <namespace> help properties
 
@@ -556,7 +558,7 @@ class EchoCommand(Command):
     standard output. It also has the ability to expand and substitute
     variables in place using the '${variable_name}' syntax.
   
-    Usage: echo string_to_display
+    Usage: echo <string_to_display>
 
     Examples:
     echo Have a nice Day!

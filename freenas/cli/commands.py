@@ -55,7 +55,8 @@ _ = t.gettext
 class SetenvCommand(Command):
 
     """
-    Set value of environment variable. Use printenv to display available variables and their current values.
+    Set value of environment variable. Use printenv to display available variables
+    and their current values.
 
     Usage: setenv <variable>=<value>
 
@@ -83,8 +84,8 @@ class SetenvCommand(Command):
 class PrintenvCommand(Command):
 
     """
-    Either print a list of all environment variables and their values or the value of the specified
-    environment variable.
+    Either print a list of all environment variables and their values or the value
+    of the specified environment variable.
     
     Usage: printenv <variable>
     
@@ -109,9 +110,9 @@ class PrintenvCommand(Command):
 class SaveenvCommand(Command):
 
     """
-    Save the current set of environment variables to either the specified filename or, when not specified,
-    to "/.freenascli.conf". To start the CLI with the saved variables, type "cli -c filename" from either shell
-    or an SSH session.
+    Save the current set of environment variables to either the specified filename
+    or, when not specified, to "/.freenascli.conf". To start the CLI with the saved
+    variables, type "cli -c filename" from either shell or an SSH session.
     
     Usage: saveenv
            saveenv <filename>
@@ -257,8 +258,8 @@ class LoginCommand(Command):
 class ExitCommand(Command):
 
     """
-    Exit the CLI. Note that the CLI will restart if this command is run from the local console. The keyboard
-    shortcut for this command is (ctrl+d).
+    Exit the CLI. Note that the CLI will restart if this command is run from the
+    local console. The keyboard shortcut for this command is (ctrl+d).
 
     Usage: exit
     """
@@ -442,8 +443,8 @@ class ClearCommand(Command):
 class HistoryCommand(Command):
     """
     List the commands previously executed in this CLI instance.
-    Optionally, provide a number to specify
-    the number of lines, from the last line of history, to display.
+    Optionally, provide a number to specify the number of lines,
+    from the last line of history, to display.
   
     Usage: history <number>
 
@@ -503,8 +504,8 @@ class SourceCommand(Command):
 @description("Dumps namespace configuration to a series of CLI commands")
 class DumpCommand(Command):
     """
-    Diplay configuration of specified namespace or, when not specified, the current namespace. Optionally,
-    specify the name of the file to send the output to.
+    Diplay configuration of specified namespace or, when not specified, the current
+    namespace. Optionally, specify the name of the file to send the output to.
     
     Usage: <namespace> dump
            <namespace> dump <filename>

@@ -116,7 +116,7 @@ class AsciiOutputFormatter(object):
         sys.stdout.flush()
 
     @staticmethod
-    def output_table(tab):
+    def output_table(tab, file=sys.stdout):
         max_width = get_terminal_size()[1]
         table = Texttable(max_width=max_width)
         table.set_deco(0)
@@ -161,7 +161,7 @@ class AsciiOutputFormatter(object):
         table.set_cols_width(widths)
 
         table.add_rows([[AsciiOutputFormatter.format_value(resolve_cell(row, i.accessor), i.vt) for i in tab.columns] for row in tab.data], False)
-        six.print_(table.draw())
+        six.print_(table.draw(), file=file)
 
     @staticmethod
     def output_table_list(tables):
@@ -191,22 +191,22 @@ class AsciiOutputFormatter(object):
             six.print_(table.draw() + "\n")
 
     @staticmethod
-    def output_object(obj):
+    def output_object(obj, file=sys.stdout):
         table = Texttable(max_width=get_terminal_size()[1])
         table.set_cols_dtype(['t', 't'])
         table.set_deco(0)
         for item in obj:
             table.add_row(['{0} ({1})'.format(item.descr, item.name), AsciiOutputFormatter.format_value(item.value, item.vt)])
 
-        six.print_(table.draw())
+        six.print_(table.draw(), file=file)
 
     @staticmethod
-    def output_tree(tree, children, label, label_vt=ValueType.STRING):
+    def output_tree(tree, children, label, label_vt=ValueType.STRING, file=sys.stdout):
         def branch(obj, indent):
             for idx, i in enumerate(obj):
                 subtree = resolve_cell(i, children)
                 char = '+' if subtree else ('`' if idx == len(obj) - 1 else '|')
-                six.print_('{0} {1}-- {2}'.format('    ' * indent, char, resolve_cell(i, label)))
+                six.print_('{0} {1}-- {2}'.format('    ' * indent, char, resolve_cell(i, label)), file=file)
                 if subtree:
                     branch(subtree, indent + 1)
 
@@ -214,7 +214,11 @@ class AsciiOutputFormatter(object):
 
     @staticmethod
     def output_msg(message, **kwargs):
-        six.print_(format_literal(message, **kwargs), end=('\n' if kwargs.get('newline', True) else ' '))
+        six.print_(
+            format_literal(message, **kwargs),
+            end=('\n' if kwargs.get('newline', True) else ' '),
+            file=kwargs.pop('file', sys.stdout)
+        )
 
 
 def _formatter():

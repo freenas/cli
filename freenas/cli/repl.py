@@ -186,7 +186,8 @@ class VariableStore(object):
             'tasks_blocking': self.Variable(False, ValueType.BOOLEAN),
             'show_events': self.Variable(True, ValueType.BOOLEAN),
             'debug': self.Variable(False, ValueType.BOOLEAN),
-            'abort_on_errors': self.Variable(True, ValueType.BOOLEAN)
+            'abort_on_errors': self.Variable(True, ValueType.BOOLEAN),
+            'output': self.Variable(None, ValueType.STRING)
         }
 
     def load(self, filename):
@@ -1097,7 +1098,12 @@ class MainLoop(object):
                     return
 
                 if ret:
-                    format_output(ret)
+                    output = self.context.variables.get('output')
+                    if output:
+                        with open(output, 'a+') as f:
+                            format_output(ret, file=f)
+                    else:
+                        format_output(ret)
         except SyntaxError as e:
             output_msg(_('Syntax error: {0}'.format(str(e))))
         except CommandException as e:

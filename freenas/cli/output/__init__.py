@@ -233,12 +233,12 @@ def format_value(value, vt=ValueType.STRING, fmt=None):
 
 def output_value(value, fmt=None, **kwargs):
     fmt = fmt or config.instance.variables.get('output_format')
-    return get_formatter(fmt).output_value(value)
+    return get_formatter(fmt).output_value(value, **kwargs)
 
 
 def output_list(data, label=_("Items"), fmt=None, **kwargs):
     fmt = fmt or config.instance.variables.get('output_format')
-    return get_formatter(fmt).output_list(data, label)
+    return get_formatter(fmt).output_list(data, label, **kwargs)
 
 
 def output_dict(data, key_label=_("Key"), value_label=_("Value"), fmt=None, **kwargs):
@@ -246,9 +246,9 @@ def output_dict(data, key_label=_("Key"), value_label=_("Value"), fmt=None, **kw
     return get_formatter(fmt).output_dict(data, key_label, value_label)
 
 
-def output_table(table, fmt=None, **kwagrs):
+def output_table(table, fmt=None, **kwargs):
     fmt = fmt or config.instance.variables.get('output_format')
-    return get_formatter(fmt).output_table(table)
+    return get_formatter(fmt).output_table(table, **kwargs)
 
 
 def output_table_list(tables, fmt=None, **kwargs):
@@ -259,12 +259,12 @@ def output_table_list(tables, fmt=None, **kwargs):
 def output_object(item, **kwargs):
     fmt = kwargs.pop('fmt', None)
     fmt = fmt or config.instance.variables.get('output_format')
-    return get_formatter(fmt).output_object(item)
+    return get_formatter(fmt).output_object(item, **kwargs)
 
 
 def output_tree(tree, children, label, fmt=None, **kwargs):
     fmt = fmt or config.instance.variables.get('output_format')
-    return get_formatter(fmt).output_tree(tree, children, label)
+    return get_formatter(fmt).output_tree(tree, children, label, **kwargs)
 
 
 def get_formatter(name):

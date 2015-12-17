@@ -103,6 +103,10 @@ class Namespace(object):
 
 
 class Command(object):
+
+    def __init__(self):
+        self.exec_path = None
+
     def run(self, context, args, kwargs, opargs):
         raise NotImplementedError()
 
@@ -164,7 +168,7 @@ class IndexCommand(Command):
         cmds = self.target.commands()
 
         # Only display builtin items if in the RootNamespace
-        obj = context.ml.get_relative_object(kwargs.get('exec_path')[-1], args)
+        obj = context.ml.get_relative_object(self.exec_path[-1], args)
         if obj.__class__.__name__ == 'RootNamespace':
             output_msg('Builtin items:', attrs=['bold'])
             output_list(sorted(list(context.ml.builtin_commands.keys())))

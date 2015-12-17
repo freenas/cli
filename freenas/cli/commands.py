@@ -86,21 +86,19 @@ class PrintenvCommand(Command):
     """
     Either print a list of all environment variables and their values
     or the value of the specified environment variable.
-    
+
     Usage: printenv <variable>
-    
+
     Example: printenv
              printenv timeout
     """
 
     def run(self, context, args, kwargs, opargs):
-        kwargs.pop('exec_path')
         if len(kwargs) > 0:
             raise CommandException(_("Invalid syntax {0}.\n{1}".format(kwargs, inspect.getdoc(self))))
 
         if len(args) == 0:
             return dict(context.variables.get_all_printable())
-
 
         if len(args) == 1:
             try:
@@ -314,7 +312,7 @@ class HelpCommand(Command):
 
     def run(self, context, args, kwargs, opargs):
         arg = args[:]
-        obj = context.ml.get_relative_object(kwargs.get('exec_path')[-1], args)
+        obj = context.ml.get_relative_object(self.exec_path[-1], args)
 
         if len(arg) > 0:
             if "/" in arg:
@@ -651,7 +649,6 @@ class SearchPipeCommand(PipeCommand):
     def serialize_filter(self, context, args, kwargs, opargs):
         mapped_opargs = map_opargs(opargs, context)
 
-        kwargs.pop('exec_path')
         if len(kwargs) > 0:
             raise CommandException(_(
                 "Invalid syntax {0}.\n".format(kwargs) +
@@ -682,7 +679,6 @@ class ExcludePipeCommand(PipeCommand):
     def serialize_filter(self, context, args, kwargs, opargs):
         mapped_opargs = map_opargs(opargs, context)
 
-        kwargs.pop('exec_path')
         if len(kwargs) > 0:
             raise CommandException(_(
                 "Invalid syntax {0}.\n".format(kwargs) +

@@ -797,7 +797,7 @@ class MainLoop(object):
 
     def eval(self, token, env=None, path=None, serialize_filter=None, input_data=None, dry_run=False):
         if self.start_from_root:
-            self.path = self.root_path[:]
+            path = self.root_path[:]
             self.start_from_root = False
 
         cwd = path[-1] if path else self.cwd

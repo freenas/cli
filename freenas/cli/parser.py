@@ -619,6 +619,13 @@ def p_unary_parameter(p):
     p[0] = p[1]
 
 
+def p_unary_parameter_1(p):
+    """
+    unary_parameter : LIST
+    """
+    p[0] = Symbol(p[1])
+
+
 def p_binary_parameter(p):
     """
     binary_parameter : ATOM ASSIGN parameter

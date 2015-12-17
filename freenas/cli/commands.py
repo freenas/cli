@@ -667,7 +667,7 @@ class ExcludePipeCommand(PipeCommand):
 
     Usage: <command> | exclude <key> <op> <value> ...
 
-    Example: show | exclude name==foo
+    Example: account user show | exclude username==root
     """
     def run(self, context, args, kwargs, opargs, input=None):
         return input
@@ -675,6 +675,7 @@ class ExcludePipeCommand(PipeCommand):
     def serialize_filter(self, context, args, kwargs, opargs):
         mapped_opargs = map_opargs(opargs, context)
 
+        kwargs.pop('exec_path')
         if len(kwargs) > 0:
             raise CommandException(_(
                 "Invalid syntax {0}.\n".format(kwargs) +

@@ -94,14 +94,21 @@ class PrintenvCommand(Command):
     """
 
     def run(self, context, args, kwargs, opargs):
+        kwargs.pop('exec_path')
+        if len(kwargs) > 0:
+            raise CommandException(_("Invalid syntax {0}.\n{1}".format(kwargs, inspect.getdoc(self))))
+
         if len(args) == 0:
             return dict(context.variables.get_all_printable())
+
 
         if len(args) == 1:
             try:
                 return format_value(context.variables.variables[args[0]])
             except KeyError:
                 raise CommandException(_("No such Environment Variable exists"))
+        else:
+            raise CommandException(_("Invalid syntax {0}.\n{1}".format(args, inspect.getdoc(self))))
 
     def complete(self, context, tokens):
         return [k for k, foo in context.variables.get_all()]

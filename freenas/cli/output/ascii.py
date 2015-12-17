@@ -117,6 +117,14 @@ class AsciiOutputFormatter(object):
 
     @staticmethod
     def output_table(tab, file=sys.stdout):
+        hidden_indexes = []
+        for i in range(0, len(tab.columns)):
+            if tab.columns[i].label is None:
+                hidden_indexes.append(i)
+        hidden_indexes.reverse()
+        for i in hidden_indexes:
+            del tab.columns[i]
+
         max_width = get_terminal_size()[1]
         table = Texttable(max_width=max_width)
         table.set_deco(0)

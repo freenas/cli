@@ -142,7 +142,7 @@ class ShellCommand(Command):
 
     """
     Launch current logged in user's login shell. Type "exit" to return to the CLI.
-    If a command is specified, run the specified command then returns to the CLI.
+    If a command is specified, run the specified command then return to the CLI.
     If the full path to an installed shell is specifed, launch the specified shell.
   
     Usage: shell <command>

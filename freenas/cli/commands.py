@@ -285,18 +285,22 @@ class WhoamiCommand(Command):
 class HelpCommand(Command):
 
     """
-    Provide usage information on particular command. If command can't be
-    reached directly in current namespace, may be specified as chain,
-    eg: "account user show".
+    Provide general usage information for current namespace. Alternately,
+    provide usage information for specified command or for specified
+    namespace.
 
-    To see the properties of a given namespace, use 'help properties'
+    To see the available properties for the current or specified namespace,
+    use 'help properties'.
 
-    Usage: help <command> <command> ...
+    Usage: help <command>
+           help <namespace>
+           <namespace> help properties
 
     Examples:
         help
         help printenv
         help account user show
+        account group help properties
     """
 
     def run(self, context, args, kwargs, opargs):

@@ -401,7 +401,7 @@ class UnlockVolumeCommand(Command):
     def run(self, context, args, kwargs, opargs):
         if self.parent.entity['locked'] is False:
             raise CommandException('Volume is already unlocked')
-        password = self.parent.entity.get('password', None)
+        password = self.parent.password
         name = self.parent.entity['name']
         context.submit_task('volume.unlock', name, password, callback=lambda s: post_save(self.parent, s))
 
@@ -1040,7 +1040,7 @@ class SetPasswordCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        self.parent.entity['password'] = args[0]
+        self.parent.password = args[0]
 
 
 @description("Manage volumes")
@@ -1183,7 +1183,7 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
             self.context.submit_task(
                 self.create_task,
                 this.entity,
-                this.entity.get('password', None),
+                this.password,
                 callback=lambda s: post_save(this, s))
             return
 
@@ -1191,7 +1191,7 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
             self.update_task,
             this.orig_entity[self.save_key_name],
             this.get_diff(),
-            this.entity.get('password', None),
+            this.password,
             callback=lambda s: post_save(this, s))
 
 

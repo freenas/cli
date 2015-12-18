@@ -519,6 +519,7 @@ class SingleItemNamespace(ItemNamespace):
         self.leaf_entity = kwargs.get('leaf_entity', False)
         self.leaf_entity_namespace = self.parent.leaf_entity_namespace
         self.leaf_ns = None
+        self.password = None
 
         if parent.entity_commands:
             self.subcommands = parent.entity_commands(self)
@@ -540,6 +541,9 @@ class SingleItemNamespace(ItemNamespace):
         return (
             "{0} '{1}', expands into commands for managing this entity.".format
             (self.parent.get_name().title(), self.get_name()))
+
+    def update_commands(self):
+        self.subcommands = self.parent.entity_commands(self)
 
     @property
     def primary_key(self):

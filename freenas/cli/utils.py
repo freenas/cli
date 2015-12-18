@@ -73,3 +73,4 @@ def post_save(this, status):
     if status in ['FINISHED', 'FAILED', 'ABORTED', 'CANCELLED']:
         this.modified = False
         this.load()
+        this.update_commands()

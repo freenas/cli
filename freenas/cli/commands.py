@@ -57,10 +57,14 @@ class SetenvCommand(Command):
     """
     Set value of environment variable. Use printenv to display
     available variables and their current values.
+    
+    If the value contains any non-alphanumeric characters,
+    enclose it between double quotes.
 
     Usage: setenv <variable>=<value>
 
     Example: setenv debug=yes
+             setenv prompt="{path}>"
     """
 
     def run(self, context, args, kwargs, opargs):

@@ -55,7 +55,8 @@ from freenas.cli.namespace import (
 from freenas.cli.parser import (
     parse, Symbol, Literal, BinaryParameter, UnaryExpr, BinaryExpr, PipeExpr, AssignmentStatement,
     IfStatement, ForStatement, WhileStatement, FunctionCall, CommandCall, Subscript,
-    ExpressionExpansion, FunctionDefinition, ReturnStatement, BreakStatement, UndefStatement
+    ExpressionExpansion, FunctionDefinition, ReturnStatement, BreakStatement, UndefStatement,
+    Redirection
 )
 from freenas.cli.output import (
     ValueType, ProgressBar, output_lock, output_msg, read_value, format_value,
@@ -1038,6 +1039,11 @@ class MainLoop(object):
                 ret = self.eval(token.right, input_data=result)
                 self.context.pipe_cwd = None
                 return ret
+
+            if isinstance(token, Redirection):
+                with open(token.path, 'a+') as f:
+                    format_output(self.eval(token.body, env, path), file=f)
+                    return None
 
         except SystemExit as err:
             raise err

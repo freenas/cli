@@ -74,6 +74,7 @@ UndefStatement = ASTObject('UndefStatement', 'name')
 ReturnStatement = ASTObject('ReturnStatement', 'expr')
 BreakStatement = ASTObject('BreakStatement')
 FunctionDefinition = ASTObject('FunctionDefinition', 'name', 'args', 'body')
+Redirection = ASTObject('Redirection', 'body', 'path')
 
 
 reserved = {
@@ -97,7 +98,7 @@ tokens = list(reserved.values()) + [
     'ASSIGN', 'LPAREN', 'RPAREN', 'EQ', 'NE', 'GT', 'GE', 'LT', 'LE',
     'REGEX', 'UP', 'PIPE', 'LIST', 'COMMA', 'INC', 'DEC', 'PLUS', 'MINUS',
     'MUL', 'DIV', 'BOOL', 'NULL', 'EOPEN', 'COPEN', 'LBRACE',
-    'RBRACE', 'LBRACKET', 'RBRACKET', 'NEWLINE', 'COLON'
+    'RBRACE', 'LBRACKET', 'RBRACKET', 'NEWLINE', 'COLON', 'REDIRECT'
 ]
 
 
@@ -194,6 +195,7 @@ t_COMMA = r'\,'
 t_UP = r'\.\.'
 t_LIST = r'\?'
 t_COLON = ':'
+t_REDIRECT = r'>>'
 
 
 precedence = (
@@ -227,9 +229,9 @@ def t_error(t):
 
 def p_stmt_list(p):
     """
-    stmt_list : stmt
-    stmt_list : stmt NEWLINE
-    stmt_list : stmt NEWLINE stmt_list
+    stmt_list : stmt_redirect
+    stmt_list : stmt_redirect NEWLINE
+    stmt_list : stmt_redirect NEWLINE stmt_list
     """
     if len(p) in (2, 3):
         p[0] = [p[1]]
@@ -243,6 +245,21 @@ def p_stmt_list_2(p):
     stmt_list : NEWLINE stmt_list
     """
     p[0] = p[2]
+
+
+def p_stmt_redirect_1(p):
+    """
+    stmt_redirect : stmt
+    """
+    p[0] = p[1]
+
+
+def p_stmt_redirect_2(p):
+    """
+    stmt_redirect : stmt REDIRECT ATOM
+    stmt_redirect : stmt REDIRECT STRING
+    """
+    p[0] = Redirection(p[1], p[3], p=p)
 
 
 def p_stmt(p):

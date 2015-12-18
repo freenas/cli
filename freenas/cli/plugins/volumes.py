@@ -393,7 +393,7 @@ class UnlockVolumeCommand(Command):
     If your volume is password protected you have to provide it's password
     first by typing:
 
-    set password=<password>
+    password <password>
     """
     def __init__(self, parent):
         self.parent = parent
@@ -403,7 +403,7 @@ class UnlockVolumeCommand(Command):
             raise CommandException('Volume is already unlocked')
         password = self.parent.entity.get('password', None)
         name = self.parent.entity['name']
-        context.submit_task('volume.unlock', name, password)
+        context.submit_task('volume.unlock', name, password, callback=lambda s: post_save(self.parent, s))
 
 
 @description("Locks encrypted volume")
@@ -422,7 +422,7 @@ class LockVolumeCommand(Command):
         if self.parent.entity['locked'] is True:
             raise CommandException('Volume is already locked')
         name = self.parent.entity['name']
-        context.submit_task('volume.lock', name)
+        context.submit_task('volume.lock', name, callback=lambda s: post_save(self.parent, s))
 
 
 @description("Generates new user key for encrypted volume")
@@ -467,7 +467,7 @@ class BackupVolumeMasterKeyCommand(Command):
              should be stored on secure media, with limited or controlled
              access. iXsystems takes no responsibility for loss of data
              should you lose your master key, nor for unauthorized access
-             should some party obtain access to it.
+             should some 3rd party obtain access to it.
     """
     def __init__(self, parent):
         self.parent = parent
@@ -1029,6 +1029,20 @@ class CreateVolumeCommand(Command):
         return ['name=', 'type=', 'disks=']
 
 
+@description("Allows to provide a password that protects an encrypted volume")
+class SetPasswordCommand(Command):
+    """
+    Usage: password <password>
+
+    Allows to provide a password that protects an encrypted volume.
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        self.parent.entity['password'] = args[0]
+
+
 @description("Manage volumes")
 class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):
     class ShowTopologyCommand(Command):
@@ -1091,11 +1105,6 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
             set=None)
 
         self.add_property(
-            name='password',
-            get=None,
-            set=self.set_password)
-
-        self.add_property(
             descr='Status',
             name='status',
             get='status',
@@ -1131,6 +1140,8 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
             'detach': DetachVolumeCommand(),
         }
 
+        self.entity_commands = self.get_entity_commands
+
         self.entity_namespaces = lambda this: [
             DatasetsNamespace('dataset', self.context, this),
             SnapshotsNamespace('snapshot', self.context, this)
@@ -1141,7 +1152,8 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
         cmds.update({'create': CreateVolumeCommand(self)})
         return cmds
 
-    def entity_commands(self, this):
+    def get_entity_commands(self, this):
+        this.load()
         commands = {
             'show_topology': ShowTopologyCommand(this),
             'show_disks': ShowDisksCommand(this),
@@ -1153,19 +1165,18 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
             'extend_vdev': ExtendVdevCommand(this),
         }
 
-        if this.entity['encrypted'] is True:
-            if this.entity['locked'] is True:
-                commands['unlock'] = UnlockVolumeCommand(this)
-                commands['restore-key'] = RestoreVolumeMasterKeyCommand(this)
-            else:
-                commands['lock'] = LockVolumeCommand(this)
-                commands['rekey'] = RekeyVolumeCommand(this)
-                commands['backup-key'] = BackupVolumeMasterKeyCommand(this)
+        if this.entity is not None:
+            if this.entity.get('encrypted', False) is True:
+                commands['password'] = SetPasswordCommand(this)
+                if this.entity.get('locked', True) is True:
+                    commands['unlock'] = UnlockVolumeCommand(this)
+                    commands['restore-key'] = RestoreVolumeMasterKeyCommand(this)
+                else:
+                    commands['lock'] = LockVolumeCommand(this)
+                    commands['rekey'] = RekeyVolumeCommand(this)
+                    commands['backup-key'] = BackupVolumeMasterKeyCommand(this)
 
         return commands
-
-    def set_password(self, entity, password):
-        entity['password'] = password
 
     def save(self, this, new=False):
         if new:

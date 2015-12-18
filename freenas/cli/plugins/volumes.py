@@ -454,7 +454,7 @@ class BackupVolumeMasterKeyCommand(Command):
 
     Example: backup-key path="/mnt/foo/bar"
 
-    Creates an encrypted file containing copy of metadatas of all disks related
+    Creates an encrypted file containing copy of metadata of all disks related
     to an encrypted volume.
     Your volume must be unlocked to perform this operation.
 
@@ -462,7 +462,7 @@ class BackupVolumeMasterKeyCommand(Command):
     generated password protecting this file.
     Remember, or write down your backup password to a secure location.
 
-    WARNING! You are performing this operation at your own risk! Matadata's
+    WARNING! You are performing this operation at your own risk! Matadata
              backup is ALWAYS valid thus it can be always used to restore your
              volume's data! 'rekey' of volume does not make previous backups
              invalid as there is always only one master key! Every leak

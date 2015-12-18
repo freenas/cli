@@ -26,17 +26,71 @@
 #####################################################################
 
 import gettext
+import curses
+import pyte
+from freenas.dispatcher.shell import VMConsoleClient
 from freenas.cli.namespace import (
-    Namespace, EntityNamespace, Command, IndexCommand,
-    NestedObjectLoadMixin, NestedObjectSaveMixin, RpcBasedLoadMixin,
-    TaskBasedSaveMixin, description, CommandException, ListCommand
+    EntityNamespace, Command, NestedObjectLoadMixin, NestedObjectSaveMixin, RpcBasedLoadMixin,
+    TaskBasedSaveMixin, description,
 )
-from freenas.cli.output import ValueType, Table
-from freenas.utils import first_or_default
+from freenas.cli.output import ValueType
 
 
 t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
+
+
+class VMConsole(object):
+    class CursesScreen(pyte.DiffScreen):
+        def __init__(self, parent, cols, lines):
+            super(VMConsole.CursesScreen, self).__init__(cols, lines)
+            self.parent = parent
+
+    def __init__(self, context, id, name):
+        self.context = context
+        self.id = id
+        self.name = name
+        self.conn = None
+        self.stream = pyte.Stream()
+        self.screen = VMConsole.CursesScreen(self, 80, 24)
+        self.stream.attach(self.screen)
+        self.window = None
+
+    def on_data(self, data):
+        self.stream.feed(data.decode('utf-8'))
+        for i in self.screen.dirty:
+            self.window.addstr(i, 0, self.screen.display[i])
+
+        self.screen.dirty.clear()
+        self.window.move(self.screen.cursor.y, self.screen.cursor.x)
+
+    def connect(self):
+        token = self.context.call_sync('containerd.management.request_console', self.id)
+        self.conn = VMConsoleClient(self.context.hostname, token)
+        self.conn.on_data(self.on_data)
+        self.conn.open()
+
+    def start(self):
+        stdscr = curses.initscr()
+        stdscr.immedok(True)
+        curses.noecho()
+        curses.cbreak()
+        stdscr.clear()
+        rows, cols = stdscr.getmaxyx()
+        header = curses.newwin(1, cols, 0, 0)
+        self.window = curses.newwin(rows - 1, cols, 1, 0)
+        self.window.immedok(True)
+        header.immedok(True)
+        header.bkgdset(' ', curses.A_REVERSE)
+        header.addstr(0, 0, "Connected to {0} console".format(self.name))
+        self.connect()
+        while True:
+            ch = stdscr.getch()
+            if ch == 29:
+                curses.endwin()
+                break
+
+            self.conn.write(chr(ch))
 
 
 class StartVMCommand(Command):
@@ -61,6 +115,15 @@ class RebootVMCommand(Command):
 
     def run(self, context, args, kwargs, opargs):
         pass
+
+
+class ConsoleCommand(Command):
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        console = VMConsole(context, self.parent.entity['id'], self.parent.entity['name'])
+        console.start()
 
 
 @description("Configure and manage virtual machines")
@@ -155,7 +218,8 @@ class VMNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
         self.entity_commands = lambda this: {
             'start': StartVMCommand(this),
             'stop': StopVMCommand(this),
-            'reboot': RebootVMCommand(this)
+            'reboot': RebootVMCommand(this),
+            'console': ConsoleCommand(this)
         }
 
 

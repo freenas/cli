@@ -462,15 +462,12 @@ class BackupVolumeMasterKeyCommand(Command):
     generated password protecting this file.
     Remember, or write down your backup password to a secure location.
 
-    WARNING! You are performing this operation at your own risk! Matadata
-             backup is ALWAYS valid thus it can be always used to restore your
-             volume's data! 'rekey' of volume does not make previous backups
-             invalid as there is always only one master key! Every leak
-             of a backup file or writing it to a copy-on-write filesystem like
-             ZFS can possibly lower or even void encrypted volume security.
-             If you want to get best security from encrypted volumes you should
-             never backup their metadata and be prepared for eventual data loss
-             due to metadata corruption.
+    WARNING! The metadata can be used to decrypt the data on your pool,
+             even if you change the password or rekey. The metadata backup
+             should be stored on secure media, with limited or controlled
+             access. iXsystems takes no responsibility for loss of data
+             should you lose your master key, nor for unauthorized access
+             should some party obtain access to it.
     """
     def __init__(self, parent):
         self.parent = parent

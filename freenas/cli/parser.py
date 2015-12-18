@@ -307,7 +307,7 @@ def p_while_stmt(p):
 def p_assignment_stmt(p):
     """
     assignment_stmt : ATOM ASSIGN expr
-    assignment_stmt : subscript ASSIGN expr
+    assignment_stmt : subscript_left ASSIGN expr
     """
     p[0] = AssignmentStatement(p[1], p[3], p=p)
 
@@ -395,7 +395,7 @@ def p_expr(p):
     expr : unary_expr
     expr : binary_expr
     expr : call
-    expr : subscript
+    expr : subscript_expr
     expr : expr_expansion
     expr : LPAREN expr RPAREN
     expr : COPEN expr RBRACE
@@ -488,9 +488,17 @@ def p_call(p):
     p[0] = FunctionCall(p[1], p[3] if len(p) == 5 else [], p=p)
 
 
-def p_subscript(p):
+def p_subscript_left(p):
     """
-    subscript : expr LBRACKET expr RBRACKET
+    subscript_left : subscript_left LBRACKET expr RBRACKET
+    subscript_left : symbol LBRACKET expr RBRACKET
+    """
+    p[0] = Subscript(p[1], p[3], p=p)
+
+
+def p_subscript_expr(p):
+    """
+    subscript_expr : expr LBRACKET expr RBRACKET
     """
     p[0] = Subscript(p[1], p[3], p=p)
 

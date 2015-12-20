@@ -120,8 +120,21 @@ class FilteringCommand(Command):
 
 
 class PipeCommand(Command):
+
     def __init__(self):
         self.must_be_last = False
+
+    def __new__(cls):
+        runfunc = getattr(cls, 'run')
+
+        def run_wrapper(self, func):
+            def wrapped(self, *args, **kwargs):
+                if kwargs.get('input') is None:
+                    return None
+                return func(self, *args, **kwargs)
+            return wrapped
+        setattr(cls, 'run', run_wrapper(cls, runfunc))
+        return Command.__new__(cls)
 
     def run(self, context, args, kwargs, opargs, input=None):
         pass

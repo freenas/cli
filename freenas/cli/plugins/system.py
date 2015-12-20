@@ -29,7 +29,7 @@
 from freenas.cli.namespace import (
     ConfigNamespace, Command, description, RpcBasedLoadMixin, EntityNamespace
 )
-from freenas.cli.output import Object, ValueType, output_less, output_msg, format_value
+from freenas.cli.output import Object, ValueType, output_msg, format_value
 from freenas.cli.descriptions import events
 from freenas.cli.utils import post_save
 import gettext
@@ -83,6 +83,7 @@ class StatusCommand(Command):
 
 @description("Gets a list of valid timezones")
 class TimezonesCommand(Command):
+
     """
     Usage: timezones
 
@@ -90,7 +91,7 @@ class TimezonesCommand(Command):
     """
 
     def run(self, context, args, kwargs, opargs):
-        output_less(lambda: output_msg('\n'.join(context.call_sync('system.general.timezones'))))
+        return '\n'.join(context.call_sync('system.general.timezones'))
 
 
 @description("Provides information about running system")

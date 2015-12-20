@@ -408,15 +408,15 @@ class HelpCommand(Command):
                 builtin_cmd_dict_list.append(builtin_cmd_dict)
 
             # Finally printing all this out in unix `LESS(1)` pager style
-            output_call_list = []
+            output_seq = Sequence()
             if cmd_dict_list:
-                output_call_list.append(
+                output_seq.append(
                     Table(cmd_dict_list, [
                         Table.Column('Command', 'cmd', ValueType.STRING),
                         Table.Column('Description', 'description', ValueType.STRING)]))
             # Only display the help on builtin commands if in the RootNamespace
             if obj.__class__.__name__ == 'RootNamespace':
-                output_call_list.append(
+                output_seq.append(
                     Table(builtin_cmd_dict_list, [
                         Table.Column('Global Command', 'cmd', ValueType.STRING),
                         Table.Column('Description', 'description', ValueType.STRING)
@@ -426,28 +426,32 @@ class HelpCommand(Command):
                 help_message = inspect.getdoc(obj)
             elif isinstance(obj, SingleItemNamespace):
                 help_message = obj.entity_doc()
-            output_less(lambda: [output_table_list(output_call_list),
-                                 output_msg(help_message)])
+            output_seq.append(help_message)
+            return output_seq
 
 
 @description("Sends the user to the top level")
 class TopCommand(Command):
+
     """
     Go back to the root of the command tree.
 
     Usage: top
     """
+
     def run(self, context, args, kwargs, opargs):
         context.ml.path = [context.root_ns]
 
 
 @description("Clears the cli stdout")
 class ClearCommand(Command):
+
     """
     Clear the screen.
 
     Usage: clear
     """
+
     def run(self, context, args, kwargs, opargs):
         output_lock.acquire()
         os.system('cls' if os.name == 'nt' else 'clear')
@@ -460,7 +464,7 @@ class HistoryCommand(Command):
     List the commands previously executed in this CLI instance.
     Optionally, provide a number to specify the number of lines,
     from the last line of history, to display.
-  
+
     Usage: history <number>
 
     Example: history
@@ -616,7 +620,8 @@ class MorePipeCommand(PipeCommand):
         self.must_be_last = True
 
     def run(self, context, args, kwargs, opargs, input=None):
-        output_less(lambda: format_output(input))
+        output_less(lambda x: format_output(input, file=x))
+        return None
 
 
 def map_opargs(opargs, context):

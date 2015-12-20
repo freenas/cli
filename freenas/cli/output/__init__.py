@@ -323,7 +323,7 @@ def output_less(output_call_list):
 
     with stdout_redirect(StringIO()) as new_stdout:
         for output_func_call in output_call_list:
-            output_func_call()
+            output_func_call(new_stdout)
 
     new_stdout.seek(0)
     pydoc.pager(new_stdout.read())

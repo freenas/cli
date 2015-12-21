@@ -647,6 +647,7 @@ def p_unary_parameter(p):
 def p_unary_parameter_1(p):
     """
     unary_parameter : LIST
+    unary_parameter : UP
     """
     p[0] = Symbol(p[1])
 

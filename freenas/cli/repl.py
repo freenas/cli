@@ -797,12 +797,12 @@ class MainLoop(object):
                 raise ret
 
     def eval(self, token, env=None, path=None, serialize_filter=None, input_data=None, dry_run=False):
+        cwd = path[-1] if path else self.cwd
+        path = path or []
+
         if self.start_from_root:
             path = self.root_path[:]
             self.start_from_root = False
-
-        cwd = path[-1] if path else self.cwd
-        path = path or []
 
         if env is None:
             env = self.context.global_env
@@ -940,6 +940,9 @@ class MainLoop(object):
 
                 try:
                     if len(token.args) == 0:
+                        if path[0] == self.context.root_ns:
+                            self.path = self.root_path[:]
+                            path.pop(0)
                         for i in path:
                             self.cd(i)
 

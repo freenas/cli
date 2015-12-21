@@ -285,6 +285,12 @@ class VMNicsNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNamesp
         )
 
         self.add_property(
+            descr='Bridge with',
+            name='bridge',
+            get='properties.bridge'
+        )
+
+        self.add_property(
             descr='MAC address',
             name='macaddr',
             get='properties.macaddr',

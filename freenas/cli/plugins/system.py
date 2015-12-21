@@ -472,7 +472,7 @@ class SystemNamespace(ConfigNamespace):
             'timezones': TimezonesCommand(),
             'info': InfoCommand(),
             'reboot': RebootCommand(),
-            'shutdown': ShutdownCommand
+            'shutdown': ShutdownCommand()
         }
 
     def save(self):

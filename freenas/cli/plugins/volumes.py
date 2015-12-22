@@ -347,7 +347,7 @@ class ImportVolumeCommand(Command):
                           'disks': correct_disks}
             password = kwargs.get('password', None)
         else:
-            encryption = {}
+            encryption = None
             password = None
 
             if not args[0].isdigit():

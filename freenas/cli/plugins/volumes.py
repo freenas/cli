@@ -737,7 +737,7 @@ class DatasetsNamespace(EntityNamespace):
             condition=lambda o: o['type'] == 'FILESYSTEM')
 
         self.add_property(
-            descr='Recrusive quota',
+            descr='Recursive quota',
             name='quota',
             get='properties.quota.value',
             set='properties.quota.value',
@@ -753,7 +753,7 @@ class DatasetsNamespace(EntityNamespace):
             condition=lambda o: o['type'] == 'FILESYSTEM')
 
         self.add_property(
-            descr='Recrusive space reservation',
+            descr='Recursive space reservation',
             name='reservation',
             get='properties.reservation.value',
             set='properties.reservation.value',

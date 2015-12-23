@@ -190,6 +190,19 @@ class VariableStore(object):
             'abort_on_errors': self.Variable(True, ValueType.BOOLEAN),
             'output': self.Variable(None, ValueType.STRING)
         }
+        self.variable_doc = {
+            'output_format': _('Sets the console output format, valid values are: "ascii", "json" and "table"'),
+            'datetime_format': _('Sets the date/time format'),
+            'language': _('Sets the console language'),
+            'prompt': _('Sets the console prompt'),
+            'timeout': _('Set the console timeout period'),
+            'tasks_blocking': _('Toggle tasks blocking console output'),
+            'show_events': _('Toggle displaying of events'),
+            'debug': _('Toggle displaying of debug messages'),
+            'abort_on_errors': _('Toggle console aborting on errors'),
+            'output': _('Send output to specified file, "none" outputs to console'),
+        }
+
 
     def load(self, filename):
         try:

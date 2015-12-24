@@ -150,6 +150,12 @@ class VMNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
         )
 
         self.add_property(
+            descr='Template name',
+            name='template',
+            get='template.name'
+        )
+
+        self.add_property(
             descr='State',
             name='state',
             get='status.state',

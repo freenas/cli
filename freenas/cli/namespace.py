@@ -465,6 +465,9 @@ class ItemNamespace(Namespace):
             base.update(self.subcommands)
 
         return base
+        
+    def update_commands(self):
+        pass
 
 
 class ConfigNamespace(ItemNamespace):

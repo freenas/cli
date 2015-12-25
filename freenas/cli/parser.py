@@ -113,6 +113,12 @@ def t_IPV4(t):
     return t
 
 
+def t_IPV6(t):
+    r'([a-fA-F0-9]{1,4}:){3,7}:?[a-fA-F0-9]{1,4}'
+    t.type = 'ATOM'
+    return t
+
+
 def t_SIZE(t):
     r'\d+[kKmMgGtT]B?'
     t.type = 'STRING'
@@ -194,7 +200,7 @@ t_REGEX = r'~='
 t_COMMA = r'\,'
 t_UP = r'\.\.'
 t_LIST = r'\?'
-t_COLON = ':'
+t_COLON = r':'
 t_REDIRECT = r'>>'
 
 

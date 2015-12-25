@@ -114,7 +114,7 @@ def t_IPV4(t):
 
 
 def t_IPV6(t):
-    r'([a-fA-F0-9]{1,4}:){3,7}:?[a-fA-F0-9]{1,4}'
+    r'([a-fA-F0-9]{1,4}:){1,7}:?([a-fA-F0-9:?]{1,4}){1,7}'
     t.type = 'ATOM'
     return t
 

@@ -194,10 +194,11 @@ def read_value(value, tv=ValueType.STRING):
     if tv == ValueType.BOOLEAN:
         if type(value) is bool:
             return value
-        if str(value) in ('true', 'True', 'yes', 'YES', 'on', 'ON', '1'):
+
+        if str(value).lower() in ('true', 'yes', 'on', '1'):
             return True
 
-        if str(value) in ('false', 'False', 'no', 'NO', 'off', 'OFF', '0'):
+        if str(value).lower() in ('false', 'no', 'off', '0'):
             return False
 
     if tv == ValueType.SIZE:

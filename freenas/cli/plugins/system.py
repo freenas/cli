@@ -27,9 +27,9 @@
 
 
 from freenas.cli.namespace import (
-    ConfigNamespace, Command, description, RpcBasedLoadMixin, EntityNamespace
+    ConfigNamespace, Command, CommandException, description, RpcBasedLoadMixin, EntityNamespace
 )
-from freenas.cli.output import Object, ValueType, output_msg, format_value
+from freenas.cli.output import Object, ValueType, output_msg, format_value, Sequence
 from freenas.cli.descriptions import events
 from freenas.cli.utils import post_save
 import gettext
@@ -99,18 +99,80 @@ class InfoCommand(Command):
     """
     Usage: info
 
-    Displays information about the system's hardware.
+    Displays information about the system.
     """
     def run(self, context, args, kwargs, opargs):
+        root_namespaces = context.root_ns.namespaces()
+        output_dict = {}
+        output = Sequence()
+
+        def get_show(obj):
+            if isinstance(obj, ConfigNamespace):
+                obj.load()
+            commands = obj.commands()
+            if 'show' in commands:
+                instance = commands['show']
+                return instance.run(context, '', '', '')
+            else:
+                raise CommandException(_("Namespace {0} does not have 'show' command".format(obj.name)))
+
+        def append_out(key):
+            if len(output_dict[key]) > 0:
+                output.append("\nData about {0}:".format(key))
+                output.append(output_dict[key])
+
+        for namespace in root_namespaces:
+            if namespace.name == 'system' or \
+               namespace.name == 'service' or \
+               namespace.name == 'vm' or \
+               namespace.name == 'disk' or \
+               namespace.name == 'share' or \
+               namespace.name == 'volume':
+                    output_dict[namespace.name] = get_show(namespace)
+
+            elif namespace.name == 'directoryservice':
+                for nested_namespace in namespace.namespaces():
+                    if nested_namespace.name == 'activedirectory' or \
+                       nested_namespace.name == 'ldap':
+                            output_dict[nested_namespace.name] = get_show(nested_namespace)
+            elif namespace.name == 'network':
+                for nested_namespace in namespace.namespaces():
+                    if nested_namespace.name == 'config' or \
+                       nested_namespace.name == 'host' or \
+                       nested_namespace.name == 'interface' or \
+                       nested_namespace.name == 'route':
+                            output_dict[nested_namespace.name] = get_show(nested_namespace)
+
         info_dict = context.call_sync('system.info.hardware')
-        return Object(
-            Object.Item(
-                "CPU Clockrate", 'cpu_clockrate',
-                info_dict['cpu_clockrate']
-            ),
-            Object.Item("CPU Model", 'cpu_model', info_dict['cpu_model']),
-            Object.Item("CPU Cores", 'cpu_cores', info_dict['cpu_cores']),
-            Object.Item("Memory size", 'memory_size', info_dict['memory_size'], vt=ValueType.SIZE))
+        output_dict['hardware'] = Object(Object.Item("CPU Clockrate", 'cpu_clockrate', info_dict['cpu_clockrate']),
+                                         Object.Item("CPU Model", 'cpu_model', info_dict['cpu_model']),
+                                         Object.Item("CPU Cores", 'cpu_cores', info_dict['cpu_cores']),
+                                         Object.Item("Memory size", 'memory_size', info_dict['memory_size'],
+                                                     vt=ValueType.SIZE))
+
+        output.append("\n\nStatus of machine:")
+        append_out('system')
+        append_out('hardware')
+        output.append("\n\nStatus of networking:")
+        append_out('config')
+        append_out('host')
+        append_out('interface')
+        append_out('route')
+        output.append("\n\nStatus of storage:")
+        append_out('volume')
+        append_out('disk')
+        append_out('share')
+        if len(output_dict['vm']) > 0:
+            output.append("\n\nStatus of VMs:")
+            append_out('vm')
+        output.append("\n\nStatus of services:")
+        append_out('service')
+        if len(output_dict['activedirectory']) > 0 or len(output_dict['ldap']) > 0:
+            output.append("\n\nStatus of directory services:")
+            append_out('activedirectory')
+            append_out('ldap')
+
+        return output
 
 
 @description("Prints FreeNAS version information")

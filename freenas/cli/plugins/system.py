@@ -143,17 +143,26 @@ class InfoCommand(Command):
                        nested_namespace.name == 'interface' or \
                        nested_namespace.name == 'route':
                             output_dict[nested_namespace.name] = get_show(nested_namespace)
+            elif namespace.name == 'boot':
+                for nested_namespace in namespace.namespaces():
+                    if nested_namespace.name == 'environment':
+                            output_dict[nested_namespace.name] = get_show(nested_namespace)
 
-        info_dict = context.call_sync('system.info.hardware')
-        output_dict['hardware'] = Object(Object.Item("CPU Clockrate", 'cpu_clockrate', info_dict['cpu_clockrate']),
-                                         Object.Item("CPU Model", 'cpu_model', info_dict['cpu_model']),
-                                         Object.Item("CPU Cores", 'cpu_cores', info_dict['cpu_cores']),
-                                         Object.Item("Memory size", 'memory_size', info_dict['memory_size'],
+        hw_info_dict = context.call_sync('system.info.hardware')
+        output_dict['hardware'] = Object(Object.Item("CPU Clockrate", 'cpu_clockrate', hw_info_dict['cpu_clockrate']),
+                                         Object.Item("CPU Model", 'cpu_model', hw_info_dict['cpu_model']),
+                                         Object.Item("CPU Cores", 'cpu_cores', hw_info_dict['cpu_cores']),
+                                         Object.Item("Memory size", 'memory_size', hw_info_dict['memory_size'],
                                                      vt=ValueType.SIZE))
 
+        ver_info = context.call_sync('system.info.version')
+
+        output.append("System version: {0}".format(ver_info))
         output.append("\n\nStatus of machine:")
         append_out('system')
         append_out('hardware')
+        output.append("\n\nStatus of boot environment")
+        append_out('environment')
         output.append("\n\nStatus of networking:")
         append_out('config')
         append_out('host')

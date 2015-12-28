@@ -27,7 +27,8 @@
 
 
 from freenas.cli.namespace import (
-    ConfigNamespace, Command, CommandException, description, RpcBasedLoadMixin, EntityNamespace
+    Namespace, ConfigNamespace, Command, CommandException, description,
+    RpcBasedLoadMixin, EntityNamespace, IndexCommand
 )
 from freenas.cli.output import Object, ValueType, output_msg, format_value, Sequence
 from freenas.cli.descriptions import events
@@ -193,6 +194,15 @@ class VersionCommand(Command):
                 ' '.join(context.call_sync('system.info.uname_full'))
                 )
         )
+
+
+@description("Restores FreeNAS factory config")
+class FactoryRestoreCommand(Command):
+    """
+    Usage: factory_restore
+    """
+    def run(self, context, args, kwargs, opargs):
+        context.call_task_sync('database.restore_factory')
 
 
 @description("View sessions")
@@ -487,6 +497,18 @@ class AdvancedNamespace(ConfigNamespace):
         )
 
 
+@description("Configuration database operations")
+class ConfigDbNamespace(Namespace):
+    def __init__(self, name):
+        super(ConfigDbNamespace, self).__init__(name)
+
+    def commands(self):
+        return {
+            'factory_restore': FactoryRestoreCommand(),
+            '?': IndexCommand(self)
+        }
+
+
 @description("System info and configuration")
 class SystemNamespace(ConfigNamespace):
     """
@@ -551,6 +573,7 @@ class SystemNamespace(ConfigNamespace):
             MailNamespace('mail', self.context),
             SessionsNamespace('session', self.context),
             EventsNamespace('event', self.context),
+            ConfigDbNamespace('config')
         ]
 
 

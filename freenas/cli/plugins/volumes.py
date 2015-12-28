@@ -399,8 +399,8 @@ class UnlockVolumeCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        if self.parent.entity['locked'] is False:
-            raise CommandException('Volume is already unlocked')
+        if self.parent.entity.get('providers_presence', 'ALL') == 'ALL':
+            raise CommandException('Volume is already fully unlocked')
         password = self.parent.password
         name = self.parent.entity['name']
         context.submit_task('volume.unlock', name, password, callback=lambda s: post_save(self.parent, s))
@@ -419,8 +419,8 @@ class LockVolumeCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        if self.parent.entity['locked'] is True:
-            raise CommandException('Volume is already locked')
+        if self.parent.entity.get('providers_presence', 'NONE') == 'NONE':
+            raise CommandException('Volume is already fully locked')
         name = self.parent.entity['name']
         context.submit_task('volume.lock', name, callback=lambda s: post_save(self.parent, s))
 
@@ -440,7 +440,7 @@ class RekeyVolumeCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        if self.parent.entity['locked'] is True:
+        if self.parent.entity.get('providers_presence', 'NONE') != 'ALL':
             raise CommandException('You must unlock your volume first')
         password = kwargs.get('password', None)
         name = self.parent.entity['name']
@@ -473,7 +473,7 @@ class BackupVolumeMasterKeyCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        if self.parent.entity['locked'] is True:
+        if self.parent.entity.get('providers_presence', 'NONE') != 'ALL':
             raise CommandException('You must unlock your volume first')
 
         path = kwargs.get('path', None)
@@ -502,7 +502,7 @@ class RestoreVolumeMasterKeyCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        if self.parent.entity['locked'] is False:
+        if self.parent.entity.get('providers_presence', 'ALL') != 'NONE':
             raise CommandException('You must lock your volume first')
 
         path = kwargs.get('path', None)
@@ -1098,10 +1098,10 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
             set=None)
 
         self.add_property(
-            descr='Locked',
-            name='locked',
-            get='locked',
-            type=ValueType.BOOLEAN,
+            descr='Providers presence',
+            name='providers_presence',
+            get='providers_presence',
+            type=ValueType.STRING,
             set=None)
 
         self.add_property(
@@ -1168,13 +1168,17 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
         if this.entity is not None:
             if this.entity.get('encrypted', False) is True:
                 commands['password'] = SetPasswordCommand(this)
-                if this.entity.get('locked', True) is True:
+                prov_presence = this.entity.get('providers_presence', 'NONE')
+                if prov_presence == 'NONE':
                     commands['unlock'] = UnlockVolumeCommand(this)
                     commands['restore-key'] = RestoreVolumeMasterKeyCommand(this)
-                else:
+                elif prov_presence == 'ALL':
                     commands['lock'] = LockVolumeCommand(this)
                     commands['rekey'] = RekeyVolumeCommand(this)
                     commands['backup-key'] = BackupVolumeMasterKeyCommand(this)
+                else:
+                    commands['unlock'] = UnlockVolumeCommand(this)
+                    commands['lock'] = LockVolumeCommand(this)
 
         return commands
 

@@ -120,6 +120,9 @@ class TasksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             'submit': SubmitCommand()
         }
 
+    def serialize(self):
+        raise NotImplementedError()
+
     def describe_state(self, task):
         if task['state'] == 'EXECUTING':
             if 'progress' not in task:

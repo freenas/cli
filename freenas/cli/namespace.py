@@ -75,8 +75,11 @@ class Namespace(object):
         yield CommandCall([Symbol(self.name)])
 
         for i in self.namespaces():
-            for j in i.serialize():
-                yield j
+            try:
+                for j in i.serialize():
+                    yield j
+            except NotImplementedError:
+                continue
 
         yield CommandCall([Symbol('..')])
 

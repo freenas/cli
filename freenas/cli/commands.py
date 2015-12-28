@@ -558,8 +558,11 @@ class DumpCommand(Command):
             raise CommandException(_('Invalid syntax: {0}.\n{1}'.format(args, inspect.getdoc(self))))
         result = []
         if getattr(ns, 'serialize'):
-            for i in ns.serialize():
-                result.append(unparse(i))
+            try:
+                for i in ns.serialize():
+                    result.append(unparse(i))
+            except NotImplementedError:
+                return
 
         contents = '\n'.join(result)
         if len(args) == 1:

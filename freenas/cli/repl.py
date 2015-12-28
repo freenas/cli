@@ -100,8 +100,6 @@ _ = t.gettext
 PROGRESS_CHARS = ['-', '\\', '|', '/']
 EVENT_MASKS = [
     'client.logged',
-    'task.created',
-    'task.updated',
     'task.progress',
     'service.stopped',
     'service.started'
@@ -202,7 +200,6 @@ class VariableStore(object):
             'abort_on_errors': _('Toggle console aborting on errors'),
             'output': _('Send output to specified file, "none" outputs to console'),
         }
-
 
     def load(self, filename):
         try:
@@ -305,6 +302,25 @@ class Context(object):
             e = EntitySubscriber(self.connection, i)
             e.start()
             self.entity_subscribers[i] = e
+
+        def update_task(oldtask, task):
+            if task['id'] in self.task_callbacks:
+                self.handle_task_callback(task)
+
+            if task['state'] in ('FAILED', 'ABORTED'):
+                output_lock.acquire()
+                self.ml.blank_readline()
+                output_msg(_(
+                    "Task #{0} error: {1}".format(
+                        task['id'],
+                        task['error'].get('message', '') if task.get('error') else ''
+                    )
+                ))
+                sys.stdout.flush()
+                self.ml.restore_readline()
+                output_lock.release()
+
+        self.entity_subscribers['task'].on_update = update_task
 
     def connect(self, password=None):
         try:
@@ -468,10 +484,6 @@ class Context(object):
             return
 
     def handle_event(self, event, data):
-        if event == 'task.updated':
-            if data['id'] in self.task_callbacks:
-                self.handle_task_callback(data)
-
         self.print_event(event, data)
 
     def handle_task_callback(self, data):
@@ -486,25 +498,14 @@ class Context(object):
         if event == 'task.progress':
             return
 
-        output_lock.acquire()
-        self.ml.blank_readline()
-
         translation = events.translate(self, event, data)
         if translation:
+            output_lock.acquire()
+            self.ml.blank_readline()
             output_msg(translation)
-            if 'state' in data:
-                if data['state'] == 'FAILED':
-                    status = self.connection.call_sync('task.status', data['id'])
-                    output_msg(_(
-                        "Task #{0} error: {1}".format(
-                            data['id'],
-                            status['error'].get('message', '') if status.get('error') else ''
-                        )
-                    ))
-
-        sys.stdout.flush()
-        self.ml.restore_readline()
-        output_lock.release()
+            sys.stdout.flush()
+            self.ml.restore_readline()
+            output_lock.release()
 
     def call_sync(self, name, *args, **kwargs):
         return wrap(self.connection.call_sync(name, *args, **kwargs))

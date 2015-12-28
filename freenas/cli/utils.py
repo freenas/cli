@@ -25,6 +25,8 @@
 #
 #####################################################################
 
+from freenas.cli import output
+
 
 def parse_query_args(args, kwargs):
     filters = []
@@ -74,3 +76,5 @@ def post_save(this, status):
         this.modified = False
         this.load()
         this.update_commands()
+
+    output.refresh_prompt()

@@ -346,3 +346,8 @@ def format_output(object, **kwargs):
 
     else:
         output_msg(object, **kwargs)
+
+
+def refresh_prompt():
+    config.instance.ml.blank_readline()
+    config.instance.ml.restore_readline()

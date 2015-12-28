@@ -563,7 +563,8 @@ class SingleItemNamespace(ItemNamespace):
             (self.parent.get_name().title(), self.get_name()))
 
     def update_commands(self):
-        self.subcommands = self.parent.entity_commands(self)
+        if self.parent.entity_commands:
+            self.subcommands = self.parent.entity_commands(self)
 
     @property
     def primary_key(self):

@@ -34,17 +34,6 @@ t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
 
 
-def task_created(context, args):
-    task = context.call_sync('task.status', int(args['id']))
-    return _("Task #{0} created: {1}".format(args['id'], tasks.translate(context, task['name'], task['args'])))
-
-
-def task_updated(context, args):
-    task = context.call_sync('task.status', int(args['id']))
-    translation = tasks.translate(context, task['name'], task['args'])
-    return _("Task #{0} {1}: {2}".format(args['id'], _(args['state'].lower()), translation))
-
-
 events = {
     'server.client_login': (
         _("User logged in"),
@@ -54,8 +43,6 @@ events = {
         _("Client logged out"),
         lambda c, a: _("Client {0} logged out").format(a['username'])
     ),
-    'task.created': (_("Task created"), task_created),
-    'task.updated': (_("Task updated"), task_updated),
     'service.started': (
         _("Service started"),
         lambda c, a: _("Service {0} started".format(a.get('name')))

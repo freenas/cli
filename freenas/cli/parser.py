@@ -702,7 +702,7 @@ def unparse(token, indent=0):
         if token.value is None:
             return 'none'
 
-        if token.type is str:
+        if token.type in six.string_types:
             return '"{0}"'.format(token.value)
 
         if token.type is bool:

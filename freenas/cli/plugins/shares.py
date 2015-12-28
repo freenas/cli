@@ -360,7 +360,7 @@ class AFPSharesNamespace(BaseSharesNamespace):
 @description("SMB shares")
 class SMBSharesNamespace(BaseSharesNamespace):
     def __init__(self, name, context):
-        super(SMBSharesNamespace, self).__init__(name, 'cifs', context)
+        super(SMBSharesNamespace, self).__init__(name, 'smb', context)
         self.localdoc['CreateEntityCommand'] = ("""\
             Usage: create name=<name> volume=<volume> <property>=<value> ...
 

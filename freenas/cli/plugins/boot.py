@@ -153,6 +153,9 @@ class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
             'rename': RenameBootEnvCommand(this),
         }
 
+    def serialize(self):
+        raise NotImplementedError()
+
     def get_one(self, name):
         return self.context.call_sync(
             self.query_call, [('id', '=', name)], {'single': True}

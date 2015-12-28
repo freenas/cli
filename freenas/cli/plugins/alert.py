@@ -88,6 +88,9 @@ class AlertNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
 
         self.primary_key = self.get_mapping('id')
 
+    def serialize(self):
+        raise NotImplementedError()
+
 
 def _init(context):
     context.attach_namespace('/', AlertNamespace('alert', context))

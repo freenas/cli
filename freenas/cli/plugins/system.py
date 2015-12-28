@@ -161,7 +161,7 @@ class InfoCommand(Command):
         output.append("\n\nStatus of machine:")
         append_out('system')
         append_out('hardware')
-        output.append("\n\nStatus of boot environment")
+        output.append("\n\nStatus of boot environment:")
         append_out('environment')
         output.append("\n\nStatus of networking:")
         append_out('config')

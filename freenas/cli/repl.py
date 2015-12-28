@@ -60,7 +60,7 @@ from freenas.cli.parser import (
 )
 from freenas.cli.output import (
     ValueType, ProgressBar, output_lock, output_msg, read_value, format_value,
-    format_output
+    format_output, output_msg_locked
 )
 from freenas.dispatcher.client import Client, ClientError
 from freenas.dispatcher.entity import EntitySubscriber
@@ -474,7 +474,7 @@ class Context(object):
 
     def connection_error(self, event, **kwargs):
         if event == ClientError.LOGOUT:
-            output_msg('Logged out from server.')
+            output_msg_locked('Logged out from server.')
             self.connection.disconnect()
             sys.exit(0)
 
@@ -500,12 +500,7 @@ class Context(object):
 
         translation = events.translate(self, event, data)
         if translation:
-            output_lock.acquire()
-            self.ml.blank_readline()
-            output_msg(translation)
-            sys.stdout.flush()
-            self.ml.restore_readline()
-            output_lock.release()
+            output_msg_locked(translation)
 
     def call_sync(self, name, *args, **kwargs):
         return wrap(self.connection.call_sync(name, *args, **kwargs))

@@ -351,3 +351,12 @@ def format_output(object, **kwargs):
 def refresh_prompt():
     config.instance.ml.blank_readline()
     config.instance.ml.restore_readline()
+
+
+def output_msg_locked(msg):
+    output_lock.acquire()
+    config.instance.ml.blank_readline()
+    output_msg(msg)
+    sys.stdout.flush()
+    config.instance.ml.restore_readline()
+    output_lock.release()

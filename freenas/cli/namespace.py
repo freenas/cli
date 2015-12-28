@@ -603,6 +603,10 @@ class SingleItemNamespace(ItemNamespace):
                     continue
 
             value = mapping.do_get(self.entity)
+
+            if mapping.type == ValueType.SET:
+                value = list(value)
+
             ret.args.append(BinaryParameter(Literal(mapping.name, str), '=', Literal(value, type(value))))
 
         yield ret

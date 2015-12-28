@@ -553,11 +553,12 @@ class DumpCommand(Command):
     """
 
     def run(self, context, args, kwargs, opargs):
+        ns = self.exec_path[-1]
         if len(args) > 1:
             raise CommandException(_('Invalid syntax: {0}.\n{1}'.format(args, inspect.getdoc(self))))
         result = []
-        if getattr(context.ml.cwd, 'serialize'):
-            for i in context.ml.cwd.serialize():
+        if getattr(ns, 'serialize'):
+            for i in ns.serialize():
                 result.append(unparse(i))
 
         contents = '\n'.join(result)

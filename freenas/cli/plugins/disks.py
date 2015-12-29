@@ -31,6 +31,7 @@ from freenas.cli.namespace import (
     EntityNamespace, Command, EntitySubscriberBasedLoadMixin, description
 )
 from freenas.cli.output import ValueType
+from freenas.cli.utils import post_save
 from freenas.utils import extend
 
 
@@ -112,6 +113,38 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             list=True
         )
 
+        self.add_property(
+            descr='Standby mode',
+            name='standby_mode',
+            get='standby_mode',
+            type=ValueType.NUMBER,
+            list=False
+        )
+
+        self.add_property(
+            descr='Power management mode',
+            name='apm_mode',
+            get='apm_mode',
+            type=ValueType.NUMBER,
+            list=False
+        )
+
+        self.add_property(
+            descr='Acoustic level',
+            name='acoustic_level',
+            get='acoustic_level',
+            type=ValueType.STRING,
+            list=False
+        )
+
+        self.add_property(
+            descr='SMART',
+            name='smart',
+            get='smart',
+            type=ValueType.BOOLEAN,
+            list=False
+        )
+
         self.primary_key = self.get_mapping('name')
         self.allow_create = False
         self.entity_commands = lambda this: {
@@ -154,6 +187,13 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             return 'part of volume {0}'.format(disp['name'])
 
         return 'unknown'
+
+    def save(self, this, new=False):
+        self.context.submit_task(
+            'disk.configure',
+            this.entity['id'],
+            this.get_diff(),
+            callback=lambda s: post_save(this, s))
 
 
 @description("Formats given disk")

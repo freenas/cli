@@ -145,6 +145,14 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             list=False
         )
 
+        self.add_property(
+            descr='SMART options',
+            name='smart_options',
+            get='smart_options',
+            type=ValueType.STRING,
+            list=False
+        )
+
         self.primary_key = self.get_mapping('name')
         self.allow_create = False
         self.entity_commands = lambda this: {

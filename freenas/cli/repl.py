@@ -186,7 +186,8 @@ class VariableStore(object):
             'show_events': self.Variable(True, ValueType.BOOLEAN),
             'debug': self.Variable(False, ValueType.BOOLEAN),
             'abort_on_errors': self.Variable(True, ValueType.BOOLEAN),
-            'output': self.Variable(None, ValueType.STRING)
+            'output': self.Variable(None, ValueType.STRING),
+            'verbosity': self.Variable(1, ValueType.NUMBER)
         }
         self.variable_doc = {
             'output_format': _('Sets the console output format, valid values are: "ascii", "json" and "table"'),
@@ -199,6 +200,7 @@ class VariableStore(object):
             'debug': _('Toggle displaying of debug messages'),
             'abort_on_errors': _('Toggle console aborting on errors'),
             'output': _('Send output to specified file, "none" outputs to console'),
+            'verbosity': _('Verbosity of event messages in range from 1 to 5')
         }
 
     def load(self, filename):
@@ -303,24 +305,36 @@ class Context(object):
             e.start()
             self.entity_subscribers[i] = e
 
-        def update_task(oldtask, task):
+        def update_task(task):
             if task['id'] in self.task_callbacks:
                 self.handle_task_callback(task)
 
+            if self.variables.get('verbosity') > 1 and task['state'] in ('CREATED', 'FINISHED'):
+                output_msg_locked(_(
+                    "Task #{0}: {1}".format(
+                        task['id'],
+                        task['state'].lower(),
+                    )
+                ))
+
+            if self.variables.get('verbosity') > 2 and task['state'] == 'WAITING':
+                output_msg_locked(_(
+                    "Task #{0}: {1}".format(
+                        task['id'],
+                        task['state'].lower(),
+                    )
+                ))
+
             if task['state'] in ('FAILED', 'ABORTED'):
-                output_lock.acquire()
-                self.ml.blank_readline()
-                output_msg(_(
+                output_msg_locked(_(
                     "Task #{0} error: {1}".format(
                         task['id'],
                         task['error'].get('message', '') if task.get('error') else ''
                     )
                 ))
-                sys.stdout.flush()
-                self.ml.restore_readline()
-                output_lock.release()
 
-        self.entity_subscribers['task'].on_update = update_task
+        self.entity_subscribers['task'].on_add = update_task
+        self.entity_subscribers['task'].on_update = lambda o, n: update_task(n)
 
     def connect(self, password=None):
         try:

@@ -223,6 +223,8 @@ def read_value(value, tv=ValueType.STRING):
     if tv == ValueType.SET:
         if type(value) is list:
             return value
+        else:
+            return [value]
 
     raise ValueError('Invalid value {0}'.format(value))
 

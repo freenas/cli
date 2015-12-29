@@ -28,7 +28,7 @@
 
 import os
 from freenas.cli.namespace import (
-    CommandException, EntityNamespace, Command, EntitySubscriberBasedLoadMixin, description
+    EntityNamespace, Command, EntitySubscriberBasedLoadMixin, description
 )
 from freenas.cli.output import ValueType
 from freenas.utils import extend
@@ -167,8 +167,6 @@ class FormatDiskCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        if self.parent.entity.get('allocation', 'unallocated') != 'unallocated':
-            raise CommandException('Cannot perform format operation on an allocated disk')
         fstype = kwargs.pop('fstype', 'freebsd-zfs')
         context.submit_task('disk.format.gpt', self.parent.entity['path'], fstype)
 
@@ -187,8 +185,6 @@ class EraseDiskCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        if self.parent.entity.get('allocation', 'unallocated') != 'unallocated':
-            raise CommandException('Cannot perform erase operation on an allocated disk')
         erase_data = str.upper(kwargs.pop('wipe', 'quick'))
         context.submit_task('disk.erase', self.parent.entity['path'], erase_data)
 

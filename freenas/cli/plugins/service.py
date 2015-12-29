@@ -27,8 +27,9 @@
 
 
 from freenas.cli.namespace import (
-        ConfigNamespace, EntityNamespace, RpcBasedLoadMixin,
-        Command, description)
+    Namespace, ConfigNamespace, EntityNamespace, RpcBasedLoadMixin,
+    Command, description
+)
 from freenas.cli.output import ValueType
 from freenas.cli.utils import post_save
 
@@ -98,12 +99,16 @@ class ServicesNamespace(RpcBasedLoadMixin, EntityNamespace):
         self.entity_namespaces = lambda this: [
             ServiceConfigNamespace('config', context, this)
         ]
+        self.entity_serialize = self.child_serialize
         self.entity_commands = lambda this: {
             'start': ServiceManageCommand(this, 'start'),
             'stop': ServiceManageCommand(this, 'stop'),
             'restart': ServiceManageCommand(this, 'restart'),
             'reload': ServiceManageCommand(this, 'reload')
         }
+
+    def child_serialize(self, this):
+        return Namespace.serialize(this)
 
 
 class ServiceConfigNamespace(ConfigNamespace):

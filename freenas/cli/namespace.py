@@ -582,6 +582,10 @@ class SingleItemNamespace(ItemNamespace):
 
     def serialize(self):
         self.on_enter()
+
+        if self.parent.entity_serialize:
+            return self.parent.entity_serialize(self)
+
         createable = True
         if hasattr(self.parent, 'createable'):
             createable = self.parent.createable(self.entity)
@@ -821,6 +825,7 @@ class EntityNamespace(Namespace):
         self.primary_key = None
         self.entity_commands = None
         self.entity_namespaces = None
+        self.entity_serialize = None
         self.allow_edit = True
         self.allow_create = True
         self.skeleton_entity = {}

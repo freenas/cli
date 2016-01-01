@@ -100,8 +100,10 @@ class AsciiOutputFormatter(object):
 
         if vt == ValueType.TIME:
             fmt = config.instance.variables.get('datetime_format')
+            if isinstance(value, str):
+                value = parse(value)
             if fmt == 'natural':
-                return natural.date.duration(parse(value))
+                return natural.date.duration(value)
 
             return time.strftime(fmt, time.localtime(value))
 

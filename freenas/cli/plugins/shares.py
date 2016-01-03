@@ -202,6 +202,13 @@ class BaseSharesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, En
             list=True
         )
 
+        self.add_property(
+            descr='Group',
+            name='group',
+            get='permissions.group',
+            list=True
+        )
+
         self.primary_key = self.get_mapping('name')
         self.primary_key_name = 'name'
         self.save_key_name = 'id'

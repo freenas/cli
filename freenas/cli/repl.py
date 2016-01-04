@@ -291,6 +291,7 @@ class Context(object):
         self.global_env = Environment(self)
         self.user = None
         self.pending_tasks = {}
+        self.session_id = None
         config.instance = self
 
     @property
@@ -299,7 +300,10 @@ class Context(object):
 
     @property
     def pending_jobs(self):
-        return len(list(filter(lambda t: t['parent'] is None, self.pending_tasks.values())))
+        return len(list(filter(
+            lambda t: t['parent'] is None and t['session'] == self.session_id,
+            self.pending_tasks.values()
+        )))
 
     def start(self, password=None):
         self.discover_plugins()
@@ -382,6 +386,7 @@ class Context(object):
             self.connection.subscribe_events(*EVENT_MASKS)
             self.connection.on_event(self.handle_event)
             self.connection.on_error(self.connection_error)
+            self.session_id = self.call_sync('session.get_my_session_id')
         except RpcException as e:
             if e.code == errno.EACCES:
                 self.connection.disconnect()

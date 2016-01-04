@@ -61,7 +61,7 @@ from freenas.cli.parser import (
 )
 from freenas.cli.output import (
     ValueType, ProgressBar, output_lock, output_msg, read_value, format_value,
-    format_output, output_msg_locked
+    format_output, output_msg_locked, refresh_prompt
 )
 from freenas.dispatcher.client import Client, ClientError
 from freenas.dispatcher.entity import EntitySubscriber
@@ -290,11 +290,16 @@ class Context(object):
         self.builtin_functions = functions.functions
         self.global_env = Environment(self)
         self.user = None
+        self.pending_tasks = {}
         config.instance = self
 
     @property
     def is_interactive(self):
         return os.isatty(sys.stdout.fileno())
+
+    @property
+    def pending_jobs(self):
+        return len(list(filter(lambda t: t['parent'] is None, self.pending_tasks.values())))
 
     def start(self, password=None):
         self.discover_plugins()
@@ -311,6 +316,14 @@ class Context(object):
             self.entity_subscribers[i] = e
 
         def update_task(task):
+            if task['id'] not in self.pending_tasks:
+                self.pending_tasks[task['id']] = task
+                refresh_prompt()
+
+            if task['state'] in ('FINISHED', 'FAILED', 'ABORTED'):
+                del self.pending_tasks[task['id']]
+                refresh_prompt()
+
             if task['id'] in self.task_callbacks:
                 self.handle_task_callback(task)
 
@@ -730,6 +743,7 @@ class MainLoop(object):
             'path': '/'.join([str(x.get_name()) for x in self.path]),
             'host': self.context.uri,
             'user': self.context.user,
+            'jobs': self.context.pending_jobs,
             '#B': '\001\033[1m\002',
             '#b': '\001\033[0m\002'
         }

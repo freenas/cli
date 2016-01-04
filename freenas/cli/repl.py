@@ -739,14 +739,36 @@ class MainLoop(object):
         }
 
     def __get_prompt(self):
-        variables = {
+        variables = collections.defaultdict(lambda: '', {
             'path': '/'.join([str(x.get_name()) for x in self.path]),
             'host': self.context.uri,
             'user': self.context.user,
             'jobs': self.context.pending_jobs,
-            '#B': '\001\033[1m\002',
-            '#b': '\001\033[0m\002'
-        }
+            'jobs_short': '[{0}] '.format(self.context.pending_jobs) if self.context.pending_jobs else '',
+            '#0': '\001\033[0m\002',
+            '#bold': '\001\033[1m\002',
+            '#dim': '\001\033[2m\002',
+            '#under': '\001\033[4m\002',
+            '#blink': '\001\033[5m\002',
+            '#reverse': '\001\033[7m\002',
+            '#hidden': '\001\033[8m\002',
+            '#f_black': '\001\033[30m\002',
+            '#f_red': '\001\033[31m\002',
+            '#f_green': '\001\033[32m\002',
+            '#f_yellow': '\001\033[33m\002',
+            '#f_blue': '\001\033[34m\002',
+            '#f_magenta': '\001\033[35m\002',
+            '#f_cyan': '\001\033[36m\002',
+            '#f_white': '\001\033[37m\002',
+            '#b_black': '\001\033[40m\002',
+            '#b_red': '\001\033[41m\002',
+            '#b_green': '\001\033[42m\002',
+            '#b_yellow': '\001\033[43m\002',
+            '#b_blue': '\001\033[44m\002',
+            '#b_magenta': '\001\033[45m\002',
+            '#b_cyan': '\001\033[46m\002',
+            '#b_white': '\001\033[47m\002'
+        })
         return self.context.variables.get('prompt').format(**variables)
 
     def greet(self):

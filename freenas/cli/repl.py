@@ -728,7 +728,10 @@ class MainLoop(object):
     def __get_prompt(self):
         variables = {
             'path': '/'.join([str(x.get_name()) for x in self.path]),
-            'host': self.context.uri
+            'host': self.context.uri,
+            'user': self.context.user,
+            '#B': '\033[1m',
+            '#b': '\033[0m'
         }
         return self.context.variables.get('prompt').format(**variables)
 

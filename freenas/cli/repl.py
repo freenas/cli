@@ -730,8 +730,8 @@ class MainLoop(object):
             'path': '/'.join([str(x.get_name()) for x in self.path]),
             'host': self.context.uri,
             'user': self.context.user,
-            '#B': '\033[1m',
-            '#b': '\033[0m'
+            '#B': '\001\033[1m\002',
+            '#b': '\001\033[0m\002'
         }
         return self.context.variables.get('prompt').format(**variables)
 

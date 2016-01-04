@@ -163,7 +163,7 @@ class AsciiOutputFormatter(object):
             else:
                 widths.insert(i, max_col_width)
                 remaining_space = remaining_space - max_col_width - 3
-        if remaining_space > 0:
+        if remaining_space > 0 and len(ideal_widths) > 0:
             for i in range(0, number_columns):
                 if remaining_space == 0:
                     break

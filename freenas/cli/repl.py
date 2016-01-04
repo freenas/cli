@@ -47,6 +47,7 @@ import paramiko
 from six.moves.urllib.parse import urlparse
 from socket import gaierror as socket_error
 from freenas.cli.descriptions import events
+from freenas.cli.descriptions import tasks
 from freenas.cli import functions
 from freenas.cli import config
 from freenas.cli.namespace import (
@@ -315,16 +316,18 @@ class Context(object):
 
             if self.variables.get('verbosity') > 1 and task['state'] in ('CREATED', 'FINISHED'):
                 output_msg_locked(_(
-                    "Task #{0}: {1}".format(
+                    "Task #{0}: {1}: {2}".format(
                         task['id'],
+                        tasks.translate(self, task['name'], task['args']),
                         task['state'].lower(),
                     )
                 ))
 
             if self.variables.get('verbosity') > 2 and task['state'] == 'WAITING':
                 output_msg_locked(_(
-                    "Task #{0}: {1}".format(
+                    "Task #{0}: {1}: {2}".format(
                         task['id'],
+                        tasks.translate(self, task['name'], task['args']),
                         task['state'].lower(),
                     )
                 ))

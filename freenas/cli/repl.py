@@ -301,6 +301,10 @@ class Context(object):
 
     def start_entity_subscribers(self):
         for i in ENTITY_SUBSCRIBERS:
+            if i in self.entity_subscribers:
+                self.entity_subscribers[i].stop()
+                del self.entity_subscribers[i]
+
             e = EntitySubscriber(self.connection, i)
             e.start()
             self.entity_subscribers[i] = e

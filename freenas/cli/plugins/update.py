@@ -33,6 +33,7 @@ from datetime import datetime
 from freenas.cli.namespace import ConfigNamespace, Command, description, CommandException
 from freenas.cli.output import output_msg, ValueType, Table, output_table
 from freenas.cli.utils import post_save
+from freenas.cli.plugins.system import RebootCommand
 
 
 t = gettext.translation('freenas-cli', fallback=True)
@@ -271,6 +272,7 @@ class UpdateNamespace(ConfigNamespace):
             'current_train': CurrentTrainCommand(),
             'update_now': UpdateNowCommand(),
             'show_trains': ShowTrainsCommand(),
+            'reboot': RebootCommand(),
         }
 
     def load(self):

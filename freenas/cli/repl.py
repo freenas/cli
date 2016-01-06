@@ -1115,8 +1115,11 @@ class MainLoop(object):
 
                 ret = self.eval(token.right, input_data=result)
                 self.context.pipe_cwd = None
-                return ret
-
+                if ret is None:
+                    return result
+                else:
+                    return ret
+                
             if isinstance(token, Redirection):
                 with open(token.path, 'a+') as f:
                     format_output(self.eval(token.body, env, path), file=f)

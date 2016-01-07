@@ -1460,6 +1460,21 @@ def main():
 
         return
 
+    cli_rc_paths = []
+    home_dir = os.getenv('HOME', '')
+    cli_rc_paths.append('/usr/local/etc/clirc')
+    cli_rc_paths.append(os.path.join(home_dir, '.clirc'))
+    for path in cli_rc_paths:
+        if os.path.isfile(path):
+            try:
+                with open(path, 'r') as f:
+                    ast = parse(f.read(), path)
+                    context.eval_block(ast)
+            except UnicodeDecodeError as e:
+                raise CommandException(_(
+                    "Incorrect filetype, cannot parse clirc file: {0}".format(str(e))
+                ))
+
     ml.repl()
 
 

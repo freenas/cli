@@ -188,6 +188,20 @@ class BaseSharesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, En
             list=True
         )
 
+        self.add_property(
+            descr='Owner',
+            name='owner',
+            get='permissions.user',
+            list=True
+        )
+
+        self.add_property(
+            descr='Group',
+            name='group',
+            get='permissions.group',
+            list=True
+        )
+
         self.primary_key = self.get_mapping('name')
         self.primary_key_name = 'name'
         self.save_key_name = 'id'
@@ -357,7 +371,7 @@ class AFPSharesNamespace(BaseSharesNamespace):
 @description("SMB shares")
 class SMBSharesNamespace(BaseSharesNamespace):
     def __init__(self, name, context):
-        super(SMBSharesNamespace, self).__init__(name, 'cifs', context)
+        super(SMBSharesNamespace, self).__init__(name, 'smb', context)
         self.localdoc['CreateEntityCommand'] = ("""\
             Usage: create name=<name> volume=<volume> <property>=<value> ...
 

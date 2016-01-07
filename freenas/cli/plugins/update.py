@@ -33,6 +33,7 @@ from datetime import datetime
 from freenas.cli.namespace import ConfigNamespace, Command, description, CommandException
 from freenas.cli.output import output_msg, ValueType, Table, output_table
 from freenas.cli.utils import post_save
+from freenas.cli.plugins.system import RebootCommand
 
 
 t = gettext.translation('freenas-cli', fallback=True)
@@ -199,9 +200,12 @@ class UpdateNowCommand(Command):
             raise CommandException(_("Updates failed to apply"))
         else:
             if not reboot:
+                reboot_command = 'system reboot'
+                if isinstance(context.ml.path[-1], UpdateNamespace):
+                    reboot_command = 'reboot'
                 output_msg(_(
                     "System successfully updated."
-                    " Please reboot now using the 'system reboot' command"
+                    " Please reboot now using the '{0}' command".format(reboot_command)
                 ))
 
 
@@ -271,6 +275,7 @@ class UpdateNamespace(ConfigNamespace):
             'current_train': CurrentTrainCommand(),
             'update_now': UpdateNowCommand(),
             'show_trains': ShowTrainsCommand(),
+            'reboot': RebootCommand(),
         }
 
     def load(self):

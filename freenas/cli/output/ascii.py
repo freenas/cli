@@ -27,6 +27,8 @@
 
 import six
 import sys
+import datetime
+import dateutil.tz
 import time
 import gettext
 import natural.date
@@ -100,8 +102,15 @@ class AsciiOutputFormatter(object):
 
         if vt == ValueType.TIME:
             fmt = config.instance.variables.get('datetime_format')
+            localtz = dateutil.tz.tzlocal()
+            localoffset = localtz.utcoffset(datetime.datetime.now(localtz))
+            offset = localoffset.total_seconds()
+
+            if isinstance(value, str):
+                offset = localoffset
+                value = parse(value)
             if fmt == 'natural':
-                return natural.date.duration(parse(value))
+                return natural.date.duration(value + offset)
 
             return time.strftime(fmt, time.localtime(value))
 
@@ -154,7 +163,7 @@ class AsciiOutputFormatter(object):
             else:
                 widths.insert(i, max_col_width)
                 remaining_space = remaining_space - max_col_width - 3
-        if remaining_space > 0:
+        if remaining_space > 0 and len(ideal_widths) > 0:
             for i in range(0, number_columns):
                 if remaining_space == 0:
                     break

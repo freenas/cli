@@ -47,6 +47,7 @@ import paramiko
 from six.moves.urllib.parse import urlparse
 from socket import gaierror as socket_error
 from freenas.cli.descriptions import events
+from freenas.cli.descriptions import tasks
 from freenas.cli import functions
 from freenas.cli import config
 from freenas.cli.namespace import (
@@ -60,7 +61,7 @@ from freenas.cli.parser import (
 )
 from freenas.cli.output import (
     ValueType, ProgressBar, output_lock, output_msg, read_value, format_value,
-    format_output, output_msg_locked
+    format_output, output_msg_locked, refresh_prompt
 )
 from freenas.dispatcher.client import Client, ClientError
 from freenas.dispatcher.entity import EntitySubscriber
@@ -289,11 +290,20 @@ class Context(object):
         self.builtin_functions = functions.functions
         self.global_env = Environment(self)
         self.user = None
+        self.pending_tasks = {}
+        self.session_id = None
         config.instance = self
 
     @property
     def is_interactive(self):
         return os.isatty(sys.stdout.fileno())
+
+    @property
+    def pending_jobs(self):
+        return len(list(filter(
+            lambda t: t['parent'] is None and t['session'] == self.session_id,
+            self.pending_tasks.values()
+        )))
 
     def start(self, password=None):
         self.discover_plugins()
@@ -301,26 +311,40 @@ class Context(object):
 
     def start_entity_subscribers(self):
         for i in ENTITY_SUBSCRIBERS:
+            if i in self.entity_subscribers:
+                self.entity_subscribers[i].stop()
+                del self.entity_subscribers[i]
+
             e = EntitySubscriber(self.connection, i)
             e.start()
             self.entity_subscribers[i] = e
 
         def update_task(task):
+            if task['id'] not in self.pending_tasks:
+                self.pending_tasks[task['id']] = task
+                refresh_prompt()
+
+            if task['state'] in ('FINISHED', 'FAILED', 'ABORTED'):
+                del self.pending_tasks[task['id']]
+                refresh_prompt()
+
             if task['id'] in self.task_callbacks:
                 self.handle_task_callback(task)
 
             if self.variables.get('verbosity') > 1 and task['state'] in ('CREATED', 'FINISHED'):
                 output_msg_locked(_(
-                    "Task #{0}: {1}".format(
+                    "Task #{0}: {1}: {2}".format(
                         task['id'],
+                        tasks.translate(self, task['name'], task['args']),
                         task['state'].lower(),
                     )
                 ))
 
             if self.variables.get('verbosity') > 2 and task['state'] == 'WAITING':
                 output_msg_locked(_(
-                    "Task #{0}: {1}".format(
+                    "Task #{0}: {1}: {2}".format(
                         task['id'],
+                        tasks.translate(self, task['name'], task['args']),
                         task['state'].lower(),
                     )
                 ))
@@ -362,6 +386,7 @@ class Context(object):
             self.connection.subscribe_events(*EVENT_MASKS)
             self.connection.on_event(self.handle_event)
             self.connection.on_error(self.connection_error)
+            self.session_id = self.call_sync('session.get_my_session_id')
         except RpcException as e:
             if e.code == errno.EACCES:
                 self.connection.disconnect()
@@ -719,10 +744,36 @@ class MainLoop(object):
         }
 
     def __get_prompt(self):
-        variables = {
+        variables = collections.defaultdict(lambda: '', {
             'path': '/'.join([str(x.get_name()) for x in self.path]),
-            'host': self.context.uri
-        }
+            'host': self.context.uri,
+            'user': self.context.user,
+            'jobs': self.context.pending_jobs,
+            'jobs_short': '[{0}] '.format(self.context.pending_jobs) if self.context.pending_jobs else '',
+            '#0': '\001\033[0m\002',
+            '#bold': '\001\033[1m\002',
+            '#dim': '\001\033[2m\002',
+            '#under': '\001\033[4m\002',
+            '#blink': '\001\033[5m\002',
+            '#reverse': '\001\033[7m\002',
+            '#hidden': '\001\033[8m\002',
+            '#f_black': '\001\033[30m\002',
+            '#f_red': '\001\033[31m\002',
+            '#f_green': '\001\033[32m\002',
+            '#f_yellow': '\001\033[33m\002',
+            '#f_blue': '\001\033[34m\002',
+            '#f_magenta': '\001\033[35m\002',
+            '#f_cyan': '\001\033[36m\002',
+            '#f_white': '\001\033[37m\002',
+            '#b_black': '\001\033[40m\002',
+            '#b_red': '\001\033[41m\002',
+            '#b_green': '\001\033[42m\002',
+            '#b_yellow': '\001\033[43m\002',
+            '#b_blue': '\001\033[44m\002',
+            '#b_magenta': '\001\033[45m\002',
+            '#b_cyan': '\001\033[46m\002',
+            '#b_white': '\001\033[47m\002'
+        })
         return self.context.variables.get('prompt').format(**variables)
 
     def greet(self):
@@ -1064,8 +1115,11 @@ class MainLoop(object):
 
                 ret = self.eval(token.right, input_data=result)
                 self.context.pipe_cwd = None
-                return ret
-
+                if ret is None:
+                    return result
+                else:
+                    return ret
+                
             if isinstance(token, Redirection):
                 with open(token.path, 'a+') as f:
                     format_output(self.eval(token.body, env, path), file=f)

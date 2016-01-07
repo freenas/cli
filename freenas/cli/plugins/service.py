@@ -497,7 +497,7 @@ svc_cli_config = {
             'type': ValueType.STRING
         },
     ],
-    "cifs": [
+    "smb": [
         {
             'descr': 'NetBIOS Name',
             'name': 'netbiosname',

@@ -870,7 +870,6 @@ class MainLoop(object):
 
                 raise ret
 
-
     def get_cwd(self, path):
         if not path:
             return self.cwd
@@ -883,7 +882,6 @@ class MainLoop(object):
                 else:
                     real_path.append(i)
             return real_path[-1]
-
 
     def eval(self, token, env=None, path=None, serialize_filter=None, input_data=None, dry_run=False):
         cwd = self.get_cwd(path)
@@ -1051,7 +1049,7 @@ class MainLoop(object):
                         else:
                             if len(self.path) > 1:
                                 self.path[-2].on_enter()
-                            
+
                         path.append('..')
                         return self.eval(token, env, path=path, dry_run=dry_run)
 
@@ -1144,7 +1142,7 @@ class MainLoop(object):
                     return result
                 else:
                     return ret
-                
+
             if isinstance(token, Redirection):
                 with open(token.path, 'a+') as f:
                     format_output(self.eval(token.body, env, path), file=f)

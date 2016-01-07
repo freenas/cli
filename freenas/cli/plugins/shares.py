@@ -25,6 +25,7 @@
 #
 #####################################################################
 
+import os
 import gettext
 from freenas.cli.namespace import (
     EntityNamespace, Command, IndexCommand, RpcBasedLoadMixin,
@@ -142,7 +143,7 @@ class BaseSharesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, En
         self.create_task = 'share.create'
         self.update_task = 'share.update'
         self.delete_task = 'share.delete'
-        self.required_props = ['name', 'target']
+        self.required_props = ['name']
         self.localdoc['DeleteEntityCommand'] = ("""\
             Usage: delete <share name>
 
@@ -189,6 +190,26 @@ class BaseSharesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, En
         )
 
         self.add_property(
+            descr='Parent',
+            name='parent',
+            get=None,
+            set=self.set_share_parent,
+            list=False,
+            createsetable=True,
+            usersetable=False
+        )
+
+        self.add_property(
+            descr='Path',
+            name='path',
+            get=None,
+            set=self.set_share_path,
+            list=False,
+            createsetable=True,
+            usersetable=False
+        )
+
+        self.add_property(
             descr='Owner',
             name='owner',
             get='permissions.user',
@@ -212,6 +233,14 @@ class BaseSharesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, En
     def set_share_target(self, obj, value):
         obj['target_path'] = value
         obj['target_type'] = 'DATASET'
+
+    def set_share_parent(self, obj, value):
+        obj['target_path'] = os.path.join(value, obj['name'])
+        obj['target_type'] = 'DATASET'
+
+    def set_share_path(self, obj, value):
+        obj['target_path'] = value
+        obj['target_type'] = 'DIRECTORY'
 
 
 @description("NFS shares")

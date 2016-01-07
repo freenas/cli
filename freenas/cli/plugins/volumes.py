@@ -34,7 +34,7 @@ from freenas.cli.namespace import (
 )
 from freenas.cli.output import Table, ValueType, output_tree, format_value, read_value, Sequence
 from freenas.cli.utils import post_save, iterate_vdevs
-from freenas.utils import first_or_default, exclude, query
+from freenas.utils import first_or_default, extend, query
 
 
 t = gettext.translation('freenas-cli', fallback=True)
@@ -693,6 +693,20 @@ class DatasetsNamespace(EntityNamespace):
             condition=lambda o: o['type'] == 'FILESYSTEM')
 
         self.add_property(
+            descr='Owner',
+            name='owner',
+            get='permissions.user',
+            list=True
+        )
+
+        self.add_property(
+            descr='Group',
+            name='group',
+            get='permissions.group',
+            list=True
+        )
+
+        self.add_property(
             descr='Compression',
             name='compression',
             get='properties.compression.value',
@@ -814,10 +828,7 @@ class DatasetsNamespace(EntityNamespace):
 
             self.context.submit_task(
                 'volume.dataset.create',
-                self.parent.entity['name'],
-                this.entity['name'],
-                this.entity['type'],
-                exclude(this.entity, 'name', 'type'),
+                extend(this.entity, {'pool': self.parent.entity['name']}),
                 callback=lambda s: post_save(this, s)
             )
             return

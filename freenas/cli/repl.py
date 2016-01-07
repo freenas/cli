@@ -181,7 +181,7 @@ class VariableStore(object):
             'output_format': self.Variable('ascii', ValueType.STRING, ['ascii', 'json', 'table']),
             'datetime_format': self.Variable('natural', ValueType.STRING),
             'language': self.Variable(os.getenv('LANG', 'C'), ValueType.STRING),
-            'prompt': self.Variable('{host}:{path}>', ValueType.STRING),
+            'prompt': self.Variable('{jobs_short}{host}:{path}>', ValueType.STRING),
             'timeout': self.Variable(10, ValueType.NUMBER),
             'tasks_blocking': self.Variable(False, ValueType.BOOLEAN),
             'show_events': self.Variable(True, ValueType.BOOLEAN),

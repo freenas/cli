@@ -90,8 +90,8 @@ class SharesNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         )
 
         self.add_property(
-            descr='Volume',
-            name='volume',
+            descr='Target',
+            name='target',
             get='target',
             set=None,
             createsetable=False,
@@ -142,7 +142,7 @@ class BaseSharesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, En
         self.create_task = 'share.create'
         self.update_task = 'share.update'
         self.delete_task = 'share.delete'
-        self.required_props = ['name', 'volume']
+        self.required_props = ['name', 'target']
         self.localdoc['DeleteEntityCommand'] = ("""\
             Usage: delete <share name>
 
@@ -181,17 +181,10 @@ class BaseSharesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, En
         )
 
         self.add_property(
-            descr='Target volume',
-            name='volume',
-            get='target',
-            list=True
-        )
-
-        self.add_property(
-            descr='Compression',
-            name='compression',
-            get='compression',
-            enum=['off', 'on', 'lzjb', 'gzip', 'zle', 'lz4'],
+            descr='Target',
+            name='target',
+            get='target_path',
+            set=self.set_share_target,
             list=True
         )
 
@@ -201,6 +194,10 @@ class BaseSharesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, En
         self.entity_commands = lambda this: {
             'clients': ConnectedUsersCommand(this)
         }
+
+    def set_share_target(self, obj, value):
+        obj['target_path'] = value
+        obj['target_type'] = 'DATASET'
 
 
 @description("NFS shares")

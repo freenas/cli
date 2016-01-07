@@ -1460,10 +1460,7 @@ def main():
 
         return
 
-    cli_rc_paths = []
-    home_dir = os.getenv('HOME', '')
-    cli_rc_paths.append('/usr/local/etc/clirc')
-    cli_rc_paths.append(os.path.join(home_dir, '.clirc'))
+    cli_rc_paths = ['/usr/local/etc/clirc', os.path.expanduser('~/.clirc')]
     for path in cli_rc_paths:
         if os.path.isfile(path):
             try:

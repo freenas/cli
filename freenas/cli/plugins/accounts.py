@@ -37,7 +37,7 @@ t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
 
 
-@description(_("System users"))
+@description(_("Local users"))
 class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):
     """
     Users top level command, expands into user entities and commands for
@@ -223,7 +223,7 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
         entity['groups'] = [group['id'] for group in groups]
 
 
-@description(_("System groups"))
+@description(_("Local groups"))
 class GroupsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):
     """
     Groups top level command, expands into group entities and commands
@@ -298,10 +298,10 @@ class GroupsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
         self.primary_key = self.get_mapping('name')
 
 
-@description(_("Manage system users and groups"))
+@description(_("Manage local users and groups"))
 class AccountNamespace(Namespace):
     """
-    System accounts top level command, expands into 'user' and 'group'.
+    Local accounts top level command, expands into 'user' and 'group'.
     """
     def __init__(self, name, context):
         super(AccountNamespace, self).__init__(name)

@@ -231,16 +231,22 @@ class BaseSharesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, En
         }
 
     def set_share_target(self, obj, value):
-        obj['target_path'] = value
-        obj['target_type'] = 'DATASET'
+        obj.update({
+            'target_path': value,
+            'target_type': 'DATASET'
+        })
 
     def set_share_parent(self, obj, value):
-        obj['target_path'] = os.path.join(value, obj['name'])
-        obj['target_type'] = 'DATASET'
+        obj.update({
+            'target_path': os.path.join(value, obj['name']),
+            'target_type': 'DATASET'
+        })
 
     def set_share_path(self, obj, value):
-        obj['target_path'] = value
-        obj['target_type'] = 'DIRECTORY'
+        obj.update({
+            'target_path': value,
+            'target_type': 'DIRECTORY'
+        })
 
 
 @description("NFS shares")

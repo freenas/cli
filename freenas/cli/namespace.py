@@ -279,7 +279,7 @@ class PropertyMapping(object):
 
 
 class ItemNamespace(Namespace):
-    @description("Shows single item")
+    @description("Shows <entity> properties")
     class ShowEntityCommand(FilteringCommand):
         """
         Usage: show
@@ -340,7 +340,7 @@ class ItemNamespace(Namespace):
         def complete(self, context, tokens):
             return [x.name for x in self.parent.property_mappings]
 
-    @description("Sets single item property")
+    @description("Sets single <entity> property")
     class SetEntityCommand(Command):
         """
         Usage: set <property>=<value> ...
@@ -654,7 +654,7 @@ class SingleItemNamespace(ItemNamespace):
         return nslst
 
 
-@description("Lists items")
+@description("Lists <entity>s")
 class ListCommand(FilteringCommand):
     """
     Usage: show
@@ -722,7 +722,7 @@ class ListCommand(FilteringCommand):
         return Table(self.parent.query(params, options), cols)
 
 
-@description("Creates new item")
+@description("Creates new <entity>")
 class CreateEntityCommand(Command):
     """
     Usage: create <name> <property>=<value> ...
@@ -798,7 +798,7 @@ class CreateEntityCommand(Command):
         return [x.name + '=' for x in self.parent.property_mappings if x.set]
 
 
-@description("Removes item")
+@description("Removes <entity>")
 class DeleteEntityCommand(Command):
     """
     Usage: delete <primary-key>

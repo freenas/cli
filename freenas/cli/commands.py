@@ -33,6 +33,7 @@ import readline
 import gettext
 import platform
 import textwrap
+import re
 from freenas.cli.parser import parse, unparse
 from freenas.cli.namespace import (Command, PipeCommand, CommandException, description,
                                    SingleItemNamespace, Namespace)
@@ -394,9 +395,12 @@ class HelpCommand(Command):
             ]
             ns_cmds = obj.commands()
             for key, value in ns_cmds.items():
+                value_description = re.sub('<entity>',
+                                           obj.get_name(), 
+                                           value.description)
                 cmd_dict = {
                     'cmd': key,
-                    'description': value.description,
+                    'description': value_description,
                 }
                 cmd_dict_list.append(cmd_dict)
 

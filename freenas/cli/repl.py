@@ -870,8 +870,23 @@ class MainLoop(object):
 
                 raise ret
 
+
+    def get_cwd(self, path):
+        if not path:
+            return self.cwd
+        else:
+            real_path = self.path[:]
+            for i in path:
+                if i == '..':
+                    if len(real_path) > 1:
+                        real_path.pop(-1)
+                else:
+                    real_path.append(i)
+            return real_path[-1]
+
+
     def eval(self, token, env=None, path=None, serialize_filter=None, input_data=None, dry_run=False):
-        cwd = path[-1] if path else self.cwd
+        cwd = self.get_cwd(path)
         path = path or []
 
         if self.start_from_root:
@@ -1018,17 +1033,27 @@ class MainLoop(object):
                             self.path = self.root_path[:]
                             path.pop(0)
                         for i in path:
-                            self.cd(i)
+                            if i == '..':
+                                if len(self.path) > 1:
+                                    self.cd_up()
+                            else:
+                                self.cd(i)
 
                         return
 
                     top = token.args.pop(0)
                     if top == '..':
-                        if not path:
-                            self.cd_up()
-                            return
-
-                        return self.eval(token, env, path=path[:-1])
+                        if len(path) == 0:
+                            if len(self.path) > 1:
+                                self.path[-2].on_enter()
+                        elif path[-1] != '..':
+                            path[-1].on_enter()
+                        else:
+                            if len(self.path) > 1:
+                                self.path[-2].on_enter()
+                            
+                        path.append('..')
+                        return self.eval(token, env, path=path, dry_run=dry_run)
 
                     if isinstance(top, Literal):
                         top = Symbol(top.value)

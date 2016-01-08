@@ -81,7 +81,8 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
         self.localdoc['ListCommand'] = ("""\
             Usage: show
 
-            Lists users, optionally doing filtering and sorting.
+            Lists all users. Optionally, filter or sort by property.
+            Use "help account user properties" to list available properties.
 
             Examples:
                 show

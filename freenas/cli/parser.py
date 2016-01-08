@@ -156,13 +156,13 @@ def t_STRING(t):
 
 
 def t_BOOL(t):
-    r'true|false'
+    r'^true$|^false$'
     t.value = True if t.value == 'true' else False
     return t
 
 
 def t_NULL(t):
-    r'none'
+    r'^none$'
     t.value = None
     return t
 

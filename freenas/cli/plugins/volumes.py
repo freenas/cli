@@ -677,33 +677,38 @@ class DatasetsNamespace(EntityNamespace):
             descr='Name',
             name='name',
             get='name',
-            list=True)
+            list=True
+        )
 
         self.add_property(
             descr='Type',
             name='type',
             get='type',
-            list=True)
+            list=True
+        )
 
         self.add_property(
             descr='Permissions type',
             name='permissions_type',
             get='permissions_type',
             list=False,
-            condition=lambda o: o['type'] == 'FILESYSTEM')
+            condition=lambda o: o['type'] == 'FILESYSTEM'
+        )
 
         self.add_property(
             descr='Owner',
             name='owner',
             get='permissions.user',
-            list=True
+            list=False,
+            condition=lambda o: o['type'] == 'FILESYSTEM'
         )
 
         self.add_property(
             descr='Group',
             name='group',
             get='permissions.group',
-            list=True
+            list=False,
+            condition=lambda o: o['type'] == 'FILESYSTEM'
         )
 
         self.add_property(
@@ -711,21 +716,24 @@ class DatasetsNamespace(EntityNamespace):
             name='compression',
             get='properties.compression.value',
             set='properties.compression.value',
-            list=True)
+            list=True
+        )
 
         self.add_property(
             descr='Used',
             name='used',
             get='properties.used.value',
             set=None,
-            list=True)
+            list=True
+        )
 
         self.add_property(
             descr='Available',
             name='available',
             get='properties.available.value',
             set=None,
-            list=True)
+            list=True
+        )
 
         self.add_property(
             descr='Access time',
@@ -733,14 +741,16 @@ class DatasetsNamespace(EntityNamespace):
             get='properties.atime.value',
             set='properties.atime.value',
             list=False,
-            condition=lambda o: o['type'] == 'FILESYSTEM')
+            condition=lambda o: o['type'] == 'FILESYSTEM'
+        )
 
         self.add_property(
             descr='Deduplication',
             name='dedup',
             get='properties.dedup.value',
             set='properties.dedup.value',
-            list=False)
+            list=False
+        )
 
         self.add_property(
             descr='Quota',
@@ -748,7 +758,8 @@ class DatasetsNamespace(EntityNamespace):
             get='properties.refquota.value',
             set='properties.refquota.value',
             list=False,
-            condition=lambda o: o['type'] == 'FILESYSTEM')
+            condition=lambda o: o['type'] == 'FILESYSTEM'
+        )
 
         self.add_property(
             descr='Recursive quota',
@@ -756,7 +767,8 @@ class DatasetsNamespace(EntityNamespace):
             get='properties.quota.value',
             set='properties.quota.value',
             list=False,
-            condition=lambda o: o['type'] == 'FILESYSTEM')
+            condition=lambda o: o['type'] == 'FILESYSTEM'
+        )
 
         self.add_property(
             descr='Space reservation',
@@ -764,7 +776,8 @@ class DatasetsNamespace(EntityNamespace):
             get='properties.refreservation.value',
             set='properties.refreservation.value',
             list=False,
-            condition=lambda o: o['type'] == 'FILESYSTEM')
+            condition=lambda o: o['type'] == 'FILESYSTEM'
+        )
 
         self.add_property(
             descr='Recursive space reservation',
@@ -772,15 +785,18 @@ class DatasetsNamespace(EntityNamespace):
             get='properties.reservation.value',
             set='properties.reservation.value',
             list=False,
-            condition=lambda o: o['type'] == 'FILESYSTEM')
+            condition=lambda o: o['type'] == 'FILESYSTEM'
+        )
 
         self.add_property(
             descr='Volume size',
             name='volsize',
-            get='properties.volsize.value',
-            set='properties.volsize.value',
+            get='volsize',
+            set='volsize',
             list=False,
-            condition=lambda o: o['type'] == 'VOLUME')
+            type=ValueType.SIZE,
+            condition=lambda o: o['type'] == 'VOLUME'
+        )
 
         self.add_property(
             descr='Block size',
@@ -788,7 +804,8 @@ class DatasetsNamespace(EntityNamespace):
             get='properties.volblocksize.value',
             set='properties.volblocksize.value',
             list=False,
-            condition=lambda o: o['type'] == 'VOLUME')
+            condition=lambda o: o['type'] == 'VOLUME'
+        )
 
         self.primary_key = self.get_mapping('name')
         self.entity_commands = lambda this: {

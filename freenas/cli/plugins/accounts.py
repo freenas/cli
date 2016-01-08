@@ -37,7 +37,7 @@ t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
 
 
-@description(_("Local users"))
+@description(_("Manage local users"))
 class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):
     """
     Users top level command, expands into user entities and commands for
@@ -223,7 +223,7 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
         entity['groups'] = [group['id'] for group in groups]
 
 
-@description(_("Local groups"))
+@description(_("Manage local groups"))
 class GroupsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):
     """
     Groups top level command, expands into group entities and commands

@@ -176,7 +176,7 @@ class AsciiOutputFormatter(object):
                         widths[i] = widths[i] + remaining_space
                         remaining_space = 0
         table.set_cols_width(widths)
-
+        table.set_cols_dtype(['t'] * len(tab.columns))
         table.add_rows([[AsciiOutputFormatter.format_value(resolve_cell(row, i.accessor), i.vt) for i in tab.columns] for row in tab.data], False)
         six.print_(table.draw(), file=file)
 

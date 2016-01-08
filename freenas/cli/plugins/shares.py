@@ -213,14 +213,16 @@ class BaseSharesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, En
             descr='Owner',
             name='owner',
             get='permissions.user',
-            list=True
+            list=True,
+            condition=lambda o: o['target_type'] in ('DIRECTORY', 'DATASET')
         )
 
         self.add_property(
             descr='Group',
             name='group',
             get='permissions.group',
-            list=True
+            list=True,
+            condition=lambda o: o['target_type'] in ('DIRECTORY', 'DATASET')
         )
 
         self.primary_key = self.get_mapping('name')
@@ -233,13 +235,13 @@ class BaseSharesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, En
     def set_share_target(self, obj, value):
         obj.update({
             'target_path': value,
-            'target_type': 'DATASET'
+            'target_type': 'ZVOL' if type(self) is ISCSISharesNamespace else 'DATASET'
         })
 
     def set_share_parent(self, obj, value):
         obj.update({
             'target_path': os.path.join(value, obj['name']),
-            'target_type': 'DATASET'
+            'target_type': 'ZVOL' if type(self) is ISCSISharesNamespace else 'DATASET'
         })
 
     def set_share_path(self, obj, value):
@@ -812,7 +814,7 @@ class ISCSITargetMapingNamespace(EntityNamespace):
 class ISCSISharesNamespace(BaseSharesNamespace):
     def __init__(self, name, context):
         super(ISCSISharesNamespace, self).__init__(name, 'iscsi', context)
-        self.required_props = ['name', 'volume', 'size']
+        self.required_props = ['name', 'size']
         self.localdoc['CreateEntityCommand'] = ("""\
             Usage: create <name> volume=<volume> size=<size> <property>=<value> ...
 

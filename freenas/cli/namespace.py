@@ -224,6 +224,9 @@ class PropertyMapping(object):
         self.condition = kwargs.pop('condition', None)
 
     def do_get(self, obj):
+        if self.condition and not self.condition(obj):
+            return None
+
         if isinstance(self.get, collections.Callable):
             return self.get(obj)
 

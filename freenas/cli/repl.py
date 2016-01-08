@@ -102,6 +102,7 @@ PROGRESS_CHARS = ['-', '\\', '|', '/']
 EVENT_MASKS = [
     'client.logged',
     'task.progress',
+    'task.updated',
     'service.stopped',
     'service.started'
 ]

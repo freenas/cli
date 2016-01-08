@@ -84,10 +84,7 @@ class SharesNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         self.add_property(
             descr='Share Type',
             name='type',
-            get='type',
-            set=None,
-            createsetable=False,
-            usersetable=False
+            get='type'
         )
 
         self.add_property(
@@ -176,8 +173,6 @@ class BaseSharesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, En
             descr='Share type',
             name='type',
             get='type',
-            usersetable=False,
-            createsetable=False,
             list=False
         )
 

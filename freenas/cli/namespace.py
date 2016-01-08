@@ -716,8 +716,11 @@ class ListCommand(FilteringCommand):
 
             params = list(self.__map_filter_properties(filtering['filter']))
 
-        for col in [x for x in self.parent.property_mappings if x.list]:
-            cols.append(Table.Column(col.descr, col.get, col.type))
+        for col in self.parent.property_mappings:
+            if not col.list:
+                continue
+
+            cols.append(Table.Column(col.descr, col.do_get, col.type))
 
         return Table(self.parent.query(params, options), cols)
 

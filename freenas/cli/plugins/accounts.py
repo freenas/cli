@@ -75,7 +75,8 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
 
             Example: delete john
 
-            Deletes a user.""")
+            Deletes the specified user.
+            Note that built-in user accounts can not be deleted.""")
 
         self.localdoc['ListCommand'] = ("""\
             Usage: show
@@ -301,7 +302,7 @@ class GroupsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
 @description(_("Manage local users and groups"))
 class AccountNamespace(Namespace):
     """
-    Local accounts top level command, expands into 'user' and 'group'.
+    This namespace is used to manage local users and groups.
     """
     def __init__(self, name, context):
         super(AccountNamespace, self).__init__(name)

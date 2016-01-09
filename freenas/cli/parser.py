@@ -89,7 +89,10 @@ reserved = {
     'and': 'AND',
     'or': 'OR',
     'not': 'NOT',
-    'undef': 'UNDEF'
+    'undef': 'UNDEF',
+    'true': 'TRUE',
+    'false': 'FALSE',
+    'none': 'NULL',
 }
 
 
@@ -97,7 +100,7 @@ tokens = list(reserved.values()) + [
     'ATOM', 'NUMBER', 'HEXNUMBER', 'BINNUMBER', 'OCTNUMBER', 'STRING',
     'ASSIGN', 'LPAREN', 'RPAREN', 'EQ', 'NE', 'GT', 'GE', 'LT', 'LE',
     'REGEX', 'UP', 'PIPE', 'LIST', 'COMMA', 'INC', 'DEC', 'PLUS', 'MINUS',
-    'MUL', 'DIV', 'BOOL', 'NULL', 'EOPEN', 'COPEN', 'LBRACE',
+    'MUL', 'DIV', 'EOPEN', 'COPEN', 'LBRACE',
     'RBRACE', 'LBRACKET', 'RBRACKET', 'NEWLINE', 'COLON', 'REDIRECT'
 ]
 
@@ -155,21 +158,15 @@ def t_STRING(t):
     return t
 
 
-def t_BOOL(t):
-    r'^true$|^false$'
-    t.value = True if t.value == 'true' else False
-    return t
-
-
-def t_NULL(t):
-    r'^none$'
-    t.value = None
-    return t
-
-
 def t_ATOM(t):
     r'[0-9a-zA-Z_\/-\/][0-9a-zA-Z_\-\.\/#@\:]*'
     t.type = reserved.get(t.value, 'ATOM')
+    if t.type == 'TRUE':
+        t.value = True 
+    elif t.type == 'FALSE':
+        t.value = False
+    elif t.type == 'NULL':
+        t.value = None
     return t
 
 
@@ -489,7 +486,8 @@ def p_literal(p):
     literal : BINNUMBER
     literal : OCTNUMBER
     literal : STRING
-    literal : BOOL
+    literal : TRUE
+    literal : FALSE
     literal : NULL
     """
     p[0] = Literal(p[1], type(p[1]), p=p)

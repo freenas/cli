@@ -485,9 +485,7 @@ class ConfigNamespace(ItemNamespace):
         self.config_extra_params = None
 
     def get_name(self):
-        name = self.name
-
-        return name if not self.modified else '[{0}]'.format(name)
+        return self.name
 
     def serialize(self):
         self.on_enter()
@@ -581,7 +579,7 @@ class SingleItemNamespace(ItemNamespace):
         if not name and name != 0:
             name = 'unnamed'
 
-        return name if self.saved and not self.modified else '[{0}]'.format(name)
+        return name
 
     def serialize(self):
         self.on_enter()

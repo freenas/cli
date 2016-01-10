@@ -134,6 +134,7 @@ class VMNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
         self.create_task = 'container.create'
         self.update_task = 'container.update'
         self.delete_task = 'container.delete'
+        self.required_props = ['name', 'volume']
         self.primary_key_name = 'name'
 
         self.skeleton_entity = {

@@ -90,16 +90,16 @@ class SharesNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         self.add_property(
             descr='Target',
             name='target',
-            get='target',
+            get='target_path',
             set=None,
             createsetable=False,
             usersetable=False
         )
 
         self.add_property(
-            descr='Dataset Path',
-            name='dataset_path',
-            get='dataset_path',
+            descr='Filesystem path',
+            name='filesystem_path',
+            get='filesystem_path',
             set=None,
             createsetable=False,
             usersetable=False

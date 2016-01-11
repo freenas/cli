@@ -163,7 +163,7 @@ class CommandException(Exception):
             return '{0}: {1}'.format(errno.errorcode[self.code], self.message)
 
 
-@description("Provides list of commands in this namespace")
+@description("Lists available commands or items in this namespace")
 class IndexCommand(Command):
     """
     Usage: ?

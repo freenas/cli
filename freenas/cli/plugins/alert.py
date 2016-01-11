@@ -37,6 +37,22 @@ t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
 
 
+@description("Dismisses the current alert")
+class DismissAlertCommand(Command):
+    """
+    Usage: dismiss
+
+    Dismisses the current alert
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        context.call_sync(
+            'alert.dismiss',
+            self.parent.entity['id'])
+
+
 @description("System alerts")
 class AlertNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
     """
@@ -91,6 +107,10 @@ class AlertNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         )
 
         self.primary_key = self.get_mapping('id')
+
+        self.entity_commands = lambda this: {
+            'dismiss': DismissAlertCommand(this),
+        }
 
     def serialize(self):
         raise NotImplementedError()

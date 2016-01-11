@@ -743,10 +743,12 @@ class CreateEntityCommand(Command):
         ns = SingleItemNamespace(None, self.parent)
         ns.orig_entity = wrap(copy.deepcopy(self.parent.skeleton_entity))
         ns.entity = wrap(copy.deepcopy(self.parent.skeleton_entity))
+        kwargs = collections.OrderedDict(kwargs)
 
         if len(args) > 0:
             prop = self.parent.primary_key
             kwargs[prop.name] = args.pop(0)
+            kwargs.move_to_end(prop.name, False)
 
         for k, v in list(kwargs.items()):
             if not self.parent.has_property(k):

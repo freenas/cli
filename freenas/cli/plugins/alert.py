@@ -47,6 +47,7 @@ class AlertNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         self.entity_subscriber_name = 'alert'
         self.primary_key_name = 'id'
         self.allow_edit = False
+        self.allow_create = False
 
         self.add_property(
             descr='ID',

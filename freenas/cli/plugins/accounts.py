@@ -40,8 +40,7 @@ _ = t.gettext
 @description(_("Manage local users"))
 class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):
     """
-    Users top level command, expands into user entities and commands for
-    managing them.
+    The user namespace provides commands for listing and managing local user accounts.
     """
     def __init__(self, name, context):
         super(UsersNamespace, self).__init__(name, context)
@@ -228,8 +227,7 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
 @description(_("Manage local groups"))
 class GroupsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):
     """
-    Groups top level command, expands into group entities and commands
-    for managing them.
+    The group namespace provides commands for listing and managing local groups.
     """
     def __init__(self, name, context):
         super(GroupsNamespace, self).__init__(name, context)

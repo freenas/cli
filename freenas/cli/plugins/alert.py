@@ -48,9 +48,13 @@ class DismissAlertCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
+        alert_id = self.parent.entity['id']
         context.call_sync(
             'alert.dismiss',
-            self.parent.entity['id'])
+            alert_id)
+        curr_ns = context.ml.path[-1]
+        if curr_ns.get_name() == alert_id and isinstance(curr_ns.parent, AlertNamespace):
+            context.ml.cd_up()
 
 
 @description("System alerts")

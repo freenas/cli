@@ -40,10 +40,11 @@ t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
 
 
-@description("Boot Environment Management")
+@description("Manage boot environments")
 class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
     """
-    The boot namespace provides commands for listing and managing the boot pool and boot environments.
+    The environment namespace provides commands for listing and
+    managing boot environments.
     """
     def __init__(self, name, context):
         super(BootEnvironmentNamespace, self).__init__(name, context)
@@ -174,7 +175,7 @@ class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
             return
 
 
-@description("Renames a boot environment")
+@description("Rename a boot environment")
 class RenameBootEnvCommand(Command):
     """
     Usage: rename
@@ -202,7 +203,7 @@ class RenameBootEnvCommand(Command):
         )
 
 
-@description("Activates a boot environment")
+@description("Activate a boot environment")
 class ActivateBootEnvCommand(Command):
     """
     Usage: activate
@@ -219,10 +220,11 @@ class ActivateBootEnvCommand(Command):
             callback=lambda s: post_save(self.parent, s))
 
 
-@description("Boot pool management")
+@description("Manage devices in boot pool")
 class BootPoolNamespace(Namespace):
     """
-    Boot pool command, expands into commands for managing your boot pool.
+    The pool namespace provides commands for listing and managing the devices
+    in the boot pool.
     """
     def __init__(self, name, context):
         super(BootPoolNamespace, self).__init__(name)
@@ -236,12 +238,12 @@ class BootPoolNamespace(Namespace):
         }
 
 
-@description("Shows the disks in the boot pool")
+@description("List the devices in the boot pool")
 class BootPoolShowDisksCommand(Command):
     """
     Usage: show_disks
 
-    Shows the disks in the boot pool
+    List the device\(s\) in the boot pool
     """
 
     def run(self, context, args, kwargs, opargs):
@@ -253,14 +255,14 @@ class BootPoolShowDisksCommand(Command):
         ])
 
 
-@description("Attaches a disk to the boot pool")
+@description("Attach a device to the boot pool")
 class BootPoolAttachDiskCommand(Command):
     """
     Usage: attach_disk <disk>
 
     Example: attach_disk ada1
 
-    Attaches a disk to the boot pool.
+    Attaches the specified disk to the boot pool.
     """
     def run(self, context, args, kwargs, opargs):
         if not args:
@@ -284,7 +286,7 @@ class BootPoolAttachDiskCommand(Command):
         return
 
 
-@description("Detaches a disk from the boot pool")
+@description("Detach a device from the boot pool")
 class BootPoolDetachDiskCommand(Command):
     """
     Usage: detach_disk <disk>
@@ -302,7 +304,8 @@ class BootPoolDetachDiskCommand(Command):
 @description("Boot management")
 class BootNamespace(Namespace):
     """
-    Boot command, expands into boot pool and boot environment commands.
+    The boot namespace provides commands for listing and managing
+    boot environments and the devices in the boot pool.
     """
     def __init__(self, name, context):
         super(BootNamespace, self).__init__(name)

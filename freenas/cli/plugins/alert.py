@@ -39,6 +39,9 @@ _ = t.gettext
 
 @description("System alerts")
 class AlertNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
+    """
+    The alert namespace provides commands for listing and managing system alerts.
+    """
     def __init__(self, name, context):
         super(AlertNamespace, self).__init__(name, context)
         self.entity_subscriber_name = 'alert'

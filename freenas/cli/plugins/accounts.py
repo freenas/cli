@@ -124,7 +124,7 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             set=self.set_group)
 
         self.add_property(
-            descr='Auxilliary groups',
+            descr='Auxiliary groups',
             name='groups',
             get=self.display_aux_groups,
             get_name='groups',

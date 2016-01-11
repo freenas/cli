@@ -43,8 +43,7 @@ _ = t.gettext
 @description("Boot Environment Management")
 class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
     """
-    Boot environment command, expands into commands for managing boot
-    environments.
+    The boot namespace provides commands for listing and managing the boot pool and boot environments.
     """
     def __init__(self, name, context):
         super(BootEnvironmentNamespace, self).__init__(name, context)

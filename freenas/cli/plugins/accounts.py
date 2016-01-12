@@ -153,7 +153,8 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             name='shell',
             get='shell',
             usage=_("""
-            Specify full path to an existing shell."""),
+            r" Default is /bin/sh. Otherwise,
+            specify full path to an existing shell."""),
             list=False
         )
 
@@ -163,7 +164,7 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             get='home',
             usage=_("""\
             By default when a user is created, their home
-            directory is not created. To create one, give
+            directory is not created. To create one, specify
             the full path to an existing dataset."""),
             list=False
         )
@@ -174,7 +175,7 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             get=None,
             set='password',
             usage=_("""\
-            Mandatory unless password_disabled=true is
+            r" Mandatory unless password_disabled=true is
             specified when creating the user. Passwords
             cannot contain a question mark."""),
             list=False
@@ -186,9 +187,10 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             get='password_disabled',
             set='password_disabled',
             usage=_("""\
-            Can be set to true or false. To change the value of
-            an existing user, use the format:
-            r" <username> set password_disabled=<value>."""),
+            Can be set to true or false. When set
+            to true, disables password logins and
+            authentication to CIFS shares but still
+            allows key-based logins."""),
             type=ValueType.BOOLEAN
         )
 
@@ -196,6 +198,9 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             descr='Locked',
             name='locked',
             get='locked',
+            usage=_("""\
+            Can be set to true or false. While set
+            to true, the account is disabled."""),
             list=False,
             type=ValueType.BOOLEAN
         )
@@ -204,6 +209,9 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             descr='Email address',
             name='email',
             get='email',
+            usage=_("""
+            Specify email address to send that user's
+            notifications to."""),
             list=False
         )
 

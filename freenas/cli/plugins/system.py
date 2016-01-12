@@ -214,6 +214,14 @@ class FactoryRestoreCommand(Command):
         context.call_task_sync('database.restore_factory')
 
 
+class ShowReplicationKeyCommand(Command):
+    """
+    Usage: show_key
+    """
+    def run(self, context, args, kwargs, opargs):
+        return context.call_sync('replication.get_public_key')
+
+
 @description("View sessions")
 class SessionsNamespace(RpcBasedLoadMixin, EntityNamespace):
     """
@@ -508,12 +516,17 @@ class AdvancedNamespace(ConfigNamespace):
 
 @description("Configuration database operations")
 class ConfigDbNamespace(Namespace):
-    def __init__(self, name):
-        super(ConfigDbNamespace, self).__init__(name)
-
     def commands(self):
         return {
             'factory_restore': FactoryRestoreCommand(),
+            '?': IndexCommand(self)
+        }
+
+
+class ReplicationNamespace(Namespace):
+    def commands(self):
+        return {
+            'show_key': ShowReplicationKeyCommand(),
             '?': IndexCommand(self)
         }
 
@@ -582,7 +595,8 @@ class SystemNamespace(ConfigNamespace):
             MailNamespace('mail', self.context),
             SessionsNamespace('session', self.context),
             EventsNamespace('event', self.context),
-            ConfigDbNamespace('config')
+            ConfigDbNamespace('config'),
+            ReplicationNamespace('replication')
         ]
 
 

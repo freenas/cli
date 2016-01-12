@@ -37,6 +37,7 @@ install_requires = [
     'termcolor',
     'texttable',
     'six',
+    'pyte',
     'natural>=0.1.6',
 ]
 

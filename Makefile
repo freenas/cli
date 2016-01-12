@@ -19,9 +19,9 @@ install:
 bin:
 	virtualenv venv
 	./venv/bin/pip install -U https://github.com/pyinstaller/pyinstaller/archive/develop.zip
-	./venv/bin/pip install -U .
-	./venv/bin/pip install -U ../utils
-	./venv/bin/pip install -U ../dispatcher/client/python
+	./venv/bin/pip install --pre -U .
+	./venv/bin/pip install --pre -U ../utils
+	./venv/bin/pip install --pre -U ../dispatcher/client/python
 	./venv/bin/pyinstaller -y --clean --windowed $(OPTARG) freenas-cli.spec
 
 macosx:	bin

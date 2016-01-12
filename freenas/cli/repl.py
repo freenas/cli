@@ -375,11 +375,6 @@ class Context(object):
             output_msg(_(
                 "Incorrect username or password"))
             sys.exit(1)
-        except ConnectionRefusedError as err:
-            output_msg(_(
-                "Connection refused by host: {0}".format(
-                    self.parsed_uri.hostname)))
-            sys.exit(1)
 
     def login(self, user, password):
         try:

@@ -159,7 +159,7 @@ def t_STRING(t):
 
 
 def t_ATOM(t):
-    r'[0-9a-zA-Z_\/-\/][0-9a-zA-Z_\-\.\/#@\:]*'
+    r'[0-9a-zA-Z_-][0-9a-zA-Z_\-\.\/#@\:]*'
     t.type = reserved.get(t.value, 'ATOM')
     if t.type == 'TRUE':
         t.value = True 
@@ -199,7 +199,6 @@ t_UP = r'\.\.'
 t_LIST = r'\?'
 t_COLON = r':'
 t_REDIRECT = r'>>'
-
 
 precedence = (
     ('left', 'MINUS', 'PLUS'),
@@ -585,6 +584,7 @@ def p_command_item_1(p):
 
 def p_command_item_2(p):
     """
+    command_item : DIV
     command_item : UP
     command_item : symbol
     """
@@ -657,6 +657,7 @@ def p_unary_parameter_1(p):
 def p_unary_parameter_2(p):
     """
     unary_parameter : UP
+    unary_parameter : DIV
     """
     p[0] = p[1] 
 

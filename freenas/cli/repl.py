@@ -853,7 +853,7 @@ class MainLoop(object):
 
         for stmt in block:
             try:
-                ret = self.eval(stmt, env)
+                ret = self.eval(stmt, env, first=True)
             except BaseException as e:
                 if self.context.variables.get('abort_on_errors'):
                     raise e
@@ -1049,6 +1049,10 @@ class MainLoop(object):
 
                         path.append('..')
                         return self.eval(token, env, path=path, dry_run=dry_run)
+                    elif top == '/':
+                        if first:
+                            self.start_from_root = True
+                            return self.eval(token, env, path=path, dry_run=dry_run)
 
                     if isinstance(top, Literal):
                         top = Symbol(top.value)
@@ -1163,15 +1167,6 @@ class MainLoop(object):
             self.builtin_commands['shell'].run(
                 self.context, [line[1:]], {}, {})
             return
-
-        if line[0] == '/':
-            if line.strip() == '/':
-                self.prev_path = self.path[:]
-                self.path = self.root_path[:]
-                return
-            else:
-                self.start_from_root = True
-                line = line[1:]
 
         if line == '-':
             prev = self.prev_path[:]

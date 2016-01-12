@@ -44,6 +44,7 @@ import getpass
 import traceback
 import six
 import paramiko
+import inspect
 from six.moves.urllib.parse import urlparse
 from socket import gaierror as socket_error
 from freenas.cli.descriptions import events
@@ -879,7 +880,7 @@ class MainLoop(object):
                     real_path.append(i)
             return real_path[-1]
 
-    def eval(self, token, env=None, path=None, serialize_filter=None, input_data=None, dry_run=False):
+    def eval(self, token, env=None, path=None, serialize_filter=None, input_data=None, dry_run=False, first=False):
         cwd = self.get_cwd(path)
         path = path or []
 
@@ -1069,6 +1070,8 @@ class MainLoop(object):
                             return item, cwd, args, kwargs, opargs
 
                         if isinstance(item, PipeCommand):
+                            if first:
+                               raise CommandException(_('Invalid usage.\n{0}'.format(inspect.getdoc(item)))) 
                             if serialize_filter:
                                 ret = item.serialize_filter(self.context, args, kwargs, opargs)
                                 if ret is not None:
@@ -1181,9 +1184,11 @@ class MainLoop(object):
             if not tokens:
                 return
 
+            first = True
             for i in tokens:
                 try:
-                    ret = self.eval(i)
+                    ret = self.eval(i,first=first)
+                    first = False
                 except SystemExit as err:
                     raise err
                 except BaseException as err:

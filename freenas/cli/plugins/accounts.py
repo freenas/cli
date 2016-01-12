@@ -101,6 +101,7 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             name='uid',
             get='id',
             list=True,
+            usage=_("An unused number greater than 1000 and less than 65535"),
             type=ValueType.NUMBER)
 
         self.add_property(
@@ -113,6 +114,7 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             descr='Full name',
             name='fullname',
             get='full_name',
+            usage=_("Place within \" if contains a space"),
             list=True)
 
         self.add_property(

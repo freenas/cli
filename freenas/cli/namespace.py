@@ -216,6 +216,7 @@ class PropertyMapping(object):
         self.set = kwargs.pop('set', None) if 'set' in kwargs else self.get
         self.list = kwargs.pop('list', True)
         self.type = kwargs.pop('type', ValueType.STRING)
+        self.usage = kwargs.pop('usage', None)
         self.enum = kwargs.pop('enum', None)
         self.enum_set = kwargs.pop('enum_set') if kwargs.get('enum_set') else self.enum
         self.usersetable = kwargs.pop('usersetable', True)

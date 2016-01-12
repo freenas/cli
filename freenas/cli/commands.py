@@ -357,23 +357,27 @@ class HelpCommand(Command):
                 if hasattr(obj, 'property_mappings'):
                     prop_dict_list = []
                     for prop in obj.property_mappings:
-                        if prop.enum:
-                            prop_type = "enum [" + ", ".join(prop.enum) + "]"
+                        if prop.usage:
+                            prop_usage = prop.usage
                         else:
-                            prop_type = str(prop.type).split('ValueType.')[-1].lower()
-                        if not prop.set:
-                            prop_type += " (read only)"
+                            if prop.enum:
+                                prop_type = "enum [" + ", ".join(prop.enum) + "]"
+                            else:
+                                prop_type = str(prop.type).split('ValueType.')[-1].lower()
+                            if not prop.set:
+                                prop_usage = "{0}, read_only {1} value".format(prop.descr, prop_type)
+                            else:
+                                prop_usage = "{0}, accepts {1} values".format(prop.descr, prop_type)
                         prop_dict = {
                                 'propname': prop.name,
-                                'propdescr': prop.descr,
-                                'proptype': prop_type
+                                'propusage': prop_usage
                         }
                         prop_dict_list.append(prop_dict)
                 if len(prop_dict_list) > 0:
                     return Table(prop_dict_list, [
                         Table.Column('Property', 'propname', ValueType.STRING),
-                        Table.Column('Description', 'propdescr', ValueType.STRING),
-                        Table.Column('Type', 'proptype', ValueType.STRING)])
+                        Table.Column('Usage', 'propusage', ValueType.STRING),
+                        ])
 
         if isinstance(obj, Command) and obj.__doc__:
             command_name = obj.__class__.__name__

@@ -47,8 +47,8 @@ class ShutdownCommand(Command):
     Shuts the system down.
     """
     def run(self, context, args, kwargs, opargs):
-        output_msg(_("System going for a shutdown..."))
         context.submit_task('system.shutdown')
+        return _("System going for a shutdown...")
 
 
 @description("Reboots the system")
@@ -59,8 +59,8 @@ class RebootCommand(Command):
     Reboots the system.
     """
     def run(self, context, args, kwargs, opargs):
-        output_msg(_("System going for a reboot..."))
         context.submit_task('system.reboot')
+        return _("System going for a reboot...")
 
 
 @description("Provides status information about the server")
@@ -79,7 +79,8 @@ class StatusCommand(Command):
                     status_dict['connected-clients']
                 ),
                 Object.Item("Uptime", 'up-since', status_dict['up-since']),
-                Object.Item("Started at", 'started-at', status_dict['started-at']))
+                Object.Item("Started at", 'started-at', status_dict['started-at'])
+        )
 
 
 @description("Gets a list of valid timezones")

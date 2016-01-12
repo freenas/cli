@@ -161,6 +161,10 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             descr='Home directory',
             name='home',
             get='home',
+            usage=_("""\
+            By default when a user is created, their home
+            directory is not created. To create one, give
+            the full path to an existing dataset."""),
             list=False
         )
 
@@ -169,6 +173,10 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             name='password',
             get=None,
             set='password',
+            usage=_("""\
+            Mandatory unless password_disabled=true is
+            specified when creating the user. Passwords
+            cannot contain a question mark."""),
             list=False
         )
 
@@ -177,6 +185,10 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             name='password_disabled',
             get='password_disabled',
             set='password_disabled',
+            usage=_("""\
+            Can be set to true or false. To change the value of
+            an existing user, use the format:
+            r" <username> set password_disabled=<value>."""),
             type=ValueType.BOOLEAN
         )
 

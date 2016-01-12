@@ -101,13 +101,18 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             name='uid',
             get='id',
             list=True,
-            usage=_("An unused number greater than 1000 and less than 65535"),
+            usage=_("An unused number greater than 1000 and less than 65535."),
             type=ValueType.NUMBER)
 
         self.add_property(
             descr='User name',
             name='username',
             get='username',
+            usage=_("""\
+            Maximum 16 characters, though a maximum of 8 is recommended for interoperability. 
+            Can not begin with a hyphen, contain a space, a tab, or these characters:
+            r" , : + & # % ^ & ( ) ! @ ~ * ? < > = “
+            If a \$ is used, it can only be the last character."""),
             list=True)
 
         self.add_property(

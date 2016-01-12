@@ -618,7 +618,7 @@ class SingleItemNamespace(ItemNamespace):
 
             ret.args.append(BinaryParameter(Literal(mapping.name, str), '=', Literal(value, type(value))))
 
-        yield ret
+        return ret
 
     def load(self):
         if self.saved:

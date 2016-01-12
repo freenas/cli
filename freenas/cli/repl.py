@@ -364,7 +364,7 @@ class Context(object):
     def connect(self, password=None):
         try:
             self.connection.connect(self.uri, password=password)
-        except socket_error as err:
+        except (socket_error, OSError) as err:
             output_msg(_(
                 "Could not connect to host: {0} due to error: {1}".format(
                     self.parsed_uri.hostname, err)

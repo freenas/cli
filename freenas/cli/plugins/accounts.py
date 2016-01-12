@@ -119,7 +119,7 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             descr='Full name',
             name='fullname',
             get='full_name',
-            usage=_("Place within \" if contains a space"),
+            usage=_("Place within double quotes if contains a space."),
             list=True)
 
         self.add_property(
@@ -127,6 +127,11 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             name='group',
             get_name='group',
             get=self.display_group,
+            usage=_("""\
+            By default when a user is created, a primary group
+            with the same name as the user is also created.
+            When specifying a different group name, that group
+            must already exist."""),
             set=self.set_group)
 
         self.add_property(
@@ -134,6 +139,10 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             name='groups',
             get=self.display_aux_groups,
             get_name='groups',
+            usage=_("""
+            List of additional groups the user is a member of.
+            To add the user to other groups, specify a comma delimited
+            list and ensure the groups already exist."""),
             set=self.set_aux_groups,
             type=ValueType.SET,
             list=False
@@ -143,6 +152,8 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             descr='Login shell',
             name='shell',
             get='shell',
+            usage=_("""
+            Specify full path to an existing shell."""),
             list=False
         )
 

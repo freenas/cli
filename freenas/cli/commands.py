@@ -737,7 +737,7 @@ class SortPipeCommand(PipeCommand):
 
     Usage: <command> | sort <field> [<-field> ...]
 
-    Example: show | sort name
+    Example: account user show | sort name
     """
     def serialize_filter(self, context, args, kwargs, opargs):
         return {"params": {"sort": args}}
@@ -750,7 +750,7 @@ class LimitPipeCommand(PipeCommand):
 
     Usage: <command> | limit <n>
 
-    Example: show | limit 10
+    Example: account user show | limit 10
     """
     def serialize_filter(self, context, args, kwargs, opargs):
         if len(args) == 0:
@@ -770,7 +770,7 @@ class SelectPipeCommand(PipeCommand):
 
     Usage: <command> | select <field>
 
-    Example: account users show | select username
+    Example: account user show | select username
     """
     def run(self, context, args, kwargs, opargs, input=None):
         ns = context.pipe_cwd

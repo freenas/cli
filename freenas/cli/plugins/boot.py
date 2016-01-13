@@ -139,7 +139,7 @@ class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
             descr='Mount point',
             name='mountpoint',
             get='mountpoint',
-            list=True,
+            list=False,
             set=None,
             )
 

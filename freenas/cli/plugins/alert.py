@@ -68,6 +68,15 @@ class AlertNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         self.primary_key_name = 'id'
         self.allow_edit = False
         self.allow_create = False
+        self.localdoc['ListCommand'] = ("""\
+            Usage: show
+
+            Lists alerts, optionally doing filtering and sorting.
+
+            Examples:
+                show
+                show | search severity == WARNING
+                show | sort id""")
 
         self.add_property(
             descr='ID',

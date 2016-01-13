@@ -450,9 +450,9 @@ class RekeyVolumeCommand(Command):
 @description("Creates an encrypted file containing copy of metadatas of all disks related to an encrypted volume")
 class BackupVolumeMasterKeyCommand(Command):
     """
-    Usage: backup-key path=<path_to_output_file>
+    Usage: backup_key path=<path_to_output_file>
 
-    Example: backup-key path="/mnt/foo/bar"
+    Example: backup_key path="/mnt/foo/bar"
 
     Creates an encrypted file containing copy of metadata of all disks related
     to an encrypted volume.
@@ -489,9 +489,9 @@ class BackupVolumeMasterKeyCommand(Command):
 @description("Restores metadata of all disks related to an encrypted volume from a backup file")
 class RestoreVolumeMasterKeyCommand(Command):
     """
-    Usage: restore-key path=<path_to_input_file> password=<password>
+    Usage: restore_key path=<path_to_input_file> password=<password>
 
-    Example: restore-key path="/mnt/foo/bar" password=abcd-asda-fdsd-cxbvs
+    Example: restore_key path="/mnt/foo/bar" password=abcd-asda-fdsd-cxbvs
 
     Restores metadata of all disks related to an encrypted volume
     from a backup file.
@@ -1199,11 +1199,11 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
                 prov_presence = this.entity.get('providers_presence', 'NONE')
                 if prov_presence == 'NONE':
                     commands['unlock'] = UnlockVolumeCommand(this)
-                    commands['restore-key'] = RestoreVolumeMasterKeyCommand(this)
+                    commands['restore_key'] = RestoreVolumeMasterKeyCommand(this)
                 elif prov_presence == 'ALL':
                     commands['lock'] = LockVolumeCommand(this)
                     commands['rekey'] = RekeyVolumeCommand(this)
-                    commands['backup-key'] = BackupVolumeMasterKeyCommand(this)
+                    commands['backup_key'] = BackupVolumeMasterKeyCommand(this)
                 else:
                     commands['unlock'] = UnlockVolumeCommand(this)
                     commands['lock'] = LockVolumeCommand(this)

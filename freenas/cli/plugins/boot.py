@@ -89,9 +89,11 @@ class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
         }
 
         self.add_property(
-            descr='Boot Environment ID',
+            descr='Name',
             name='name',
             get='id',
+            usage=_("""Editable value. This is the name of the entry which
+            appears in the boot menu."""),
             set='id',
             list=True
             )
@@ -100,15 +102,22 @@ class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
             descr='Active',
             name='active',
             get='active',
+            usage=_("""
+            Can be set to yes or no. Yes indicates which boot
+            entry was used at last system boot. Only one entry
+            can be set to yes."""),
             list=True,
             type=ValueType.BOOLEAN,
             set=None,
             )
 
         self.add_property(
-            descr='Boot Environment Name',
+            descr='Real Name',
             name='realname',
             get='realname',
+            usage=_("""
+            Read-only name issued when boot environment
+            is created."""),
             list=True,
             set=None,
             )
@@ -117,6 +126,10 @@ class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
             descr='On Reboot',
             name='onreboot',
             get='on_reboot',
+            usage=_("""
+            Can be set to yes or no. Yes indicates the default boot
+            entry for the next system boot. Only one entry can be
+            set to yes."""),
             list=True,
             type=ValueType.BOOLEAN,
             set=None,

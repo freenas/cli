@@ -243,7 +243,8 @@ class BootPoolShowDisksCommand(Command):
     """
     Usage: show_disks
 
-    List the device\(s\) in the boot pool
+    List the device\(s\) in the boot pool and display
+    the status of the boot pool.
     """
 
     def run(self, context, args, kwargs, opargs):
@@ -262,7 +263,11 @@ class BootPoolAttachDiskCommand(Command):
 
     Example: attach_disk ada1
 
-    Attaches the specified disk to the boot pool.
+    Attaches the specified device\(s\) to the boot pool,
+    creating an N-way mirror where N is the total number
+    of devices in the pool. The command will fail if a
+    device is smaller than the smallest device already in
+    the pool.
     """
     def run(self, context, args, kwargs, opargs):
         if not args:
@@ -293,7 +298,10 @@ class BootPoolDetachDiskCommand(Command):
 
     Example: detach_disk ada1
 
-    Detaches a disk from the boot pool.
+    Detaches the specified device\(s\) from the boot pool,
+    reducing the number of devices in the N-way mirror. If
+    only one device remains, it has no redundancy. At least
+    one device must remain in the pool.
     """
     def run(self, context, args, kwargs, opargs):
         disk = args.pop(0)

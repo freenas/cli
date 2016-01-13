@@ -1227,9 +1227,12 @@ class MainLoop(object):
 
     def get_relative_object(self, ns, tokens):
         ptr = ns
+        first_len = len(tokens) - 1
         while len(tokens) > 0:
             token = tokens.pop(0)
 
+            if token == '/' and len(tokens) == first_len:
+                ptr = self.path[0]
             if token == '..' and len(self.path) > 1:
                 self.prev_path = self.path[:]
                 ptr = self.path[-2]
@@ -1281,10 +1284,6 @@ class MainLoop(object):
             else:
                 return None
         cwd = self.cwd
-
-        if tokens:
-            if tokens[0][0] == '/':
-                cwd = self.root_path[0]
 
         obj = self.cached_values['obj']
         if (

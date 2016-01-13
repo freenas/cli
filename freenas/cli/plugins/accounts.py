@@ -110,8 +110,9 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             name='username',
             get='username',
             usage=_("""\
-            Maximum 16 characters, though a maximum of 8 is recommended for interoperability. 
-            Can not begin with a hyphen, contain a space, a tab, or these characters:
+            Maximum 16 characters, though a maximum of 8 is recommended for
+            interoperability. Can not begin with a hyphen or contain a space,
+            a tab, a double quote, or any of these characters:
             r" , : + & # % ^ & ( ) ! @ ~ * ? < > = “
             If a \$ is used, it can only be the last character."""),
             list=True)

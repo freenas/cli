@@ -78,3 +78,10 @@ def post_save(this, status):
         this.update_commands()
 
     output.refresh_prompt()
+
+
+def to_list(item):
+    if isinstance(item, (list, tuple)):
+        return item
+
+    return [item]

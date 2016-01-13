@@ -33,7 +33,7 @@ from freenas.cli.namespace import (
     EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, description
 )
 from freenas.cli.output import Table, ValueType, output_tree, format_value, read_value, Sequence
-from freenas.cli.utils import post_save, iterate_vdevs
+from freenas.cli.utils import post_save, iterate_vdevs, to_list
 from freenas.utils import first_or_default, extend, query
 
 
@@ -96,7 +96,7 @@ class AddVdevCommand(Command):
         if 'disks' not in kwargs:
             raise CommandException(_("Please specify one or more disks using the disks property"))
         else:
-            disks = check_disks(context, kwargs.pop('disks').split(','))
+            disks = check_disks(context, to_list(kwargs.pop('disks')))
 
         if len(disks) < disks_per_type[typ]:
             raise CommandException(_(

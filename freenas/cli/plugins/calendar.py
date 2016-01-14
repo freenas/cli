@@ -46,7 +46,8 @@ TASK_TYPES_REVERSE = {v: k for k, v in list(TASK_TYPES.items())}
 @description("Runs calendar task right now")
 class RunCommand(Command):
     """
-    The calendar namespace provides commands for listing and managing scheduled tasks.
+    The calendar namespace provides commands for listing and managing
+    scheduled tasks. For a list of properties, see 'help properties'.
     """
     def run(self, args, kwargs, opargs):
         pass
@@ -118,21 +119,26 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
         self.delete_task = 'calendar_task.delete'
 
         self.add_property(
-            descr='Task id',
+            descr='ID',
             name='id',
             get='id',
+            usage=_("""Alphanumeric name for the task which becomes
+            read-only after the task is created."""),
             set=None,
             list=True)
 
         self.add_property(
-            descr='Task type',
+            descr='Type',
             name='name',
             get=lambda row: TASK_TYPES_REVERSE[row['name']],
+            usage=_("""Indicates the type of task. Allowable values
+            are scrub, smart, snapshot, replication, and
+            check_updates."""),
             set=self.set_type,
             list=True)
 
         self.add_property(
-            descr='Task arguments',
+            descr='Arguments',
             name='args',
             get=lambda row: [format_value(i) for i in row['args']],
             set=None,

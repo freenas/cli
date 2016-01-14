@@ -163,6 +163,13 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
             list=True,
             type=ValueType.STRING)
 
+        self.add_property(
+            descr='Enabled',
+            name='enabled',
+            get='enabled',
+            list=True,
+            type=ValueType.BOOLEAN)
+
         self.primary_key = self.get_mapping('id')
         self.entity_namespaces = lambda this: [
             ScheduleNamespace('schedule', self.context, this)

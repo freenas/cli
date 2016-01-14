@@ -242,7 +242,7 @@ class BaseSharesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, En
     def set_share_path(self, obj, value):
         obj.update({
             'target_path': value,
-            'target_type': 'DIRECTORY'
+            'target_type': 'FILE' if type(self) is ISCSISharesNamespace else 'DIRECTORY'
         })
 
 

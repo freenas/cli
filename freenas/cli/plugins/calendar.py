@@ -34,7 +34,6 @@ t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
 
 
-
 TASK_TYPES = {
     'scrub': 'zfs.pool.scrub',
     'smart': 'disk.test_parallel',

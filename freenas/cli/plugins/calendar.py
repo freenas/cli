@@ -45,6 +45,9 @@ TASK_TYPES_REVERSE = {v: k for k, v in list(TASK_TYPES.items())}
 
 @description("Runs calendar task right now")
 class RunCommand(Command):
+    """
+    The calendar namespace provides commands for listing and managing scheduled tasks.
+    """
     def run(self, args, kwargs, opargs):
         pass
 

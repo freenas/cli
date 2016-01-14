@@ -25,12 +25,11 @@
 #
 #####################################################################
 
-
 from freenas.cli.namespace import (
     Namespace, ConfigNamespace, Command, CommandException, description,
     RpcBasedLoadMixin, EntityNamespace, IndexCommand
 )
-from freenas.cli.output import Object, ValueType, output_msg, format_value, Sequence
+from freenas.cli.output import Table, Object, Sequence, ValueType, format_value
 from freenas.cli.descriptions import events
 from freenas.cli.utils import post_save
 import gettext
@@ -85,7 +84,6 @@ class StatusCommand(Command):
 
 @description("Gets a list of valid timezones")
 class TimezonesCommand(Command):
-
     """
     Usage: timezones
 
@@ -93,7 +91,20 @@ class TimezonesCommand(Command):
     """
 
     def run(self, context, args, kwargs, opargs):
-        return '\n'.join(context.call_sync('system.general.timezones'))
+        return Sequence(*context.call_sync('system.general.timezones'))
+
+
+@description("Gets a list of valid shells")
+class ShellsCommand(Command):
+    """
+    Usage: shells
+
+    Displays a list of valid shells for user accounts.
+    """
+
+    def run(self, context, args, kwargs, opargs):
+        return Sequence(*context.call_sync('shell.get_shells'))
+
 
 
 @description("Provides information about running system")
@@ -577,6 +588,7 @@ class SystemNamespace(ConfigNamespace):
             'status': StatusCommand(),
             'version': VersionCommand(),
             'timezones': TimezonesCommand(),
+            'shells': ShellsCommand(),
             'info': InfoCommand(),
             'reboot': RebootCommand(),
             'shutdown': ShutdownCommand()

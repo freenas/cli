@@ -29,13 +29,25 @@
 
 import gettext
 from freenas.cli.namespace import (
-    Namespace, EntityNamespace, IndexCommand, TaskBasedSaveMixin,
+    Command, Namespace, EntityNamespace, IndexCommand, TaskBasedSaveMixin,
     EntitySubscriberBasedLoadMixin, description, CommandException
-    )
-from freenas.cli.output import ValueType
+)
+from freenas.cli.output import ValueType, Sequence
 
 t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
+
+
+@description("Gets a list of valid shells")
+class ShellsCommand(Command):
+    """
+    Usage: shells
+
+    Displays a list of valid shells for user accounts.
+    """
+
+    def run(self, context, args, kwargs, opargs):
+        return Sequence(*context.call_sync('shell.get_shells'))
 
 
 @description(_("Manage local users"))
@@ -234,6 +246,9 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
         )
 
         self.primary_key = self.get_mapping('username')
+        self.extra_commands = {
+            'shells': ShellsCommand()
+        }
 
     def display_group(self, entity):
         group = self.context.entity_subscribers['group'].query(

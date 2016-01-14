@@ -94,19 +94,6 @@ class TimezonesCommand(Command):
         return Sequence(*context.call_sync('system.general.timezones'))
 
 
-@description("Gets a list of valid shells")
-class ShellsCommand(Command):
-    """
-    Usage: shells
-
-    Displays a list of valid shells for user accounts.
-    """
-
-    def run(self, context, args, kwargs, opargs):
-        return Sequence(*context.call_sync('shell.get_shells'))
-
-
-
 @description("Provides information about running system")
 class InfoCommand(Command):
     """
@@ -588,7 +575,6 @@ class SystemNamespace(ConfigNamespace):
             'status': StatusCommand(),
             'version': VersionCommand(),
             'timezones': TimezonesCommand(),
-            'shells': ShellsCommand(),
             'info': InfoCommand(),
             'reboot': RebootCommand(),
             'shutdown': ShutdownCommand()

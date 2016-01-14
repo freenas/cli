@@ -25,7 +25,7 @@
 #
 #####################################################################
 
-
+import gettext
 import os
 from freenas.cli.namespace import (
     EntityNamespace, Command, EntitySubscriberBasedLoadMixin, description
@@ -33,6 +33,10 @@ from freenas.cli.namespace import (
 from freenas.cli.output import ValueType
 from freenas.cli.utils import post_save
 from freenas.utils import extend
+
+
+t = gettext.translation('freenas-cli', fallback=True)
+_ = t.gettext
 
 
 @description("Provides information about installed disks")

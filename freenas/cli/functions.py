@@ -28,6 +28,7 @@
 
 import copy
 import operator
+from builtins import input
 from freenas.cli.namespace import Command
 from freenas.cli.output import format_output, output_msg
 from freenas.cli.parser import unparse, FunctionDefinition
@@ -68,6 +69,10 @@ def printf(fmt, *args):
     output_msg(fmt % args)
 
 
+def readline(prompt):
+    return input(prompt)
+
+
 def unparse_(fn):
     output_msg(unparse(FunctionDefinition(
         fn.name,
@@ -99,6 +104,7 @@ def unregister_command(namespace, name):
 functions = {
     'print': print_,
     'printf': printf,
+    'readline': readline,
     'unparse': unparse_,
     'rpc': rpc,
     'cwd': cwd,

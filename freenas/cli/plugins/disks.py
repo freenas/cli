@@ -37,6 +37,12 @@ from freenas.utils import extend
 
 @description("Provides information about installed disks")
 class DisksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
+    """
+    The disk namespace lists the disks recognized by the system.
+    Type 'show' for more details about the disks.
+    Type the disk's name to manage that disk and type
+    'help properties' for help on the available properties.
+    """
     def __init__(self, name, context):
         super(DisksNamespace, self).__init__(name, context)
 

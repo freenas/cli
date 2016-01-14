@@ -25,10 +25,14 @@
 #
 #####################################################################
 
-
-import os
+import gettext
 from freenas.cli.namespace import Namespace, EntityNamespace, ConfigNamespace, Command, RpcBasedLoadMixin, TaskBasedSaveMixin, description
 from freenas.cli.output import ValueType, output_msg, output_table, read_value, format_value
+
+
+t = gettext.translation('freenas-cli', fallback=True)
+_ = t.gettext
+
 
 
 TASK_TYPES = {

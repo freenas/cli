@@ -52,7 +52,7 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         ]
 
         self.add_property(
-            descr='Disk path',
+            descr='Path',
             name='path',
             get='path',
             set=None,
@@ -60,9 +60,12 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         )
 
         self.add_property(
-            descr='Disk name',
+            descr='Name',
             name='name',
             get=lambda row: os.path.basename(row.get('path')),
+            usage=_("""\
+            Full path of disk device. Read-only value as
+            assigned by operating system."""),
             set=None,
             list=True
         )
@@ -71,6 +74,9 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             descr='Disk description',
             name='description',
             get='status.description',
+            usage=_("""\
+            Name of disk device. Read-only value as
+            assigned by operating system."""),
             set=None,
             list=False
         )
@@ -79,6 +85,9 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             descr='Size',
             name='mediasize',
             get='mediasize',
+            usage=_("""\
+            Size of disk as reported by the operating
+            system. This is a read-only value."""),
             set=None,
             list=True,
             type=ValueType.SIZE
@@ -89,6 +98,9 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             name='serial',
             get='serial',
             set=None,
+            usage=_("""\
+            Serial number as reported by the device. This is
+            a read-only value."""),
             list=False,
             type=ValueType.STRING
         )

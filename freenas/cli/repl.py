@@ -36,6 +36,7 @@ import shlex
 import imp
 import logging
 import errno
+import fnmatch
 import platform
 import json
 import time
@@ -294,6 +295,7 @@ class Context(object):
         self.user = None
         self.pending_tasks = {}
         self.session_id = None
+        self.user_commands = []
         config.instance = self
 
     @property
@@ -803,6 +805,10 @@ class MainLoop(object):
     def cwd(self):
         return self.path[-1]
 
+    @property
+    def path_string(self):
+        return ' '.join([str(x.get_name()) for x in self.path[1:]])
+
     def repl(self):
         readline.parse_and_bind('tab: complete')
         readline.set_completer(self.complete)
@@ -844,6 +850,10 @@ class MainLoop(object):
         for name, cmd in cwd_commands:
             if token == name:
                 return cmd
+
+        for ns, name, fn in self.context.user_commands:
+            if fnmatch.fnmatch(self.path_string, ns) and name == token:
+                return fn
 
         return None
 
@@ -1075,7 +1085,7 @@ class MainLoop(object):
 
                         if isinstance(item, PipeCommand):
                             if first:
-                               raise CommandException(_('Invalid usage.\n{0}'.format(inspect.getdoc(item)))) 
+                                raise CommandException(_('Invalid usage.\n{0}'.format(inspect.getdoc(item))))
                             if serialize_filter:
                                 ret = item.serialize_filter(self.context, args, kwargs, opargs)
                                 if ret is not None:

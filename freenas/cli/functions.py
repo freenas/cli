@@ -28,8 +28,10 @@
 
 import copy
 import operator
+from freenas.cli.namespace import Command
 from freenas.cli.output import format_output, output_msg
 from freenas.cli.parser import unparse, FunctionDefinition
+from freenas.cli import config
 
 operators = {
     '+': operator.add,
@@ -62,6 +64,10 @@ def print_(*items):
     output_msg('')
 
 
+def printf(fmt, *args):
+    output_msg(fmt % args)
+
+
 def unparse_(fn):
     output_msg(unparse(FunctionDefinition(
         fn.name,
@@ -70,9 +76,34 @@ def unparse_(fn):
     )))
 
 
+def rpc(name, *args):
+    return config.instance.call_sync(name, *args)
+
+
+def cwd():
+    return config.instance.ml.path_string
+
+
+def register_command(namespace, name, fn):
+    class UserCommand(Command):
+        def run(self, context, args, kwargs, opargs):
+            return fn(args, kwargs, opargs)
+
+    config.instance.user_commands.append((namespace, name, UserCommand()))
+
+
+def unregister_command(namespace, name):
+    pass
+
+
 functions = {
     'print': print_,
+    'printf': printf,
     'unparse': unparse_,
+    'rpc': rpc,
+    'cwd': cwd,
+    'register_command': register_command,
+    'unregister_command': unregister_command,
     'range': range,
     'str': str,
     'length': len,

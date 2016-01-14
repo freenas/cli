@@ -362,13 +362,13 @@ def p_function_definition_stmt_4(p):
 def p_function_argument_list(p):
     """
     function_argument_list : ATOM
-    function_argument_list : ATOM function_argument_list
+    function_argument_list : ATOM COMMA function_argument_list
     """
     if len(p) == 2:
         p[0] = [p[1]]
 
     if len(p) > 2:
-        p[0] = [p[1]] + p[2]
+        p[0] = [p[1]] + p[3]
 
 
 def p_return_stmt(p):

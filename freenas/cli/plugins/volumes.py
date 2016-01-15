@@ -972,7 +972,7 @@ class FilesystemNamespace(EntityNamespace):
 def check_disks(context, disks):
     all_disks = [disk["path"] for disk in context.call_sync("disk.query")]
     available_disks = context.call_sync('volume.get_available_disks')
-    if 'alldisks' in disks:
+    if 'auto' in disks:
         return available_disks
     else:
         for disk in disks:
@@ -990,16 +990,22 @@ class CreateVolumeCommand(Command):
     Usage: create <name> disks=<disks> layout=<layout> encryption=<encryption> password=<password>
            create <name> type=<type> disks=<disks> encryption=<encryption> password=<password>
 
-    Example: create tank disks=ada1,ada2
+    Example: create tank
+             create tank disks=ada1,ada2
              create tank type=raidz2 disks=ada1,ada2,ada3,ada4
              create tank disks=ada1,ada2 encryption=yes
              create tank disks=ada1,ada2 encryption=yes password=1234
              create tank disks=ada1,ada2,ada3,ada4 layout=virtualization
 
-    The types available for pool creation are: auto, disk, mirror, raidz1, raidz2 and raidz3.
-    If you are using auto-creation you may specify one of the following layout presets: auto,
-    stripe, mirror, raidz1, raidz2, raidz3, speed, storage, backup, safety, and virtualization.
-    The "auto" setting is used for type and/or layout if they are not specified.
+    If you wish to build a special topology then specify the key 'type' with one of the following: 
+    disk, mirror, raidz1, raidz2 and raidz3, this will create a vdev of that type which you can 
+    use the 'add_vdev' command on to create a custom topology.
+    Otherwise you can specify one of the following layouts with the 'layout' option:
+    stripe, mirror, raidz1, raidz2, raidz3, speed, storage, backup, safety, and virtualization,
+    this will create topology that is a stripe of mirrors or raidz depending on which option you 
+    choose.
+    If you do not specify a type or a layout then a stripe of mirrors will be created.
+    If no disks are specified then all available disks will be used.
     """
     def __init__(self, parent):
         self.parent = parent
@@ -1025,12 +1031,9 @@ class CreateVolumeCommand(Command):
                 "Invalid volume type {0}.  Should be one of: {1}".format(volume_type, VOLUME_TYPES)
             ))
 
-        if 'disks' not in kwargs:
-            raise CommandException(_("Please specify one or more disks using the disks property"))
-        else:
-            disks = kwargs.pop('disks')
-            if isinstance(disks, str):
-                disks = [disks]
+        disks = kwargs.pop('disks','auto')
+        if isinstance(disks, str):
+            disks = [disks]
 
         if len(disks) < DISKS_PER_TYPE[volume_type]:
             raise CommandException(_("Volume type {0} requires at least {1} disks".format(volume_type, DISKS_PER_TYPE)))

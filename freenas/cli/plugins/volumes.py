@@ -52,6 +52,20 @@ DISKS_PER_TYPE = {
     'raidz3': 5
 }
 
+VOLUME_LAYOUTS = {
+    'auto': 'disk',
+    'stripe': 'disk',
+    'mirror': 'mirror',
+    'raidz': 'raidz1',
+    'raidz1': 'raidz1',
+    'raidz2': 'raidz2',
+    'raidz3': 'raidz3',
+    'virtualization': 'mirror',
+    'speed': 'mirror',
+    'backup': 'raidz2',
+    'safety': 'raidz2',
+    'storage': 'raidz1',
+}
 
 def correct_disk_path(disk):
     if not re.match("^\/dev\/", disk):
@@ -973,15 +987,19 @@ def check_disks(context, disks):
 @description("Creates new volume")
 class CreateVolumeCommand(Command):
     """
-    Usage: create <name> type=<type> disks=<disks> encryption=<encryption> password=<password>
+    Usage: create <name> disks=<disks> layout=<layout> encryption=<encryption> password=<password>
+           create <name> type=<type> disks=<disks> encryption=<encryption> password=<password>
 
     Example: create tank disks=ada1,ada2
              create tank type=raidz2 disks=ada1,ada2,ada3,ada4
              create tank disks=ada1,ada2 encryption=yes
              create tank disks=ada1,ada2 encryption=yes password=1234
+             create tank disks=ada1,ada2,ada3,ada4 layout=virtualization
 
-    The types available for pool creation are: auto, disk, mirror, raidz1, raidz2 and raidz3
-    The "auto" setting is used if a type is not specified.
+    The types available for pool creation are: auto, disk, mirror, raidz1, raidz2 and raidz3.
+    If you are using auto-creation you may specify one of the following layout presets: auto,
+    stripe, mirror, raidz1, raidz2, raidz3, speed, storage, backup, safety, and virtualization.
+    The "auto" setting is used for type and/or layout if they are not specified.
     """
     def __init__(self, parent):
         self.parent = parent
@@ -1032,7 +1050,16 @@ class CreateVolumeCommand(Command):
 
         disks = check_disks(context, disks)
         if volume_type == 'auto':
-            context.submit_task('volume.create_auto', name, 'zfs', disks, encryption, password)
+            layout = kwargs.pop('layout', 'auto')
+            if layout not in VOLUME_LAYOUTS:
+                raise CommandException(_(
+                    "Invalid layout {0}.  Should be one of: {1}".format(layout, list(VOLUME_LAYOUTS.keys()))
+                ))
+            else:
+                if len(disks) < DISKS_PER_TYPE[VOLUME_LAYOUTS[layout]]:
+                    raise CommandException(_("Volume layout {0} requires at least {1} disks".format(layout, DISKS_PER_TYPE[VOLUME_LAYOUTS[layout]])))
+
+            context.submit_task('volume.create_auto', name, 'zfs', layout, disks, encryption, password)
         else:
             ns.entity['name'] = name
             ns.entity['topology'] = {}
@@ -1054,7 +1081,7 @@ class CreateVolumeCommand(Command):
                 callback=lambda s: post_save(ns, s))
 
     def complete(self, context, tokens):
-        return ['name=', 'type=', 'disks=']
+        return ['name=', 'type=', 'disks=', 'layout=']
 
 
 @description("Allows to provide a password that protects an encrypted volume")

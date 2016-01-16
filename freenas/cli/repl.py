@@ -1272,11 +1272,15 @@ class MainLoop(object):
                     if a.column + len(a.left) + 1 <= index <= a.column_end:
                         return a
 
+                    if a.column <= index <= a.column + len(a.left) + 1:
+                        return False
+
             return None
 
         try:
             readline_buffer = readline.get_line_buffer()
             token = None
+            append_space = False
 
             if len(readline_buffer.strip()) > 0:
                 tokens = parse(readline_buffer, '<stdin>', True)
@@ -1294,17 +1298,21 @@ class MainLoop(object):
                 choices = [i.get_name() for i in obj.namespaces()]
                 choices += obj.commands().keys()
                 choices += list(self.base_builtin_commands.keys()) + ['..', '/', '-']
+                append_space = True
             elif issubclass(type(obj), Command):
                 completions = obj.complete(self.context)
                 arg = find_arg(args, readline.get_begidx())
-                if not arg:
+                if arg is None:
                     choices = [c.name for c in completions]
+
+                if arg is False:
+                    return None
 
                 if isinstance(arg, BinaryParameter):
                     completion = first_or_default(lambda c: c.name == arg.left + '=', completions)
                     choices = completion.choices(self.context, arg)
 
-            options = [i for i in choices if i.startswith(text)]
+            options = [i + (' ' if append_space else '') for i in choices if i.startswith(text)]
             if state < len(options):
                 return options[state]
             else:

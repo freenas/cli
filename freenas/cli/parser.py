@@ -501,7 +501,7 @@ def p_symbol(p):
     symbol : ATOM
 
     """
-    p[0] = Symbol(p[1])
+    p[0] = Symbol(p[1], p=p)
 
 
 def p_call(p):
@@ -665,12 +665,14 @@ def p_unary_parameter_1(p):
     """
     p[0] = Symbol(p[1])
 
+
 def p_unary_parameter_2(p):
     """
     unary_parameter : UP
     unary_parameter : DIV
     """
     p[0] = p[1] 
+
 
 def p_binary_parameter(p):
     """
@@ -694,10 +696,10 @@ def p_error(p):
             e = yacc.YaccSymbol()
             e.type = 'error'
             e.value = None
-            yacc.errok()
+            parser.errok()
             return e
         elif p.type == 'error':
-            yacc.errok()
+            parser.errok()
             return
     else:
         raise SyntaxError(str(p))

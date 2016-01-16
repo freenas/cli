@@ -1298,7 +1298,7 @@ class MainLoop(object):
                 completions = obj.complete(self.context)
                 arg = find_arg(args, readline.get_begidx())
                 if not arg:
-                    return None
+                    choices = [c.name for c in completions]
 
                 if isinstance(arg, BinaryParameter):
                     completion = first_or_default(lambda c: c.name == arg.left + '=', completions)

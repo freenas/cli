@@ -1004,7 +1004,8 @@ def check_disks(context, disks, cache_disks=None, log_disks=None):
 @description("Creates new volume")
 class CreateVolumeCommand(Command):
     """
-    Usage: create <name> disks=<disks> layout=<layout> encryption=<encryption> password=<password>
+    Usage: create <name> disks=<disks> layout=<layout> encryption=<encryption> 
+            password=<password> cache=<disks> log=<disks>
 
     Example: create tank disks=ada1,ada2
              create tank disks=ada1,ada2 encryption=yes
@@ -1023,7 +1024,7 @@ class CreateVolumeCommand(Command):
 
     For more advanced pool topologies, create a volume with a single vdev
     using the 'type' option with one of the following options: disk, mirror, raidz1,
-    raidz2 or raidz3.  You may then use the ‘volume add_vdev' command to build on this
+    raidz2 or raidz3.  You may then use the 'volume add_vdev' command to build on this
     topology.
     """
 
@@ -1139,7 +1140,7 @@ class CreateVolumeCommand(Command):
                 callback=lambda s: post_save(ns, s))
 
     def complete(self, context, tokens):
-        return ['name=', 'type=', 'disks=', 'layout=']
+        return ['name=', 'type=', 'disks=', 'layout=', 'log=', 'cache=']
 
 
 @description("Allows to provide a password that protects an encrypted volume")

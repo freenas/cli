@@ -226,7 +226,11 @@ def t_NEWLINE(t):
 
 
 def t_error(t):
-    raise SyntaxError("Illegal character '%s'" % t.value[0])
+    if parser.recover_errors:
+        t.lexer.skip(1)
+        return
+    else:
+        raise SyntaxError("Illegal character '%s'" % t.value[0])
 
 
 def p_stmt_list(p):
@@ -618,6 +622,13 @@ def p_parameter(p):
     p[0] = p[1]
 
 
+def p_parameter_error(p):
+    """
+    parameter : error
+    """
+    p[0] = None
+
+
 def p_set_parameter(p):
     """
     set_parameter : unary_parameter
@@ -678,16 +689,28 @@ def p_binary_parameter(p):
 
 
 def p_error(p):
-    raise SyntaxError(str(p))
+    if parser.recover_errors:
+        if p is None:
+            e = yacc.YaccSymbol()
+            e.type = 'error'
+            e.value = None
+            yacc.errok()
+            return e
+        elif p.type == 'error':
+            yacc.errok()
+            return
+    else:
+        raise SyntaxError(str(p))
 
 
 lexer = lex.lex()
 parser = yacc.yacc(debug=False)
 
 
-def parse(s, filename):
+def parse(s, filename, recover_errors=False):
     lexer.lineno = 1
     parser.filename = filename
+    parser.recover_errors = recover_errors
     return parser.parse(s, lexer=lexer)
 
 

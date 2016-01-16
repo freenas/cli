@@ -46,6 +46,7 @@ def ASTObject(name, *args):
             self.file = p.parser.filename
             self.line = p.lineno(1)
             self.column = p.lexpos(1)
+            self.column_end = p.lexspan(len(p) - 1)[1]
 
     dct = {k: None for k in args}
     dct['__init__'] = init
@@ -697,6 +698,8 @@ def p_error(p):
             e = yacc.YaccSymbol()
             e.type = 'error'
             e.value = None
+            e.lineno = 0
+            e.lexpos = lexer.lexpos
             parser.errok()
             return e
         elif p.type == 'error':
@@ -714,7 +717,7 @@ def parse(s, filename, recover_errors=False):
     lexer.lineno = 1
     parser.filename = filename
     parser.recover_errors = recover_errors
-    return parser.parse(s, lexer=lexer)
+    return parser.parse(s, lexer=lexer, tracking=True)
 
 
 def unparse(token, indent=0):

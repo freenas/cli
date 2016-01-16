@@ -1269,7 +1269,7 @@ class MainLoop(object):
         def find_arg(args, index):
             for a in args:
                 if isinstance(a, BinaryParameter):
-                    if index == a.column + len(a.left) + 1:
+                    if a.column + len(a.left) + 1 <= index <= a.column_end:
                         return a
 
             return None
@@ -1302,7 +1302,7 @@ class MainLoop(object):
 
                 if isinstance(arg, BinaryParameter):
                     completion = first_or_default(lambda c: c.name == arg.left + '=', completions)
-                    choices = completion.choices(self.context)
+                    choices = completion.choices(self.context, arg)
 
             options = [i for i in choices if i.startswith(text)]
             if state < len(options):

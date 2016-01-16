@@ -31,7 +31,7 @@ class NullComplete(object):
         self.name = name
         self.list = kwargs.pop('list', False)
 
-    def choices(self, context):
+    def choices(self, context, token):
         return []
 
 
@@ -40,7 +40,7 @@ class EnumComplete(NullComplete):
         super(EnumComplete, self).__init__(name, **kwargs)
         self.data = list(choices)
 
-    def choices(self, context):
+    def choices(self, context, token):
         return self.data
 
 
@@ -51,5 +51,5 @@ class EntitySubscriberComplete(NullComplete):
         self.mapper = mapper or (lambda x: x['id'])
         self.extra = extra or []
 
-    def choices(self, context):
+    def choices(self, context, token):
         return context.entity_subscribers[self.datasource].query(callback=self.mapper) + self.extra

@@ -106,14 +106,13 @@ class Namespace(object):
 
 
 class Command(object):
-
     def __init__(self):
         self.exec_path = None
 
     def run(self, context, args, kwargs, opargs):
         raise NotImplementedError()
 
-    def complete(self, context, tokens):
+    def complete(self, context):
         return []
 
 
@@ -397,6 +396,13 @@ class ItemNamespace(Namespace):
 
         def complete(self, context, tokens):
             return [x.name + '=' for x in self.parent.property_mappings if x.set]
+
+    class DeleteCurrentEntityCommand(Command):
+        def __init__(self, parent):
+            self.parent = parent
+
+        def run(self, context, args, kwargs, opargs):
+            pass
 
     def __init__(self, name):
         super(ItemNamespace, self).__init__(name)

@@ -633,6 +633,7 @@ def p_set_parameter(p):
     """
     set_parameter : unary_parameter
     set_parameter : unary_parameter COMMA set_parameter
+    set_parameter : unary_parameter COMMA error
     """
     if len(p) == 4:
         if isinstance(p[3], list):

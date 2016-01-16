@@ -25,6 +25,7 @@
 #
 #####################################################################
 
+import os
 import re
 import copy
 import gettext
@@ -32,6 +33,7 @@ from freenas.cli.namespace import (
     EntityNamespace, Command, CommandException, SingleItemNamespace,
     EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, description
 )
+from freenas.cli.complete import NullComplete, EnumComplete, EntitySubscriberComplete
 from freenas.cli.output import Table, ValueType, output_tree, format_value, read_value, Sequence
 from freenas.cli.utils import post_save, iterate_vdevs, to_list
 from freenas.utils import first_or_default, extend, query
@@ -1139,8 +1141,15 @@ class CreateVolumeCommand(Command):
                 password,
                 callback=lambda s: post_save(ns, s))
 
-    def complete(self, context, tokens):
-        return ['name=', 'type=', 'disks=', 'layout=', 'log=', 'cache=']
+    def complete(self, context):
+        return [
+            NullComplete('name='),
+            EnumComplete('layout=', VOLUME_LAYOUTS.keys()),
+            EntitySubscriberComplete('disks=', 'disk', lambda d: os.path.basename(d['path']), ['auto']),
+            NullComplete('type='),
+            NullComplete('log='),
+            NullComplete('cache=')
+        ]
 
 
 @description("Allows to provide a password that protects an encrypted volume")

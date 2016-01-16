@@ -68,6 +68,7 @@ from freenas.cli.output import (
 from freenas.dispatcher.client import Client, ClientError
 from freenas.dispatcher.entity import EntitySubscriber
 from freenas.dispatcher.rpc import RpcException
+from freenas.utils import first_or_default
 from freenas.utils.query import wrap
 from freenas.cli.commands import (
     ExitCommand, PrintenvCommand, SetenvCommand, ShellCommand, HelpCommand,
@@ -1238,114 +1239,78 @@ class MainLoop(object):
     def get_relative_object(self, ns, tokens):
         ptr = ns
         first_len = len(tokens) - 1
+
         while len(tokens) > 0:
             token = tokens.pop(0)
+            name = token.name
 
-            if token == '/' and len(tokens) == first_len:
+            if name == '/' and len(tokens) == first_len:
                 ptr = self.path[0]
-            if token == '..' and len(self.path) > 1:
+            if name == '..' and len(self.path) > 1:
                 self.prev_path = self.path[:]
                 ptr = self.path[-2]
 
             if issubclass(type(ptr), Namespace):
-                if (
-                    self.cached_values['rel_ptr'] == ptr and
-                    self.cached_values['rel_ptr_namespaces'] is not None
-                   ):
-                    nss = self.cached_values['rel_ptr_namespaces']
-                else:
-                    # Try to somehow make the below work as it saves us one .namespace()
-                    # lookup. BUt for now it does work and results in stale autocorrect
-                    # options hence commenting
-                    # if (
-                    #     ptr == self.cached_values['obj'] and
-                    #     self.cached_values['obj_namespaces'] is not None
-                    #    ):
-                    #     nss = self.cached_values['obj_namespaces']
-                    # else:
-                    nss = ptr.namespaces()
-                    self.cached_values.update({
-                        'rel_ptr': ptr,
-                        'rel_ptr_namespaces': nss
-                        })
-                for ns in nss:
-                    if ns.get_name() == token:
+                for ns in ptr.namespaces():
+                    if ns.get_name() == name:
                         ptr = ns
                         break
 
                 cmds = ptr.commands()
-                if token in cmds:
-                    return cmds[token]
+                if name in cmds:
+                    return cmds[name]
 
-                if token in self.builtin_commands:
-                    return self.builtin_commands[token]
+                if name in self.builtin_commands:
+                    return self.builtin_commands[name]
 
         return ptr
 
     def complete(self, text, state):
-        readline_buffer = readline.get_line_buffer()
-        tokens = shlex.split(readline_buffer.split('|')[-1].strip(), posix=False)
+        def find_arg(args, index):
+            for a in args:
+                if isinstance(a, BinaryParameter):
+                    if index == a.column + len(a.left) + 1:
+                        return a
 
-        if "|" in readline_buffer:
-            choices = [x + ' ' for x in list(self.pipe_commands.keys())]
+            return None
+
+        try:
+            readline_buffer = readline.get_line_buffer()
+            token = None
+
+            if len(readline_buffer.strip()) > 0:
+                tokens = parse(readline_buffer, '<stdin>', True)
+                token = tokens.pop(-1)
+                args = token.args
+            else:
+                args = []
+
+            if isinstance(token, CommandCall) or not args:
+                obj = self.get_relative_object(self.cwd, args)
+            else:
+                return None
+
+            if issubclass(type(obj), Namespace):
+                choices = [i.get_name() for i in obj.namespaces()]
+                choices += obj.commands().keys()
+                choices += list(self.base_builtin_commands.keys()) + ['..', '/', '-']
+            elif issubclass(type(obj), Command):
+                completions = obj.complete(self.context)
+                arg = find_arg(args, readline.get_begidx())
+                if not arg:
+                    return None
+
+                if isinstance(arg, BinaryParameter):
+                    completion = first_or_default(lambda c: c.name == arg.left + '=', completions)
+                    choices = completion.choices(self.context)
+
             options = [i for i in choices if i.startswith(text)]
             if state < len(options):
                 return options[state]
             else:
                 return None
-        cwd = self.cwd
-
-        obj = self.cached_values['obj']
-        if (
-            cwd != self.cached_values['rel_cwd'] or
-            tokens != self.cached_values['rel_tokens'] or
-            self.cached_values['obj'] is None
-           ):
-            obj = self.get_relative_object(cwd, tokens[:])
-            self.cached_values.update({
-                'rel_cwd': cwd,
-                'rel_tokens': tokens,
-                })
-
-        if issubclass(type(obj), Namespace):
-            if self.cached_values['obj'] != obj:
-                obj_namespaces = obj.namespaces()
-                new_choices = [x.get_name() for x in obj_namespaces] + list(obj.commands().keys())
-                self.cached_values.update({
-                    'obj': obj,
-                    'choices': new_choices,
-                    'obj_namespaces': obj_namespaces,
-                })
-            choices = self.cached_values['choices'][:]
-            if (
-                len(tokens) == 0 or
-                (len(tokens) <= 1 and text not in ['', None])
-               ):
-                choices += list(self.base_builtin_commands.keys()) + ['..', '/', '-']
-            elif 'help' not in choices:
-                choices += ['help']
-            choices = [i + ' ' for i in choices]
-
-        elif issubclass(type(obj), Command):
-            if (
-                self.cached_values['obj'] != obj or
-                self.cached_values['choices'] is None
-               ):
-                new_choices = obj.complete(self.context, tokens)
-                self.cached_values.update({
-                    'obj': obj,
-                    'choices': new_choices,
-                    'obj_namespaces': None,
-                })
-            choices = self.cached_values['choices'][:]
-        else:
-            choices = []
-
-        options = [i for i in choices if i.startswith(text)]
-        if state < len(options):
-            return options[state]
-        else:
-            return None
+        except BaseException as err:
+            output_msg_locked(str(err))
 
     def sigint(self):
         pass

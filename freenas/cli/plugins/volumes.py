@@ -44,7 +44,7 @@ _ = t.gettext
 
 
 # Global lists/dicts for create command and other stuff
-VOLUME_TYPES = ['disk', 'mirror', 'raidz1', 'raidz2', 'raidz3', 'auto']
+VDEV_TYPES = ['disk', 'mirror', 'raidz1', 'raidz2', 'raidz3', 'auto']
 DISKS_PER_TYPE = {
     'auto': 1,
     'disk': 1,
@@ -1049,9 +1049,9 @@ class CreateVolumeCommand(Command):
             name = kwargs.pop('name')
 
         volume_type = kwargs.pop('type', 'auto')
-        if volume_type not in VOLUME_TYPES:
+        if volume_type not in VDEV_TYPES:
             raise CommandException(_(
-                "Invalid volume type {0}.  Should be one of: {1}".format(volume_type, VOLUME_TYPES)
+                "Invalid volume type {0}.  Should be one of: {1}".format(volume_type, VDEV_TYPES)
             ))
 
         if 'disks' not in kwargs:
@@ -1145,10 +1145,10 @@ class CreateVolumeCommand(Command):
         return [
             NullComplete('name='),
             EnumComplete('layout=', VOLUME_LAYOUTS.keys()),
+            EnumComplete('type=', VOLUME_LAYOUTS.keys()),
             EntitySubscriberComplete('disks=', 'disk', lambda d: os.path.basename(d['path']), ['auto']),
-            NullComplete('type='),
-            NullComplete('log='),
-            NullComplete('cache=')
+            EntitySubscriberComplete('cache=', 'disk', lambda d: os.path.basename(d['path']), ['auto']),
+            EntitySubscriberComplete('log=', 'disk', lambda d: os.path.basename(d['path']), ['auto']),
         ]
 
 

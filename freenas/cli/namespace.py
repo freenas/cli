@@ -36,6 +36,7 @@ import collections
 from freenas.utils import first_or_default
 from freenas.utils.query import wrap
 from freenas.cli.parser import CommandCall, Literal, Symbol, BinaryParameter, Comment
+from freenas.cli.complete import NullComplete, EnumComplete, EntitySubscriberComplete
 from freenas.cli.utils import post_save
 from freenas.cli.output import (
     ValueType, Object, Table, Sequence, output_list,
@@ -394,8 +395,17 @@ class ItemNamespace(Namespace):
             self.parent.modified = True
             self.parent.save()
 
-        def complete(self, context, tokens):
-            return [x.name + '=' for x in self.parent.property_mappings if x.set]
+        def complete(self, context):
+            def create_completer(prop):
+                if prop.enum:
+                    return EnumComplete(prop.name + '=', prop.enum)
+
+                if prop.type == ValueType.BOOLEAN:
+                    return EnumComplete(prop.name + '=', ['yes', 'no'])
+
+                return NullComplete(prop.name + '=')
+
+            return [create_completer(x) for x in self.parent.property_mappings if x.set]
 
     class DeleteCurrentEntityCommand(Command):
         def __init__(self, parent):

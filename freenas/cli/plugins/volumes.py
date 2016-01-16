@@ -110,7 +110,7 @@ class AddVdevCommand(Command):
         if 'disks' not in kwargs:
             raise CommandException(_("Please specify one or more disks using the disks property"))
         else:
-            disks = check_disks(context, to_list(kwargs.pop('disks')))
+            disks = check_disks(context, to_list(kwargs.pop('disks')))[0]
 
         if len(disks) < disks_per_type[typ]:
             raise CommandException(_(
@@ -968,12 +968,29 @@ class FilesystemNamespace(EntityNamespace):
             get='name'
         )
 
-
-def check_disks(context, disks):
+def check_disks(context, disks, cache_disks=None, log_disks=None):
     all_disks = [disk["path"] for disk in context.call_sync("disk.query")]
     available_disks = context.call_sync('volume.get_available_disks')
+    if cache_disks is not None:
+        for disk in cache_disks:
+            disk = correct_disk_path(disk)
+            if disk not in all_disks:
+                raise CommandException(_("Disk {0} does not exist.".format(disk)))
+            if disk in available_disks:
+                available_disks.remove(disk)
+            else:
+                raise CommandException(_("Disk {0} is not available.".format(disk)))
+    if log_disks is not None:
+        for disk in log_disks:
+            disk = correct_disk_path(disk)
+            if disk not in all_disks:
+                raise CommandException(_("Disk {0} does not exist.".format(disk)))
+            if disk in available_disks:
+                available_disks.remove(disk)
+            else:
+                raise CommandException(_("Disk {0} is not available.".format(disk)))
     if 'auto' in disks:
-        return available_disks
+        return available_disks, cache_disks, log_disks
     else:
         for disk in disks:
             disk = correct_disk_path(disk)
@@ -981,32 +998,35 @@ def check_disks(context, disks):
                 raise CommandException(_("Disk {0} does not exist.".format(disk)))
             if disk not in available_disks:
                 raise CommandException(_("Disk {0} is not available.".format(disk)))
-    return disks
+    return disks, cache_disks, log_disks
 
 
 @description("Creates new volume")
 class CreateVolumeCommand(Command):
     """
     Usage: create <name> disks=<disks> layout=<layout> encryption=<encryption> password=<password>
-           create <name> type=<type> disks=<disks> encryption=<encryption> password=<password>
 
-    Example: create tank
-             create tank disks=ada1,ada2
-             create tank type=raidz2 disks=ada1,ada2,ada3,ada4
+    Example: create tank disks=ada1,ada2
              create tank disks=ada1,ada2 encryption=yes
              create tank disks=ada1,ada2 encryption=yes password=1234
-             create tank disks=ada1,ada2,ada3,ada4 layout=virtualization
+             create tank disks=auto layout=virtualization
+             create tank disks=ada1,ada2 cache=ada3 log=ada4
+             create tank disks=auto cache=ada3 log=ada4
 
-    If you wish to build a special topology then specify the key 'type' with one of the following: 
-    disk, mirror, raidz1, raidz2 and raidz3, this will create a vdev of that type which you can 
-    use the 'add_vdev' command on to create a custom topology.
-    Otherwise you can specify one of the following layouts with the 'layout' option:
-    stripe, mirror, raidz1, raidz2, raidz3, speed, storage, backup, safety, and virtualization,
-    this will create topology that is a stripe of mirrors or raidz depending on which option you 
-    choose.
-    If you do not specify a type or a layout then a stripe of mirrors will be created.
-    If no disks are specified then all available disks will be used.
+    Creating a volume requires some number of disks and an optional layout 
+    preset. The 'layout' preset allows the following values: stripe, mirror,
+    raidz1, raidz2, raidz3, speed, storage, backup, safety, and virtualization.
+    If you do not specify a layout then one will be chosen for you (typically a
+    stripe of mirrors).  If you wish to use all unused disks for your pool then
+    you may specify 'auto' for disks, otherwise you should specify the disks to 
+    be used individually.
+
+    For more advanced pool topologies, create a volume with a single vdev
+    using the 'type' option with one of the following options: disk, mirror, raidz1,
+    raidz2 or raidz3.  You may then use the ‘volume add_vdev' command to build on this
+    topology.
     """
+
     def __init__(self, parent):
         self.parent = parent
 
@@ -1031,14 +1051,12 @@ class CreateVolumeCommand(Command):
                 "Invalid volume type {0}.  Should be one of: {1}".format(volume_type, VOLUME_TYPES)
             ))
 
-        disks = kwargs.pop('disks','auto')
-        if isinstance(disks, str):
-            disks = [disks]
-
-        if len(disks) < DISKS_PER_TYPE[volume_type]:
-            raise CommandException(_("Volume type {0} requires at least {1} disks".format(volume_type, DISKS_PER_TYPE)))
-        if len(disks) > 1 and volume_type == 'disk':
-            raise CommandException(_("Cannot create a volume of type disk with multiple disks"))
+        if 'disks' not in kwargs:
+            raise CommandException(_("Please specify one or more disks using the disks property"))
+        else:
+            disks = kwargs.pop('disks')
+            if isinstance(disks, str):
+                disks = [disks]
 
         if read_value(kwargs.pop('encryption', False), ValueType.BOOLEAN) is True:
             encryption = {'encryption': True}
@@ -1047,11 +1065,24 @@ class CreateVolumeCommand(Command):
             encryption = {'encryption': False}
             password = None
 
+        cache_disks = kwargs.pop('cache', [])
+        log_disks = kwargs.pop('log', [])
+        if isinstance(cache_disks, str):
+            cache_disks = [cache_disks]
+        if isinstance(log_disks, str):
+            log_disks = [log_disks]
+
         ns = SingleItemNamespace(None, self.parent)
         ns.orig_entity = query.wrap(copy.deepcopy(self.parent.skeleton_entity))
         ns.entity = query.wrap(copy.deepcopy(self.parent.skeleton_entity))
 
-        disks = check_disks(context, disks)
+        disks, cache_disks, log_disks = check_disks(context, disks, cache_disks, log_disks)
+
+        if len(disks) < DISKS_PER_TYPE[volume_type]:
+            raise CommandException(_("Volume type {0} requires at least {1} disks".format(volume_type, DISKS_PER_TYPE)))
+        if len(disks) > 1 and volume_type == 'disk':
+            raise CommandException(_("Cannot create a volume of type disk with multiple disks"))
+        
         if volume_type == 'auto':
             layout = kwargs.pop('layout', 'auto')
             if layout not in VOLUME_LAYOUTS:
@@ -1062,7 +1093,7 @@ class CreateVolumeCommand(Command):
                 if len(disks) < DISKS_PER_TYPE[VOLUME_LAYOUTS[layout]]:
                     raise CommandException(_("Volume layout {0} requires at least {1} disks".format(layout, DISKS_PER_TYPE[VOLUME_LAYOUTS[layout]])))
 
-            context.submit_task('volume.create_auto', name, 'zfs', layout, disks, encryption, password)
+            context.submit_task('volume.create_auto', name, 'zfs', layout, disks, cache_disks, log_disks, encryption['encryption'], password)
         else:
             ns.entity['name'] = name
             ns.entity['topology'] = {}
@@ -1076,6 +1107,30 @@ class CreateVolumeCommand(Command):
                     'children': [{'type': 'disk', 'path': correct_disk_path(disk)} for disk in disks]
                 })
             ns.entity['params'] = encryption
+            if len(cache_disks) > 0:
+                if 'cache' not in ns.entity:
+                    ns.entity['topology']['cache'] = []
+
+                for disk in cache_disks:
+                    ns.entity['topology']['cache'].append({
+                        'type': 'disk',
+                        'path': correct_disk_path(disk)
+                    })
+
+            if len(log_disks) > 0:
+                if 'log' not in ns.entity:
+                    ns.entity['topology']['log'] = []
+
+                if len(log_disks) > 1:
+                    ns.entity['topology']['log'].append({
+                        'type': 'mirror',
+                        'children': [{'type': 'disk', 'path': correct_disk_path(disk)} for disk in log_disks]
+                    })
+                else:
+                    ns.entity['topology']['log'].append({
+                        'type': 'disk',
+                        'path': correct_disk_path(log_disks[0])
+                    })
 
             context.submit_task(
                 self.parent.create_task,

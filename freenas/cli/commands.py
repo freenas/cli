@@ -35,11 +35,12 @@ import platform
 import textwrap
 import re
 from freenas.cli.parser import parse, unparse
+from freenas.cli.complete import NullComplete, EnumComplete
 from freenas.cli.namespace import (Command, PipeCommand, CommandException, description,
                                    SingleItemNamespace, Namespace)
 from freenas.cli.output import (
     Table, ValueType, output_msg, output_lock, output_less, format_value,
-     Sequence, output_table_list, read_value, format_output
+     Sequence, read_value, format_output
 )
 from freenas.cli.output import Object as output_obj
 from freenas.dispatcher.shell import ShellClient
@@ -50,6 +51,16 @@ if platform.system() != 'Windows':
 
 t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
+
+
+def create_variable_completer(name, var):
+    if var.type == ValueType.BOOLEAN:
+        return EnumComplete(name + '=', ['yes', 'no'])
+
+    if var.choices:
+        return EnumComplete(name + '=', var.choices)
+
+    return NullComplete(name + '=')
 
 
 @description("Sets variable value")
@@ -81,8 +92,8 @@ class SetenvCommand(Command):
         for k, v in list(kwargs.items()):
             context.variables.set(k, v)
 
-    def complete(self, context, tokens):
-        return [k for k, foo in context.variables.get_all()]
+    def complete(self, context):
+        return [create_variable_completer(k, v) for k, v in context.variables.get_all()]
 
 
 @description("Prints variable value")
@@ -124,8 +135,8 @@ class PrintenvCommand(Command):
         else:
             raise CommandException(_("Invalid syntax {0}.\n{1}".format(args, inspect.getdoc(self))))
 
-    def complete(self, context, tokens):
-        return [k for k, foo in context.variables.get_all()]
+    def complete(self, context):
+        return [create_variable_completer(k, v) for k, v in context.variables.get_all()]
 
 
 @description("Saves the Environment Variables to cli config file")

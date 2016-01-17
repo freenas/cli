@@ -1248,7 +1248,10 @@ class MainLoop(object):
             if not token:
                 continue
 
-            name = token.name
+            if isinstance(token, Symbol):
+                name = token.name
+            else:
+                name = token
 
             if name == '/' and len(tokens) == first_len:
                 ptr = self.path[0]

@@ -37,8 +37,15 @@ class NullComplete(object):
 
 class EnumComplete(NullComplete):
     def __init__(self, name, choices, **kwargs):
+        def quote(s):
+            for c in ' \t\n`~!@#$%^&*()-=+[{]}\\|;:\'",<>/?':
+                if c in s:
+                    return '"{0}"'.format(s)
+
+            return s
+
         super(EnumComplete, self).__init__(name, **kwargs)
-        self.data = list(choices)
+        self.data = list(map(quote, choices))
 
     def choices(self, context, token):
         return self.data

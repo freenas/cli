@@ -1242,6 +1242,9 @@ class MainLoop(object):
 
         while len(tokens) > 0:
             token = tokens.pop(0)
+            if not token:
+                continue
+
             name = token.name
 
             if name == '/' and len(tokens) == first_len:

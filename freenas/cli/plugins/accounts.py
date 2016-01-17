@@ -52,6 +52,8 @@ class ShellsCommand(Command):
 
 @description(_("Manage local users"))
 class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):
+    shells = None
+
     """
     The user namespace provides commands for listing and managing local user accounts.
     """
@@ -65,6 +67,9 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
         self.delete_task = 'user.delete'
         self.save_key_name = 'id'
         self.required_props = ['username', ['password','password_disabled']]
+
+        if not UsersNamespace.shells:
+            UsersNamespace.shells = context.call_sync('shell.get_shells')
 
         self.localdoc['CreateEntityCommand'] = ("""\
             Usage: create <name> password=<password> <property>=<value> ...
@@ -169,7 +174,8 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             usage=_("""
             r" Default is /bin/sh. Otherwise,
             specify full path to an existing shell."""),
-            list=False
+            list=False,
+            enum=UsersNamespace.shells
         )
 
         self.add_property(

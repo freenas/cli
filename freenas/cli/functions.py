@@ -69,6 +69,14 @@ def printf(fmt, *args):
     output_msg(fmt % args)
 
 
+def sprintf(fmt, *args):
+    return fmt % args
+
+
+def mapf(fmt, array):
+    return list(map(lambda s: fmt % s, array))
+
+
 def readline(prompt):
     return input(prompt)
 
@@ -104,6 +112,8 @@ def unregister_command(namespace, name):
 functions = {
     'print': print_,
     'printf': printf,
+    'sprintf': sprintf,
+    'mapf': mapf,
     'readline': readline,
     'unparse': unparse_,
     'rpc': rpc,

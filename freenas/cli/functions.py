@@ -109,6 +109,23 @@ def unregister_command(namespace, name):
     pass
 
 
+def fopen(filename, mode):
+    return open(filename, mode)
+
+
+def fclose(fhandle):
+    fhandle.close()
+
+
+def freadline(fhandle):
+    fhandle.readline()
+
+
+def fprintf(fhandle, fmt, *args):
+    fhandle.write(fmt % args)
+    fhandle.flush()
+
+
 functions = {
     'print': print_,
     'printf': printf,
@@ -126,5 +143,9 @@ functions = {
     'append': lambda a, i: a.append(i),
     'remove': lambda a, i: a.remove(i),
     'resize': array_resize,
-    'copy': copy.deepcopy
+    'copy': copy.deepcopy,
+    'fopen': fopen,
+    'freadline': freadline,
+    'fprintf': fprintf,
+    'fclose': fclose
 }

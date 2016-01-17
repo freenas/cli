@@ -55,6 +55,16 @@ def description(descr):
     return wrapped
 
 
+def create_completer(prop):
+    if prop.enum:
+        return EnumComplete(prop.name + '=', prop.enum)
+
+    if prop.type == ValueType.BOOLEAN:
+        return EnumComplete(prop.name + '=', ['yes', 'no'])
+
+    return NullComplete(prop.name + '=')
+
+
 class Namespace(object):
     def __init__(self, name):
         self.name = name
@@ -396,15 +406,6 @@ class ItemNamespace(Namespace):
             self.parent.save()
 
         def complete(self, context):
-            def create_completer(prop):
-                if prop.enum:
-                    return EnumComplete(prop.name + '=', prop.enum)
-
-                if prop.type == ValueType.BOOLEAN:
-                    return EnumComplete(prop.name + '=', ['yes', 'no'])
-
-                return NullComplete(prop.name + '=')
-
             return [create_completer(x) for x in self.parent.property_mappings if x.set]
 
     class DeleteCurrentEntityCommand(Command):
@@ -817,8 +818,8 @@ class CreateEntityCommand(Command):
 
         self.parent.save(ns, new=True)
 
-    def complete(self, context, tokens):
-        return [x.name + '=' for x in self.parent.property_mappings if x.set]
+    def complete(self, context):
+        return [create_completer(x) for x in self.parent.property_mappings if x.set]
 
 
 @description("Removes <entity>")

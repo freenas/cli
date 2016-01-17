@@ -30,7 +30,7 @@ import re
 import gettext
 from freenas.cli.namespace import (
     Namespace, EntityNamespace, ConfigNamespace, Command,
-    RpcBasedLoadMixin, TaskBasedSaveMixin, description, CommandException
+    EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, description, CommandException
 )
 from freenas.cli.output import ValueType
 from freenas.cli.utils import post_save
@@ -112,11 +112,11 @@ class InterfaceRenewCommand(Command):
 
 
 @description("Network interfaces configuration")
-class InterfacesNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
+class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
     def __init__(self, name, context):
         super(InterfacesNamespace, self).__init__(name, context)
 
-        self.query_call = 'network.interfaces.query'
+        self.entity_subscriber_name = 'network.interface'
         self.create_task = 'network.interface.create'
         self.delete_task = 'network.interface.delete'
         self.update_task = 'network.interface.configure'
@@ -423,14 +423,14 @@ class MembersNamespace(EntityNamespace):
 
 
 @description("Static host names database")
-class HostsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
+class HostsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
     def __init__(self, name, context):
         super(HostsNamespace, self).__init__(name, context)
 
-        self.query_call = 'network.hosts.query'
-        self.create_task = 'network.hosts.create'
-        self.update_task = 'network.hosts.update'
-        self.delete_task = 'network.hosts.delete'
+        self.entity_subscriber_name = 'network.host'
+        self.create_task = 'network.host.create'
+        self.update_task = 'network.host.update'
+        self.delete_task = 'network.host.delete'
         self.required_props = ['name', 'address']
 
         self.add_property(
@@ -515,15 +515,15 @@ class GlobalConfigNamespace(ConfigNamespace):
 
 
 @description("Routing configuration")
-class RoutesNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
+class RoutesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
     def __init__(self, name, context):
         super(RoutesNamespace, self).__init__(name, context)
         self.context = context
 
-        self.query_call = 'network.routes.query'
-        self.create_task = 'network.routes.create'
-        self.update_task = 'network.routes.update'
-        self.delete_task = 'network.routes.delete'
+        self.entity_subscriber_name = 'network.route'
+        self.create_task = 'network.route.create'
+        self.update_task = 'network.route.update'
+        self.delete_task = 'network.route.delete'
         self.required_props = ['name', 'gateway', 'network', 'netmask']
         self.localdoc['CreateEntityCommand'] = ("""\
             Usage: create name=<name> gateway=<gateway> network=<network> netmask=<netmask>

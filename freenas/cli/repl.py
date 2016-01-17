@@ -1301,7 +1301,7 @@ class MainLoop(object):
                 return None
 
             if issubclass(type(obj), Namespace):
-                choices = [i.get_name() for i in obj.namespaces()]
+                choices = [str(i.get_name()) for i in obj.namespaces()]
                 choices += obj.commands().keys()
                 choices += list(self.base_builtin_commands.keys()) + ['..', '/', '-']
                 append_space = True

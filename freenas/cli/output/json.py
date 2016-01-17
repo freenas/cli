@@ -43,6 +43,9 @@ class JsonOutputFormatter(object):
         if vt == ValueType.STRING:
             return str(value)
 
+        if vt == ValueType.SET:
+            return list(value)
+
         return json.dumps(value)
 
     @staticmethod
@@ -59,8 +62,7 @@ class JsonOutputFormatter(object):
         for row in table.data:
             rowdata = {}
             for col in table.columns:
-                rowdata.update({col.label:
-                    JsonOutputFormatter.format_value(resolve_cell(row, col.accessor), col.vt)})
+                rowdata[col.label] = JsonOutputFormatter.format_value(resolve_cell(row, col.accessor), col.vt)
             output.append(rowdata)
 
         six.print_(json.dumps(output, indent=4))

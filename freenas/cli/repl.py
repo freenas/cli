@@ -815,6 +815,7 @@ class MainLoop(object):
     def repl(self):
         readline.parse_and_bind('tab: complete')
         readline.set_completer(self.complete)
+        readline.set_completer_delims(' \t\n`~!@#$%^&*()-=+[{]}\\|;:\',<>?')
 
         self.greet()
         a = ShowUrlsCommand()

@@ -32,7 +32,6 @@ import sys
 import os
 import glob
 import argparse
-import shlex
 import imp
 import logging
 import errno
@@ -115,6 +114,9 @@ ENTITY_SUBSCRIBERS = [
     'disk',
     'volume',
     'volume.snapshot',
+    'network.interface',
+    'network.host',
+    'network.route',
     'share',
     'task',
     'alert'

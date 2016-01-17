@@ -118,7 +118,7 @@ def fclose(fhandle):
 
 
 def freadline(fhandle):
-    fhandle.readline()
+    return fhandle.readline()
 
 
 def fprintf(fhandle, fmt, *args):

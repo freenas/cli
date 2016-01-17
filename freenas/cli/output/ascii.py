@@ -25,6 +25,7 @@
 #
 #####################################################################
 
+import io
 import six
 import sys
 import datetime
@@ -56,6 +57,9 @@ def format_literal(value, **kwargs):
 
     if isinstance(value, six.integer_types):
         return str(value)
+
+    if isinstance(value, io.TextIOWrapper):
+        return '<open file "{0}">'.format(value.name)
 
     if isinstance(value, list):
         return '[' + ', '.join(format_literal(i, quoted=True) for i in value) + ']'

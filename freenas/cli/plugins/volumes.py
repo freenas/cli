@@ -1006,7 +1006,7 @@ def check_disks(context, disks, cache_disks=None, log_disks=None):
 @description("Creates new volume")
 class CreateVolumeCommand(Command):
     """
-    Usage: create <name> disks=<disks> layout=<layout> encryption=<encryption> 
+    Usage: create <name> disks=<disks> layout=<layout> encryption=<encryption>
             password=<password> cache=<disks> log=<disks>
 
     Example: create tank disks=ada1,ada2
@@ -1016,12 +1016,12 @@ class CreateVolumeCommand(Command):
              create tank disks=ada1,ada2 cache=ada3 log=ada4
              create tank disks=auto cache=ada3 log=ada4
 
-    Creating a volume requires some number of disks and an optional layout 
+    Creating a volume requires some number of disks and an optional layout
     preset. The 'layout' preset allows the following values: stripe, mirror,
     raidz1, raidz2, raidz3, speed, storage, backup, safety, and virtualization.
     If you do not specify a layout then one will be chosen for you (typically a
     stripe of mirrors).  If you wish to use all unused disks for your pool then
-    you may specify 'auto' for disks, otherwise you should specify the disks to 
+    you may specify 'auto' for disks, otherwise you should specify the disks to
     be used individually.
 
     For more advanced pool topologies, create a volume with a single vdev
@@ -1085,7 +1085,7 @@ class CreateVolumeCommand(Command):
             raise CommandException(_("Volume type {0} requires at least {1} disks".format(volume_type, DISKS_PER_TYPE)))
         if len(disks) > 1 and volume_type == 'disk':
             raise CommandException(_("Cannot create a volume of type disk with multiple disks"))
-        
+
         if volume_type == 'auto':
             layout = kwargs.pop('layout', 'auto')
             if layout not in VOLUME_LAYOUTS:
@@ -1146,6 +1146,8 @@ class CreateVolumeCommand(Command):
             NullComplete('name='),
             EnumComplete('layout=', VOLUME_LAYOUTS.keys()),
             EnumComplete('type=', VOLUME_LAYOUTS.keys()),
+            EnumComplete('encryption=', ['yes', 'no']),
+            NullComplete('password='),
             EntitySubscriberComplete('disks=', 'disk', lambda d: os.path.basename(d['path']), ['auto']),
             EntitySubscriberComplete('cache=', 'disk', lambda d: os.path.basename(d['path']), ['auto']),
             EntitySubscriberComplete('log=', 'disk', lambda d: os.path.basename(d['path']), ['auto']),

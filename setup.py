@@ -38,6 +38,7 @@ install_requires = [
     'texttable',
     'six',
     'pyte',
+    'future',
     'natural>=0.1.6',
 ]
 

@@ -16,7 +16,7 @@ a = Analysis(['freenas/cli/repl.py'],
     pathex=['.'],
     binaries=None,
     datas=None,
-    hiddenimports=['freenas.cli.output.ascii', 'Queue', 'curses', 'pyte'],
+    hiddenimports=['freenas.cli.output.ascii', 'freenas.cli.complete', 'Queue', 'curses', 'pyte'],
     hookspath=None,
     runtime_hooks=None,
     excludes=None,
@@ -24,7 +24,11 @@ a = Analysis(['freenas/cli/repl.py'],
     win_private_assemblies=None,
     cipher=block_cipher)
 
-a.datas += [('freenas/cli/parser.py', resource_path('freenas/cli/parser.py'),  'DATA')]
+a.datas += [
+    ('freenas/cli/parser.py', resource_path('freenas/cli/parser.py'),  'DATA'),
+    ('freenas/cli/complete.py', resource_path('freenas/cli/complete.py'),  'DATA')
+]
+
 for f in glob.glob('freenas/cli/plugins/*'):
     if not os.path.isfile(f):
         continue

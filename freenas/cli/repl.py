@@ -1114,7 +1114,7 @@ class MainLoop(object):
                         args, kwargs, opargs = expand_wildcards(
                             self.context,
                             *sort_args([self.eval(i, env) for i in token_args]),
-                            completions
+                            completions=completions
                         )
 
                         item.exec_path = path if len(path) >= 1 else self.path

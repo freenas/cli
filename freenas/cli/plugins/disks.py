@@ -59,6 +59,9 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             descr='Path',
             name='path',
             get='path',
+            usage=_("""\
+            Full path of disk device. Read-only value is
+            assigned by operating system."""),
             set=None,
             list=True
         )
@@ -68,7 +71,7 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             name='name',
             get=lambda row: os.path.basename(row.get('path')),
             usage=_("""\
-            Full path of disk device. Read-only value as
+            Name of disk device. Read-only value is
             assigned by operating system."""),
             set=None,
             list=True
@@ -79,7 +82,7 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             name='description',
             get='status.description',
             usage=_("""\
-            Name of disk device. Read-only value as
+            Description of disk device. Read-only value is
             assigned by operating system."""),
             set=None,
             list=False
@@ -114,6 +117,9 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             name='online',
             get='online',
             set=None,
+            usage=_("""\
+            Indicates whether or not the device is online. This is
+            a read-only value."""),
             list=True,
             type=ValueType.BOOLEAN
         )

@@ -129,6 +129,9 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             name='empty',
             get='status.empty',
             set=None,
+            usage=_("""\
+            Indicates whether or not the device has been formatted.
+            This is a read-only value."""),
             list=True,
             type=ValueType.BOOLEAN
         )
@@ -138,6 +141,9 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             name='allocation',
             get=self.get_allocation,
             set=None,
+            usage=_("""\
+            Indicates whether or not the device is being used for
+            storage or for the boot device. This is a read-only value."""),
             list=True
         )
 
@@ -145,6 +151,10 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             descr='Standby mode',
             name='standby_mode',
             get='standby_mode',
+            usage=_("""\
+            Integer that indicates the time of inactivity (in minutes) before the
+            drive enters standby mode in order to conserve energy. A value of 0
+            disables standby mode."""),
             type=ValueType.NUMBER,
             list=False
         )
@@ -153,6 +163,9 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             descr='Power management mode',
             name='apm_mode',
             get='apm_mode',
+            usage=_("""\
+            Integer that indicates the power management mode. A value of 0
+            disables power management."""),
             type=ValueType.NUMBER,
             list=False
         )

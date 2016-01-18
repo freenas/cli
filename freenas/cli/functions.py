@@ -30,7 +30,7 @@ import copy
 import operator
 from builtins import input
 from freenas.cli.namespace import Command
-from freenas.cli.output import format_output, output_msg
+from freenas.cli.output import format_output, output_msg, Table
 from freenas.cli.parser import unparse, FunctionDefinition
 from freenas.cli import config
 
@@ -126,6 +126,10 @@ def fprintf(fhandle, fmt, *args):
     fhandle.flush()
 
 
+def table(data, columns):
+    return Table(data, [Table.Column(l, a) for l, a in columns])
+
+
 functions = {
     'print': print_,
     'printf': printf,
@@ -147,5 +151,6 @@ functions = {
     'fopen': fopen,
     'freadline': freadline,
     'fprintf': fprintf,
-    'fclose': fclose
+    'fclose': fclose,
+    'table': table
 }

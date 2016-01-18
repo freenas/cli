@@ -129,7 +129,7 @@ class AsciiOutputFormatter(object):
         sys.stdout.flush()
 
     @staticmethod
-    def output_table(tab, file=sys.stdout):
+    def output_table(tab, file=sys.stdout, **kwargs):
         hidden_indexes = []
         for i in range(0, len(tab.columns)):
             if tab.columns[i].label is None:
@@ -182,7 +182,7 @@ class AsciiOutputFormatter(object):
         table.set_cols_width(widths)
         table.set_cols_dtype(['t'] * len(tab.columns))
         table.add_rows([[AsciiOutputFormatter.format_value(resolve_cell(row, i.accessor), i.vt) for i in tab.columns] for row in tab.data], False)
-        six.print_(table.draw(), file=file)
+        six.print_(table.draw(), file=file, end=('\n' if kwargs.get('newline', True) else ' '))
 
     @staticmethod
     def output_table_list(tables):

@@ -279,7 +279,8 @@ class EraseDiskCommand(Command):
            erase wipe=zeros
            erase wipe=random
 
-    Erases the partitions from the current disk and optionally wipes it.
+    Erases the partitions from the current disk and optionally wipes it. This
+    operation can only be performed if the disk is 'unallocated'.
     """
     def __init__(self, parent):
         self.parent = parent

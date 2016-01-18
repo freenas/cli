@@ -30,6 +30,7 @@ import gettext
 import time
 import copy
 from datetime import datetime
+from threading import Event
 from freenas.cli.namespace import ConfigNamespace, Command, description, CommandException
 from freenas.cli.output import output_msg, ValueType, Table, output_table
 from freenas.cli.utils import post_save
@@ -155,7 +156,7 @@ def download_message_formatter(msg):
     return msg
 
 
-@description("Updates the system and reboot it")
+@description("Updates the system and reboots it (can be specified)")
 class UpdateNowCommand(Command):
     """
     Usage: update_now [reboot=False]
@@ -165,6 +166,17 @@ class UpdateNowCommand(Command):
     Example: update_now (This will not reboot the system post update)
              update_now reboot=True (This will reboot the system post update)
     """
+
+    def __init__(self):
+        super(Command, self).__init__()
+        self.task_done_event = Event()
+        self.task_state = None
+
+    def task_callback(self, task_state):
+        if task_state in ('FINISHED', 'CANCELLED', 'ABORTED', 'FAILED'):
+            self.task_state = task_state
+            self.task_done_event.set()
+
     def run(self, context, args, kwargs, opargs):
         reboot = False
         if 'reboot' in kwargs and kwargs['reboot']:
@@ -180,22 +192,26 @@ class UpdateNowCommand(Command):
         original_tasks_blocking = context.variables.variables['tasks_blocking'].value
         context.variables.set('tasks_blocking', True)
         output_msg(_("Downloading update packages now..."))
-        download_task_id = context.submit_task(
-            'update.download', message_formatter=download_message_formatter)
-        download_details = context.call_sync('task.status', download_task_id)
-        while download_details['state'] == 'EXECUTING':
-            time.sleep(1)
-            download_details = context.call_sync('task.status', download_task_id)
-        if download_details['state'] != 'FINISHED':
+        context.submit_task(
+            'update.download',
+            message_formatter=download_message_formatter,
+            callback=self.task_callback
+        )
+        while not self.task_done_event.wait(timeout=1):
+            pass
+        if self.task_state != 'FINISHED':
             raise CommandException(_("Updates failed to download"))
         output_msg(_("System going for an update now..."))
-        apply_task_id = context.submit_task('update.update', reboot)
+        self.task_done_event.clear()
+        context.submit_task(
+            'update.update',
+            reboot,
+            callback=self.task_callback
+        )
+        while not self.task_done_event.wait(timeout=1):
+            pass
         context.variables.set('tasks_blocking', original_tasks_blocking)
-        apply_details = context.call_sync('task.status', apply_task_id)
-        while apply_details['state'] == 'EXECUTING':
-            time.sleep(1)
-            apply_details = context.call_sync('task.status', apply_task_id)
-        if apply_details['state'] != 'FINISHED':
+        if self.task_state != 'FINISHED':
             raise CommandException(_("Updates failed to apply"))
         else:
             if not reboot:

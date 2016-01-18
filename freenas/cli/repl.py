@@ -588,12 +588,13 @@ class Context(object):
             tid = self.connection.call_sync('task.submit', name, args)
             if callback:
                 self.task_callbacks[tid] = callback
-
             return tid
         else:
             output_msg(_("Hit Ctrl+C to terminate task if needed"))
             self.event_divert = True
             tid = self.connection.call_sync('task.submit', name, args)
+            if callback:
+                self.task_callbacks[tid] = callback
             progress = ProgressBar()
             try:
                 while True:

@@ -196,6 +196,11 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             descr='SMART options',
             name='smart_options',
             get='smart_options',
+            usage=_("""\
+            Additional options from smartctl\(8\). When setting
+            options, place entire options string between double
+            quotes and use a space to separate multiple options. Can
+            only set options if the disk is S.M.A.R.T. capable."""),
             type=ValueType.STRING,
             list=False
         )

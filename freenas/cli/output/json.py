@@ -35,7 +35,7 @@ class JsonOutputFormatter(object):
     @staticmethod
     def format_value(value, vt):
         if value is None:
-            return "none"
+            return None
 
         if vt == ValueType.BOOLEAN:
             value = bool(value)
@@ -45,6 +45,8 @@ class JsonOutputFormatter(object):
 
         if vt == ValueType.SET:
             return list(value)
+
+
 
         return json.dumps(value)
 

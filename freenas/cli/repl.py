@@ -1196,7 +1196,7 @@ class MainLoop(object):
             first = True
             for i in tokens:
                 try:
-                    ret = self.eval(i,first=first)
+                    ret = self.eval(i, first=first)
                     first = False
                 except SystemExit as err:
                     raise err
@@ -1213,7 +1213,7 @@ class MainLoop(object):
 
                     return
 
-                if ret:
+                if ret is not None:
                     output = self.context.variables.get('output')
                     if output:
                         with open(output, 'a+') as f:

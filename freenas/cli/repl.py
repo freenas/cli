@@ -141,6 +141,32 @@ def sort_args(args):
     return positional, kwargs, opargs
 
 
+def expand_wildcards(context, args, kwargs, opargs, completions):
+    def expand_one(value, completion):
+        choices = completion.choices(context, None)
+        return fnmatch.filter(choices, value)
+
+    for i in completions:
+        if not i.list:
+            continue
+
+        if isinstance(i.name, six.integer_types):
+            if not len(args) >= i.name:
+                continue
+
+            args[i.name] = expand_one(args[i.name], i)
+
+        if isinstance(i.name, six.string_types):
+            name, op = i.name[:-1], i.name[-1]
+            if op == '=':
+                if name not in kwargs:
+                    continue
+
+                kwargs[name] = expand_one(kwargs[name], i)
+
+    return args, kwargs, opargs
+
+
 def convert_to_literals(tokens):
     def conv(t):
         if isinstance(t, list):
@@ -1081,8 +1107,14 @@ class MainLoop(object):
                         return self.eval(token, env, path=path+[item], dry_run=dry_run)
 
                     if isinstance(item, Command):
+                        completions = item.complete(self.context)
                         token_args = convert_to_literals(token.args)
-                        args, kwargs, opargs = sort_args([self.eval(i, env) for i in token_args])
+                        args, kwargs, opargs = expand_wildcards(
+                            self.context,
+                            *sort_args([self.eval(i, env) for i in token_args]),
+                            completions
+                        )
+
                         item.exec_path = path if len(path) >= 1 else self.path
                         if dry_run:
                             return item, cwd, args, kwargs, opargs

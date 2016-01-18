@@ -1148,9 +1148,9 @@ class CreateVolumeCommand(Command):
             EnumComplete('type=', VOLUME_LAYOUTS.keys()),
             EnumComplete('encryption=', ['yes', 'no']),
             NullComplete('password='),
-            EntitySubscriberComplete('disks=', 'disk', lambda d: os.path.basename(d['path']), ['auto']),
-            EntitySubscriberComplete('cache=', 'disk', lambda d: os.path.basename(d['path']), ['auto']),
-            EntitySubscriberComplete('log=', 'disk', lambda d: os.path.basename(d['path']), ['auto']),
+            EntitySubscriberComplete('disks=', 'disk', lambda d: os.path.basename(d['path']), ['auto'], list=True),
+            EntitySubscriberComplete('cache=', 'disk', lambda d: os.path.basename(d['path']), ['auto'], list=True),
+            EntitySubscriberComplete('log=', 'disk', lambda d: os.path.basename(d['path']), ['auto'], list=True),
         ]
 
 

@@ -45,6 +45,7 @@ import traceback
 import six
 import paramiko
 import inspect
+import re
 from six.moves.urllib.parse import urlparse
 from socket import gaierror as socket_error
 from freenas.cli.descriptions import events
@@ -144,7 +145,8 @@ def sort_args(args):
 def expand_wildcards(context, args, kwargs, opargs, completions):
     def expand_one(value, completion):
         choices = completion.choices(context, None)
-        return fnmatch.filter(choices, value)
+        regex = re.compile(value)
+        return list(filter(regex.match, choices))
 
     for i in completions:
         if not i.list:

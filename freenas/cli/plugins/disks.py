@@ -164,8 +164,8 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             name='apm_mode',
             get='apm_mode',
             usage=_("""\
-            Integer that indicates the power management mode. A value of 0
-            disables power management."""),
+            Integer that indicates the power management mode as described
+            in ataidle\(8\). A value of 0 disables power management."""),
             type=ValueType.NUMBER,
             list=False
         )
@@ -174,6 +174,9 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             descr='Acoustic level',
             name='acoustic_level',
             get='acoustic_level',
+            usage=_("""\
+            Can be set on disks that understand AAM. Possible values are
+            DISABLED, MINIMUM, MEDIUM, or MAXIMUM."""),
             type=ValueType.STRING,
             list=False
         )
@@ -182,6 +185,9 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             descr='SMART',
             name='smart',
             get='smart',
+            usage=_("""\
+            Values are yes or no. Can only be set to yes if
+            the disk is S.M.A.R.T. capable."""),
             type=ValueType.BOOLEAN,
             list=False
         )

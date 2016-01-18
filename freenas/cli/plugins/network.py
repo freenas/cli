@@ -156,6 +156,9 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
             descr='Name',
             name='name',
             get='id',
+            usage=_("""\
+            Name of network interface. Read-only value is
+            assigned by operating system."""),
             set=None,
             list=True
         )
@@ -165,6 +168,9 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
             name='type',
             get='type',
             set='type',
+            usage=_("""\
+            Can only be specified when using the 'create' command. Allowable
+            values are VLAN, BRIDGE, or LAGG."""),
             enum_set=['VLAN', 'BRIDGE', 'LAGG'],
             usersetable=False,
             list=True

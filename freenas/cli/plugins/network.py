@@ -676,7 +676,7 @@ class IPMINamespace(EntityNamespace):
 
 @description("Network configuration")
 class NetworkNamespace(Namespace):
-  """
+    """
     The network namespace is used to configure the network interfaces
     recognized by the system, manage the system routing table,
     manage the entries in the system hosts file, and configure

@@ -1,5 +1,7 @@
 PREFIX ?= /usr/local
 PYTHON ?= python
+VENV_PYTHON = $(PWD)/venv/bin/python
+VENV_PIP = $(PWD)/venv/bin/pip
 
 ifneq ($(OS), Windows_NT)
 ifeq ($(shell uname -s), Darwin)
@@ -17,11 +19,15 @@ install:
 	cp -R plugins/ ${PREFIX}/lib/freenascli/plugins/
 
 bin:
-	virtualenv venv
-	./venv/bin/pip install -U https://github.com/pyinstaller/pyinstaller/archive/develop.zip
-	./venv/bin/pip install --pre -U .
-	./venv/bin/pip install --pre -U ../utils
-	./venv/bin/pip install --pre -U ../dispatcher/client/python
+	virtualenv-3.4 venv
+	cd ../utils && $(VENV_PYTHON) setup.py egg_info
+	cd ../dispatcher/client/python && $(VENV_PYTHON) setup.py egg_info
+	$(VENV_PIP) install -U six ply ../utils
+	$(VENV_PYTHON) ./setup.py egg_info
+	$(VENV_PIP) install -U https://github.com/pyinstaller/pyinstaller/archive/develop.zip
+	$(VENV_PIP) install -U .
+	$(VENV_PIP) install -U ../utils
+	$(VENV_PIP) install -U ../dispatcher/client/python
 	./venv/bin/pyinstaller -y --clean --windowed $(OPTARG) freenas-cli.spec
 
 macosx:	bin
@@ -33,3 +39,6 @@ ifeq ($(shell uname -s), Darwin)
 else
 	@true
 endif
+
+clean:
+	rm -rf venv build dist

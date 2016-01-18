@@ -26,6 +26,7 @@ a = Analysis(['freenas/cli/repl.py'],
 
 a.datas += [
     ('freenas/cli/parser.py', resource_path('freenas/cli/parser.py'),  'DATA'),
+    ('freenas/cli/parsetab.py', resource_path('freenas/cli/parsetab.py'),  'DATA'),
     ('freenas/cli/complete.py', resource_path('freenas/cli/complete.py'),  'DATA')
 ]
 

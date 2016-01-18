@@ -89,6 +89,6 @@ setup(
             'freenas-cli = freenas.cli.repl:main',
         ],
     },
-    setup_requires=['freenas.utils'],
+    setup_requires=['freenas.utils', 'six', 'ply'],
     use_freenas=True,
 )

@@ -73,6 +73,10 @@ def sprintf(fmt, *args):
     return fmt % args
 
 
+def map_(fn, array):
+    return list(map(fn, array))
+
+
 def mapf(fmt, array):
     return list(map(lambda s: fmt % s, array))
 
@@ -134,6 +138,7 @@ functions = {
     'print': print_,
     'printf': printf,
     'sprintf': sprintf,
+    'map': map_,
     'mapf': mapf,
     'readline': readline,
     'unparse': unparse_,

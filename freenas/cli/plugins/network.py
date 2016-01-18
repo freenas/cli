@@ -60,12 +60,13 @@ class InterfaceCreateCommand(Command):
         pass
 
 
-@description("Enables or disables a network interface")
+@description("Enable or disable network interface")
 class InterfaceManageCommand(Command):
     """
-    Usage: up, down
+    Usage: up
+           down
 
-    Enables or disables a network interface.
+    Enable or disable this network interface.
     """
     def __init__(self, parent, up):
         self.parent = parent
@@ -74,9 +75,9 @@ class InterfaceManageCommand(Command):
     @property
     def description(self):
         if self.up:
-            return _("Starts an interface")
+            return _("Interface set to up")
         else:
-            return _("Shutdowns an interface")
+            return _("Interface set to down")
 
     def run(self, context, args, kwargs, opargs):
         if self.up:
@@ -93,12 +94,12 @@ class InterfaceManageCommand(Command):
             )
 
 
-@description("Renews IP lease for network interface")
+@description("Renew IP lease")
 class InterfaceRenewCommand(Command):
     """
     Usage: renew
 
-    Renews IP lease for network interface
+    Renew IP lease for this network interface.
     """
     def __init__(self, parent):
         self.parent = parent
@@ -111,7 +112,7 @@ class InterfaceRenewCommand(Command):
         )
 
 
-@description("Network interfaces configuration")
+@description("Configure network interfaces")
 class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
     def __init__(self, name, context):
         super(InterfacesNamespace, self).__init__(name, context)
@@ -422,7 +423,7 @@ class MembersNamespace(EntityNamespace):
         pass
 
 
-@description("Static host names database")
+@description("Configure hosts entries")
 class HostsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
     def __init__(self, name, context):
         super(HostsNamespace, self).__init__(name, context)
@@ -450,7 +451,7 @@ class HostsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityN
         self.primary_key = self.get_mapping('name')
 
 
-@description("Global network configuration")
+@description("Manage global network settings")
 class GlobalConfigNamespace(ConfigNamespace):
     def __init__(self, name, context):
         super(GlobalConfigNamespace, self).__init__(name, context)
@@ -514,7 +515,7 @@ class GlobalConfigNamespace(ConfigNamespace):
         )
 
 
-@description("Routing configuration")
+@description("Manage routing table")
 class RoutesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
     def __init__(self, name, context):
         super(RoutesNamespace, self).__init__(name, context)
@@ -585,7 +586,7 @@ class RoutesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Entity
         self.primary_key = self.get_mapping('name')
 
 
-@description("IPMI configuration")
+@description("Set IPMI configuration")
 class IPMINamespace(EntityNamespace):
     def __init__(self, name, context):
         super(IPMINamespace, self).__init__(name, context)

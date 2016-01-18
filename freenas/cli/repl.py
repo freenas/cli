@@ -89,7 +89,7 @@ else:
     import readline
 
 DEFAULT_MIDDLEWARE_CONFIGFILE = None
-CLI_LOG_DIR = os.getcwd()
+CLI_LOG_DIR = None
 if os.environ.get('FREENAS_SYSTEM') == 'YES':
     DEFAULT_MIDDLEWARE_CONFIGFILE = '/usr/local/etc/middleware.conf'
     CLI_LOG_DIR = '/var/tmp'
@@ -1346,21 +1346,23 @@ class MainLoop(object):
 
 
 def main():
-    current_cli_logfile = os.path.join(CLI_LOG_DIR, 'freenascli.{0}.log'.format(os.getpid()))
-    logging.basicConfig(filename=current_cli_logfile, level=logging.DEBUG)
-    # create symlink to latest created cli log
-    # but first check if previous exists and nuke it
-    try:
-        if platform.system() != 'Windows':
-            latest_log = os.path.join(CLI_LOG_DIR, 'freenascli.latest.log')
-            if os.path.lexists(latest_log):
-                os.unlink(latest_log)
-            os.symlink(current_cli_logfile, latest_log)
-            # Try to set the permissions on this symlink to be readable, writable by all
-            os.chmod(latest_log, 0o777)
-    except OSError:
-        # not there no probs or cannot make this symlink move on
-        pass
+    if CLI_LOG_DIR:
+        current_cli_logfile = os.path.join(CLI_LOG_DIR, 'freenascli.{0}.log'.format(os.getpid()))
+        logging.basicConfig(filename=current_cli_logfile, level=logging.DEBUG)
+        # create symlink to latest created cli log
+        # but first check if previous exists and nuke it
+        try:
+            if platform.system() != 'Windows':
+                latest_log = os.path.join(CLI_LOG_DIR, 'freenascli.latest.log')
+                if os.path.lexists(latest_log):
+                    os.unlink(latest_log)
+                os.symlink(current_cli_logfile, latest_log)
+                # Try to set the permissions on this symlink to be readable, writable by all
+                os.chmod(latest_log, 0o777)
+        except OSError:
+            # not there no probs or cannot make this symlink move on
+            pass
+
     parser = argparse.ArgumentParser()
     parser.add_argument('uri', metavar='URI', nargs='?',
                         default='unix:')

@@ -58,6 +58,14 @@ if platform.system() == 'Darwin':
 elif platform.system() == 'Windows':
     install_requires.append('pyreadline')
 
+
+# Generate parser
+try:
+    from freenas.cli import parser
+except ImportError as err:
+    raise err
+
+
 setup(
     name='freenas.cli',
     url='http://github.com/freenas/middleware',

@@ -28,6 +28,7 @@
 import gettext
 import curses
 import pyte
+from threading import RLock
 from freenas.dispatcher.shell import VMConsoleClient
 from freenas.cli.namespace import (
     EntityNamespace, Command, NestedObjectLoadMixin, NestedObjectSaveMixin, RpcBasedLoadMixin,
@@ -55,14 +56,16 @@ class VMConsole(object):
         self.screen = VMConsole.CursesScreen(self, 80, 24)
         self.stream.attach(self.screen)
         self.window = None
+        self.output_lock = RLock()
 
     def on_data(self, data):
-        self.stream.feed(data.decode('utf-8'))
-        for i in self.screen.dirty:
-            self.window.addstr(i, 0, self.screen.display[i])
+        with self.output_lock:
+            self.stream.feed(data.decode('utf-8'))
+            for i in self.screen.dirty:
+                self.window.addstr(i, 0, self.screen.display[i])
 
-        self.screen.dirty.clear()
-        self.window.move(self.screen.cursor.y, self.screen.cursor.x)
+            self.screen.dirty.clear()
+            print('\033[{0};{1}H'.format(self.screen.cursor.y + 1, self.screen.cursor.x + 1))
 
     def connect(self):
         token = self.context.call_sync('containerd.management.request_console', self.id)

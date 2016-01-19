@@ -77,7 +77,7 @@ class VMConsole(object):
         stdscr = curses.initscr()
         stdscr.immedok(True)
         curses.noecho()
-        curses.cbreak()
+        curses.raw()
         stdscr.clear()
         rows, cols = stdscr.getmaxyx()
         header = curses.newwin(1, cols, 0, 0)

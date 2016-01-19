@@ -240,7 +240,7 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
             usage=_("""\
             MAC address of interface. This is a read-only
             property."""),
-            createsetable=False,
+            set=None,
             list=False
         )
 

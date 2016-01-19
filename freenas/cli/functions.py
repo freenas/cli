@@ -81,6 +81,10 @@ def mapf(fmt, array):
     return list(map(lambda s: fmt % s, array))
 
 
+def apply(fn, *args):
+    return fn(*args)
+
+
 def readline(prompt):
     return input(prompt)
 
@@ -140,6 +144,7 @@ functions = {
     'sprintf': sprintf,
     'map': map_,
     'mapf': mapf,
+    'apply': apply,
     'readline': readline,
     'unparse': unparse_,
     'rpc': rpc,

@@ -25,6 +25,7 @@
 #
 #####################################################################
 
+import re
 from freenas.cli import output
 
 
@@ -85,3 +86,9 @@ def to_list(item):
         return item
 
     return [item]
+
+
+def correct_disk_path(disk):
+    if not re.match("^\/dev\/", disk):
+        disk = "/dev/" + disk
+    return disk

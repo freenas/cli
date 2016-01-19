@@ -26,13 +26,12 @@
 #####################################################################
 
 
-import re
 import gettext
 from freenas.cli.namespace import (
     Namespace, EntityNamespace, Command, RpcBasedLoadMixin,
     IndexCommand, description, CommandException
 )
-from freenas.cli.utils import iterate_vdevs, post_save
+from freenas.cli.utils import iterate_vdevs, post_save, correct_disk_path
 from freenas.cli.output import ValueType, Table, output_msg
 import inspect
 
@@ -291,8 +290,7 @@ class BootPoolAttachDiskCommand(Command):
         # all_disks = context.call_sync('disk.query', [], {"select":"path"})
         all_disks = [d["path"] for d in context.call_sync("disk.query")]
         available_disks = context.call_sync('volume.get_available_disks')
-        if not re.match("^\/dev\/", disk):
-            disk = "/dev/" + disk
+        disk = correct_disk_path(disk)
         if disk not in all_disks:
             output_msg("Disk " + disk + " does not exist.")
             return
@@ -318,7 +316,8 @@ class BootPoolDetachDiskCommand(Command):
     """
     def run(self, context, args, kwargs, opargs):
         disk = args.pop(0)
-        context.submit_task('boot.detach_disk', [], disk)
+        disk = correct_disk_path(disk)
+        context.submit_task('boot.detach_disk', disk)
         return
 
 

@@ -26,7 +26,6 @@
 #####################################################################
 
 import os
-import re
 import copy
 import gettext
 from freenas.cli.namespace import (
@@ -68,11 +67,6 @@ VOLUME_LAYOUTS = {
     'safety': 'raidz2',
     'storage': 'raidz1',
 }
-
-def correct_disk_path(disk):
-    if not re.match("^\/dev\/", disk):
-        disk = "/dev/" + disk
-    return disk
 
 
 @description("Adds new vdev to volume")

@@ -229,6 +229,11 @@ class VMNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
             'console': ConsoleCommand(this)
         }
 
+    def namespaces(self):
+        yield TemplateNamespace('template', self.context)
+        for namespace in super(VMNamespace, self).namespaces():
+            yield namespace
+
 
 class VMDisksNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNamespace):
     def __init__(self, name, context, parent):
@@ -305,6 +310,93 @@ class VMNicsNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNamesp
         )
 
         self.primary_key = self.get_mapping('name')
+
+
+@description("VM templates operations")
+class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
+    def __init__(self, name, context):
+        super(TemplateNamespace, self).__init__(name, context)
+        self.query_call = 'vm_template.query'
+        self.primary_key_name = 'template.name'
+        self.allow_create = False
+
+        self.skeleton_entity = {
+            'type': 'VM',
+            'devices': [],
+            'config': {}
+        }
+
+        self.add_property(
+            descr='Name',
+            name='name',
+            get='template.name',
+            list=True
+        )
+
+        self.add_property(
+            descr='Description',
+            name='description',
+            get='template.description',
+            list=True
+        )
+
+        self.add_property(
+            descr='Author',
+            name='author',
+            get='template.author',
+            list=False
+        )
+
+        self.add_property(
+            descr='Memory size (MB)',
+            name='memsize',
+            get='config.memsize',
+            list=False,
+            type=ValueType.NUMBER
+        )
+
+        self.add_property(
+            descr='CPU cores',
+            name='cores',
+            get='config.ncpus',
+            list=False,
+            type=ValueType.NUMBER
+        )
+
+        self.add_property(
+            descr='Boot device',
+            name='boot_device',
+            get='config.boot_device',
+            list=False
+        )
+
+        self.add_property(
+            descr='Bootloader type',
+            name='bootloader',
+            get='config.bootloader',
+            list=False,
+            enum=['BHYVELOAD', 'GRUB']
+        )
+
+        self.primary_key = self.get_mapping('name')
+
+        self.extra_commands = {
+            'fetch': FetchCommand()
+        }
+
+
+@description("Downloads templates from git")
+class FetchCommand(Command):
+    """
+    Usage: fetch
+
+    Example: fetch
+
+    Refreshes local cache of VM templates.
+    """
+
+    def run(self, context, args, kwargs, opargs):
+        context.submit_task('vm_template.fetch')
 
 
 def _init(context):

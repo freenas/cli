@@ -173,8 +173,9 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
             get='type',
             set='type',
             usage=_("""\
-            Can only be specified when using the 'create' command. Allowable
-            values are VLAN, BRIDGE, or LAGG."""),
+            Can only be specified when using the 'create'
+            command. Allowable values are VLAN,
+            BRIDGE, or LAGG."""),
             enum_set=['VLAN', 'BRIDGE', 'LAGG'],
             usersetable=False,
             list=True
@@ -184,6 +185,9 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
             descr='Enabled',
             name='enabled',
             get='enabled',
+            usage=_("""\
+            Indicates whether or not the interface is
+            active or disabled. Can be set to yes or no."""),
             type=ValueType.BOOLEAN,
             createsetable=False,
             list=True
@@ -193,6 +197,11 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
             descr='DHCP',
             name='dhcp',
             get='dhcp',
+            usage=_("""\
+            Indicates whether or not the interface uses
+            DHCP to obtain its IP configuration. Can be
+            set to yes or no, however, only ONE interface
+            on the system can be set to yes."""),
             type=ValueType.BOOLEAN,
             createsetable=False,
             list=True
@@ -202,6 +211,10 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
             descr='IPv6 autoconfiguration',
             name='ipv6_autoconf',
             get='rtadv',
+            usage=_("""\
+            Indicates whether or not the interface uses
+            rtsold to obtain its IPv6 configuration. Can be
+            set to yes or no."""),
             type=ValueType.BOOLEAN,
             createsetable=False,
             list=False
@@ -211,6 +224,10 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
             descr='Disable IPv6',
             name='ipv6_disable',
             get='noipv6',
+            usage=_("""\
+            Indicates whether or not the interface will
+            accept an IPv6 configuration. Can be set to yes
+            or no."""),
             type=ValueType.BOOLEAN,
             createsetable=False,
             list=False

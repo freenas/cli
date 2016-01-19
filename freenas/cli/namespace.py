@@ -244,6 +244,9 @@ class PropertyMapping(object):
         return obj.get(self.get)
 
     def do_set(self, obj, value):
+        if self.condition and not self.condition(obj):
+            raise ValueError(_("Property '{0}' is not settable for this entity".format(self.name)))
+
         if self.enum_set:
             if value not in self.enum_set:
                 raise ValueError('Invalid value for property. Should be one of: {0}'.format(', '.join(self.enum_set)))

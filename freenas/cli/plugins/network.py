@@ -319,7 +319,8 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
             list=False,
             createsetable=False,
             type=ValueType.STRING,
-            condition=lambda e: e['type'] == 'LAGG'
+            condition=lambda e: e['type'] == 'LAGG',
+            enum=['NONE', 'ROUNDROBIN', 'FAILOVER', 'LOADBALANCE', 'LACP', 'ETHERCHANNEL']
         )
 
         self.add_property(

@@ -153,7 +153,7 @@ def expand_wildcards(context, args, kwargs, opargs, completions):
             continue
 
         if isinstance(i.name, six.integer_types):
-            if not len(args) >= i.name:
+            if not len(args) >= i.name or not isinstance(kwargs[name], six.string_types):
                 continue
 
             args[i.name] = expand_one(args[i.name], i)
@@ -161,7 +161,7 @@ def expand_wildcards(context, args, kwargs, opargs, completions):
         if isinstance(i.name, six.string_types):
             name, op = i.name[:-1], i.name[-1]
             if op == '=':
-                if name not in kwargs:
+                if name not in kwargs or not isinstance(kwargs[name], six.string_types):
                     continue
 
                 kwargs[name] = expand_one(kwargs[name], i)

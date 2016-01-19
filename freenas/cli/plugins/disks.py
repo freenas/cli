@@ -118,8 +118,8 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             get='online',
             set=None,
             usage=_("""\
-            Indicates whether or not the device is online. This is
-            a read-only value."""),
+            Indicates whether or not the device is online.
+            This is a read-only value."""),
             list=True,
             type=ValueType.BOOLEAN
         )
@@ -130,8 +130,8 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             get='status.empty',
             set=None,
             usage=_("""\
-            Indicates whether or not the device has been formatted.
-            This is a read-only value."""),
+            Indicates whether or not the device has been
+            formatted. This is a read-only value."""),
             list=True,
             type=ValueType.BOOLEAN
         )
@@ -142,8 +142,9 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             get=self.get_allocation,
             set=None,
             usage=_("""\
-            Indicates whether or not the device is being used for
-            storage or for the boot device. This is a read-only value."""),
+            Indicates whether or not the device is being
+            used for storage or for the boot device. This
+            is a read-only value."""),
             list=True
         )
 
@@ -152,8 +153,9 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             name='standby_mode',
             get='standby_mode',
             usage=_("""\
-            Integer that indicates the time of inactivity (in minutes) before the
-            drive enters standby mode in order to conserve energy. A value of 0
+            Integer that indicates the time of inactivity
+            (in minutes) before the drive enters standby
+            mode in order to conserve energy. A value of 0
             disables standby mode."""),
             type=ValueType.NUMBER,
             list=False
@@ -164,8 +166,9 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             name='apm_mode',
             get='apm_mode',
             usage=_("""\
-            Integer that indicates the power management mode as described
-            in ataidle\(8\). A value of 0 disables power management."""),
+            Integer that indicates the power management mode
+            as described in ataidle\(8\). A value of 0
+            disables power management."""),
             type=ValueType.NUMBER,
             list=False
         )
@@ -175,8 +178,9 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             name='acoustic_level',
             get='acoustic_level',
             usage=_("""\
-            Can be set on disks that understand AAM. Possible values are
-            DISABLED, MINIMUM, MEDIUM, or MAXIMUM."""),
+            Can be set on disks that understand AAM.
+            Possible values are DISABLED, MINIMUM,
+            MEDIUM, or MAXIMUM."""),
             type=ValueType.STRING,
             list=False
         )
@@ -197,10 +201,11 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             name='smart_options',
             get='smart_options',
             usage=_("""\
-            Additional options from smartctl\(8\). When setting
-            options, place entire options string between double
-            quotes and use a space to separate multiple options. Can
-            only set options if the disk is S.M.A.R.T. capable."""),
+            Additional options from smartctl\(8\). When
+            setting options, place entire options string
+            between double quotes and use a space to separate
+            multiple options. Can only set options if the
+            disk is S.M.A.R.T. capable."""),
             type=ValueType.STRING,
             list=False
         )

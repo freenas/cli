@@ -349,8 +349,8 @@ class ItemNamespace(Namespace):
             entity = self.parent.entity
             return self.parent.get_property(args[0], entity)
 
-        def complete(self, context, tokens):
-            return [x.name for x in self.parent.property_mappings]
+        def complete(self, context):
+            return [EnumComplete(0, [p.name for p in self.parent.property_mappings])]
 
     @description("Sets single <entity> property")
     class SetEntityCommand(Command):

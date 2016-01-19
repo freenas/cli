@@ -1311,7 +1311,14 @@ class MainLoop(object):
 
     def complete(self, text, state):
         def find_arg(args, index):
+            positional_index = 0
             for a in args:
+                if isinstance(a, (Literal, Symbol)):
+                    if a.column <= index <= a.column_end:
+                        return positional_index
+
+                    positional_index += 1
+
                 if isinstance(a, BinaryParameter):
                     if a.column + len(a.left) + 1 <= index <= a.column_end:
                         return a
@@ -1345,16 +1352,23 @@ class MainLoop(object):
                 append_space = True
             elif issubclass(type(obj), Command):
                 completions = obj.complete(self.context)
+                choices = [c.name for c in completions if isinstance(c.name, six.string_types)]
                 arg = find_arg(args, readline.get_begidx())
+
                 if arg is None:
-                    choices = [c.name for c in completions]
-
-                if arg is False:
+                    pass
+                elif arg is False:
                     return None
-
-                if isinstance(arg, BinaryParameter):
+                elif isinstance(arg, six.integer_types):
+                    completion = first_or_default(lambda c: c.name == arg, completions)
+                    if completion:
+                        choices = completion.choices(self.context, None)
+                elif isinstance(arg, BinaryParameter):
                     completion = first_or_default(lambda c: c.name == arg.left + '=', completions)
-                    choices = completion.choices(self.context, arg)
+                    if completion:
+                        choices = completion.choices(self.context, arg)
+                else:
+                    raise AssertionError('Unknown arg returned by find_arg()')
 
             options = [i + (' ' if append_space else '') for i in choices if i.startswith(text)]
             if state < len(options):

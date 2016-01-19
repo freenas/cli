@@ -81,8 +81,7 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
         self.entity_localdoc['SetEntityCommand'] = ("""\
             Usage: set <property>=<value> ...
 
-            Examples: set fullname="John Smith"
-                      set group=users
+            Examples: set group=users
                       set password_disabled=True
                       set groups=wheel, ftp, operator
 
@@ -99,13 +98,13 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             Usage: show
 
             Lists all users. Optionally, filter or sort by property.
-            Use "help account user properties" to list available properties.
+            Use 'help account user properties' to list available properties.
 
             Examples:
                 show
                 show | search username == root
                 show | search uid > 1000
-                show | search fullname~="John" | sort fullname""")
+                show | search fullname~=John | sort fullname""")
 
         self.skeleton_entity = {
             'username': None,
@@ -362,7 +361,7 @@ class GroupsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
 @description(_("Manage local users and groups"))
 class AccountNamespace(Namespace):
     """
-    This namespace is used to manage local users and groups.
+    The account namespace is used to manage local users and groups.
     """
     def __init__(self, name, context):
         super(AccountNamespace, self).__init__(name)

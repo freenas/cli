@@ -127,9 +127,9 @@ class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
             name='onreboot',
             get='on_reboot',
             usage=_("""
-            Can be set to yes or no. Yes indicates the default boot
-            entry for the next system boot. Only one entry can be
-            set to yes."""),
+            Can be set to yes or no. Yes indicates the default
+            boot entry for the next system boot. Only one entry
+            can be set to yes."""),
             list=True,
             type=ValueType.BOOLEAN,
             set=None,

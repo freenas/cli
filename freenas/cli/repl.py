@@ -1326,7 +1326,7 @@ class MainLoop(object):
                     if a.column <= index <= a.column + len(a.left) + 1:
                         return False
 
-            return None
+            return positional_index
 
         try:
             readline_buffer = readline.get_line_buffer()
@@ -1355,9 +1355,7 @@ class MainLoop(object):
                 choices = [c.name for c in completions if isinstance(c.name, six.string_types)]
                 arg = find_arg(args, readline.get_begidx())
 
-                if arg is None:
-                    pass
-                elif arg is False:
+                if arg is False:
                     return None
                 elif isinstance(arg, six.integer_types):
                     completion = first_or_default(lambda c: c.name == arg, completions)

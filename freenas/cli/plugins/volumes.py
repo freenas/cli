@@ -34,7 +34,7 @@ from freenas.cli.namespace import (
 )
 from freenas.cli.complete import NullComplete, EnumComplete, EntitySubscriberComplete
 from freenas.cli.output import Table, ValueType, output_tree, format_value, read_value, Sequence
-from freenas.cli.utils import post_save, iterate_vdevs, to_list
+from freenas.cli.utils import post_save, iterate_vdevs, to_list, correct_disk_path
 from freenas.utils import first_or_default, extend, query
 
 

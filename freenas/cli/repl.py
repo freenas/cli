@@ -1369,6 +1369,8 @@ class MainLoop(object):
                         choices = completion.choices(self.context, arg)
                 else:
                     raise AssertionError('Unknown arg returned by find_arg()')
+            else:
+                choices = []
 
             options = [i + (' ' if append_space else '') for i in choices if i.startswith(text)]
             if state < len(options):

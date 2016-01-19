@@ -237,6 +237,9 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
             descr='Link address',
             name='link_address',
             get='status.link_address',
+            usage=_("""\
+            MAC address of interface. This is a read-only
+            property."""),
             createsetable=False,
             list=False
         )
@@ -245,6 +248,10 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
             descr='IP configuration',
             name='ip_config',
             get=self.get_ip_config,
+            usage=_("""\
+            Lists all configured IP and IPv6 addresses
+            with their CIDR masks for the interface. This
+            is a read-only property."""),
             set=None,
             list=True,
             type=ValueType.SET
@@ -253,6 +260,11 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
         self.add_property(
             descr='Link state',
             name='link_state',
+            usage=_("""\
+            Indicates whether the interface detects a
+            network link. If it displays down, check the
+            physical connection to the network. This is a 
+            read-only property."""),
             get=self.get_link_state,
             set=None,
             list=True
@@ -262,14 +274,23 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
             descr='State',
             name='state',
             get=self.get_iface_state,
+            usage=_("""\
+            Indicates whether the interface has been
+            configured to be up or down. If it displays
+            as down, the enabled property can be used to 
+            set it to yes."""),
             set=None,
             list=True
         )
 
         self.add_property(
-            descr='Parent interface',
+            descr='VLAN parent interface',
             name='vlan_parent',
             get='vlan.parent',
+            usage=_("""\
+            This property only applies to VLAN interfaces.
+            It should be set to the physical interface that
+            is attached to the VLAN switch port."""),
             list=False,
             createsetable=False,
             type=ValueType.STRING,

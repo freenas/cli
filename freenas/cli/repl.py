@@ -59,7 +59,7 @@ from freenas.cli.parser import (
     parse, Symbol, Literal, BinaryParameter, UnaryExpr, BinaryExpr, PipeExpr, AssignmentStatement,
     IfStatement, ForStatement, WhileStatement, FunctionCall, CommandCall, Subscript,
     ExpressionExpansion, FunctionDefinition, ReturnStatement, BreakStatement, UndefStatement,
-    Redirection
+    Redirection, AnonymousFunction
 )
 from freenas.cli.output import (
     ValueType, ProgressBar, output_lock, output_msg, read_value, format_value,
@@ -956,6 +956,9 @@ class MainLoop(object):
 
                 return token.value
 
+            if isinstance(token, AnonymousFunction):
+                return Function(self.context, '<anonymous>', token.args, token.body, env)
+
             if isinstance(token, Symbol):
                 try:
                     item = env.find(token.name)
@@ -1056,6 +1059,7 @@ class MainLoop(object):
 
             if isinstance(token, UndefStatement):
                 del env[token.name]
+                return
 
             if isinstance(token, ExpressionExpansion):
                 expr = self.eval(token.expr, env)
@@ -1150,6 +1154,9 @@ class MainLoop(object):
                 args = list(map(lambda a: self.eval(a, env), token.args))
                 func = env.find(token.name)
                 if func:
+                    if isinstance(func, Environment.Variable):
+                        func = func.value
+
                     self.context.call_stack.append(CallStackEntry(func.name, args, token.file, token.line, token.column))
                     result = func(*args)
                     self.context.call_stack.pop()

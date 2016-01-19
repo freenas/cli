@@ -75,6 +75,7 @@ UndefStatement = ASTObject('UndefStatement', 'name')
 ReturnStatement = ASTObject('ReturnStatement', 'expr')
 BreakStatement = ASTObject('BreakStatement')
 FunctionDefinition = ASTObject('FunctionDefinition', 'name', 'args', 'body')
+AnonymousFunction = ASTObject('AnonymousFunction', 'args', 'body')
 Redirection = ASTObject('Redirection', 'body', 'path')
 
 
@@ -420,6 +421,7 @@ def p_expr(p):
     expr : binary_expr
     expr : call
     expr : subscript_expr
+    expr : anon_function_expr
     expr : expr_expansion
     expr : LPAREN expr RPAREN
     expr : COPEN expr RBRACE
@@ -526,6 +528,34 @@ def p_subscript_expr(p):
     subscript_expr : expr LBRACKET expr RBRACKET
     """
     p[0] = Subscript(p[1], p[3], p=p)
+
+
+def p_anon_function_expr_1(p):
+    """
+    anon_function_expr : FUNCTION LPAREN RPAREN block
+    """
+    p[0] = AnonymousFunction([], p[4], p=p)
+
+
+def p_anon_function_expr_2(p):
+    """
+    anon_function_expr : FUNCTION LPAREN RPAREN NEWLINE block
+    """
+    p[0] = AnonymousFunction([], p[5], p=p)
+
+
+def p_anon_function_expr_3(p):
+    """
+    anon_function_expr : FUNCTION LPAREN function_argument_list RPAREN block
+    """
+    p[0] = AnonymousFunction(p[3], p[5], p=p)
+
+
+def p_anon_function_expr_4(p):
+    """
+    anon_function_expr : FUNCTION LPAREN function_argument_list RPAREN NEWLINE block
+    """
+    p[0] = AnonymousFunction(p[3], p[6], p=p)
 
 
 def p_unary_expr(p):
@@ -710,7 +740,7 @@ def p_error(p):
 
 
 lexer = lex.lex()
-parser = yacc.yacc(debug=False, optimize=True, write_tables=False)
+parser = yacc.yacc()
 
 
 def parse(s, filename, recover_errors=False):

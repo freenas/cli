@@ -130,7 +130,11 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
                 create type=VLAN
                 create type=BRIDGE
 
-            Creates a logical interface. You must create an interface before setting any properties for it.""")
+            Creates a virtual interface of specified type. Use LAGG
+            for link aggregation or failover, VLAN for 802.1q tagging,
+            and BRIDGE for Layer 2 bridging. Once the virtual interface
+            is created, type 'help properties' to determine which
+            properties can be set.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
             Usage: set <property>=<value> ...
 

@@ -112,7 +112,7 @@ class InterfaceRenewCommand(Command):
         )
 
 
-@description("Configure network interfaces")
+@description("Configure virtual interfaces")
 class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
     def __init__(self, name, context):
         super(InterfacesNamespace, self).__init__(name, context)

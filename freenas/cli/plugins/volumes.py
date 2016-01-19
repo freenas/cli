@@ -970,6 +970,7 @@ class FilesystemNamespace(EntityNamespace):
             get='name'
         )
 
+
 def check_disks(context, disks, cache_disks=None, log_disks=None):
     all_disks = [disk["path"] for disk in context.call_sync("disk.query")]
     available_disks = context.call_sync('volume.get_available_disks')
@@ -1082,7 +1083,8 @@ class CreateVolumeCommand(Command):
         disks, cache_disks, log_disks = check_disks(context, disks, cache_disks, log_disks)
 
         if len(disks) < DISKS_PER_TYPE[volume_type]:
-            raise CommandException(_("Volume type {0} requires at least {1} disks".format(volume_type, DISKS_PER_TYPE)))
+            raise CommandException(_("Volume type {0} requires at least {1} disks".format(volume_type,
+                                                                                          DISKS_PER_TYPE[volume_type])))
         if len(disks) > 1 and volume_type == 'disk':
             raise CommandException(_("Cannot create a volume of type disk with multiple disks"))
 

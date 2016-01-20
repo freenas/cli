@@ -88,7 +88,7 @@ class VMConsole(object):
         self.window.immedok(True)
         header.immedok(True)
         header.bkgdset(' ', curses.A_REVERSE)
-        header.addstr(0, 0, "Connected to {0} console".format(self.name))
+        header.addstr(0, 0, "Connected to {0} console - hit ^] to detach".format(self.name))
         self.connect()
         while True:
             ch = stdscr.getch()

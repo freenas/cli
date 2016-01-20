@@ -119,11 +119,11 @@ class ProgressBar(object):
         sys.stdout.write('\n')
 
     def draw(self):
-        progress_width = get_terminal_size()[1] - 35
+        progress_width = 40
         filled_width = int(self.percentage * progress_width)
         sys.stdout.write('\033[2K\033[A\033[2K\r')
         sys.stdout.write('Status: {}\n'.format(self.message))
-        sys.stdout.write('Total Task Progress: [{}{}] {:.2%}'.format(
+        sys.stdout.write('Total task progress: [{}{}] {:.2%}'.format(
             '#' * filled_width,
             '_' * (progress_width - filled_width),
             self.percentage))
@@ -351,8 +351,9 @@ def format_output(object, **kwargs):
 
 
 def refresh_prompt():
-    config.instance.ml.blank_readline()
-    config.instance.ml.restore_readline()
+    if not config.instance.variables.get('tasks_blocking'):
+        config.instance.ml.blank_readline()
+        config.instance.ml.restore_readline()
 
 
 def output_msg_locked(msg):

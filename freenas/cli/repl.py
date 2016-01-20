@@ -354,7 +354,7 @@ class Context(object):
             e.start()
             self.entity_subscribers[i] = e
 
-        def update_task(task):
+        def update_task(task, old_task=None):
             if task['id'] not in self.pending_tasks:
                 self.pending_tasks[task['id']] = task
                 refresh_prompt()
@@ -392,8 +392,17 @@ class Context(object):
                     )
                 ))
 
+            if old_task:
+                if len(task['warnings']) > len(old_task['warnings']):
+                    for i in task['warnings'][len(old_task['warnings']):]:
+                        output_msg_locked(_("Task #{0}: {1}: warning: {2}".format(
+                            task['id'],
+                            tasks.translate(self, task['name'], task['args']),
+                            i['message']
+                        )))
+
         self.entity_subscribers['task'].on_add = update_task
-        self.entity_subscribers['task'].on_update = lambda o, n: update_task(n)
+        self.entity_subscribers['task'].on_update = lambda o, n: update_task(n, o)
 
     def connect(self, password=None):
         try:

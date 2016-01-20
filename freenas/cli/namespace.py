@@ -33,10 +33,11 @@ import errno
 import gettext
 import sys
 import collections
+import six
 from freenas.utils import first_or_default
 from freenas.utils.query import wrap
 from freenas.cli.parser import CommandCall, Literal, Symbol, BinaryParameter, Comment
-from freenas.cli.complete import NullComplete, EnumComplete, EntitySubscriberComplete
+from freenas.cli.complete import NullComplete, EnumComplete
 from freenas.cli.utils import post_save
 from freenas.cli.output import (
     ValueType, Object, Table, Sequence, output_list,
@@ -325,6 +326,7 @@ class ItemNamespace(Namespace):
                     mapping.do_get(entity),
                     mapping.type
                 ))
+
             if self.parent.leaf_entity:
                 leaf_res = ListCommand(self.parent).run(context, args, kwargs, opargs, filtering)
                 return Sequence(
@@ -720,19 +722,29 @@ class ListCommand(FilteringCommand):
         options = {}
 
         if filtering:
-            for k, v in list(filtering['params'].items()):
+            for k, v in filtering['params'].items():
                 if k == 'limit':
                     options['limit'] = int(v)
                     continue
 
                 if k == 'sort':
                     for sortkey in v:
+                        neg = ''
+                        if sortkey.startswith('-'):
+                            sortkey = sortkey[1:]
+                            neg = '-'
+
                         prop = self.parent.get_mapping(sortkey)
-                        options.setdefault('sort', []).append(prop.get)
+                        if not prop:
+                            raise CommandException('Unknown field {0}'.format(sortkey))
+
+                        if not isinstance(prop.get, six.string_types):
+                            raise CommandException('Cannot sort on field {0}'.format(sortkey))
+
+                        options.setdefault('sort', []).append(neg + prop.get)
                     continue
 
-                if not self.parent.has_property(k):
-                    raise CommandException('Unknown field {0}'.format(k))
+                raise CommandException('Unknown field {0}'.format(k))
 
             params = list(self.__map_filter_properties(filtering['filter']))
 
@@ -862,7 +874,7 @@ class EntityNamespace(Namespace):
         return any([x for x in self.property_mappings if x.name == prop])
 
     def get_mapping(self, prop):
-        return list(filter(lambda x: x.name == prop, self.property_mappings))[0]
+        return first_or_default(lambda x: x.name == prop, self.property_mappings)
 
     def get_property(self, prop, obj):
         mapping = self.get_mapping(prop)

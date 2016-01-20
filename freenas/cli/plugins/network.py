@@ -487,6 +487,12 @@ class HostsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityN
         self.update_task = 'network.host.update'
         self.delete_task = 'network.host.delete'
         self.required_props = ['name', 'address']
+        self.localdoc['CreateEntityCommand'] = ("""\
+            Usage: create <hostname> address=<IP address>
+            Examples: create myfreenas address=10.0.0.1
+                      
+            Add an entry to the hosts table. Specify the hostname
+            or FQDN and its associated IP address.""")
 
         self.add_property(
             descr='IP address',

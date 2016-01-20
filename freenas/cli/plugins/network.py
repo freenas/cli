@@ -479,6 +479,10 @@ class MembersNamespace(EntityNamespace):
 
 @description("Configure hosts entries")
 class HostsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
+    """
+    The host namespace provides commands for listing and managing the entries in the
+    system hosts file. To edit an existing entry, type its name.
+    """
     def __init__(self, name, context):
         super(HostsNamespace, self).__init__(name, context)
 

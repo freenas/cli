@@ -29,6 +29,7 @@ import gettext
 from freenas.cli.output import ValueType
 from freenas.cli.descriptions import tasks
 from freenas.cli.namespace import EntityNamespace, EntitySubscriberBasedLoadMixin, Command, description
+from freenas.cli.utils import describe_task_state
 
 
 t = gettext.translation('freenas-cli', fallback=True)
@@ -108,7 +109,7 @@ class TasksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         self.add_property(
             descr='State',
             name='state',
-            get=self.describe_state,
+            get=describe_task_state,
         )
 
         self.primary_key = self.get_mapping('id')
@@ -122,16 +123,6 @@ class TasksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
 
     def serialize(self):
         raise NotImplementedError()
-
-    def describe_state(self, task):
-        if task['state'] == 'EXECUTING':
-            if 'progress' not in task:
-                return task['state']
-
-            return '{0:2.0f}% ({1})'.format(
-                task['progress.percentage'], task['progress.message'])
-
-        return task['state']
 
     def describe_task(self, task):
         return tasks.translate(self.context, task['name'], task['args'])

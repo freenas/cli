@@ -69,13 +69,13 @@ from freenas.dispatcher.client import Client, ClientError
 from freenas.dispatcher.entity import EntitySubscriber
 from freenas.dispatcher.rpc import RpcException
 from freenas.utils import first_or_default, include
-from freenas.utils.query import wrap
+from freenas.utils.query import QueryDict, wrap
 from freenas.cli.commands import (
     ExitCommand, PrintenvCommand, SetenvCommand, ShellCommand, HelpCommand,
     ShowUrlsCommand, ShowIpsCommand, TopCommand, ClearCommand, HistoryCommand,
     SaveenvCommand, EchoCommand, SourceCommand, MorePipeCommand, SearchPipeCommand,
     ExcludePipeCommand, SortPipeCommand, LimitPipeCommand, SelectPipeCommand,
-    LoginCommand, DumpCommand, WhoamiCommand
+    LoginCommand, DumpCommand, WhoamiCommand, PendingCommand
 )
 import collections
 
@@ -324,7 +324,7 @@ class Context(object):
         self.builtin_functions = functions.functions
         self.global_env = Environment(self)
         self.user = None
-        self.pending_tasks = {}
+        self.pending_tasks = QueryDict()
         self.session_id = None
         self.user_commands = []
         config.instance = self
@@ -355,9 +355,8 @@ class Context(object):
             self.entity_subscribers[i] = e
 
         def update_task(task, old_task=None):
-            if task['id'] not in self.pending_tasks:
-                self.pending_tasks[task['id']] = task
-                refresh_prompt()
+            self.pending_tasks[task['id']] = task
+            refresh_prompt()
 
             if task['state'] in ('FINISHED', 'FAILED', 'ABORTED'):
                 del self.pending_tasks[task['id']]
@@ -563,8 +562,10 @@ class Context(object):
 
     def handle_event(self, event, data):
         if event == 'task.progress':
+            progress = include(data, 'percentage', 'message', 'extra')
             task = self.entity_subscribers['task'].items[data['id']]
-            task['progress'] = include(data, 'percentage', 'message', 'extra')
+            task['progress'] = progress
+            self.pending_tasks[data['id']]['progress'] = progress
 
         self.print_event(event, data)
 
@@ -758,6 +759,7 @@ class MainLoop(object):
         'history': HistoryCommand(),
         'echo': EchoCommand(),
         'whoami': WhoamiCommand(),
+        'pending': PendingCommand()
     }
     builtin_commands = base_builtin_commands.copy()
     builtin_commands.update(pipe_commands)

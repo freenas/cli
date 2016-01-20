@@ -36,18 +36,24 @@ import textwrap
 import re
 from freenas.cli.parser import parse, unparse
 from freenas.cli.complete import NullComplete, EnumComplete
-from freenas.cli.namespace import (Command, PipeCommand, CommandException, description,
-                                   SingleItemNamespace, Namespace)
+from freenas.cli.namespace import (
+    Command, PipeCommand, CommandException, description,
+    SingleItemNamespace, Namespace
+)
 from freenas.cli.output import (
     Table, ValueType, output_msg, output_lock, output_less, format_value,
-     Sequence, read_value, format_output
+    Sequence, read_value, format_output
 )
 from freenas.cli.output import Object as output_obj
+from freenas.cli.descriptions.tasks import translate as translate_task
+from freenas.cli.utils import describe_task_state
 from freenas.dispatcher.shell import ShellClient
+
 
 if platform.system() != 'Windows':
     import tty
     import termios
+
 
 t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
@@ -633,6 +639,20 @@ class EchoCommand(Command):
                 else:
                     echo_seq.append(item)
             return Sequence(*echo_seq)
+
+
+class PendingCommand(Command):
+    def run(self, context, args, kwargs, opargs):
+        pending = list(filter(
+            lambda t: t['parent'] is None and t['session'] == context.session_id,
+            context.pending_tasks.values()
+        ))
+
+        return Table(pending, [
+            Table.Column('Task ID', 'id'),
+            Table.Column('Task description', lambda t: translate_task(context, t['name'], t['args'])),
+            Table.Column('Task status', describe_task_state)
+        ])
 
 
 @description("Allows the user to scroll through output")

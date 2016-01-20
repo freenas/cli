@@ -92,3 +92,14 @@ def correct_disk_path(disk):
     if not re.match("^\/dev\/", disk):
         disk = "/dev/" + disk
     return disk
+
+
+def describe_task_state(task):
+    if task['state'] == 'EXECUTING':
+        if 'progress' not in task:
+            return task['state']
+
+        return '{0:2.0f}% ({1})'.format(
+            task['progress.percentage'], task['progress.message'])
+
+    return task['state']

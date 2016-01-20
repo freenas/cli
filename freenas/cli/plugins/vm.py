@@ -73,6 +73,9 @@ class VMConsole(object):
         self.conn.on_data(self.on_data)
         self.conn.open()
 
+    def disconnect(self):
+        self.conn.close()
+
     def start(self):
         stdscr = curses.initscr()
         stdscr.immedok(True)
@@ -91,6 +94,7 @@ class VMConsole(object):
             ch = stdscr.getch()
             if ch == 29:
                 curses.endwin()
+                self.disconnect()
                 break
 
             self.conn.write(chr(ch))

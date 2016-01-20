@@ -655,6 +655,7 @@ class IPMINamespace(EntityNamespace):
     def __init__(self, name, context):
         super(IPMINamespace, self).__init__(name, context)
         self.context = context
+        self.allow_create = False
 
         self.add_property(
             descr='Channel',

@@ -91,7 +91,8 @@ class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
             descr='Name',
             name='name',
             get='id',
-            usage=_("""Editable value. This is the name of the entry which
+            usage=_("""
+            Editable value. This is the name of the entry which
             appears in the boot menu."""),
             set='id',
             list=True

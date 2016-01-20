@@ -313,9 +313,9 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
             get='lagg.protocol',
             usage=_("""\
             This property only applies to LAGG interfaces and
-            indicates the type of aggregation protocol to use.
-            Allowable values are NONE, ROUNDROBIN, FAILOVER,
-            LOADBALANCE, LACP, or ETHERCHANNEL."""),
+            indicates the type of aggregation protocol to
+            use. Allowable values are NONE, ROUNDROBIN,
+            FAILOVER, LOADBALANCE, LACP, or ETHERCHANNEL."""),
             list=False,
             createsetable=False,
             type=ValueType.STRING,

@@ -103,3 +103,18 @@ def describe_task_state(task):
             task['progress.percentage'], task['progress.message'])
 
     return task['state']
+
+
+class PrintableNone(object):
+    def __bool__(self):
+        return False
+
+    def __str__(self):
+        return "none"
+
+    @staticmethod
+    def coerce(value):
+        if isinstance(value, PrintableNone):
+            return None
+
+        return value

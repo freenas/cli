@@ -50,6 +50,7 @@ from six.moves.urllib.parse import urlparse
 from socket import gaierror as socket_error
 from freenas.cli.descriptions import events
 from freenas.cli.descriptions import tasks
+from freenas.cli.utils import PrintableNone
 from freenas.cli import functions
 from freenas.cli import config
 from freenas.cli.namespace import (
@@ -935,7 +936,7 @@ class MainLoop(object):
                     real_path.append(i)
             return real_path[-1]
 
-    def eval(self, token, env=None, path=None, serialize_filter=None, input_data=None, dry_run=False, first=False):
+    def eval(self, token, env=None, path=None, serialize_filter=None, input_data=None, dry_run=False, first=False, printable_none=False):
         cwd = self.get_cwd(path)
         path = path or []
 
@@ -1150,9 +1151,11 @@ class MainLoop(object):
                                     if 'params' in ret:
                                         serialize_filter['params'].update(ret['params'])
 
-                            return item.run(self.context, args, kwargs, opargs, input=input_data)
+                            result = item.run(self.context, args, kwargs, opargs, input=input_data)
+                            return PrintableNone.coerce(result) if not printable_none else result
 
-                        return item.run(self.context, args, kwargs, opargs)
+                        result = item.run(self.context, args, kwargs, opargs)
+                        return PrintableNone.coerce(result) if not printable_none else result
                 except BaseException as err:
                     success = False
                     raise err
@@ -1207,6 +1210,7 @@ class MainLoop(object):
                 else:
                     result = cmd.run(self.context, args, kwargs, opargs)
 
+                result = PrintableNone.coerce(result)
                 ret = self.eval(token.right, input_data=result)
                 self.context.pipe_cwd = None
                 if ret is None:
@@ -1250,7 +1254,7 @@ class MainLoop(object):
             first = True
             for i in tokens:
                 try:
-                    ret = self.eval(i, first=first)
+                    ret = self.eval(i, first=first, printable_none=True)
                     first = False
                 except SystemExit as err:
                     raise err

@@ -644,7 +644,7 @@ class EchoCommand(Command):
 class PendingCommand(Command):
     def run(self, context, args, kwargs, opargs):
         pending = list(filter(
-            lambda t: t['parent'] is None and t['session'] == context.session_id,
+            lambda t: t['session'] == context.session_id,
             context.pending_tasks.values()
         ))
 

@@ -68,7 +68,7 @@ from freenas.cli.output import (
 from freenas.dispatcher.client import Client, ClientError
 from freenas.dispatcher.entity import EntitySubscriber
 from freenas.dispatcher.rpc import RpcException
-from freenas.utils import first_or_default
+from freenas.utils import first_or_default, include
 from freenas.utils.query import wrap
 from freenas.cli.commands import (
     ExitCommand, PrintenvCommand, SetenvCommand, ShellCommand, HelpCommand,
@@ -562,6 +562,10 @@ class Context(object):
             return
 
     def handle_event(self, event, data):
+        if event == 'task.progress':
+            task = self.entity_subscribers['task'].items[data['id']]
+            task['progress'] = include(data, 'percentage', 'message', 'extra')
+
         self.print_event(event, data)
 
     def handle_task_callback(self, data):
@@ -571,9 +575,6 @@ class Context(object):
     def print_event(self, event, data):
         if self.event_divert:
             self.event_queue.put((event, data))
-            return
-
-        if event == 'task.progress':
             return
 
         translation = events.translate(self, event, data)

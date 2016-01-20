@@ -602,6 +602,8 @@ class Context(object):
             tid = self.connection.call_sync('task.submit', name, args)
             if callback:
                 self.task_callbacks[tid] = callback
+
+            output_msg_locked(_("Task #{0} submitted".format(tid)))
             return tid
         else:
             output_msg(_("Hit Ctrl+C to terminate task if needed"))

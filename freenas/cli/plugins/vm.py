@@ -31,8 +31,8 @@ import pyte
 from threading import RLock
 from freenas.dispatcher.shell import VMConsoleClient
 from freenas.cli.namespace import (
-    EntityNamespace, Command, NestedObjectLoadMixin, NestedObjectSaveMixin, RpcBasedLoadMixin,
-    TaskBasedSaveMixin, description,
+    EntityNamespace, Command, NestedObjectLoadMixin, NestedObjectSaveMixin, EntitySubscriberBasedLoadMixin,
+    RpcBasedLoadMixin, TaskBasedSaveMixin, description
 )
 from freenas.cli.output import ValueType
 
@@ -130,10 +130,10 @@ class ConsoleCommand(Command):
 
 
 @description("Configure and manage virtual machines")
-class VMNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
+class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):
     def __init__(self, name, context):
         super(VMNamespace, self).__init__(name, context)
-        self.query_call = 'container.query'
+        self.entity_subscriber_name = 'container'
         self.create_task = 'container.create'
         self.update_task = 'container.update'
         self.delete_task = 'container.delete'
@@ -297,6 +297,12 @@ class VMNicsNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNamesp
             descr='NIC name',
             name='name',
             get='name'
+        )
+
+        self.add_property(
+            descr='NIC type',
+            name='type',
+            get='properties.type'
         )
 
         self.add_property(

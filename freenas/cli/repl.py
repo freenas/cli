@@ -121,7 +121,8 @@ ENTITY_SUBSCRIBERS = [
     'network.route',
     'share',
     'task',
-    'alert'
+    'alert',
+    'container'
 ]
 
 

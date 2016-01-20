@@ -936,7 +936,9 @@ class MainLoop(object):
                     real_path.append(i)
             return real_path[-1]
 
-    def eval(self, token, env=None, path=None, serialize_filter=None, input_data=None, dry_run=False, first=False, printable_none=False):
+    def eval(self, token, env=None, path=None, serialize_filter=None, input_data=None, dry_run=False, first=False,
+             printable_none=False):
+
         cwd = self.get_cwd(path)
         path = path or []
 

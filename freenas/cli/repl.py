@@ -567,7 +567,8 @@ class Context(object):
             progress = include(data, 'percentage', 'message', 'extra')
             task = self.entity_subscribers['task'].items[data['id']]
             task['progress'] = progress
-            self.pending_tasks[data['id']]['progress'] = progress
+            if task['id'] in self.pending_tasks:
+                self.pending_tasks[data['id']]['progress'] = progress
 
         self.print_event(event, data)
 

@@ -299,7 +299,7 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
 
         self.add_property(
             descr='VLAN tag',
-            name='vlan-tag',
+            name='vlan_tag',
             get='vlan.tag',
             list=False,
             createsetable=False,

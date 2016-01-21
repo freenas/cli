@@ -114,6 +114,7 @@ class VMConsole(object):
         self.header.clear()
         self.header.bkgdset(' ', curses.A_REVERSE)
         self.header.addstr(0, 0, "Connected to {0} console - hit ^] to detach".format(self.name))
+        self.window.clear()
 
 
 class StartVMCommand(Command):

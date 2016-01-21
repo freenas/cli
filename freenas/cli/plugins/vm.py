@@ -28,9 +28,10 @@
 import gettext
 import curses
 import pyte
+import time
 from signal import signal, SIGWINCH, SIG_DFL
 from shutil import get_terminal_size
-from threading import RLock
+from threading import RLock, Thread
 from freenas.dispatcher.shell import VMConsoleClient
 from freenas.cli.namespace import (
     EntityNamespace, Command, NestedObjectLoadMixin, NestedObjectSaveMixin, EntitySubscriberBasedLoadMixin,
@@ -61,24 +62,38 @@ class VMConsole(object):
         self.stdscr = None
         self.header = None
         self.header_msg = "Connected to {0} console - hit ^] to detach".format(self.name)
+        self.buffer = bytearray()
+        self.connected = False
 
     def on_data(self, data):
         with self.output_lock:
-            self.stream.feed(data.decode('utf-8'))
-            for i in self.screen.dirty:
-                self.window.addstr(i, 0, self.screen.display[i])
+            self.buffer += data
 
-            self.screen.dirty.clear()
-            curses.setsyx(self.screen.cursor.y + 1, self.screen.cursor.x)
-            curses.doupdate()
+    def on_redraw(self):
+        while self.connected:
+            if len(self.buffer):
+                with self.output_lock:
+                    self.stream.feed(self.buffer.decode('utf-8'))
+                    for i in self.screen.dirty:
+                        self.window.addstr(i, 0, self.screen.display[i])
+
+                    self.screen.dirty.clear()
+                    curses.setsyx(self.screen.cursor.y + 1, self.screen.cursor.x)
+                    curses.doupdate()
+                    self.buffer = bytearray()
+
+            time.sleep(0.05)
 
     def connect(self):
         token = self.context.call_sync('containerd.management.request_console', self.id)
         self.conn = VMConsoleClient(self.context.hostname, token)
         self.conn.on_data(self.on_data)
         self.conn.open()
+        self.connected = True
+        Thread(target=self.on_redraw).start()
 
     def disconnect(self):
+        self.connected = False
         self.conn.close()
         signal(SIGWINCH, SIG_DFL)
 

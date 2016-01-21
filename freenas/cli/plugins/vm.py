@@ -28,6 +28,7 @@
 import gettext
 import curses
 import pyte
+from signal import signal, SIGWINCH
 from threading import RLock
 from freenas.dispatcher.shell import VMConsoleClient
 from freenas.cli.namespace import (
@@ -53,10 +54,11 @@ class VMConsole(object):
         self.name = name
         self.conn = None
         self.stream = pyte.Stream()
-        self.screen = VMConsole.CursesScreen(self, 80, 24)
-        self.stream.attach(self.screen)
+        self.screen = None
         self.window = None
         self.output_lock = RLock()
+        self.stdscr = None
+        self.header = None
 
     def on_data(self, data):
         with self.output_lock:
@@ -65,7 +67,7 @@ class VMConsole(object):
                 self.window.addstr(i, 0, self.screen.display[i])
 
             self.screen.dirty.clear()
-            print('\033[{0};{1}H'.format(self.screen.cursor.y + 1, self.screen.cursor.x + 1))
+            #print('\033[{0};{1}H'.format(self.screen.cursor.y + 1, self.screen.cursor.x + 1))
 
     def connect(self):
         token = self.context.call_sync('containerd.management.request_console', self.id)
@@ -77,27 +79,36 @@ class VMConsole(object):
         self.conn.close()
 
     def start(self):
-        stdscr = curses.initscr()
-        stdscr.immedok(True)
+        self.stdscr = curses.initscr()
+        self.stdscr.immedok(True)
         curses.noecho()
         curses.raw()
-        stdscr.clear()
-        rows, cols = stdscr.getmaxyx()
-        header = curses.newwin(1, cols, 0, 0)
+        self.stdscr.clear()
+        rows, cols = self.stdscr.getmaxyx()
+        self.header = curses.newwin(1, cols, 0, 0)
+        self.screen = VMConsole.CursesScreen(self, cols, rows - 2)
+        self.stream.attach(self.screen)
         self.window = curses.newwin(rows - 1, cols, 1, 0)
         self.window.immedok(True)
-        header.immedok(True)
-        header.bkgdset(' ', curses.A_REVERSE)
-        header.addstr(0, 0, "Connected to {0} console - hit ^] to detach".format(self.name))
+        self.header.immedok(True)
+        self.header.bkgdset(' ', curses.A_REVERSE)
+        self.header.addstr(0, 0, "Connected to {0} console - hit ^] to detach".format(self.name))
+        signal(SIGWINCH, self.resize)
         self.connect()
         while True:
-            ch = stdscr.getch()
+            ch = self.stdscr.getch()
             if ch == 29:
                 curses.endwin()
                 self.disconnect()
                 break
 
             self.conn.write(chr(ch))
+
+    def resize(self, signum, frame):
+        rows, cols = self.stdscr.getmaxyx()
+        self.header.resize(1, cols)
+        self.window.resize(rows - 1, cols)
+        self.screen.resize(rows - 2, cols)
 
 
 class StartVMCommand(Command):

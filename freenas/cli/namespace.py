@@ -845,7 +845,7 @@ class DeleteEntityCommand(Command):
     Usage: delete <primary-key>
 
     Examples:
-        delete john
+        delete thisthing
     """
     def __init__(self, parent):
         if hasattr(parent, 'leaf_entity') and parent.leaf_entity:

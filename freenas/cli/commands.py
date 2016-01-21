@@ -641,7 +641,13 @@ class EchoCommand(Command):
             return Sequence(*echo_seq)
 
 
+@description("Shows pending tasks")
 class PendingCommand(Command):
+    """
+    Usage: pending
+
+    Shows a list of currently pending tasks.
+    """
     def run(self, context, args, kwargs, opargs):
         pending = list(filter(
             lambda t: t['session'] == context.session_id,

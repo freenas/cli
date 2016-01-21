@@ -69,7 +69,8 @@ class VMConsole(object):
                 self.window.addstr(i, 0, self.screen.display[i])
 
             self.screen.dirty.clear()
-            #print('\033[{0};{1}H'.format(self.screen.cursor.y + 1, self.screen.cursor.x + 1))
+            curses.setsyx(self.screen.cursor.y + 1, self.screen.cursor.x)
+            curses.doupdate()
 
     def connect(self):
         token = self.context.call_sync('containerd.management.request_console', self.id)

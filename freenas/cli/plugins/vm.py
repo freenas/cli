@@ -108,15 +108,18 @@ class VMConsole(object):
             self.conn.write(chr(ch))
 
     def resize(self, signum, frame):
-        size = get_terminal_size()
-        self.screen.resize(size.lines - 2, size.columns)
-        self.header.resize(1, size.columns)
-        self.window.resize(size.lines - 1, size.columns)
-        self.screen.dirty.clear()
-        self.header.clear()
-        self.header.bkgdset(' ', curses.A_REVERSE)
-        self.header.addstr(0, 0, self.header_msg[:size.columns - 1])
-        self.window.clear()
+        with self.output_lock:
+            size = get_terminal_size()
+            self.screen.resize(size.lines - 2, size.columns)
+            self.header.resize(1, size.columns)
+            self.window.resize(size.lines - 1, size.columns)
+            self.screen.dirty.clear()
+            self.header.clear()
+            self.window.clear()
+            self.header.refresh()
+            self.window.refresh()
+            self.header.bkgdset(' ', curses.A_REVERSE)
+            self.header.addstr(0, 0, self.header_msg[:size.columns - 1])
 
 
 class StartVMCommand(Command):

@@ -328,8 +328,8 @@ class ImportVolumeCommand(Command):
     """
     Usage: import <name|id> [newname=<new-name>] key=<key> password=<password> disks=<disks>
 
-    Example: import tank
-             import tank key="dasfer34tadsf23d/adf" password=abcd disks=da1,da2
+    Example: import mypool
+             import mypool key="dasfer34tadsf23d/adf" password=abcd disks=da1,da2
 
     Imports a detached volume.
     When importing encrypted volume key and disks or key, password and disks must be provided.
@@ -377,7 +377,7 @@ class DetachVolumeCommand(Command):
     """
     Usage: detach <name>
 
-    Example: detach tank
+    Example: detach mypool
 
     Detaches a volume.
     """
@@ -573,7 +573,7 @@ class ScrubCommand(Command):
     """
     Usage: scrub <name>
 
-    Example: scrub tank
+    Example: scrub mypool
 
     Scrubs the volume
     """
@@ -655,16 +655,16 @@ class DatasetsNamespace(EntityNamespace):
             Usage: create <volume>/<dataset>
                    create <volume>/<dataset>/<dataset>
 
-            Examples: create tank/foo
-                      create tank/foo/bar
+            Examples: create mypool/foo
+                      create mypool/foo/bar
 
             Creates a dataset.""")
 
         self.localdoc['DeleteEntityCommand'] = ("""\
             Usage: delete <volume>/<dataset>
 
-            Example: delete tank/foo
-                     delete tank/foo/bar
+            Example: delete mypool/foo
+                     delete mypool/foo/bar
 
             Deletes a dataset.""")
 
@@ -675,7 +675,7 @@ class DatasetsNamespace(EntityNamespace):
 
             Examples:
                 show
-                show | search name ~= tank
+                show | search name ~= mypool
                 show | search compression == lz4 | sort name""")
 
         self.skeleton_entity = {
@@ -1004,12 +1004,12 @@ class CreateVolumeCommand(Command):
     Usage: create <name> disks=<disks> layout=<layout> encryption=<encryption>
             password=<password> cache=<disks> log=<disks>
 
-    Example: create tank disks=ada1,ada2
-             create tank disks=ada1,ada2 encryption=yes
-             create tank disks=ada1,ada2 encryption=yes password=1234
-             create tank disks=auto layout=virtualization
-             create tank disks=ada1,ada2 cache=ada3 log=ada4
-             create tank disks=auto cache=ada3 log=ada4
+    Example: create mypool disks=ada1,ada2
+             create mypool disks=ada1,ada2 encryption=yes
+             create mypool disks=ada1,ada2 encryption=yes password=1234
+             create mypool disks=auto layout=virtualization
+             create mypool disks=ada1,ada2 cache=ada3 log=ada4
+             create mypool disks=auto cache=ada3 log=ada4
 
     Creating a volume requires some number of disks and an optional layout
     preset. The 'layout' preset allows the following values: stripe, mirror,
@@ -1182,7 +1182,7 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
         self.localdoc['DeleteEntityCommand'] = ("""\
             Usage: delete <volume>
 
-            Example: delete tank
+            Example: delete mypool
 
             Deletes a volume.""")
         self.localdoc['ListCommand'] = ("""\
@@ -1192,7 +1192,7 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
 
             Examples:
                 show
-                show | search name == tank
+                show | search name == mypool
                 show | search status == ONLINE | sort name""")
 
         self.skeleton_entity = {

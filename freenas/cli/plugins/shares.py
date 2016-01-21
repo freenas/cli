@@ -70,7 +70,7 @@ class SharesNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             Examples:
                 show
                 show | search name == foo
-                show | search volume == tank | sort name""")
+                show | search volume == mypool | sort name""")
 
         self.add_property(
             descr='Share Name',
@@ -155,7 +155,7 @@ class BaseSharesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, En
             Examples:
                 show
                 show | search name == foo
-                show | search volume == tank | sort name""")
+                show | search volume == mypool | sort name""")
 
         self.skeleton_entity = {
             'type': type_name,
@@ -256,10 +256,10 @@ class NFSSharesNamespace(BaseSharesNamespace):
                    create <name> path="/path/to/directory/" <property>=<value> ... 
 
             Examples:
-                create foo parent=tank
-                create foo parent=tank read_only=true
-                create foo target=tank/somedataset
-                create foo path="/mnt/foo/some/folder/"
+                create foo parent=mypool
+                create foo parent=mypool read_only=true
+                create foo target=mypool/somedataset
+                create foo path="/mnt/mypool/some/directory/"
 
             Creates an NFS share. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
@@ -343,10 +343,10 @@ class AFPSharesNamespace(BaseSharesNamespace):
                    create <name> path="/path/to/directory/" <property>=<value> ... 
 
             Examples:
-                create foo parent=tank
-                create foo parent=tank read_only=true
-                create foo target=tank/somedataset
-                create foo path="/mnt/foo/some/folder/"
+                create foo parent=mypool
+                create foo parent=mypool read_only=true
+                create foo target=mypool/somedataset
+                create foo path="/mnt/mypool/some/directory/"
 
             Creates an AFP share. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
@@ -418,10 +418,10 @@ class SMBSharesNamespace(BaseSharesNamespace):
                    create <name> path="/path/to/directory/" <property>=<value> ... 
 
             Examples:
-                create foo parent=tank
-                create foo parent=tank read_only=true
-                create foo target=tank/somedataset
-                create foo path="/mnt/foo/some/folder/"
+                create foo parent=mypool
+                create foo parent=mypool read_only=true
+                create foo target=mypool/somedataset
+                create foo path="/mnt/mypool/some/directory/"
 
             Creates a SMB share. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
@@ -499,8 +499,8 @@ class WebDAVSharesNamespace(BaseSharesNamespace):
             Usage: create name=<name> volume=<volume> <property>=<value> ...
 
             Examples:
-                create foo volume=tank
-                create foo volume=tank read_only=true
+                create foo volume=mypool
+                create foo volume=mypool read_only=true
 
             Creates WebDAV share. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
@@ -826,7 +826,7 @@ class ISCSISharesNamespace(BaseSharesNamespace):
             Usage: create <name> volume=<volume> size=<size> <property>=<value> ...
 
             Examples:
-                create foobariscsi volume=tank size=3G
+                create foobariscsi volume=mypool size=3G
 
             Creates an iSCSI share. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\

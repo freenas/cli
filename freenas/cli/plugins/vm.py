@@ -60,6 +60,7 @@ class VMConsole(object):
         self.output_lock = RLock()
         self.stdscr = None
         self.header = None
+        self.header_msg = "Connected to {0} console - hit ^] to detach".format(self.name)
 
     def on_data(self, data):
         with self.output_lock:
@@ -93,7 +94,7 @@ class VMConsole(object):
         self.window.immedok(True)
         self.header.immedok(True)
         self.header.bkgdset(' ', curses.A_REVERSE)
-        self.header.addstr(0, 0, "Connected to {0} console - hit ^] to detach".format(self.name))
+        self.header.addstr(0, 0, self.header_msg[:cols - 1])
         signal(SIGWINCH, self.resize)
         self.connect()
         while True:
@@ -113,7 +114,7 @@ class VMConsole(object):
         self.screen.dirty.clear()
         self.header.clear()
         self.header.bkgdset(' ', curses.A_REVERSE)
-        self.header.addstr(0, 0, "Connected to {0} console - hit ^] to detach".format(self.name))
+        self.header.addstr(0, 0, self.header_msg[:size.columns - 1])
         self.window.clear()
 
 

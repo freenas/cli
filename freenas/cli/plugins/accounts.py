@@ -74,8 +74,8 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
         self.localdoc['CreateEntityCommand'] = ("""\
             Usage: create <name> password=<password> <property>=<value> ...
 
-            Examples: create john password=johnspw home=/mnt/mypool/john
-                      create bob group=somegroup password_disabled=true
+            Examples: create myuser password=mypassword home=/mnt/mypool/myuserhome
+                      create someuser group=somegroup password_disabled=true
 
             Creates a user account. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
@@ -89,7 +89,7 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
         self.localdoc['DeleteEntityCommand'] = ("""\
             Usage: delete <username>
 
-            Example: delete john
+            Example: delete myuser
 
             Deletes the specified user.
             Note that built-in user accounts can not be deleted.""")

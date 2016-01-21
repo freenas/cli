@@ -251,11 +251,15 @@ class NFSSharesNamespace(BaseSharesNamespace):
     def __init__(self, name, context):
         super(NFSSharesNamespace, self).__init__(name, 'nfs', context)
         self.localdoc['CreateEntityCommand'] = ("""\
-            Usage: create name=<name> volume=<volume> <property>=<value> ...
+            Usage: create <name> parent=<volume> <property>=<value> ...
+                   create <name> target=<volume>/<dataset> <property>=<value> ...
+                   create <name> path="/path/to/directory/" <property>=<value> ... 
 
             Examples:
-                create foo volume=tank
-                create foo volume=tank read_only=true
+                create foo parent=tank
+                create foo parent=tank read_only=true
+                create foo target=tank/somedataset
+                create foo path="/mnt/foo/some/folder/"
 
             Creates an NFS share. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
@@ -334,11 +338,15 @@ class AFPSharesNamespace(BaseSharesNamespace):
     def __init__(self, name, context):
         super(AFPSharesNamespace, self).__init__(name, 'afp', context)
         self.localdoc['CreateEntityCommand'] = ("""\
-            Usage: create name=<name> volume=<volume> <property>=<value> ...
+            Usage: create <name> parent=<volume> <property>=<value> ...
+                   create <name> target=<volume>/<dataset> <property>=<value> ...
+                   create <name> path="/path/to/directory/" <property>=<value> ... 
 
             Examples:
-                create foo volume=tank
-                create foo volume=tank read_only=true
+                create foo parent=tank
+                create foo parent=tank read_only=true
+                create foo target=tank/somedataset
+                create foo path="/mnt/foo/some/folder/"
 
             Creates an AFP share. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
@@ -405,11 +413,15 @@ class SMBSharesNamespace(BaseSharesNamespace):
     def __init__(self, name, context):
         super(SMBSharesNamespace, self).__init__(name, 'smb', context)
         self.localdoc['CreateEntityCommand'] = ("""\
-            Usage: create name=<name> volume=<volume> <property>=<value> ...
+            Usage: create <name> parent=<volume> <property>=<value> ...
+                   create <name> target=<volume>/<dataset> <property>=<value> ...
+                   create <name> path="/path/to/directory/" <property>=<value> ... 
 
             Examples:
-                create foo volume=tank
-                create foo volume=tank read_only=true
+                create foo parent=tank
+                create foo parent=tank read_only=true
+                create foo target=tank/somedataset
+                create foo path="/mnt/foo/some/folder/"
 
             Creates a SMB share. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\

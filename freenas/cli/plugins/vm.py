@@ -35,7 +35,7 @@ from threading import RLock, Thread
 from freenas.dispatcher.shell import VMConsoleClient
 from freenas.cli.namespace import (
     EntityNamespace, Command, NestedObjectLoadMixin, NestedObjectSaveMixin, EntitySubscriberBasedLoadMixin,
-    RpcBasedLoadMixin, TaskBasedSaveMixin, description
+    RpcBasedLoadMixin, TaskBasedSaveMixin, description, ListCommand
 )
 from freenas.cli.output import ValueType
 
@@ -431,23 +431,31 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
 
         self.primary_key = self.get_mapping('name')
 
-        self.extra_commands = {
-            'fetch': FetchCommand()
-        }
+    def commands(self):
+        base = super(TemplateNamespace, self).commands()
+        base['show'] = FetchShowCommand(self)
+        return base
 
 
 @description("Downloads templates from git")
-class FetchCommand(Command):
+class FetchShowCommand(Command):
     """
-    Usage: fetch
+    Usage: show
 
-    Example: fetch
+    Example: show
 
-    Refreshes local cache of VM templates.
+    Refreshes local cache of VM templates and then shows them.
     """
+    def __init__(self, parent):
+        if hasattr(parent, 'leaf_entity') and parent.leaf_entity:
+            self.parent = parent.leaf_ns
+        else:
+            self.parent = parent
 
-    def run(self, context, args, kwargs, opargs):
-        context.submit_task('vm_template.fetch')
+    def run(self, context, args, kwargs, opargs, filtering=None):
+        context.call_task_sync('vm_template.fetch')
+        show = ListCommand(self.parent)
+        return show.run(context, args, kwargs, opargs, filtering)
 
 
 def _init(context):

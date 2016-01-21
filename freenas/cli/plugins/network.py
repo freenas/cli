@@ -594,8 +594,8 @@ class RoutesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Entity
             Usage: create name=<name> gateway=<gateway> network=<network> netmask=<netmask>
 
             Examples: create name=default gateway=10.0.0.1 network=10.0.0.0 netmask=255.255.255.0
-                      create name=foo gateway=192.168.0.1 network=192.168.0.0 netmask=16 
-                      create name=ipvsix gateway=fda8:06c3:ce53:a890:0000:0000:0000:0001 network=fda8:06c3:ce53:a890:0000:0000:0000:0000 netmask=64 type=INET6
+                      create name=myroute gateway=192.168.0.1 network=192.168.0.0 netmask=16 
+                      create name=myipvsix gateway=fda8:06c3:ce53:a890:0000:0000:0000:0001 network=fda8:06c3:ce53:a890:0000:0000:0000:0000 netmask=64 type=INET6
 
             Creates a network route. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\

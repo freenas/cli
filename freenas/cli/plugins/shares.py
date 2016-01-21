@@ -69,7 +69,7 @@ class SharesNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
 
             Examples:
                 show
-                show | search name == foo
+                show | search name == myshare
                 show | search volume == mypool | sort name""")
 
         self.add_property(
@@ -144,7 +144,7 @@ class BaseSharesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, En
         self.localdoc['DeleteEntityCommand'] = ("""\
             Usage: delete <share name>
 
-            Example: delete foo
+            Example: delete myshare
 
             Deletes a share.""")
         self.localdoc['ListCommand'] = ("""\
@@ -154,7 +154,7 @@ class BaseSharesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, En
 
             Examples:
                 show
-                show | search name == foo
+                show | search name == myshare
                 show | search volume == mypool | sort name""")
 
         self.skeleton_entity = {
@@ -256,10 +256,10 @@ class NFSSharesNamespace(BaseSharesNamespace):
                    create <name> path="/path/to/directory/" <property>=<value> ... 
 
             Examples:
-                create foo parent=mypool
-                create foo parent=mypool read_only=true
-                create foo target=mypool/somedataset
-                create foo path="/mnt/mypool/some/directory/"
+                create myshare parent=mypool
+                create myshare parent=mypool read_only=true
+                create myshare target=mypool/somedataset
+                create myshare path="/mnt/mypool/some/directory/"
 
             Creates an NFS share. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
@@ -267,8 +267,8 @@ class NFSSharesNamespace(BaseSharesNamespace):
 
             Examples: set alldirs=true
                       set read_only=true
-                      set root_user=tom
-                      set hosts=192.168.1.1, foobar.local
+                      set root_user=myuser
+                      set hosts=192.168.1.1, somehost.local
 
             Sets an NFS share property. For a list of properties, see 'help properties'.""")
 
@@ -343,10 +343,10 @@ class AFPSharesNamespace(BaseSharesNamespace):
                    create <name> path="/path/to/directory/" <property>=<value> ... 
 
             Examples:
-                create foo parent=mypool
-                create foo parent=mypool read_only=true
-                create foo target=mypool/somedataset
-                create foo path="/mnt/mypool/some/directory/"
+                create myshare parent=mypool
+                create myshare parent=mypool read_only=true
+                create myshare target=mypool/somedataset
+                create myshare path="/mnt/mypool/some/directory/"
 
             Creates an AFP share. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
@@ -354,8 +354,8 @@ class AFPSharesNamespace(BaseSharesNamespace):
 
             Examples: set time_machine=true
                       set read_only=true
-                      set users_allow=tom, frank
-                      set hosts_allow=192.168.1.1, foobar.local
+                      set users_allow=myuser, anotheruser
+                      set hosts_allow=192.168.1.1, somehost.local
 
             Sets an AFP share property. For a list of properties, see 'help properties'.""")
 
@@ -418,10 +418,10 @@ class SMBSharesNamespace(BaseSharesNamespace):
                    create <name> path="/path/to/directory/" <property>=<value> ... 
 
             Examples:
-                create foo parent=mypool
-                create foo parent=mypool read_only=true
-                create foo target=mypool/somedataset
-                create foo path="/mnt/mypool/some/directory/"
+                create myshare parent=mypool
+                create myshare parent=mypool read_only=true
+                create myshare target=mypool/somedataset
+                create myshare path="/mnt/mypool/some/directory/"
 
             Creates a SMB share. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
@@ -430,7 +430,7 @@ class SMBSharesNamespace(BaseSharesNamespace):
             Examples: set guest_ok=false
                       set read_only=true
                       set browseable=true
-                      set hosts_allow=192.168.1.1, foobar.local
+                      set hosts_allow=192.168.1.1, somehost.local
 
             Sets a SMB share property. For a list of properties, see 'help properties'.""")
 
@@ -499,8 +499,8 @@ class WebDAVSharesNamespace(BaseSharesNamespace):
             Usage: create name=<name> volume=<volume> <property>=<value> ...
 
             Examples:
-                create foo volume=mypool
-                create foo volume=mypool read_only=true
+                create myshare volume=mypool
+                create myshare volume=mypool read_only=true
 
             Creates WebDAV share. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
@@ -541,8 +541,8 @@ class ISCSIPortalsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespa
             Usage: create name=<name> listen=<hostname>:<port>,<hostname>:<port> <property>=<value> ...
 
             Examples:
-                create foo listen=192.168.1.10
-                create bar listen=127.0.0.1,foobar.local:8888 
+                create myiscsi listen=192.168.1.10
+                create someiscsi listen=127.0.0.1,somehost.local:8888
 
             Creates an iSCSI portal. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
@@ -605,8 +605,8 @@ class ISCSIAuthGroupsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityName
             Usage: create name=<name> policy=<policy>
 
             Examples:
-                create foo policy=NONE
-                create bar policy=DENY 
+                create myiscsi policy=NONE
+                create someiscsi policy=DENY
 
             Creates an iSCSI auth group. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
@@ -649,8 +649,8 @@ class ISCSIUsersNamespace(EntityNamespace):
                    create <name> secret=<secret> peer_name<name> peer_secret=<secret>
 
             Examples:
-                create foo secret=abcdefghijkl
-                create bar secret=mnopqrstuvwx peer_name=foo peer_secret=abcdefghijkl
+                create myiscsi secret=abcdefghijkl
+                create myiscsi secret=abcdefghijkl peer_name=peeriscsi peer_secret=mnopqrstuvwx
 
             Creates an iSCSI auth user. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
@@ -658,7 +658,7 @@ class ISCSIUsersNamespace(EntityNamespace):
 
             Examples: set name=newname
                       set secret=yzabcdefghij
-                      set peer_name=bob
+                      set peer_name=newpeer
                       set peer_secret=klmnopqrstuv
 
             Sets a iSCSI auth user property. For a list of properties, see 'help properties'.""")
@@ -724,8 +724,8 @@ class ISCSITargetsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespa
             Usage: create <name> <property>=<value> ...
 
             Examples:
-                create foo
-                create bar description="some share" auth_group=somegroup
+                create myiscsi
+                create myiscsi description="some share" auth_group=somegroup
 
             Creates an iSCSI target. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
@@ -771,7 +771,7 @@ class ISCSITargetMapingNamespace(EntityNamespace):
             Usage: create <number> <name>=<name>
 
             Examples:
-                create 12 name=foo
+                create 12 name=myiscsi
 
             Creates an iSCSI lun. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
@@ -826,7 +826,7 @@ class ISCSISharesNamespace(BaseSharesNamespace):
             Usage: create <name> volume=<volume> size=<size> <property>=<value> ...
 
             Examples:
-                create foobariscsi volume=mypool size=3G
+                create myiscsi volume=mypool size=3G
 
             Creates an iSCSI share. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\

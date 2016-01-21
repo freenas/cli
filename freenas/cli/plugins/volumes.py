@@ -462,7 +462,7 @@ class BackupVolumeMasterKeyCommand(Command):
     """
     Usage: backup_key path=<path_to_output_file>
 
-    Example: backup_key path="/mnt/foo/bar"
+    Example: backup_key path="/mnt/mypool/some/directory"
 
     Creates an encrypted file containing copy of metadata of all disks related
     to an encrypted volume.
@@ -501,7 +501,7 @@ class RestoreVolumeMasterKeyCommand(Command):
     """
     Usage: restore_key path=<path_to_input_file> password=<password>
 
-    Example: restore_key path="/mnt/foo/bar" password=abcd-asda-fdsd-cxbvs
+    Example: restore_key path="/mnt/mypool/some/directory" password=abcd-asda-fdsd-cxbvs
 
     Restores metadata of all disks related to an encrypted volume
     from a backup file.
@@ -655,16 +655,16 @@ class DatasetsNamespace(EntityNamespace):
             Usage: create <volume>/<dataset>
                    create <volume>/<dataset>/<dataset>
 
-            Examples: create mypool/foo
-                      create mypool/foo/bar
+            Examples: create mypool/mydataset
+                      create mypool/mydataset/somedataset
 
             Creates a dataset.""")
 
         self.localdoc['DeleteEntityCommand'] = ("""\
             Usage: delete <volume>/<dataset>
 
-            Example: delete mypool/foo
-                     delete mypool/foo/bar
+            Example: delete mypool/mydataset
+                     delete mypool/mydataset/somedataset
 
             Deletes a dataset.""")
 

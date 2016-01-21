@@ -55,20 +55,20 @@ class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
         self.localdoc['CreateEntityCommand'] = ("""\
             Usage: create name=<bootenv name>
 
-            Example: create foo
+            Example: create mybootenv
 
             Creates a boot environment""")
 
         self.entity_localdoc['SetEntityCommand'] = ("""\
             Usage: set name=<newname>
 
-            Example: set name=foo
+            Example: set name=mybootenv
 
             Set the name of the current boot environment""")
         self.localdoc['DeleteEntityCommand'] = ("""\
             Usage: delete <bootenv name>
 
-            Example: delete foo
+            Example: delete mybootenv
 
             Deletes a boot environment.""")
         self.localdoc['ListCommand'] = ("""\

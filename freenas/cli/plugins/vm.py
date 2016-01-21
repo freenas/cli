@@ -28,7 +28,7 @@
 import gettext
 import curses
 import pyte
-from signal import signal, SIGWINCH
+from signal import signal, SIGWINCH, SIG_DFL
 from shutil import get_terminal_size
 from threading import RLock
 from freenas.dispatcher.shell import VMConsoleClient
@@ -80,6 +80,7 @@ class VMConsole(object):
 
     def disconnect(self):
         self.conn.close()
+        signal(SIGWINCH, SIG_DFL)
 
     def start(self):
         self.stdscr = curses.initscr()

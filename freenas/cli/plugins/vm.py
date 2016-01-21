@@ -29,6 +29,7 @@ import gettext
 import curses
 import pyte
 from signal import signal, SIGWINCH
+from shutil import get_terminal_size
 from threading import RLock
 from freenas.dispatcher.shell import VMConsoleClient
 from freenas.cli.namespace import (
@@ -105,10 +106,14 @@ class VMConsole(object):
             self.conn.write(chr(ch))
 
     def resize(self, signum, frame):
-        rows, cols = self.stdscr.getmaxyx()
-        self.header.resize(1, cols)
-        self.window.resize(rows - 1, cols)
-        self.screen.resize(rows - 2, cols)
+        size = get_terminal_size()
+        self.screen.resize(size.lines - 2, size.columns)
+        self.header.resize(1, size.columns)
+        self.window.resize(size.lines - 1, size.columns)
+        self.screen.dirty.clear()
+        self.header.clear()
+        self.header.bkgdset(' ', curses.A_REVERSE)
+        self.header.addstr(0, 0, "Connected to {0} console - hit ^] to detach".format(self.name))
 
 
 class StartVMCommand(Command):

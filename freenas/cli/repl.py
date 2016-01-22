@@ -1361,13 +1361,13 @@ class MainLoop(object):
             readline_buffer = readline.get_line_buffer()
             token = None
             append_space = False
+            args = []
 
             if len(readline_buffer.strip()) > 0:
                 tokens = parse(readline_buffer, '<stdin>', True)
-                token = tokens.pop(-1)
-                args = token.args
-            else:
-                args = []
+                if tokens:
+                    token = tokens.pop(-1)
+                    args = token.args
 
             if isinstance(token, CommandCall) or not args:
                 obj = self.get_relative_object(self.cwd, args)

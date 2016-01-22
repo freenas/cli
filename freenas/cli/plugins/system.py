@@ -522,6 +522,32 @@ class ConfigDbNamespace(Namespace):
         }
 
 
+class SystemDatasetNamespace(ConfigNamespace):
+    def __init__(self, name, context):
+        super(SystemDatasetNamespace, self).__init__(name, context)
+        self.config_call = 'system_dataset.status'
+
+        self.add_property(
+            descr='Identifier',
+            name='id',
+            get='id',
+            set=None
+        )
+
+        self.add_property(
+            descr='Volume',
+            name='volume',
+            get='pool'
+        )
+
+    def save(self):
+        self.context.submit_task(
+            'system_dataset.configure',
+            self.entity['pool'],
+            callback=lambda s: post_save(self, s)
+        )
+
+
 class ReplicationNamespace(Namespace):
     def commands(self):
         return {
@@ -594,6 +620,7 @@ class SystemNamespace(ConfigNamespace):
             MailNamespace('mail', self.context),
             SessionsNamespace('session', self.context),
             EventsNamespace('event', self.context),
+            SystemDatasetNamespace('system_dataset', self.context),
             ConfigDbNamespace('config'),
             ReplicationNamespace('replication')
         ]

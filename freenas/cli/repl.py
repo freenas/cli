@@ -1203,7 +1203,7 @@ class MainLoop(object):
                     self.eval(token.right, env, path, serialize_filter=serialize_filter)
                     return
 
-                cmd, cwd, args, kwargs, opargs = self.eval(token.left, env, path, dry_run=True)
+                cmd, cwd, args, kwargs, opargs = self.eval(token.left, env, path, dry_run=True, first=first)
                 cwd.on_enter()
                 self.context.pipe_cwd = cwd
                 if isinstance(cmd, FilteringCommand):

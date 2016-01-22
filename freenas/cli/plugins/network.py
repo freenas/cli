@@ -143,6 +143,12 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
                       set enabled=false
 
             Sets a network interface property. For a list of properties, see 'help properties'.""")
+        self.localdoc['DeleteEntityCommand'] = ("""\
+            Usage: delete <interface>
+            Examples: delete lagg0
+
+            Deletes an interface.""")
+
 
         self.link_states = {
             'LINK_STATE_UP': _("up"),
@@ -403,6 +409,11 @@ class AliasesNamespace(EntityNamespace):
             Available properties: type=[INET, INET6], address, netmask, broadcast
 
             Creates a network interface alias. Aliases cannot be edited after creation so if you need to change an alias you must delete it then recreate it.""")
+        self.localdoc['DeleteEntityCommand'] = ("""\
+            Usage: delete <address>
+            Examples: delete 192.168.1.1
+
+            Deletes an alias.""")
 
         self.add_property(
             descr='Address family',
@@ -497,6 +508,11 @@ class HostsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityN
                       
             Add an entry to the hosts table. Specify the hostname
             or FQDN and its associated IP address.""")
+        self.localdoc['DeleteEntityCommand'] = ("""\
+            Usage: delete <hostname>
+            Examples: delete myhost
+
+            Deletes a hostname.""")
 
         self.add_property(
             descr='IP address',
@@ -606,6 +622,11 @@ class RoutesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Entity
                       set netmask=16
 
             Sets a network route property. For a list of properties, see 'help properties'.""")
+        self.localdoc['DeleteEntityCommand'] = ("""\
+            Usage: delete <route>
+            Examples: delete myroute
+
+            Deletes a route.""")
 
         self.skeleton_entity = {
             'type': 'INET'

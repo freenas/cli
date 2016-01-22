@@ -1226,7 +1226,7 @@ class MainLoop(object):
 
             if isinstance(token, Redirection):
                 with open(token.path, 'a+') as f:
-                    format_output(self.eval(token.body, env, path), file=f)
+                    format_output(self.eval(token.body, env, path, first=True), file=f)
                     return None
 
         except SystemExit as err:

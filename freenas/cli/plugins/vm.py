@@ -35,7 +35,7 @@ from threading import RLock, Thread
 from freenas.dispatcher.shell import VMConsoleClient
 from freenas.cli.namespace import (
     EntityNamespace, Command, NestedObjectLoadMixin, NestedObjectSaveMixin, EntitySubscriberBasedLoadMixin,
-    RpcBasedLoadMixin, TaskBasedSaveMixin, description, ListCommand
+    RpcBasedLoadMixin, TaskBasedSaveMixin, description, ListCommand, CommandException
 )
 from freenas.cli.output import ValueType
 
@@ -171,6 +171,22 @@ class ConsoleCommand(Command):
         console.start()
 
 
+class ImportVMCommand(Command):
+    """
+    Usage: import <name> volume=<volume>
+
+    Imports a VM.
+    """
+    def run(self, context, args, kwargs, opargs):
+        name = args[0]
+        if not name:
+            raise CommandException(_("Please specify the name of VM."))
+        volume = kwargs.get('volume', None)
+        if not volume:
+            raise CommandException(_("Please specify which volume is containing a VM being imported."))
+        context.call_task_sync('container.import', name, volume)
+
+
 @description("Configure and manage virtual machines")
 class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):
     def __init__(self, name, context):
@@ -272,6 +288,10 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             'stop': StopVMCommand(this),
             'reboot': RebootVMCommand(this),
             'console': ConsoleCommand(this)
+        }
+
+        self.extra_commands = {
+            'import': ImportVMCommand()
         }
 
     def namespaces(self):

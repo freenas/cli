@@ -41,7 +41,7 @@ from freenas.cli.complete import NullComplete, EnumComplete
 from freenas.cli.utils import post_save, PrintableNone
 from freenas.cli.output import (
     ValueType, Object, Table, Sequence, output_list,
-    output_msg, read_value
+    output_msg, read_value, format_value
 )
 
 t = gettext.translation('freenas-cli', fallback=True)
@@ -309,7 +309,8 @@ class ItemNamespace(Namespace):
             if len(args) != 0:
                 raise CommandException('Wrong arguments count')
 
-            values = Object()
+            cols = []
+            values = []
             entity = self.parent.entity
 
             for mapping in self.parent.property_mappings:
@@ -320,21 +321,25 @@ class ItemNamespace(Namespace):
                     if not mapping.condition(entity):
                         continue
 
-                values.append(Object.Item(
-                    mapping.descr,
-                    mapping.name,
-                    mapping.do_get(entity),
-                    mapping.type
-                ))
+                value = {'name' : mapping.name,
+                         'descr' : mapping.descr,
+                         'value' : format_value(mapping.do_get(entity), mapping.type)}
+                values.append(value)
+
+            cols.append(Table.Column("Property", 'name'))
+            cols.append(Table.Column("Description", 'descr'))
+            cols.append(Table.Column("Value", 'value'))
+
+            table = Table(values, cols)
 
             if self.parent.leaf_entity:
                 leaf_res = ListCommand(self.parent).run(context, args, kwargs, opargs, filtering)
                 return Sequence(
-                    values,
+                    table,
                     "-- {0} --".format(self.parent.leaf_ns.description),
                     leaf_res
                 )
-            return values
+            return table
 
     @description("Prints single item value")
     class GetEntityCommand(Command):

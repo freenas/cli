@@ -114,6 +114,14 @@ class SharesNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             usersetable=False
         )
 
+        self.add_property(
+            descr='Enabled',
+            name='enabled',
+            get='enabled',
+            list=True,
+            type=ValueType.BOOLEAN
+        )
+
     def commands(self):
         return {
             '?': IndexCommand(self),
@@ -202,6 +210,14 @@ class BaseSharesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, En
             list=False,
             createsetable=True,
             usersetable=False
+        )
+
+        self.add_property(
+            descr='Enabled',
+            name='enabled',
+            get='enabled',
+            list=True,
+            type=ValueType.BOOLEAN
         )
 
         self.add_property(

@@ -323,12 +323,14 @@ class ItemNamespace(Namespace):
 
                 value = {'name' : mapping.name,
                          'descr' : mapping.descr,
-                         'value' : format_value(mapping.do_get(entity), mapping.type)}
+                         'value' : format_value(mapping.do_get(entity), mapping.type),
+                         'editable' : format_value(True if mapping.set and mapping.usersetable else False, ValueType.BOOLEAN) }
                 values.append(value)
 
             cols.append(Table.Column("Property", 'name'))
             cols.append(Table.Column("Description", 'descr'))
             cols.append(Table.Column("Value", 'value'))
+            cols.append(Table.Column("Editable", 'editable'))
 
             table = Table(values, cols)
 

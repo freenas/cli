@@ -225,7 +225,7 @@ class BaseSharesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, En
             name='owner',
             get='permissions.user',
             list=True,
-            condition=lambda o: o['target_type'] in ('DIRECTORY', 'DATASET')
+            condition=lambda o: (o['target_type'] in ('DIRECTORY', 'DATASET')) and (o['enabled'])
         )
 
         self.add_property(
@@ -233,7 +233,7 @@ class BaseSharesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, En
             name='group',
             get='permissions.group',
             list=True,
-            condition=lambda o: o['target_type'] in ('DIRECTORY', 'DATASET')
+            condition=lambda o: (o['target_type'] in ('DIRECTORY', 'DATASET')) and (o['enabled'])
         )
 
         self.primary_key = self.get_mapping('name')
@@ -269,7 +269,7 @@ class NFSSharesNamespace(BaseSharesNamespace):
         self.localdoc['CreateEntityCommand'] = ("""\
             Usage: create <name> parent=<volume> <property>=<value> ...
                    create <name> target=<volume>/<dataset> <property>=<value> ...
-                   create <name> path="/path/to/directory/" <property>=<value> ... 
+                   create <name> path="/path/to/directory/" <property>=<value> ...
 
             Examples:
                 create myshare parent=mypool
@@ -356,7 +356,7 @@ class AFPSharesNamespace(BaseSharesNamespace):
         self.localdoc['CreateEntityCommand'] = ("""\
             Usage: create <name> parent=<volume> <property>=<value> ...
                    create <name> target=<volume>/<dataset> <property>=<value> ...
-                   create <name> path="/path/to/directory/" <property>=<value> ... 
+                   create <name> path="/path/to/directory/" <property>=<value> ...
 
             Examples:
                 create myshare parent=mypool
@@ -431,7 +431,7 @@ class SMBSharesNamespace(BaseSharesNamespace):
         self.localdoc['CreateEntityCommand'] = ("""\
             Usage: create <name> parent=<volume> <property>=<value> ...
                    create <name> target=<volume>/<dataset> <property>=<value> ...
-                   create <name> path="/path/to/directory/" <property>=<value> ... 
+                   create <name> path="/path/to/directory/" <property>=<value> ...
 
             Examples:
                 create myshare parent=mypool
@@ -632,7 +632,7 @@ class ISCSIAuthGroupsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityName
                       set policy=CHAP
 
             Sets a iSCSI auth group property. For a list of properties, see 'help properties'.""")
-        
+
         self.add_property(
             descr='Portal name',
             name='name',
@@ -825,7 +825,7 @@ class ISCSITargetMapingNamespace(EntityNamespace):
         else:
             entity = first_or_default(lambda a: a['name'] == this.entity['name'], self.parent.entity['extents'])
             entity.update(this.entity)
-            
+
         self.parent.save()
 
     def delete(self, name, kwargs):

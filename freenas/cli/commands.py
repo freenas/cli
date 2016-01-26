@@ -672,18 +672,28 @@ class WaitCommand(Command):
     """
     def run(self, context, args, kwargs, opargs):
         if args:
-            tid = args[0]
+            try:
+                tid = int(args[0])
+            except ValueError:
+                raise CommandException('Task id argument must be an integer')
         else:
-            tid = context.global_env.find('_last_task_id')
+            try:
+                tid = context.global_env.find('_last_task_id')
+            except KeyError:
+                raise CommandException('No recently submitted tasks found')
+
+        def update(progress, task):
+            message = task['progress']['message'] if 'progress' in task else task['state']
+            percentage = task['progress']['percentage'] if 'progress' in task else 0
+            progress.update(percentage=percentage, message=message)
 
         task = context.entity_subscribers['task'].query(('id', '=', tid), single=True)
         progress = ProgressBar()
-        progress.update(percentage=task['progress']['percentage'], message=task['progress']['message'])
+        update(progress, task)
+
         try:
             for op, old, new in context.entity_subscribers['task'].listen(tid):
-                message = new['progress']['message'] if 'progress' in new else new['state']
-                percentage = new['progress']['percentage'] if 'progress' in new else 0
-                progress.update(percentage=percentage, message=message)
+                update(progress, new)
 
                 if new['state'] == 'FINISHED':
                     progress.finish()

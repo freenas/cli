@@ -73,12 +73,12 @@ def post_save(this, status):
     """
     if status == 'FINISHED':
         this.saved = True
+
     if status in ['FINISHED', 'FAILED', 'ABORTED', 'CANCELLED']:
         this.modified = False
         this.load()
         this.update_commands()
-
-    output.refresh_prompt()
+        output.refresh_prompt()
 
 
 def to_list(item):

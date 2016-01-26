@@ -101,6 +101,10 @@ def rpc(name, *args):
     return config.instance.call_sync(name, *args)
 
 
+def call_task(name, *args):
+    return config.instance.call_task_sync(name, *args)
+
+
 def cwd():
     return config.instance.ml.path_string
 
@@ -148,6 +152,7 @@ functions = {
     'readline': readline,
     'unparse': unparse_,
     'rpc': rpc,
+    'call_task': call_task,
     'cwd': cwd,
     'register_command': register_command,
     'unregister_command': unregister_command,

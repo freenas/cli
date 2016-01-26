@@ -85,6 +85,12 @@ class TasksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         )
 
         self.add_property(
+            descr='Description',
+            name='description',
+            get=self.describe_task,
+        )
+
+        self.add_property(
             descr='Started at',
             name='started_at',
             get='started_at',
@@ -98,12 +104,6 @@ class TasksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             get='finished_at',
             list=True,
             type=ValueType.TIME
-        )
-
-        self.add_property(
-            descr='Description',
-            name='description',
-            get=self.describe_task,
         )
 
         self.add_property(

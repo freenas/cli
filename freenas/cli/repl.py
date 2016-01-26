@@ -411,13 +411,16 @@ class Context(object):
         except (socket_error, OSError) as err:
             output_msg(_(
                 "Could not connect to host: {0} due to error: {1}".format(
-                    self.parsed_uri.hostname, err)
+                    self.parsed_uri.hostname or '<local>', err
+                )
             ))
-            self.argparse_parser.print_help()
             sys.exit(1)
-        except paramiko.ssh_exception.AuthenticationException as err:
+        except paramiko.ssh_exception.AuthenticationException:
             output_msg(_(
-                "Incorrect username or password"))
+                "Could not connect to host: {0} due to error: Incorrect username or password".format(
+                    self.parsed_uri.hostname or '<local>'
+                )
+            ))
             sys.exit(1)
 
     def login(self, user, password):

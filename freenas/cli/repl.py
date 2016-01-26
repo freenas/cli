@@ -609,6 +609,7 @@ class Context(object):
                 self.task_callbacks[tid] = callback
 
             output_msg_locked(_("Task #{0} submitted".format(tid)))
+            self.global_env['_last_task_id'] = Environment.Variable(tid)
             return tid
         else:
             output_msg(_("Hit Ctrl+C to terminate task if needed"))

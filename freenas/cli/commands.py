@@ -671,7 +671,11 @@ class WaitCommand(Command):
 
     """
     def run(self, context, args, kwargs, opargs):
-        tid = args[0]
+        if args:
+            tid = args[0]
+        else:
+            tid = context.global_env.find('_last_task_id')
+
         task = context.entity_subscribers['task'].query(('id', '=', tid), single=True)
         progress = ProgressBar()
         progress.update(percentage=task['progress']['percentage'], message=task['progress']['message'])

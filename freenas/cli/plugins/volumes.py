@@ -1243,14 +1243,16 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
             descr='Last scrub time',
             name='last_scrub_time',
             get='scan.end_time',
-            set=None
+            set=None,
+            list=False
         )
 
         self.add_property(
             descr='Last scrub errors',
             name='last_scrub_errors',
             get='scan.errors',
-            set=None
+            set=None,
+            list=False
         )
 
         self.primary_key = self.get_mapping('name')

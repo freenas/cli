@@ -32,7 +32,8 @@ from freenas.cli.namespace import (
     EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, description,
     CommandException, ListCommand
 )
-from freenas.cli.output import ValueType, Table
+from freenas.cli.output import ValueType, Table, output_msg_locked
+from freenas.cli.utils import post_save
 from freenas.utils import first_or_default
 
 
@@ -142,6 +143,7 @@ class BaseSharesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, En
     def __init__(self, name, type_name, context):
         super(BaseSharesNamespace, self).__init__(name, context)
 
+        self.context = context
         self.type_name = type_name
         self.entity_subscriber_name = 'share'
         self.extra_query_params = [('type', '=', type_name)]
@@ -260,6 +262,31 @@ class BaseSharesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, En
             'target_path': value,
             'target_type': 'FILE' if type(self) is ISCSISharesNamespace else 'DIRECTORY'
         })
+
+    def save(self, this, new=False):
+        if new:
+            self.context.submit_task(
+                self.create_task,
+                this.entity,
+                callback=lambda s: self.post_save(this, s, new))
+            return
+
+        self.context.submit_task(
+            self.update_task,
+            this.orig_entity[self.save_key_name],
+            this.get_diff(),
+            callback=lambda s: self.post_save(this, s, new))
+
+    def post_save(self, this, status, new):
+        if status == 'FINISHED':
+            service = self.context.call_sync('service.query', [('name', '=', self.type_name)], {'single': True})
+            if service['state'] != 'RUNNING':
+                if new:
+                    action = "created"
+                else:
+                    action = "updated"
+                output_msg_locked(_("Share '{0}' has been {1} but the service '{2}' is not currently running, please enable the service with '/ service {2} config set enable=yes'".format(this.entity[self.primary_key_name], action, self.type_name)))
+        post_save(this, status)
 
 
 @description("NFS shares")

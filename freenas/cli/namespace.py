@@ -253,7 +253,7 @@ class PropertyMapping(object):
 
         if self.enum_set:
             if str(value) not in self.enum_set:
-                raise ValueError('Invalid value for property. Should be one of: {0}'.format(', '.join(self.enum_set)))
+                raise ValueError("Invalid value for property '{0}'. Should be one of: {1}".format(self.get_name, ', '.join(self.enum_set)))
 
         value = read_value(value, self.type)
         if isinstance(self.set, collections.Callable):

@@ -86,14 +86,17 @@ class Namespace(object):
         yield Comment('Namespace: {0}'.format(self.name))
         yield CommandCall([Symbol(self.name)])
 
+        yield [i for i in self.serialize_nested()]
+
+        yield CommandCall([Symbol('..')])
+
+    def serialize_nested(self):
         for i in self.namespaces():
             try:
                 for j in i.serialize():
                     yield j
             except NotImplementedError:
                 continue
-
-        yield CommandCall([Symbol('..')])
 
     def commands(self):
         # lazy import to avoid circular import hell
@@ -540,12 +543,7 @@ class ConfigNamespace(ItemNamespace):
             if not j.set:
                 continue
             yield do_prop(j)
-        for i in self.namespaces():
-            try:
-                for j in i.serialize():
-                    yield j
-            except NotImplementedError:
-                continue
+        yield [i for i in self.serialize_nested()]
 
         yield CommandCall([Symbol('..')])
 

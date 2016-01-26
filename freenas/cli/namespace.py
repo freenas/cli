@@ -540,6 +540,13 @@ class ConfigNamespace(ItemNamespace):
             if not j.set:
                 continue
             yield do_prop(j)
+        for i in self.namespaces():
+            try:
+                for j in i.serialize():
+                    yield j
+            except NotImplementedError:
+                continue
+
         yield CommandCall([Symbol('..')])
 
     def commands(self):

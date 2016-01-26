@@ -125,7 +125,7 @@ def t_IPV6(t):
 
 
 def t_SIZE(t):
-    r'\d+[kKmMgGtT]B?'
+    r'\d+[kKmMgGtT][Bb]?'
     t.type = 'STRING'
     return t
 

@@ -37,6 +37,7 @@ import io
 import six
 import pydoc
 import collections
+import re
 
 from freenas.cli import config
 from freenas.utils import first_or_default
@@ -202,20 +203,21 @@ def read_value(value, tv=ValueType.STRING):
             return False
 
     if tv == ValueType.SIZE:
-        if value[-1] in string.ascii_letters:
-            suffix = value[-1]
-            value = int(value[:-1])
+        size = re.match('(\d+)(\w{0,2})', str(value))
+        if size.group(2):
+            suffix = str.lower(size.group(2))
+            value = int(size.group(1))
 
-            if suffix in ('k', 'K', 'kb', 'KB'):
+            if suffix in ('k', 'kb'):
                 value *= 1024
 
-            if suffix in ('m', 'M', 'MB', 'mb'):
+            if suffix in ('m', 'mb'):
                 value *= 1024 * 1024
 
-            if suffix in ('g', 'G', 'GB', 'gb'):
+            if suffix in ('g', 'gb'):
                 value *= 1024 * 1024 * 1024
 
-            if suffix in ('t', 'T', 'TB', 'tb'):
+            if suffix in ('t', 'tb'):
                 value *= 1024 * 1024 * 1024 * 1024
 
         return int(value)

@@ -268,6 +268,9 @@ class SessionsNamespace(RpcBasedLoadMixin, EntityNamespace):
 
         self.primary_key = self.get_mapping('id')
 
+    def serialize(self):
+        raise NotImplementedError()
+
 
 @description("View event history")
 class EventsNamespace(RpcBasedLoadMixin, EntityNamespace):
@@ -312,6 +315,9 @@ class EventsNamespace(RpcBasedLoadMixin, EntityNamespace):
         )
 
         self.primary_key = self.get_mapping('id')
+
+    def serialize(self):
+        raise NotImplementedError()
 
 
 @description("Time namespace")

@@ -76,7 +76,7 @@ from freenas.cli.commands import (
     ShowUrlsCommand, ShowIpsCommand, TopCommand, ClearCommand, HistoryCommand,
     SaveenvCommand, EchoCommand, SourceCommand, MorePipeCommand, SearchPipeCommand,
     ExcludePipeCommand, SortPipeCommand, LimitPipeCommand, SelectPipeCommand,
-    LoginCommand, DumpCommand, WhoamiCommand, PendingCommand
+    LoginCommand, DumpCommand, WhoamiCommand, PendingCommand, WaitCommand
 )
 import collections
 
@@ -570,6 +570,8 @@ class Context(object):
             progress = include(data, 'percentage', 'message', 'extra')
             task = self.entity_subscribers['task'].items[data['id']]
             task['progress'] = progress
+            self.entity_subscribers['task'].update(task)
+
             if task['id'] in self.pending_tasks:
                 self.pending_tasks[data['id']]['progress'] = progress
 
@@ -767,7 +769,8 @@ class MainLoop(object):
         'history': HistoryCommand(),
         'echo': EchoCommand(),
         'whoami': WhoamiCommand(),
-        'pending': PendingCommand()
+        'pending': PendingCommand(),
+        'wait': WaitCommand()
     }
     builtin_commands = base_builtin_commands.copy()
     builtin_commands.update(pipe_commands)

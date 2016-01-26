@@ -30,6 +30,7 @@ import inspect
 import sys
 import select
 import readline
+import six
 import gettext
 import platform
 import textwrap
@@ -45,6 +46,7 @@ from freenas.cli.output import (
     Sequence, read_value, format_output
 )
 from freenas.cli.output import Object as output_obj
+from freenas.cli.output import ProgressBar
 from freenas.cli.descriptions.tasks import translate as translate_task
 from freenas.cli.utils import describe_task_state
 from freenas.dispatcher.shell import ShellClient
@@ -659,6 +661,35 @@ class PendingCommand(Command):
             Table.Column('Task description', lambda t: translate_task(context, t['name'], t['args'])),
             Table.Column('Task status', describe_task_state)
         ])
+
+
+@description("Waits for a task to complete and shows task progress")
+class WaitCommand(Command):
+    """
+    Usage: wait
+           wait <task id>
+
+    """
+    def run(self, context, args, kwargs, opargs):
+        tid = args[0]
+        task = context.entity_subscribers['task'].query(('id', '=', tid), single=True)
+        progress = ProgressBar()
+        progress.update(percentage=task['progress']['percentage'], message=task['progress']['message'])
+        try:
+            for op, old, new in context.entity_subscribers['task'].listen(tid):
+                message = new['progress']['message'] if 'progress' in new else new['state']
+                percentage = new['progress']['percentage'] if 'progress' in new else 0
+                progress.update(percentage=percentage, message=message)
+
+                if new['state'] == 'FINISHED':
+                    progress.finish()
+                    break
+
+                if new['state'] == 'FAILED':
+                    six.print_()
+                    break
+        except KeyboardInterrupt:
+            six.print_()
 
 
 @description("Allows the user to scroll through output")

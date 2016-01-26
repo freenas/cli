@@ -619,7 +619,7 @@ class SingleItemNamespace(ItemNamespace):
         if self.parent.entity_serialize:
             return self.parent.entity_serialize(self)
 
-        createable = True
+        createable = self.parent.allow_create
         if hasattr(self.parent, 'createable'):
             createable = self.parent.createable(self.entity)
 

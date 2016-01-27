@@ -85,6 +85,10 @@ def apply(fn, *args):
     return fn(*args)
 
 
+def sum_(array):
+    return sum(array)
+
+
 def readline(prompt):
     return input(prompt)
 
@@ -149,6 +153,7 @@ functions = {
     'map': map_,
     'mapf': mapf,
     'apply': apply,
+    'sum': sum_,
     'readline': readline,
     'unparse': unparse_,
     'rpc': rpc,

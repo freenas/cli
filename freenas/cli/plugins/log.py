@@ -72,6 +72,14 @@ class LogNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         )
 
         self.add_property(
+            descr='Program',
+            name='program',
+            get='program',
+            list=True,
+            set=None,
+        )
+
+        self.add_property(
             descr='Message',
             name='message',
             get='message',

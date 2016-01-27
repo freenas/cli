@@ -125,7 +125,7 @@ def t_IPV6(t):
 
 
 def t_SIZE(t):
-    r'\d+[kKmMgGtT][Bb]?'
+    r'\d+[kKmMgGtT]?[iI]?[Bb]?'
     t.type = 'STRING'
     return t
 
@@ -164,7 +164,7 @@ def t_ATOM(t):
     r'[0-9a-zA-Z_-][0-9a-zA-Z_\-\.\/#@\:]*'
     t.type = reserved.get(t.value, 'ATOM')
     if t.type == 'TRUE':
-        t.value = True 
+        t.value = True
     elif t.type == 'FALSE':
         t.value = False
     elif t.type == 'NULL':
@@ -703,7 +703,7 @@ def p_unary_parameter_2(p):
     unary_parameter : UP
     unary_parameter : DIV
     """
-    p[0] = p[1] 
+    p[0] = p[1]
 
 
 def p_binary_parameter(p):

@@ -580,9 +580,9 @@ class GlobalConfigNamespace(ConfigNamespace):
             List of available DNS servers.
             Only needs to be set when using static addressing
             and will be set to 'empty' when using DHCP. When
-            setting multiple DNS servers, enclose the list
-            between double quotes and place a space between
-            IP addresses."""),
+            setting multiple DNS servers, place each address
+            within double quotes and a comma with space between
+            each address."""),
             type=ValueType.SET
         )
 

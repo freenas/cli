@@ -1370,11 +1370,16 @@ class MainLoop(object):
             token = None
             append_space = False
             args = []
+            builtin_command_set = list(self.base_builtin_commands.keys())
 
             if len(readline_buffer.strip()) > 0:
                 tokens = parse(readline_buffer, '<stdin>', True)
                 if tokens:
                     token = tokens.pop(-1)
+                    if isinstance(token, PipeExpr):
+                        token = token.right
+                        builtin_command_set = list(self.pipe_commands.keys())
+
                     args = token.args
 
             if isinstance(token, CommandCall) or not args:
@@ -1385,7 +1390,7 @@ class MainLoop(object):
             if issubclass(type(obj), Namespace):
                 choices = [str(i.get_name()) for i in obj.namespaces()]
                 choices += obj.commands().keys()
-                choices += list(self.base_builtin_commands.keys()) + ['..', '/', '-']
+                choices += builtin_command_set + ['..', '/', '-']
                 append_space = True
             elif issubclass(type(obj), Command):
                 completions = obj.complete(self.context)

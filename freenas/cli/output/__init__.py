@@ -202,38 +202,6 @@ def read_value(value, tv=ValueType.STRING):
         if str(value).lower() in ('false', 'no', 'off', '0'):
             return False
 
-    if tv == ValueType.SIZE:
-        size = re.match('(\d+)(\w*)', str(value))
-        if size.group(2):
-            suffix = str.lower(size.group(2))
-            value = int(size.group(1))
-
-            if suffix == 'kib':
-                value *= 1024
-
-            if suffix in ('k', 'kb'):
-                value *= 1000
-
-            if suffix == 'mib':
-                value *= 1024 * 1024
-
-            if suffix in ('m', 'mb'):
-                value *= 1000 * 1000
-
-            if suffix == 'gib':
-                value *= 1024 * 1024 * 1024
-
-            if suffix in ('g', 'gb'):
-                value *= 1000 * 1000 * 1000
-
-            if suffix == 'tib':
-                value *= 1024 * 1024 * 1024 * 1024
-
-            if suffix in ('t', 'tb'):
-                value *= 1000 * 1000 * 1000 * 1000
-
-        return int(value)
-
     if tv == ValueType.SET:
         if type(value) is list:
             return value

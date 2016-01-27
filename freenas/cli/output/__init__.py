@@ -377,3 +377,21 @@ def output_msg_locked(msg):
     sys.stdout.flush()
     config.instance.ml.restore_readline()
     output_lock.release()
+
+
+def get_humanized_size(value):
+    value = int(value)
+    suffixes = [
+        'iB',
+        'KiB',
+        'MiB',
+        'GiB'
+    ]
+
+    for suffix in suffixes:
+        next_step = value / 1024
+        if not int(next_step):
+            return str(round(value, 2)) + ' ' + suffix
+        value = next_step
+
+    return str(round(value, 2)) + ' ' + 'TiB'

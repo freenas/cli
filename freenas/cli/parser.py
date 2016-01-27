@@ -126,7 +126,7 @@ def t_IPV6(t):
 
 
 def t_SIZE(t):
-    r'(\d+)([kKmMgGtT]+[iI]?[Bb]?)'
+    r'(\d+)([kKmMgGtT][iI]?[Bb]?)'
     t.type = 'NUMBER'
     m = re.match(t_SIZE.__doc__, t.value)
     suffix = m.group(2).lower()

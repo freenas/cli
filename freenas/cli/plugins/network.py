@@ -337,6 +337,12 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
             descr='Member interfaces',
             name='ports',
             get='lagg.ports',
+            usage=_("""\
+            This property only applies to LAGG interfaces and
+            indicates which physical interfaces are members of
+            the lagg. When specifying multiple interfaces, place
+            each interface name within double quotes and a comma
+            with space between each interface name."""),
             list=False,
             createsetable=False,
             type=ValueType.SET,
@@ -347,6 +353,12 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
             descr='Member interfaces',
             name='members',
             get='bridge.members',
+            sage=_("""\
+            This property only applies to BRIDGE interfaces and
+            indicates which physical interfaces are members of
+            the bridge. When specifying multiple interfaces, place
+            each interface name within double quotes and a comma
+            with space between each interface name."""),
             list=False,
             createsetable=False,
             type=ValueType.SET,

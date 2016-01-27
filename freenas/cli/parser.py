@@ -128,37 +128,35 @@ def t_IPV6(t):
 def t_SIZE(t):
     r'(\d+)([kKmMgGtT]+[iI]?[Bb]?)'
     t.type = 'NUMBER'
+    m = re.match(t_SIZE.__doc__, t.value)
+    suffix = m.group(2).lower()
+    value = int(m.group(1))
 
-    if t.value.group(2):
-        suffix = str.lower(t.value.group(2))
-        value = int(t.value.group(1))
+    if suffix == 'kib':
+        value *= 1024
 
-        if suffix == 'kib':
-            value *= 1024
+    if suffix in ('k', 'kb'):
+        value *= 1000
 
-        if suffix in ('k', 'kb'):
-            value *= 1000
+    if suffix == 'mib':
+        value *= 1024 * 1024
 
-        if suffix == 'mib':
-            value *= 1024 * 1024
+    if suffix in ('m', 'mb'):
+        value *= 1000 * 1000
 
-        if suffix in ('m', 'mb'):
-            value *= 1000 * 1000
+    if suffix == 'gib':
+        value *= 1024 * 1024 * 1024
 
-        if suffix == 'gib':
-            value *= 1024 * 1024 * 1024
+    if suffix in ('g', 'gb'):
+        value *= 1000 * 1000 * 1000
 
-        if suffix in ('g', 'gb'):
-            value *= 1000 * 1000 * 1000
+    if suffix == 'tib':
+        value *= 1024 * 1024 * 1024 * 1024
 
-        if suffix == 'tib':
-            value *= 1024 * 1024 * 1024 * 1024
-
-        if suffix in ('t', 'tb'):
-            value *= 1000 * 1000 * 1000 * 1000
+    if suffix in ('t', 'tb'):
+        value *= 1000 * 1000 * 1000 * 1000
 
     t.value = value
-
     return t
 
 

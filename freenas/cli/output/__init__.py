@@ -189,7 +189,7 @@ def read_value(value, tv=ValueType.STRING):
     if tv == ValueType.STRING:
         return str(value)
 
-    if tv == ValueType.NUMBER:
+    if tv in (ValueType.NUMBER, ValueType.SIZE):
         return int(value)
 
     if tv == ValueType.BOOLEAN:

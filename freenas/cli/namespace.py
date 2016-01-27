@@ -324,10 +324,12 @@ class ItemNamespace(Namespace):
                     if not mapping.condition(entity):
                         continue
 
-                value = {'name' : mapping.name,
-                         'descr' : mapping.descr,
-                         'value' : format_value(mapping.do_get(entity), mapping.type),
-                         'editable' : format_value(True if mapping.set and mapping.usersetable else False, ValueType.BOOLEAN) }
+                value = {
+                    'name': mapping.name,
+                    'descr': mapping.descr,
+                    'value': format_value(mapping.do_get(entity), mapping.type),
+                    'editable': format_value(True if mapping.set and mapping.usersetable else False, ValueType.BOOLEAN)
+                }
                 values.append(value)
 
             cols.append(Table.Column("Property", 'name'))

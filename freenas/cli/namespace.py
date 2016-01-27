@@ -976,7 +976,9 @@ class EntitySubscriberBasedLoadMixin(object):
 
     def query(self, params, options):
         if not params and not options:
-            return self.context.entity_subscribers[self.entity_subscriber_name].viewport()
+            return self.context.entity_subscribers[self.entity_subscriber_name].viewport(
+                *self.extra_query_params
+            )
 
         return self.context.entity_subscribers[self.entity_subscriber_name].query(
             *(self.extra_query_params + params),

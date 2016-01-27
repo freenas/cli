@@ -307,6 +307,10 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
             descr='VLAN tag',
             name='vlan_tag',
             get='vlan.tag',
+            usage=_("""\
+            This property only applies to VLAN interfaces and
+            is mandatory when setting the vlan_parent.
+            Must be a valid tag number between 1 and 4095."""),
             list=False,
             createsetable=False,
             type=ValueType.NUMBER,

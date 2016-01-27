@@ -65,7 +65,7 @@ class LogNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
 
         self.add_property(
             descr='Priority',
-            name='priotiy',
+            name='priority',
             get='priority',
             list=True,
             set=None,

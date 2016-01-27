@@ -26,7 +26,7 @@
 #####################################################################
 
 import gettext
-from freenas.cli.namespace import (EntityNamespace, EntitySubscriberBasedLoadMixin, description
+from freenas.cli.namespace import EntityNamespace, EntitySubscriberBasedLoadMixin, description
 from freenas.cli.output import ValueType
 
 
@@ -37,12 +37,12 @@ _ = t.gettext
 @description("System logs")
 class LogNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
     """
-    The alert namespace provides commands for listing and managing system alerts.
+    The log namespace allows to browse and query system logs
     """
     def __init__(self, name, context):
         super(LogNamespace, self).__init__(name, context)
         self.entity_subscriber_name = 'syslog'
-        self.primary_key_name = 'id'
+        self.primary_key_name = 'seqnum'
         self.allow_edit = False
         self.allow_create = False
 

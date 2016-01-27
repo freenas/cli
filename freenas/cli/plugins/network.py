@@ -533,6 +533,12 @@ class HostsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityN
 
 @description("Manage global network settings")
 class GlobalConfigNamespace(ConfigNamespace):
+    """
+    The config namespace provides commands for listing and managing
+    global network settings that apply to all interfaces.
+    For a list of available properties, type 'help properties'.
+    Type 'show" to see current settings.
+    """
     def __init__(self, name, context):
         super(GlobalConfigNamespace, self).__init__(name, context)
         self.config_call = "network.config.get_global_config"
@@ -541,6 +547,10 @@ class GlobalConfigNamespace(ConfigNamespace):
             descr='IPv4 gateway',
             name='ipv4_gateway',
             get='gateway.ipv4',
+            usage=_("""\
+            IPv4 address of the network's default gateway.
+            Only needs to be set when using static addressing
+            and will be set to 'none' when using DHCP."""),
             list=True
         )
 
@@ -548,6 +558,10 @@ class GlobalConfigNamespace(ConfigNamespace):
             descr='IPv6 gateway',
             name='ipv6_gateway',
             get='gateway.ipv6',
+            usage=_("""\
+            IPv6 address of the network's default gateway.
+            Only needs to be set when using static addressing
+            and access to other IPv6 networks is required."""),
             list=True
         )
 
@@ -556,6 +570,10 @@ class GlobalConfigNamespace(ConfigNamespace):
             name='dns_servers',
             get='dns.addresses',
             list=True,
+            usage=_("""\
+            List of available DNS servers.
+            Only needs to be set when using static addressing
+            and will be set to 'empty' when using DHCP."""),
             type=ValueType.SET
         )
 
@@ -564,6 +582,10 @@ class GlobalConfigNamespace(ConfigNamespace):
             name='dns_search',
             get='dns.search',
             list=True,
+            usage=_("""\
+            The name of the search domain.
+            Only needs to be set when using static addressing
+            and will be set to 'empty' when using DHCP."""),
             type=ValueType.SET
         )
 
@@ -572,6 +594,11 @@ class GlobalConfigNamespace(ConfigNamespace):
             name='dhcp_gateway',
             get='dhcp.assign_gateway',
             list=True,
+            usage=_("""\
+            Can be set to yes or no. Indicates whether or
+            not the DHCP server should assign the default
+            gateway address. If set to no, you will need
+            to manually set the 'ipv4_gateway'."""),
             type=ValueType.BOOLEAN
         )
 
@@ -580,6 +607,11 @@ class GlobalConfigNamespace(ConfigNamespace):
             name='dhcp_dns',
             get='dhcp.assign_dns',
             list=True,
+            usage=_("""\
+            Can be set to yes or no. Indicates whether or
+            not the DHCP server should assign the DNS
+            server addresses. If set to no, you will need
+            to manually set the 'ipv4_gateway'."""),
             type=ValueType.BOOLEAN
         )
 

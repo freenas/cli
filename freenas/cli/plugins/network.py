@@ -504,6 +504,7 @@ class HostsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityN
         self.required_props = ['name', 'address']
         self.localdoc['CreateEntityCommand'] = ("""\
             Usage: create <hostname> address=<IP address>
+            
             Examples: create myfreenas address=10.0.0.1
                       
             Add an entry to the hosts table. Specify the hostname
@@ -518,6 +519,8 @@ class HostsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityN
             descr='IP address',
             name='address',
             get='address',
+            usage=_("""\
+            The IP address to add to the hosts file."""),
             list=True
         )
 
@@ -525,6 +528,9 @@ class HostsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityN
             descr='Hostname',
             name='name',
             get='id',
+            usage=_("""\
+            The hostname or FQDN associated with that
+            IP address."""),
             list=True
         )
 

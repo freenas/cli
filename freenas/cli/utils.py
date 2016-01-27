@@ -25,7 +25,10 @@
 #
 #####################################################################
 
+import os
 import re
+import pty
+import tempfile
 from freenas.cli import output
 
 
@@ -103,6 +106,16 @@ def describe_task_state(task):
             task['progress.percentage'], task['progress.message'])
 
     return task['state']
+
+
+def edit_in_editor(initial):
+    editor = os.getenv('EDITOR') or '/usr/bin/vi'
+    with tempfile.NamedTemporaryFile('w') as f:
+        f.write(initial)
+        f.flush()
+        pty.spawn([editor, f.name])
+        with open(f.name, 'r') as f2:
+            return f2.read()
 
 
 class PrintableNone(object):

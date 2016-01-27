@@ -38,7 +38,7 @@ from freenas.utils import first_or_default
 from freenas.utils.query import wrap
 from freenas.cli.parser import CommandCall, Literal, Symbol, BinaryParameter, Comment
 from freenas.cli.complete import NullComplete, EnumComplete
-from freenas.cli.utils import post_save, PrintableNone
+from freenas.cli.utils import post_save, edit_in_editor, PrintableNone
 from freenas.cli.output import (
     ValueType, Object, Table, Sequence, output_list,
     output_msg, read_value, format_value
@@ -427,6 +427,20 @@ class ItemNamespace(Namespace):
         def complete(self, context):
             return [create_completer(x) for x in self.parent.property_mappings if x.set]
 
+    class EditEntityCommand(Command):
+        def __init__(self, parent):
+            self.parent = parent
+
+        def run(self, context, args, kwargs, opargs):
+            prop = self.parent.get_mapping(args[0])
+            value = edit_in_editor(prop.do_get(self.parent.entity))
+            prop.do_set(self.parent.entity, value)
+            self.parent.modified = True
+            self.parent.save()
+
+        def complete(self, context):
+            return [EnumComplete(0, [p.name for p in self.parent.property_mappings])]
+
     class DeleteCurrentEntityCommand(Command):
         def __init__(self, parent):
             self.parent = parent
@@ -502,6 +516,7 @@ class ItemNamespace(Namespace):
         if self.allow_edit:
             base.update({
                 'set': self.SetEntityCommand(self),
+                'edit': self.EditEntityCommand(self)
             })
 
         if self.commands is not None:

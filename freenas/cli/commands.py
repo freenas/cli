@@ -678,7 +678,7 @@ class WaitCommand(Command):
                 raise CommandException('Task id argument must be an integer')
         else:
             try:
-                tid = context.global_env.find('_last_task_id')
+                tid = context.global_env.find('_last_task_id').value
             except KeyError:
                 raise CommandException('No recently submitted tasks found')
 

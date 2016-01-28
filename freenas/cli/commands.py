@@ -35,6 +35,7 @@ import gettext
 import platform
 import textwrap
 import re
+from datetime import datetime, timedelta
 from freenas.cli.parser import parse, unparse
 from freenas.cli.complete import NullComplete, EnumComplete
 from freenas.cli.namespace import (
@@ -776,6 +777,28 @@ class SearchPipeCommand(PipeCommand):
             ))
 
         return {"filter": mapped_opargs}
+
+
+class OlderThanPipeCommand(PipeCommand):
+    def run(self, context, args, kwargs, opargs, input=None):
+        return input
+
+    def serialize_filter(self, context, args, kwargs, opargs):
+        return {"filter": [
+            ('started_at', '!=', None),
+            ('started_at', '<=', datetime.now() - timedelta(minutes=args[0]))
+        ]}
+
+
+class NewerThanPipeCommand(PipeCommand):
+    def run(self, context, args, kwargs, opargs, input=None):
+        return input
+
+    def serialize_filter(self, context, args, kwargs, opargs):
+        return {"filter": [
+            ('started_at', '!=', None),
+            ('started_at', '>=', datetime.now() - timedelta(minutes=args[0]))
+        ]}
 
 
 @description("Excludes certain results from result set basing on specified conditions")

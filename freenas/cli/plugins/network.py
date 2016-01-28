@@ -44,8 +44,19 @@ def set_netmask(entity, netmask):
     nm = None
     if re.match("^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$", netmask):
         nm = 0
-        for octet in netmask.split('.'):
-            nm += bin(int(octet)).count("1")
+        octets = netmask.split('.')
+        bin_nm = ''
+        for octet in octets:
+            bin_nm += '{0:08b}'.format(int(octet))
+
+        for idx, bit in enumerate(bin_nm):
+            if nm == idx:
+                if int(bit):
+                    nm += 1
+            else:
+                if int(bit):
+                    raise CommandException(_("Invalid netmask: {0}".format(netmask)))
+
     elif netmask.isdigit():
         nm = int(netmask)
 
@@ -139,7 +150,7 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
             Usage: set <property>=<value> ...
 
             Examples: set dhcp=true
-                      set ipv6_disable=true 
+                      set ipv6_disable=true
                       set enabled=false
 
             Sets a network interface property. For a list of properties, see 'help properties'.""")
@@ -269,7 +280,7 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
             usage=_("""\
             Indicates whether the interface detects a
             network link. If it displays down, check the
-            physical connection to the network. This is a 
+            physical connection to the network. This is a
             read-only property."""),
             get=self.get_link_state,
             set=None,
@@ -283,7 +294,7 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
             usage=_("""\
             Indicates whether the interface has been
             configured to be up or down. If it displays
-            as down, the enabled property can be used to 
+            as down, the enabled property can be used to
             set it to yes."""),
             set=None,
             list=True
@@ -520,9 +531,9 @@ class HostsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityN
         self.required_props = ['name', 'address']
         self.localdoc['CreateEntityCommand'] = ("""\
             Usage: create <hostname> address=<IP address>
-            
+
             Examples: create myfreenas address=10.0.0.1
-                      
+
             Add an entry to the hosts table. Specify the hostname
             or FQDN and its associated IP address.""")
         self.localdoc['DeleteEntityCommand'] = ("""\
@@ -667,7 +678,7 @@ class RoutesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Entity
             Usage: create name=<name> gateway=<gateway> network=<network> netmask=<netmask>
 
             Examples: create name=default gateway=10.0.0.1 network=10.0.0.0 netmask=255.255.255.0
-                      create name=myroute gateway=192.168.0.1 network=192.168.0.0 netmask=16 
+                      create name=myroute gateway=192.168.0.1 network=192.168.0.0 netmask=16
                       create name=myipvsix gateway=fda8:06c3:ce53:a890:0000:0000:0000:0001 network=fda8:06c3:ce53:a890:0000:0000:0000:0000 netmask=64 type=INET6
 
             Creates a network route. For a list of properties, see 'help properties'.""")

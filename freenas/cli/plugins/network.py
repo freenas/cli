@@ -60,7 +60,7 @@ def set_netmask(entity, netmask):
     elif netmask.isdigit():
         nm = int(netmask)
 
-    if nm is None:
+    if nm not in range(1, 31):
         raise CommandException(_("Invalid netmask: {0}".format(netmask)))
 
     entity['netmask'] = nm

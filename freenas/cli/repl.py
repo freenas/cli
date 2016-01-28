@@ -569,7 +569,10 @@ class Context(object):
     def handle_event(self, event, data):
         if event == 'task.progress':
             progress = include(data, 'percentage', 'message', 'extra')
-            task = self.entity_subscribers['task'].items[data['id']]
+            task = self.entity_subscribers['task'].items.get(data['id'])
+            if not task:
+                return
+
             task['progress'] = progress
             self.entity_subscribers['task'].update(task)
 

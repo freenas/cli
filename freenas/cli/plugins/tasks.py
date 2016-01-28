@@ -28,7 +28,8 @@
 import gettext
 from freenas.cli.output import ValueType
 from freenas.cli.descriptions import tasks
-from freenas.cli.namespace import EntityNamespace, EntitySubscriberBasedLoadMixin, Command, description
+from freenas.cli.namespace import EntityNamespace, EntitySubscriberBasedLoadMixin, Command, ListCommand, description
+from freenas.cli.complete import NullComplete
 from freenas.cli.utils import describe_task_state
 
 
@@ -66,6 +67,45 @@ class AbortCommand(Command):
 
     def run(self, context, args, kwargs, opargs):
         context.call_sync('task.abort', self.parent.entity['id'])
+
+
+class TaskListCommand(ListCommand):
+    RUNNING_STATES = ['CREATED', 'WAITING', 'EXECUTING', 'ROLLBACK']
+
+    def run(self, context, args, kwargs, opargs, filtering=None):
+        states = []
+
+        if not args:
+            states = self.RUNNING_STATES
+
+        if 'all' in args:
+            return super(TaskListCommand, self).run(context, args, kwargs, opargs, filtering)
+
+        if 'aborted' in args:
+            states.append('ABORTED')
+
+        if 'finished' in args:
+            states.append('FINISHED')
+
+        if 'failed' in args:
+            states.append('FAILED')
+
+        if 'running' in args:
+            states += self.RUNNING_STATES
+
+        return super(TaskListCommand, self).run(context, args, kwargs, opargs, {
+            'filter': [('state', 'in', states)],
+            'params': {}
+        })
+
+    def complete(self, context):
+        return [
+            NullComplete('all'),
+            NullComplete('aborted'),
+            NullComplete('finished'),
+            NullComplete('failed'),
+            NullComplete('running')
+        ]
 
 
 @description("Manage tasks")
@@ -109,7 +149,15 @@ class TasksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         self.add_property(
             descr='State',
             name='state',
+            get='state',
+            set=None
+        )
+
+        self.add_property(
+            descr='Status',
+            name='status',
             get=describe_task_state,
+            set=None
         )
 
         self.primary_key = self.get_mapping('id')
@@ -118,7 +166,8 @@ class TasksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         }
 
         self.extra_commands = {
-            'submit': SubmitCommand()
+            'submit': SubmitCommand(),
+            'show': TaskListCommand(self)
         }
 
     def serialize(self):

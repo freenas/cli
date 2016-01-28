@@ -34,6 +34,7 @@ import gettext
 import sys
 import collections
 import six
+import inspect
 from freenas.utils import first_or_default
 from freenas.utils.query import wrap
 from freenas.cli.parser import CommandCall, Literal, Symbol, BinaryParameter, Comment
@@ -427,12 +428,25 @@ class ItemNamespace(Namespace):
         def complete(self, context):
             return [create_completer(x) for x in self.parent.property_mappings if x.set]
 
+    @description("Opens an editor for a single <entity> string property")
     class EditEntityCommand(Command):
+        """
+        Usage: edit <property>
+
+        For a list of properties for the current namespace, see 'help properties'.
+        """
+
         def __init__(self, parent):
             self.parent = parent
 
         def run(self, context, args, kwargs, opargs):
+            if len(args) > 1:
+                raise CommandException(_("Invalid syntax:{0}\n{1}.".format(args, inspect.getdoc(self))))
+            if len(args) < 1:
+                raise CommandException(_("Please provide a property to be edited.\n{0}".format(inspect.getdoc(self))))
             prop = self.parent.get_mapping(args[0])
+            if prop.type != ValueType.STRING:
+                raise CommandException(_("The edit command can only be used on string properties"))
             value = edit_in_editor(prop.do_get(self.parent.entity))
             prop.do_set(self.parent.entity, value)
             self.parent.modified = True

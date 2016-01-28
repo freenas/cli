@@ -506,6 +506,14 @@ class ItemNamespace(Namespace):
         mapping = self.get_mapping(prop)
         return mapping.do_get(obj)
 
+    def has_editable_string(self):
+        for prop in self.property_mappings:
+            if prop.set is not None and prop.usersetable and prop.type == ValueType.STRING:
+                if prop.condition and not prop.condition(self.entity):
+                    return False
+                return True
+        return False
+
     def commands(self):
         base = {
             '?': IndexCommand(self),
@@ -516,8 +524,12 @@ class ItemNamespace(Namespace):
         if self.allow_edit:
             base.update({
                 'set': self.SetEntityCommand(self),
-                'edit': self.EditEntityCommand(self)
             })
+            if self.has_editable_string():
+                base.update({
+                    'edit': self.EditEntityCommand(self)
+                })
+
 
         if self.commands is not None:
             base.update(self.subcommands)

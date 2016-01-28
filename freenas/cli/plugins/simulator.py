@@ -37,6 +37,9 @@ _ = t.gettext
 
 @description("Tools for simulating disks")
 class DisksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
+    """
+    The disk namespace provides tools for creating and managing simulated disks for testing.
+    """
     def __init__(self, name, context):
         super(DisksNamespace, self).__init__(name, context)
 
@@ -44,6 +47,33 @@ class DisksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
         self.create_task = 'simulator.disk.create'
         self.update_task = 'simulator.disk.update'
         self.delete_task = 'simulator.disk.delete'
+        self.required_props = ['name', 'mediasize']
+
+        self.localdoc['CreateEntityCommand'] = ("""\
+            Usage: create <name> mediasize=<size> <property>=<value> ...
+
+            Examples:
+                create mydisk mediasize=20G
+                create mydisk mediasize=1T rpm=7200 vendor=Quantum model=Fireball
+                create mydisk mediasize=150G rpm=SSD
+
+            Creates a simulated disk for testing. For a list of properties, see 'help properties'.""")
+        self.entity_localdoc['SetEntityCommand'] =  ("""\
+            Usage: set <property>=<value> ...
+
+            Examples: set online=false
+                      set serial=abc123
+                      set mediasize=30G
+                      set rpm=15000
+
+            Sets a simulated disk property. For a list of properties, see 'help properties'.""")
+        self.localdoc['DeleteEntityCommand'] = ("""\
+            Usage: delete <name>
+
+            Example:
+                delete mydisk
+
+            Deletes a simulated disk.""")
 
         self.add_property(
             descr='Disk name',
@@ -135,6 +165,9 @@ class DisksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
 
 @description("Tools for simulating aspects of a NAS")
 class SimulatorNamespace(Namespace):
+    """
+    The simulator namespace provides tools for simulating aspects of a NAS for testing.
+    """
     def __init__(self, name, context):
         super(SimulatorNamespace, self).__init__(name)
         self.context = context

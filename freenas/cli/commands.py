@@ -49,7 +49,7 @@ from freenas.cli.output import (
 from freenas.cli.output import Object as output_obj
 from freenas.cli.output import ProgressBar
 from freenas.cli.descriptions.tasks import translate as translate_task
-from freenas.cli.utils import describe_task_state
+from freenas.cli.utils import describe_task_state, parse_timedelta
 from freenas.dispatcher.shell import ShellClient
 
 
@@ -786,7 +786,7 @@ class OlderThanPipeCommand(PipeCommand):
     def serialize_filter(self, context, args, kwargs, opargs):
         return {"filter": [
             ('started_at', '!=', None),
-            ('started_at', '<=', datetime.now() - timedelta(minutes=args[0]))
+            ('started_at', '<=', datetime.now() - parse_timedelta(args[0]))
         ]}
 
 
@@ -795,9 +795,10 @@ class NewerThanPipeCommand(PipeCommand):
         return input
 
     def serialize_filter(self, context, args, kwargs, opargs):
+        print(args)
         return {"filter": [
             ('started_at', '!=', None),
-            ('started_at', '>=', datetime.now() - timedelta(minutes=args[0]))
+            ('started_at', '>=', datetime.now() - parse_timedelta(args[0]))
         ]}
 
 

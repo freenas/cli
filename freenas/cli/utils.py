@@ -29,7 +29,9 @@ import os
 import re
 import pty
 import tempfile
+from datetime import timedelta
 from freenas.cli import output
+from freenas.utils import to_timedelta
 
 
 def parse_query_args(args, kwargs):
@@ -116,6 +118,14 @@ def edit_in_editor(initial):
         pty.spawn([editor, f.name])
         with open(f.name, 'r') as f2:
             return f2.read()
+
+
+def parse_timedelta(s):
+    delta = timedelta()
+    for i in re.findall(r'(\d+[smhd])', s):
+        delta += to_timedelta(i)
+
+    return delta
 
 
 class PrintableNone(object):

@@ -433,7 +433,7 @@ class ItemNamespace(Namespace):
         """
         Usage: edit <property>
 
-        For a list of properties for the current namespace, see 'help properties'.
+        Opens an editor for a single string property. For a list of properties for the current namespace, see 'help properties'.
         """
 
         def __init__(self, parent):

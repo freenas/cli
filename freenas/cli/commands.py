@@ -35,7 +35,7 @@ import gettext
 import platform
 import textwrap
 import re
-from datetime import datetime, timedelta
+from datetime import datetime
 from freenas.cli.parser import parse, unparse
 from freenas.cli.complete import NullComplete, EnumComplete
 from freenas.cli.namespace import (

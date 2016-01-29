@@ -46,6 +46,7 @@ import six
 import paramiko
 import inspect
 import re
+import itertools
 from six.moves.urllib.parse import urlparse
 from socket import gaierror as socket_error
 from freenas.cli.descriptions import events
@@ -76,7 +77,8 @@ from freenas.cli.commands import (
     ShowUrlsCommand, ShowIpsCommand, TopCommand, ClearCommand, HistoryCommand,
     SaveenvCommand, EchoCommand, SourceCommand, MorePipeCommand, SearchPipeCommand,
     ExcludePipeCommand, SortPipeCommand, LimitPipeCommand, SelectPipeCommand,
-    LoginCommand, DumpCommand, WhoamiCommand, PendingCommand, WaitCommand
+    LoginCommand, DumpCommand, WhoamiCommand, PendingCommand, WaitCommand,
+    OlderThanPipeCommand, NewerThanPipeCommand
 )
 import collections
 
@@ -755,7 +757,9 @@ class MainLoop(object):
         'limit': LimitPipeCommand(),
         'select': SelectPipeCommand(),
         'more': MorePipeCommand(),
-        'less': MorePipeCommand()
+        'less': MorePipeCommand(),
+        'older_than': OlderThanPipeCommand(),
+        'newer_than': NewerThanPipeCommand()
     }
     base_builtin_commands = {
         'login': LoginCommand(),

@@ -386,13 +386,16 @@ class Context(object):
                     )
                 ))
 
-            if task['state'] in ('FAILED', 'ABORTED'):
+            if task['state'] == 'FAILED':
                 output_msg_locked(_(
                     "Task #{0} error: {1}".format(
                         task['id'],
                         task['error'].get('message', '') if task.get('error') else ''
                     )
                 ))
+
+            if task['state'] == 'ABORTED':
+                output_msg_locked(_("Task #{0} aborted".format(task['id'])))
 
             if old_task:
                 if len(task['warnings']) > len(old_task['warnings']):
@@ -574,6 +577,7 @@ class Context(object):
                 return
 
             task['progress'] = progress
+            task['state'] = data['state']
             self.entity_subscribers['task'].update(task)
 
             if task['id'] in self.pending_tasks:

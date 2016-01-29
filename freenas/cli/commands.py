@@ -687,11 +687,11 @@ class WaitCommand(Command):
             percentage = task['progress']['percentage'] if 'progress' in task else 0
             progress.update(percentage=percentage, message=message)
 
-        task = context.entity_subscribers['task'].query(('id', '=', tid), single=True)
-        progress = ProgressBar()
-        update(progress, task)
-
         try:
+            context.ml.skip_prompt_print = True
+            task = context.entity_subscribers['task'].query(('id', '=', tid), single=True)
+            progress = ProgressBar()
+            update(progress, task)
             for op, old, new in context.entity_subscribers['task'].listen(tid):
                 update(progress, new)
 
@@ -702,8 +702,16 @@ class WaitCommand(Command):
                 if new['state'] == 'FAILED':
                     six.print_()
                     break
+
+                if new['state'] == 'ABORTED':
+                    six.print_()
+                    break
         except KeyboardInterrupt:
-            six.print_()
+            output_msg(_("User requested task termination. Sending abort signal sent"))
+            context.call_sync('task.abort', tid)
+        finally:
+            context.ml.skip_prompt_print = False
+
 
 
 @description("Allows the user to scroll through output")

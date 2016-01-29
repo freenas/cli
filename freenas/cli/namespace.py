@@ -524,8 +524,9 @@ class ItemNamespace(Namespace):
         for prop in self.property_mappings:
             if prop.set is not None and prop.usersetable and prop.type == ValueType.STRING:
                 if prop.condition and not prop.condition(self.entity):
-                    return False
-                return True
+                    continue
+                else:
+                    return True
         return False
 
     def commands(self):

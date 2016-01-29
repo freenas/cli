@@ -879,7 +879,7 @@ class CreateEntityCommand(Command):
                     if found_one and missing:
                         missing_args.append(' and '.join(prop_set))
             if len(missing_args) > 0:
-                output_msg('Required properties not met, still missing: {0}'.format(', '.join(missing_args)))
+                output_msg('Required properties not provided, still missing: {0}'.format(', '.join(missing_args)))
                 return
         else:
             if not args and not kwargs:

@@ -150,7 +150,7 @@ class BaseSharesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, En
         self.create_task = 'share.create'
         self.update_task = 'share.update'
         self.delete_task = 'share.delete'
-        self.required_props = ['name']
+        self.required_props = ['name', ['parent','target','path']]
         self.localdoc['DeleteEntityCommand'] = ("""\
             Usage: delete <share name>
 
@@ -539,11 +539,15 @@ class WebDAVSharesNamespace(BaseSharesNamespace):
     def __init__(self, name, context):
         super(WebDAVSharesNamespace, self).__init__(name, 'webdav', context)
         self.localdoc['CreateEntityCommand'] = ("""\
-            Usage: create name=<name> volume=<volume> <property>=<value> ...
+            Usage: create <name> parent=<volume> <property>=<value> ...
+                   create <name> target=<volume>/<dataset> <property>=<value> ...
+                   create <name> path="/path/to/directory/" <property>=<value> ...
 
             Examples:
-                create myshare volume=mypool
-                create myshare volume=mypool read_only=true
+                create myshare parent=mypool
+                create myshare parent=mypool read_only=true
+                create myshare target=mypool/somedataset
+                create myshare path="/mnt/mypool/some/directory/"
 
             Creates WebDAV share. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
@@ -864,12 +868,17 @@ class ISCSITargetMapingNamespace(EntityNamespace):
 class ISCSISharesNamespace(BaseSharesNamespace):
     def __init__(self, name, context):
         super(ISCSISharesNamespace, self).__init__(name, 'iscsi', context)
-        self.required_props = ['name', 'size']
+        self.required_props.append('size')
         self.localdoc['CreateEntityCommand'] = ("""\
-            Usage: create <name> volume=<volume> size=<size> <property>=<value> ...
+            Usage: create <name> parent=<volume> size=<size> <property>=<value> ...
+                   create <name> target=<volume>/<dataset> size=<size> <property>=<value> ...
+                   create <name> path="/path/to/directory/" size=<size> <property>=<value> ...
+
 
             Examples:
-                create myiscsi volume=mypool size=3G
+                create myiscsi parent=mypool size=3G
+                create myiscsi target=mypool/somedataset size=3G
+                create myiscsi path="/mnt/mypool/some/directory/" size=3G
 
             Creates an iSCSI share. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\

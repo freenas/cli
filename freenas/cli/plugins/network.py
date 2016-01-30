@@ -310,7 +310,7 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
 
         self.add_property(
             descr='Aggregation protocol',
-            name='protocol',
+            name='lagg_protocol',
             get='lagg.protocol',
             usage=_("""\
             This property only applies to LAGG interfaces and
@@ -326,7 +326,7 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
 
         self.add_property(
             descr='Member interfaces',
-            name='ports',
+            name='lagg_ports',
             get='lagg.ports',
             usage=_("""\
             This property only applies to LAGG interfaces and
@@ -343,7 +343,7 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
 
         self.add_property(
             descr='Member interfaces',
-            name='members',
+            name='bridge_members',
             get='bridge.members',
             usage=_("""\
             This property only applies to BRIDGE interfaces and

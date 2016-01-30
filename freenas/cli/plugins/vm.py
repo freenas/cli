@@ -181,8 +181,9 @@ class ImportVMCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        name = args[0]
-        if not name:
+        try:
+            name = args[0]
+        except IndexError:
             raise CommandException(_("Please specify the name of VM."))
         volume = kwargs.get('volume', None)
         if not volume:

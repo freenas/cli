@@ -144,7 +144,7 @@ def netmask_to_cidr(entity, netmask):
     elif netmask.isdigit():
         cidr = int(netmask)
 
-    if 0 <= cidr <= 32:
+    if not (0 <= cidr <= 32):
         raise ValueError(_("Invalid netmask: {0}".format(netmask)))
 
     entity['netmask'] = cidr

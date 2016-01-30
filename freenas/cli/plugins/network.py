@@ -26,14 +26,13 @@
 #####################################################################
 
 
-import re
 import gettext
 from freenas.cli.namespace import (
     Namespace, EntityNamespace, ConfigNamespace, Command,
     EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, description, CommandException
 )
 from freenas.cli.output import ValueType
-from freenas.cli.utils import post_save
+from freenas.cli.utils import post_save, netmask_to_cidr
 
 
 t = gettext.translation('freenas-cli', fallback=True)
@@ -41,29 +40,10 @@ _ = t.gettext
 
 
 def set_netmask(entity, netmask):
-    nm = None
-    if re.match("^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$", netmask):
-        nm = 0
-        octets = netmask.split('.')
-        bin_nm = ''
-        for octet in octets:
-            bin_nm += '{0:08b}'.format(int(octet))
-
-        for idx, bit in enumerate(bin_nm):
-            if nm == idx:
-                if int(bit):
-                    nm += 1
-            else:
-                if int(bit):
-                    raise CommandException(_("Invalid netmask: {0}".format(netmask)))
-
-    elif netmask.isdigit():
-        nm = int(netmask)
-
-    if nm not in range(1, 31):
-        raise CommandException(_("Invalid netmask: {0}".format(netmask)))
-
-    entity['netmask'] = nm
+    try:
+        netmask_to_cidr(entity, netmask)
+    except ValueError as error:
+        raise CommandException(error)
 
 
 class InterfaceCreateCommand(Command):

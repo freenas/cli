@@ -29,9 +29,13 @@ import os
 import re
 import tempfile
 import platform
+import ipaddress
+import gettext
 from freenas.cli import output
 from freenas.utils import to_timedelta
 
+t = gettext.translation('freenas-cli', fallback=True)
+_ = t.gettext
 
 if platform.system() == 'FreeBSD':
     from bsd import pty
@@ -123,6 +127,27 @@ def edit_in_editor(initial):
         pty.spawn([editor, f.name])
         with open(f.name, 'r') as f2:
             return f2.read()
+
+
+def netmask_to_cidr(entity, netmask):
+    cidr = 0
+    if re.match("^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$", netmask):
+        int_netmask = int(ipaddress.ip_address(netmask))
+        for i in range(0, 32):
+            if int_netmask & 1:
+                cidr += 1
+            else:
+                if cidr != 0:
+                    raise ValueError(_("Invalid netmask: {0}".format(netmask)))
+            int_netmask >>= 1
+
+    elif netmask.isdigit():
+        cidr = int(netmask)
+
+    if cidr not in range(0, 33):
+        raise ValueError(_("Invalid netmask: {0}".format(netmask)))
+
+    entity['netmask'] = cidr
 
 
 class PrintableNone(object):

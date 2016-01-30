@@ -177,6 +177,9 @@ class ImportVMCommand(Command):
 
     Imports a VM.
     """
+    def __init__(self, parent):
+        self.parent = parent
+
     def run(self, context, args, kwargs, opargs):
         name = args[0]
         if not name:
@@ -291,7 +294,7 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
         }
 
         self.extra_commands = {
-            'import': ImportVMCommand()
+            'import': ImportVMCommand(self)
         }
 
     def namespaces(self):

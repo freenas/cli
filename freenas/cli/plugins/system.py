@@ -221,6 +221,20 @@ class ShowReplicationKeyCommand(Command):
         return context.call_sync('replication.get_public_key')
 
 
+class SystemDatasetImportCommand(Command):
+    """
+    Usage: import volume=<volume>
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        vol = kwargs.get('volume', None)
+        if not vol:
+            raise CommandException(_('Please specify a volume name'))
+        context.submit_task('system_dataset.import', vol, callback=lambda s: post_save(self.parent, s))
+
+
 @description("View sessions")
 class SessionsNamespace(RpcBasedLoadMixin, EntityNamespace):
     """
@@ -545,6 +559,10 @@ class SystemDatasetNamespace(ConfigNamespace):
             name='volume',
             get='pool'
         )
+
+        self.extra_commands = {
+            'import': SystemDatasetImportCommand(self)
+        }
 
     def save(self):
         self.context.submit_task(

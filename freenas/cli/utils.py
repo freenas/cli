@@ -27,9 +27,16 @@
 
 import os
 import re
-import pty
 import tempfile
+import platform
 from freenas.cli import output
+from freenas.utils import to_timedelta
+
+
+if platform.system() == 'FreeBSD':
+    from bsd import pty
+else:
+    import pty
 
 
 def parse_query_args(args, kwargs):

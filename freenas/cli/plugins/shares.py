@@ -55,6 +55,22 @@ class ConnectedUsersCommand(Command):
         ])
 
 
+class ImportShareCommand(Command):
+    """
+    Usage: import path=<path>
+
+    Imports a share from provided path.
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        path = kwargs.get('path', None)
+        if not path:
+            raise CommandException(_("Please specify a valid path to your share."))
+        context.call_task_sync('share.import', path)
+
+
 @description("Configure and manage shares")
 class SharesNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
     def __init__(self, name, context):
@@ -126,7 +142,8 @@ class SharesNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
     def commands(self):
         return {
             '?': IndexCommand(self),
-            'show': ListCommand(self)
+            'show': ListCommand(self),
+            'import': ImportShareCommand(self)
         }
 
     def namespaces(self):

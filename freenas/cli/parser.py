@@ -762,9 +762,6 @@ def p_error(p):
             e.lexpos = lexer.lexpos
             parser.errok()
             return e
-        elif p.type == 'error':
-            parser.errok()
-            return
     else:
         raise SyntaxError(str(p))
 

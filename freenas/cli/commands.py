@@ -691,6 +691,11 @@ class WaitCommand(Command):
         try:
             context.ml.skip_prompt_print = True
             task = context.entity_subscribers['task'].query(('id', '=', tid), single=True)
+
+            if task['state'] in ('FINISHED', 'FAILED', 'ABORTED'):
+                context.ml.skip_prompt_print = False
+                return
+
             progress = ProgressBar()
             update(progress, task)
             for op, old, new in context.entity_subscribers['task'].listen(tid):

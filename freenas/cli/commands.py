@@ -35,6 +35,7 @@ import gettext
 import platform
 import textwrap
 import re
+from datetime import datetime
 from freenas.cli.parser import parse, unparse
 from freenas.cli.complete import NullComplete, EnumComplete
 from freenas.cli.namespace import (
@@ -48,7 +49,7 @@ from freenas.cli.output import (
 from freenas.cli.output import Object as output_obj
 from freenas.cli.output import ProgressBar
 from freenas.cli.descriptions.tasks import translate as translate_task
-from freenas.cli.utils import describe_task_state
+from freenas.cli.utils import describe_task_state, parse_timedelta
 from freenas.dispatcher.shell import ShellClient
 
 
@@ -784,6 +785,29 @@ class SearchPipeCommand(PipeCommand):
             ))
 
         return {"filter": mapped_opargs}
+
+
+class OlderThanPipeCommand(PipeCommand):
+    def run(self, context, args, kwargs, opargs, input=None):
+        return input
+
+    def serialize_filter(self, context, args, kwargs, opargs):
+        return {"filter": [
+            ('started_at', '!=', None),
+            ('started_at', '<=', datetime.now() - parse_timedelta(args[0]))
+        ]}
+
+
+class NewerThanPipeCommand(PipeCommand):
+    def run(self, context, args, kwargs, opargs, input=None):
+        return input
+
+    def serialize_filter(self, context, args, kwargs, opargs):
+        print(args)
+        return {"filter": [
+            ('started_at', '!=', None),
+            ('started_at', '>=', datetime.now() - parse_timedelta(args[0]))
+        ]}
 
 
 @description("Excludes certain results from result set basing on specified conditions")

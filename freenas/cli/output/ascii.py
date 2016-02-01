@@ -113,7 +113,7 @@ class AsciiOutputFormatter(object):
                 offset = localoffset
                 value = parse(value)
             if fmt == 'natural':
-                return natural.date.duration(value + offset)
+                return natural.date.duration(value + datetime.timedelta(seconds=offset))
 
             return time.strftime(fmt, time.localtime(value))
 

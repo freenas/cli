@@ -31,6 +31,7 @@ import tempfile
 import platform
 import ipaddress
 import gettext
+from datetime import timedelta
 from freenas.cli import output
 from freenas.utils import to_timedelta
 
@@ -148,6 +149,14 @@ def netmask_to_cidr(entity, netmask):
         raise ValueError(_("Invalid netmask: {0}".format(netmask)))
 
     entity['netmask'] = cidr
+
+
+def parse_timedelta(s):
+    delta = timedelta()
+    for i in re.findall(r'(\d+[smhd])', s):
+        delta += to_timedelta(i)
+
+    return delta
 
 
 class PrintableNone(object):

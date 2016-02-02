@@ -148,7 +148,7 @@ def describe_task_state(task):
 def edit_in_editor(initial):
     editor = os.getenv('VISUAL') or os.getenv('EDITOR') or '/usr/bin/vi'
     with tempfile.NamedTemporaryFile('w') as f:
-        f.write(initial)
+        f.write(initial or '')
         f.flush()
         pty.spawn([editor, f.name])
         with open(f.name, 'r') as f2:

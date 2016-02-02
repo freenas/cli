@@ -236,6 +236,16 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
             'run': RunCommand()
         }
 
+    def conditional_required_props(self, kwargs):
+        prop_table = {'scrub':['volume'],
+                      'smart':['disks'],
+                      'check_updates':['send_email']}
+        missing_args = []
+        if kwargs['type'] in prop_table:
+            for prop in prop_table[kwargs['type']]:
+                missing_args.append(prop)
+        return missing_args
+
     def set_schedule(self, entity, row):
         items = row.split(' ')
         i = 0
@@ -282,31 +292,23 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
             raise CommandException(_("Invalid type, please choose one of: {0}".format(TASK_TYPES.keys())))
 
     def set_email(self, entity, args):
-        if args is None:
-            args = True
         entity['args'] = [args]
 
     def set_disks(self, entity, args):
-        if args is None:
-            raise CommandException(_("Please specify one or more disks for the 'disks' property"))
-        else:
-            all_disks = [disk["path"] for disk in self.context.call_sync("disk.query")]
-            disks = []
-            for disk in args:
-                disk = correct_disk_path(disk)
-                if disk not in all_disks:
-                    raise CommandException(_("Invalid disk: {0}, see '/ disk show' for a list of disks".format(disk)))
-                disks.append(disk)
-            entity['args'] = disks
+        all_disks = [disk["path"] for disk in self.context.call_sync("disk.query")]
+        disks = []
+        for disk in args:
+            disk = correct_disk_path(disk)
+            if disk not in all_disks:
+                raise CommandException(_("Invalid disk: {0}, see '/ disk show' for a list of disks".format(disk)))
+            disks.append(disk)
+        entity['args'] = disks
 
     def set_volume(self, entity, args):
-        if args is None:
-            raise CommandException(_("Please specify a volume for the 'volume' property"))
-        else:
-            all_volumes = [volume["name"] for volume in self.context.call_sync("volume.query")]
-            if args not in all_volumes:
-                raise CommandException(_("Invalid volume: {0}, see '/ volume show' for a list of volumes".format(volume)))
-            entity['args'] = [args]
+        all_volumes = [volume["name"] for volume in self.context.call_sync("volume.query")]
+        if args not in all_volumes:
+            raise CommandException(_("Invalid volume: {0}, see '/ volume show' for a list of volumes".format(volume)))
+        entity['args'] = [args]
             
 
 def _init(context):

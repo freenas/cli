@@ -49,7 +49,7 @@ from freenas.cli.output import (
 from freenas.cli.output import Object as output_obj
 from freenas.cli.output import ProgressBar
 from freenas.cli.descriptions.tasks import translate as translate_task
-from freenas.cli.utils import describe_task_state, parse_timedelta
+from freenas.cli.utils import describe_task_state, parse_timedelta, SIGTSTPException
 from freenas.dispatcher.shell import ShellClient
 
 
@@ -186,7 +186,7 @@ class ShellCommand(Command):
     Launch current logged in user's login shell. Type "exit" to return to the CLI.
     If a command is specified, run the specified command then return to the CLI.
     If the full path to an installed shell is specifed, launch the specified shell.
-  
+
     Usage: shell <command>
 
     Examples:
@@ -282,7 +282,7 @@ class LoginCommand(Command):
 
     """
     Login to the CLI as the specified user.
-    
+
     Usage: login <username> <password>
     """
 
@@ -689,6 +689,8 @@ class WaitCommand(Command):
             progress.update(percentage=percentage, message=message)
 
         try:
+            output_msg(_("Hit Ctrl+C to terminate task if needed"))
+            output_msg(_("To background running task press 'Ctrl+Z'"))
             context.ml.skip_prompt_print = True
             task = context.entity_subscribers['task'].query(('id', '=', tid), single=True)
 
@@ -715,6 +717,12 @@ class WaitCommand(Command):
         except KeyboardInterrupt:
             output_msg(_("User requested task termination. Sending abort signal sent"))
             context.call_sync('task.abort', tid)
+        except SIGTSTPException:
+                # The User backgrounded the task by sending SIGTSTP (Ctrl+Z)
+                six.print_()
+                output_msg(_("Task {0} will continue to run in the background.".format(tid)))
+                output_msg(_("To bring it back to the foreground execute 'wait {0}''".format(tid)))
+                output_msg(_("Use the 'pending' command to see pending tasks (of this session)"))
         finally:
             context.ml.skip_prompt_print = False
 

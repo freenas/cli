@@ -44,6 +44,14 @@ else:
     import pty
 
 
+class SIGTSTPException(Exception):
+    """
+    A Custom Exception which is raised by the SIGTSTP (Ctrl+Z)
+    signal handler
+    """
+    pass
+
+
 def parse_query_args(args, kwargs):
     filters = []
     params = {}

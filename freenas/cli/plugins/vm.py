@@ -387,8 +387,7 @@ class VMNicsNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNamesp
         self.add_property(
             descr='MAC address',
             name='macaddr',
-            get='properties.macaddr',
-            type=ValueType.SIZE
+            get='properties.link_address'
         )
 
         self.primary_key = self.get_mapping('name')

@@ -208,7 +208,7 @@ def read_value(value, tv=ValueType.STRING):
         else:
             return [value]
 
-    raise ValueError('Invalid value {0}'.format(value))
+    raise ValueError(_("Invalid value '{0}', expected {1} value".format(value, str(tv).split('ValueType.')[-1].lower())))
 
 
 def format_value(value, vt=ValueType.STRING, fmt=None):

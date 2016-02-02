@@ -281,6 +281,13 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             enum=['BHYVELOAD', 'GRUB']
         )
 
+        self.add_property(
+            descr='Cloud-init data',
+            name='cloud_init',
+            get='config.cloud_init',
+            list=False,
+        )
+
         self.primary_key = self.get_mapping('name')
         self.entity_namespaces = lambda this: [
             VMDisksNamespace('disks', self.context, this),

@@ -296,7 +296,7 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
                 disk = correct_disk_path(disk)
                 if disk not in all_disks:
                     raise CommandException(_("Invalid disk: {0}, see '/ disk show' for a list of disks".format(disk)))
-            disks.append(disk)
+                disks.append(disk)
             entity['args'] = disks
 
     def set_volume(self, entity, args):

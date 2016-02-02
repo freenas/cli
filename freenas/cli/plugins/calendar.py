@@ -132,7 +132,13 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
                       create mysmart type=smart disks=ada0,ada1,ada2
 
             Creates a calendar task.  Tasks are disabled by default, you must set enabled=true to turn it on.  If a schedule is not set then all values will be set to * (i.e. run all the time).
-            The schedule property takes in values of * */integer and integer appropriate values in the following order: second minute hour day_of_month month day_of_week week year""")
+
+            The schedule property takes in values of *, */integer, or integer in the following order: second minute hour day_of_month month day_of_week week year.
+
+            Valid types for calendar task creation include: scrub, smart, snapshot, replication and check_updates.
+            - A 'scrub' task requires a valid volume passed with the 'volume' property.
+            - A 'smart' task requires a list of valid disks for the 'disks' property.
+            - A 'check_updates' task requires a boolean for the 'send_email' property which tells the task whether or not to send an alert by email when a new update is available.""")
         self.localdoc["DeleteEntityCommand"] = ("""\
             Usage: delete <name>
 

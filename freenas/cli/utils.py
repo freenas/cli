@@ -31,6 +31,7 @@ import tempfile
 import platform
 import ipaddress
 import gettext
+import signal
 from datetime import timedelta
 from freenas.cli import output
 from freenas.utils import to_timedelta
@@ -50,6 +51,22 @@ class SIGTSTPException(Exception):
     signal handler
     """
     pass
+
+
+def SIGTSTP_handler(signum, frame):
+    raise SIGTSTPException
+
+
+def SIGTSTP_setter(set_flag=False):
+    """
+    Utility function that can be provided a boolean variable set_flag.
+    Use set_flag=True to set the SIGTSTP signal handler and set_flag=False
+    to reset it back to its default handler.
+    """
+    if set_flag:
+        signal.signal(signal.SIGTSTP, SIGTSTP_handler)
+    else:
+        signal.signal(signal.SIGTSTP, signal.SIG_DFL)
 
 
 def parse_query_args(args, kwargs):

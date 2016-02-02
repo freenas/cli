@@ -49,7 +49,9 @@ from freenas.cli.output import (
 from freenas.cli.output import Object as output_obj
 from freenas.cli.output import ProgressBar
 from freenas.cli.descriptions.tasks import translate as translate_task
-from freenas.cli.utils import describe_task_state, parse_timedelta, SIGTSTPException
+from freenas.cli.utils import (
+    describe_task_state, parse_timedelta, SIGTSTPException, SIGTSTP_setter
+)
 from freenas.dispatcher.shell import ShellClient
 
 
@@ -689,6 +691,8 @@ class WaitCommand(Command):
             progress.update(percentage=percentage, message=message)
 
         try:
+            # lets set the SIGTSTP (Ctrl+Z) handler
+            SIGTSTP_setter(set_flag=True)
             output_msg(_("Hit Ctrl+C to terminate task if needed"))
             output_msg(_("To background running task press 'Ctrl+Z'"))
             context.ml.skip_prompt_print = True
@@ -721,10 +725,13 @@ class WaitCommand(Command):
                 # The User backgrounded the task by sending SIGTSTP (Ctrl+Z)
                 six.print_()
                 output_msg(_("Task {0} will continue to run in the background.".format(tid)))
-                output_msg(_("To bring it back to the foreground execute 'wait {0}''".format(tid)))
+                output_msg(_("To bring it back to the foreground execute 'wait {0}'".format(tid)))
                 output_msg(_("Use the 'pending' command to see pending tasks (of this session)"))
         finally:
             context.ml.skip_prompt_print = False
+            # Now that we are done with the task unset the Ctrl+Z handler
+            # lets set the SIGTSTP (Ctrl+Z) handler
+            SIGTSTP_setter(set_flag=False)
 
 
 

@@ -47,12 +47,11 @@ import paramiko
 import inspect
 import re
 import itertools
-import signal
 from six.moves.urllib.parse import urlparse
 from socket import gaierror as socket_error
 from freenas.cli.descriptions import events
 from freenas.cli.descriptions import tasks
-from freenas.cli.utils import PrintableNone, SIGTSTPException
+from freenas.cli.utils import PrintableNone, SIGTSTPException, SIGTSTP_setter
 from freenas.cli import functions
 from freenas.cli import config
 from freenas.cli.namespace import (
@@ -103,14 +102,6 @@ DEFAULT_CLI_CONFIGFILE = os.path.join(os.getcwd(), '.freenascli.conf')
 
 t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
-
-
-def SIGTSTP_handler(signum, frame):
-    raise SIGTSTPException
-
-
-def set_SIGSTP_handler():
-    signal.signal(signal.SIGTSTP, SIGTSTP_handler)
 
 
 PROGRESS_CHARS = ['-', '\\', '|', '/']
@@ -631,6 +622,8 @@ class Context(object):
             self.global_env['_last_task_id'] = Environment.Variable(tid)
             return tid
         else:
+            # lets set the SIGTSTP (Ctrl+Z) handler
+            SIGTSTP_setter(set_flag=True)
             output_msg(_("Hit Ctrl+C to terminate task if needed"))
             output_msg(_("To background running task press 'Ctrl+Z'"))
             self.event_divert = True
@@ -666,9 +659,12 @@ class Context(object):
                 # The User backgrounded the task by sending SIGTSTP (Ctrl+Z)
                 six.print_()
                 output_msg(_("Task {0} will continue to run in the background.".format(tid)))
-                output_msg(_("To bring it back to the foreground execute 'wait {0}''".format(tid)))
+                output_msg(_("To bring it back to the foreground execute 'wait {0}'".format(tid)))
                 output_msg(_("Use the 'pending' command to see pending tasks (of this session)"))
 
+        # Now that we are done with the task unset the Ctrl+Z handler
+        # lets set the SIGTSTP (Ctrl+Z) handler
+        SIGTSTP_setter(set_flag=False)
         self.event_divert = False
         return tid
 
@@ -1580,8 +1576,6 @@ def main():
                     "Incorrect filetype, cannot parse clirc file: {0}".format(str(e))
                 ))
 
-    # lets set the SIGTSTP (Ctrl+Z) handler
-    set_SIGSTP_handler()
     ml.repl()
 
 

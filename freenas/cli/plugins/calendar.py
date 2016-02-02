@@ -289,7 +289,7 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
         if row in TASK_TYPES:
             entity['name'] = TASK_TYPES[row]
         else:
-            raise CommandException(_("Invalid type, please choose one of: {0}".format(TASK_TYPES.keys())))
+            raise CommandException(_("Invalid type, please choose one of: {0}".format([key for key in TASK_TYPES.keys()])))
 
     def set_email(self, entity, args):
         entity['args'] = [args]

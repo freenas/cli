@@ -26,8 +26,9 @@
 #####################################################################
 
 import gettext
-from freenas.cli.namespace import Namespace, EntityNamespace, ConfigNamespace, Command, RpcBasedLoadMixin, TaskBasedSaveMixin, description
+from freenas.cli.namespace import Namespace, EntityNamespace, ConfigNamespace, Command, RpcBasedLoadMixin, TaskBasedSaveMixin, description, CommandException
 from freenas.cli.output import ValueType, output_msg, output_table, read_value, format_value
+from freenas.cli.utils import post_save, correct_disk_path
 
 
 t = gettext.translation('freenas-cli', fallback=True)
@@ -116,23 +117,53 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
     def __init__(self, name, context):
         super(CalendarTasksNamespace, self).__init__(name, context)
 
+        self.context = context
         self.query_call = 'calendar_task.query'
         self.create_task = 'calendar_task.create'
         self.update_task = 'calendar_task.update'
         self.delete_task = 'calendar_task.delete'
+        self.required_props = ['name', 'type']
+        self.localdoc["CreateEntityCommand"] = ("""\
+            Usage: create <name> type=<type> <property>=<value>
+
+            Examples: create myscrub type=scrub volume=mypool
+                      create myscrub2 type=scrub volume=mypool schedule="0 0 3" enabled=true
+                      create myupdate type=check_updates send_email=false
+                      create mysmart type=smart disks=ada0,ada1,ada2
+
+            Creates a calendar task.  Tasks are disabled by default, you must set enabled=true to turn it on.  If a schedule is not set then all values will be set to * (i.e. run all the time).
+            The schedule property takes in values of * */integer and integer appropriate values in the following order: second minute hour day_of_month month day_of_week week year""")
+        self.localdoc["DeleteEntityCommand"] = ("""\
+            Usage: delete <name>
+
+            Example: delete mytask
+
+            Deletes a calendar task.""")
+        self.entity_localdoc["SetEntityCommand"] = ("""\
+            Usage: set <property>=<value>
+
+            Examples: set enabled=true
+                      set coalesce=false
+
+            Sets a calendar task property.""")
+
+        self.skeleton_entity = {
+            'enabled': False,
+            'schedule': { 'coalesce': True, 'year': None, 'month': None, 'day': None, 'week': None, 'hour': None, 'minute': None, 'second': None, 'day_of_week': None}
+        }
 
         self.add_property(
-            descr='ID',
-            name='id',
+            descr='Name',
+            name='name',
             get='id',
             usage=_("""Alphanumeric name for the task which becomes
             read-only after the task is created."""),
-            set=None,
+            set='id',
             list=True)
 
         self.add_property(
             descr='Type',
-            name='name',
+            name='type',
             get=lambda row: TASK_TYPES_REVERSE[row['name']],
             usage=_("""Indicates the type of task. Allowable values
             are scrub, smart, snapshot, replication, and
@@ -158,8 +189,8 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
         self.add_property(
             descr='Schedule',
             name='schedule',
-            get=lambda row: ' '.join([v for v in list(row['schedule'].values()) if isinstance(v, str)]),
-            set=None,
+            get=self.get_schedule,
+            set=self.set_schedule,
             list=True,
             type=ValueType.STRING)
 
@@ -170,7 +201,33 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
             list=True,
             type=ValueType.BOOLEAN)
 
-        self.primary_key = self.get_mapping('id')
+        self.add_property(
+            descr='Volume',
+            name='volume',
+            get=None,
+            list=False,
+            set=self.set_volume,
+        )
+
+        self.add_property(
+            descr='Send Email',
+            name='send_email',
+            get=None,
+            list=False,
+            set=self.set_email,
+            type=ValueType.BOOLEAN,
+        )
+
+        self.add_property(
+            descr='Disks',
+            name='disks',
+            get=None,
+            list=False,
+            type=ValueType.SET,
+            set=self.set_disks,
+        )
+
+        self.primary_key = self.get_mapping('name')
         self.entity_namespaces = lambda this: [
             ScheduleNamespace('schedule', self.context, this)
         ]
@@ -179,9 +236,80 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
             'run': RunCommand()
         }
 
-    def set_type(self, row):
-        pass
+    def set_schedule(self, entity, row):
+        items = row.split(' ')
+        i = 0
+        sched = {}
+        if len(items) > 8:
+            raise CommandException("Invalid input: {0}".format(row))
+        for item in items:
+            if i == 0:
+                sched['second'] = item
+            elif i == 1:
+                sched['minute'] = item
+            elif i == 2:
+                sched['hour'] = item
+            elif i == 3:
+                sched['day'] = item
+            elif i == 4:
+                sched['month'] = item
+            elif i == 5:
+                sched['day_of_week'] = item
+            elif i == 6:
+                sched['week'] = item
+            elif i == 7:
+                sched['year'] = item
+            i = i + 1
+        entity['schedule'] = sched
 
+    def get_schedule(self, entity):
+        row = entity['schedule']
+        sched = "{0} {1} {2} {3} {4} {5} {6} {7}".format(
+                    row['second'],
+                    row['minute'],
+                    row['hour'],
+                    row['day'],
+                    row['month'],
+                    row['day_of_week'],
+                    row['week'],
+                    row['year'])
+        return sched
+
+    def set_type(self, entity, row):
+        if row in TASK_TYPES:
+            entity['name'] = TASK_TYPES[row]
+        else:
+            raise CommandException(_("Invalid type, please choose one of: {0}".format(TASK_TYPES.keys())))
+
+    def set_email(self, entity, args):
+        if args is None:
+            args = True
+        entity['args'] = [args]
+
+    def set_disks(self, entity, args):
+        if args is None:
+            raise CommandException(_("Please specify one or more disks for the 'disks' property"))
+        else:
+            all_disks = [disk["path"] for disk in self.context.call_sync("disk.query")]
+            #if not isinstance(args, list):
+            #    args = [args]
+            disks = []
+            for disk in args:
+                disk = correct_disk_path(disk)
+                if disk not in all_disks:
+                    raise CommandException(_("Invalid disk: {0}, see '/ disk show' for a list of disks".format(disk)))
+            disks.append(disk)
+            entity['args'] = disks
+
+    def set_volume(self, entity, args):
+        if args is None:
+            raise CommandException(_("Please specify a volume for the 'volume' property"))
+        else:
+            all_volumes = [volume["name"] for volume in self.context.call_sync("volume.query")]
+            if args not in all_volumes:
+                raise CommandException(_("Invalid volume: {0}, see '/ volume show' for a list of volumes".format(volume)))
+            entity['args'] = [args]
+            
 
 def _init(context):
     context.attach_namespace('/', CalendarTasksNamespace('calendar', context))

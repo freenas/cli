@@ -291,8 +291,6 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
             raise CommandException(_("Please specify one or more disks for the 'disks' property"))
         else:
             all_disks = [disk["path"] for disk in self.context.call_sync("disk.query")]
-            #if not isinstance(args, list):
-            #    args = [args]
             disks = []
             for disk in args:
                 disk = correct_disk_path(disk)

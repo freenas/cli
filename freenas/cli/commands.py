@@ -437,6 +437,10 @@ class HelpCommand(Command):
             # Then listing the namespaces available from this namespace
             for nss in obj.namespaces():
                 if not isinstance(nss, SingleItemNamespace):
+                    if hasattr(nss,'description') and nss.description is not None:
+                        description = value.description
+                    else:
+                        description = nss.name
                     namespace_dict = {
                         'cmd': nss.name,
                         'description': nss.description,

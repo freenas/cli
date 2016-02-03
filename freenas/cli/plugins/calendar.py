@@ -26,8 +26,8 @@
 #####################################################################
 
 import gettext
-from freenas.cli.namespace import Namespace, EntityNamespace, ConfigNamespace, Command, RpcBasedLoadMixin, TaskBasedSaveMixin, description, CommandException
-from freenas.cli.output import ValueType, output_msg, output_table, read_value, format_value
+from freenas.cli.namespace import Namespace, EntityNamespace, ConfigNamespace, Command, RpcBasedLoadMixin, TaskBasedSaveMixin, description, CommandException, FilteringCommand
+from freenas.cli.output import ValueType, Table, format_value
 from freenas.cli.utils import post_save, correct_disk_path
 
 
@@ -37,7 +37,7 @@ _ = t.gettext
 
 TASK_TYPES = {
     'scrub': 'zfs.pool.scrub',
-    'smart': 'disk.test_parallel',
+    'smart': 'disk.parallel_test',
     'snapshot': 'volume.snapshot_dataset',
     'replication': 'replication.replicate_dataset',
     'check_updates': 'update.checkfetch'
@@ -45,6 +45,13 @@ TASK_TYPES = {
 
 
 TASK_TYPES_REVERSE = {v: k for k, v in list(TASK_TYPES.items())}
+
+
+TASK_ARG_MAPPING = {
+    'zfs.pool.scrub': ['volume'],
+    'disk.parallel_test': ['disks','test_type'],
+    'update.checkfetch' : ['send_email'],
+}
 
 
 @description("Runs calendar task right now")
@@ -129,7 +136,7 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
             Examples: create myscrub type=scrub volume=mypool
                       create myscrub2 type=scrub volume=mypool schedule="0 0 3" enabled=true
                       create myupdate type=check_updates send_email=false
-                      create mysmart type=smart disks=ada0,ada1,ada2
+                      create mysmart type=smart disks=ada0,ada1,ada2 test_type=short
 
             Creates a calendar task.  Tasks are disabled by default, you must set enabled=true to turn it on.  If a schedule is not set then all values will be set to * (i.e. run all the time).
 
@@ -137,7 +144,7 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
 
             Valid types for calendar task creation include: scrub, smart, snapshot, replication and check_updates.
             - A 'scrub' task requires a valid volume passed with the 'volume' property.
-            - A 'smart' task requires a list of valid disks for the 'disks' property.
+            - A 'smart' task requires a list of valid disks for the 'disks' property and a test type for the 'test_type' property that is one of short, long, conveyance or offline.
             - A 'check_updates' task requires a boolean for the 'send_email' property which tells the task whether or not to send an alert by email when a new update is available.""")
         self.localdoc["DeleteEntityCommand"] = ("""\
             Usage: delete <name>
@@ -210,7 +217,7 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
         self.add_property(
             descr='Volume',
             name='volume',
-            get=None,
+            get=lambda e: self.get_args(e, 'volume'),
             list=False,
             set=self.set_volume,
         )
@@ -218,19 +225,28 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
         self.add_property(
             descr='Send Email',
             name='send_email',
-            get=None,
+            get=lambda e: self.get_args(e, 'send_email'),
             list=False,
-            set=self.set_email,
+            set=lambda obj, value: self.set_args(obj, value, 'send_email'),
             type=ValueType.BOOLEAN,
         )
 
         self.add_property(
             descr='Disks',
             name='disks',
-            get=None,
+            get=lambda e: self.get_args(e, 'disks'),
             list=False,
             type=ValueType.SET,
             set=self.set_disks,
+        )
+
+        self.add_property(
+            descr='SMART Test Type',
+            name='test_type',
+            get=lambda e: self.get_args(e, 'test_type'),
+            list=False,
+            enum=['short','long','conveyance','offline'],
+            set=lambda obj, value: self.set_args(obj, value, 'test_type')
         )
 
         self.primary_key = self.get_mapping('name')
@@ -242,9 +258,10 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
             'run': RunCommand()
         }
 
+
     def conditional_required_props(self, kwargs):
         prop_table = {'scrub':['volume'],
-                      'smart':['disks'],
+                      'smart':['disks', 'test_type'],
                       'check_updates':['send_email']}
         missing_args = []
         if kwargs['type'] in prop_table:
@@ -291,14 +308,24 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
                     row['year'])
         return sched
 
+    def get_args(self, entity, prop):
+        if prop in TASK_ARG_MAPPING[entity['name']]:
+            return entity['args'][TASK_ARG_MAPPING[entity['name']].index(prop)]
+        else:
+            return None
+
+    def set_args(self, entity, args, name):
+        if 'args' not in entity:
+            entity['args'] = []
+            while len(entity['args']) < len(TASK_ARG_MAPPING[entity['name']]):
+                entity['args'].append(None)
+        entity['args'][TASK_ARG_MAPPING[entity['name']].index(name)] = args
+
     def set_type(self, entity, row):
         if row in TASK_TYPES:
             entity['name'] = TASK_TYPES[row]
         else:
             raise CommandException(_("Invalid type, please choose one of: {0}".format([key for key in TASK_TYPES.keys()])))
-
-    def set_email(self, entity, args):
-        entity['args'] = [args]
 
     def set_disks(self, entity, args):
         all_disks = [disk["path"] for disk in self.context.call_sync("disk.query")]
@@ -308,14 +335,14 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
             if disk not in all_disks:
                 raise CommandException(_("Invalid disk: {0}, see '/ disk show' for a list of disks".format(disk)))
             disks.append(disk)
-        entity['args'] = disks
+        self.set_args(entity, disks, 'disks')
 
     def set_volume(self, entity, args):
         all_volumes = [volume["name"] for volume in self.context.call_sync("volume.query")]
         if args not in all_volumes:
             raise CommandException(_("Invalid volume: {0}, see '/ volume show' for a list of volumes".format(volume)))
-        entity['args'] = [args]
-            
+        self.set_args(entity, args, 'volume')
+
 
 def _init(context):
     context.attach_namespace('/', CalendarTasksNamespace('calendar', context))

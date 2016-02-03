@@ -155,6 +155,14 @@ class StopVMCommand(Command):
         context.call_task_sync('container.stop', self.parent.entity['id'])
 
 
+class KillVMCommand(Command):
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        context.call_task_sync('container.stop', self.parent.entity['id'], True)
+
+
 class RebootVMCommand(Command):
     def __init__(self, parent):
         self.parent = parent
@@ -298,6 +306,7 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
         self.entity_commands = lambda this: {
             'start': StartVMCommand(this),
             'stop': StopVMCommand(this),
+            'kill': KillVMCommand(this),
             'reboot': RebootVMCommand(this),
             'console': ConsoleCommand(this)
         }
@@ -461,11 +470,9 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
         )
 
         self.primary_key = self.get_mapping('name')
-
-    def commands(self):
-        base = super(TemplateNamespace, self).commands()
-        base['show'] = FetchShowCommand(self)
-        return base
+        self.extra_commands = {
+            'show': FetchShowCommand()
+        }
 
 
 @description("Downloads templates from git")
@@ -477,12 +484,6 @@ class FetchShowCommand(Command):
 
     Refreshes local cache of VM templates and then shows them.
     """
-    def __init__(self, parent):
-        if hasattr(parent, 'leaf_entity') and parent.leaf_entity:
-            self.parent = parent.leaf_ns
-        else:
-            self.parent = parent
-
     def run(self, context, args, kwargs, opargs, filtering=None):
         context.call_task_sync('vm_template.fetch')
         show = ListCommand(self.parent)

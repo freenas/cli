@@ -38,6 +38,7 @@ from freenas.cli.namespace import (
     RpcBasedLoadMixin, TaskBasedSaveMixin, description, ListCommand, CommandException
 )
 from freenas.cli.output import ValueType
+from freenas.cli.utils import post_save
 
 
 t = gettext.translation('freenas-cli', fallback=True)
@@ -188,7 +189,7 @@ class ImportVMCommand(Command):
         volume = kwargs.get('volume', None)
         if not volume:
             raise CommandException(_("Please specify which volume is containing a VM being imported."))
-        context.call_task_sync('container.import', name, volume)
+        context.submit_task('container.import', name, volume, callback=lambda s: post_save(self.parent, s))
 
 
 @description("Configure and manage virtual machines")

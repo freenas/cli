@@ -31,7 +31,7 @@ from freenas.cli.namespace import (
 )
 from freenas.cli.output import Table, Object, Sequence, ValueType, format_value
 from freenas.cli.descriptions import events
-from freenas.cli.utils import post_save
+from freenas.cli.utils import post_save, parse_timedelta
 import gettext
 
 t = gettext.translation('freenas-cli', fallback=True)
@@ -53,12 +53,18 @@ class ShutdownCommand(Command):
 @description("Reboots the system")
 class RebootCommand(Command):
     """
-    Usage: reboot
+    Usage: reboot delay=<delay>
+
+    Examples: reboot
+              reboot delay=2h
 
     Reboots the system.
     """
     def run(self, context, args, kwargs, opargs):
-        context.submit_task('system.reboot')
+        delay = kwargs.get('delay', None)
+        if delay:
+            delay = parse_timedelta(delay).seconds
+        context.submit_task('system.reboot', delay)
         return _("System going for a reboot...")
 
 

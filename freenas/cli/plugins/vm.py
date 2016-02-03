@@ -180,6 +180,7 @@ class ConsoleCommand(Command):
         console.start()
 
 
+@description("Import virtual machine from volume")
 class ImportVMCommand(Command):
     """
     Usage: import <name> volume=<volume>

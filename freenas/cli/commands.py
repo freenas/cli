@@ -824,6 +824,7 @@ class SearchPipeCommand(PipeCommand):
         return {"filter": mapped_opargs}
 
 
+@description("Selects tasks started before or at time-delta")
 class OlderThanPipeCommand(PipeCommand):
     def run(self, context, args, kwargs, opargs, input=None):
         return input
@@ -835,6 +836,7 @@ class OlderThanPipeCommand(PipeCommand):
         ]}
 
 
+@description("Selects tasks started at or since time-delta")
 class NewerThanPipeCommand(PipeCommand):
     def run(self, context, args, kwargs, opargs, input=None):
         return input

@@ -389,12 +389,13 @@ class Context(object):
                 ))
 
             if task['state'] == 'FAILED':
-                output_msg_locked(_(
-                    "Task #{0} error: {1}".format(
-                        task['id'],
-                        task['error'].get('message', '') if task.get('error') else ''
-                    )
-                ))
+                if not task['parent'] or self.variables.get('verbosity') > 1:
+                    output_msg_locked(_(
+                        "Task #{0} error: {1}".format(
+                            task['id'],
+                            task['error'].get('message', '') if task.get('error') else ''
+                        )
+                    ))
 
             if task['state'] == 'ABORTED':
                 output_msg_locked(_("Task #{0} aborted".format(task['id'])))

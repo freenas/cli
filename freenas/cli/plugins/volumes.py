@@ -372,6 +372,29 @@ class ImportVolumeCommand(Command):
         context.submit_task('volume.import', id, kwargs.get('newname', oldname), {}, encryption, password)
 
 
+@description("Imports items from a given volume")
+class ImportFromVolumeCommand(Command):
+    """
+    Usage: import <all\containers\shares\system>
+
+    Imports a detached volume.
+    When importing encrypted volume key and disks or key, password and disks must be provided.
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        if len(args) < 1:
+            raise CommandException('Not enough arguments passed')
+
+        scope = args[0]
+
+        if scope not in ['all', 'containers', 'shares', 'system']:
+            raise CommandException('Import scope must be one of all\containers\shares\system')
+
+        context.submit_task('volume.autoimport', self.parent.entity['name'], scope)
+
+
 @description("Detaches given volume")
 class DetachVolumeCommand(Command):
     """
@@ -1286,6 +1309,7 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
             'offline': OfflineVdevCommand(this),
             'online': OnlineVdevCommand(this),
             'extend_vdev': ExtendVdevCommand(this),
+            'import': ImportFromVolumeCommand(this)
         }
 
         if this.entity is not None:

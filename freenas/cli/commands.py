@@ -421,9 +421,13 @@ class HelpCommand(Command):
             ]
             ns_cmds = obj.commands()
             for key, value in ns_cmds.items():
+                if hasattr(value,'description') and value.description is not None:
+                    description = value.description
+                else:
+                    description = obj.get_name()
                 value_description = re.sub('<entity>',
                                            obj.get_name(), 
-                                           value.description)
+                                           description)
                 cmd_dict = {
                     'cmd': key,
                     'description': value_description,
@@ -442,9 +446,13 @@ class HelpCommand(Command):
             # Finally listing the builtin cmds
             builtin_cmd_dict_list = []
             for key, value in context.ml.builtin_commands.items():
+                if hasattr(value,'description') and value.description is not None:
+                    description = value.description
+                else:
+                    description = key
                 builtin_cmd_dict = {
                     'cmd': key,
-                    'description': value.description,
+                    'description': description,
                 }
                 builtin_cmd_dict_list.append(builtin_cmd_dict)
 

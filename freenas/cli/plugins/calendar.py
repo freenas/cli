@@ -157,6 +157,7 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
 
             Examples: set enabled=true
                       set coalesce=false
+                      set test_type=long
 
             Sets a calendar task property.""")
 

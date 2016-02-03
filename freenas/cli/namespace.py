@@ -224,6 +224,7 @@ class RootNamespace(Namespace):
 
 class PropertyMapping(object):
     def __init__(self, **kwargs):
+        self.index = kwargs.pop('index')
         self.name = kwargs.pop('name')
         self.descr = kwargs.pop('descr', None)
         self.get = kwargs.pop('get')
@@ -514,7 +515,7 @@ class ItemNamespace(Namespace):
         return list([x for x in self.property_mappings if x.name == prop])[0]
 
     def add_property(self, **kwargs):
-        self.property_mappings.append(PropertyMapping(**kwargs))
+        self.property_mappings.append(PropertyMapping(index=len(self.property_mappings), **kwargs))
 
     def get_property(self, prop, obj):
         mapping = self.get_mapping(prop)
@@ -889,8 +890,8 @@ class CreateEntityCommand(Command):
             if not args and not kwargs:
                 return
 
-        for k, v in kwargs.items():
-            prop = self.parent.get_mapping(k)
+        mappings = map(lambda i: (self.parent.get_mapping(i[0]), i[1]), kwargs.items())
+        for prop, v in sorted(mappings, key=lambda i: i[0].index):
             prop.do_set(ns.entity, v)
 
         self.parent.save(ns, new=True)
@@ -954,7 +955,7 @@ class EntityNamespace(Namespace):
         raise NotImplementedError()
 
     def add_property(self, **kwargs):
-        self.property_mappings.append(PropertyMapping(**kwargs))
+        self.property_mappings.append(PropertyMapping(index=len(self.property_mappings), **kwargs))
 
     def commands(self):
         base = {

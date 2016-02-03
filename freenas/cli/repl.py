@@ -365,6 +365,13 @@ class Context(object):
 
             if task['state'] in ('FINISHED', 'FAILED', 'ABORTED'):
                 del self.pending_tasks[task['id']]
+                # Remove this task id from the '_last_task_id' global env
+                # if it was in there to begin with
+                try:
+                    if self.global_env.find('_last_task_id').value == task['id']:
+                        self.global_env['_last_task_id'] = Environment.Variable(None)
+                except:
+                    pass
                 refresh_prompt()
 
             if task['id'] in self.task_callbacks:

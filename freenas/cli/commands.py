@@ -692,10 +692,15 @@ class WaitCommand(Command):
             except ValueError:
                 raise CommandException('Task id argument must be an integer')
         else:
+            tid = None
             try:
                 tid = context.global_env.find('_last_task_id').value
             except KeyError:
-                raise CommandException('No recently submitted tasks found')
+                pass
+        if tid is None:
+            raise CommandException(_(
+                    'No recently submitted tasks (which are still active) found'
+            ))
 
         def update(progress, task):
             message = task['progress']['message'] if 'progress' in task else task['state']

@@ -40,7 +40,8 @@ TASK_TYPES = {
     'smart': 'disk.parallel_test',
     'snapshot': 'volume.snapshot_dataset',
     'replication': 'replication.replicate_dataset',
-    'check_updates': 'update.checkfetch'
+    'check_updates': 'update.checkfetch',
+    'command': 'calendar_task.command',
 }
 
 
@@ -51,6 +52,7 @@ TASK_ARG_MAPPING = {
     'zfs.pool.scrub': ['volume'],
     'disk.parallel_test': ['disks','test_type'],
     'update.checkfetch' : ['send_email'],
+    'calendar_task.command' : ['username', 'command'],
 }
 
 
@@ -137,6 +139,7 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
                       create myscrub2 type=scrub volume=mypool schedule="0 0 3" enabled=true
                       create myupdate type=check_updates send_email=false
                       create mysmart type=smart disks=ada0,ada1,ada2 test_type=short
+                      create mycommand type=command username=myuser command="some useful unix command"
 
             Creates a calendar task.  Tasks are disabled by default, you must set enabled=true to turn it on.  If a schedule is not set then all values will be set to * (i.e. run all the time).
 
@@ -250,6 +253,22 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
             set=lambda obj, value: self.set_args(obj, value, 'test_type')
         )
 
+        self.add_property(
+            descr='Username',
+            name='username',
+            get=lambda e: self.get_args(e, 'username'),
+            list=False,
+            set=self.set_username,
+        )
+
+        self.add_property(
+            descr='Command',
+            name='command',
+            get=lambda e: self.get_args(e, 'command'),
+            list=False,
+            set=lambda obj, value: self.set_args(obj, value, 'command')
+        )
+
         self.primary_key = self.get_mapping('name')
         self.entity_namespaces = lambda this: [
             ScheduleNamespace('schedule', self.context, this)
@@ -263,7 +282,8 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
     def conditional_required_props(self, kwargs):
         prop_table = {'scrub':['volume'],
                       'smart':['disks', 'test_type'],
-                      'check_updates':['send_email']}
+                      'check_updates':['send_email'],
+                      'command':['username','command']}
         missing_args = []
         if kwargs['type'] in prop_table:
             for prop in prop_table[kwargs['type']]:
@@ -327,6 +347,12 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
             entity['name'] = TASK_TYPES[row]
         else:
             raise CommandException(_("Invalid type, please choose one of: {0}".format([key for key in TASK_TYPES.keys()])))
+
+    def set_username(self, entity, args):
+        all_users = [user["username"] for user in self.context.call_sync("user.query")]
+        if args not in all_users:
+            raise CommandException(_("Invalid user: {0}, see '/ account user show' for a list of users".format(args)))
+        self.set_args(entity, args, 'username')
 
     def set_disks(self, entity, args):
         all_disks = [disk["path"] for disk in self.context.call_sync("disk.query")]

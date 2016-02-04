@@ -1165,7 +1165,7 @@ class MainLoop(object):
                     item = self.eval(top, env, path=path)
 
                     if isinstance(item, (six.string_types, int, bool)):
-                        item = self.find_in_scope(str(item), cwd=cwd)
+                        item = self.eval(Symbol(item), env, path=path)
 
                     if isinstance(item, Namespace):
                         item.on_enter()

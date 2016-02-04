@@ -708,16 +708,15 @@ class WaitCommand(Command):
             progress.update(percentage=percentage, message=message)
 
         try:
+            task = context.entity_subscribers['task'].query(('id', '=', tid), single=True)
+            if task['state'] in ('FINISHED', 'FAILED', 'ABORTED'):
+                return _("The task with id: {0} ended in {1} state".format(tid, task['state']))
+
             # lets set the SIGTSTP (Ctrl+Z) handler
             SIGTSTP_setter(set_flag=True)
             output_msg(_("Hit Ctrl+C to terminate task if needed"))
             output_msg(_("To background running task press 'Ctrl+Z'"))
             context.ml.skip_prompt_print = True
-            task = context.entity_subscribers['task'].query(('id', '=', tid), single=True)
-
-            if task['state'] in ('FINISHED', 'FAILED', 'ABORTED'):
-                context.ml.skip_prompt_print = False
-                return
 
             progress = ProgressBar()
             update(progress, task)

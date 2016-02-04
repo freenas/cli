@@ -735,6 +735,7 @@ class WaitCommand(Command):
                     six.print_()
                     break
         except KeyboardInterrupt:
+            six.print_()
             output_msg(_("User requested task termination. Sending abort signal sent"))
             context.call_sync('task.abort', tid)
         except SIGTSTPException:

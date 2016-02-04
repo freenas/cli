@@ -587,7 +587,6 @@ class Context(object):
                 return
 
             task['progress'] = progress
-            task['state'] = data['state']
             self.entity_subscribers['task'].update(task)
 
             if task['id'] in self.pending_tasks:

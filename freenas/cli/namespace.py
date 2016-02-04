@@ -782,6 +782,9 @@ class ListCommand(FilteringCommand):
         params = []
         options = {}
 
+        if args or kwargs or opargs:
+            raise CommandException(_('"show" command doesn\'t take any arguments'))
+
         if filtering:
             for k, v in filtering['params'].items():
                 if k == 'limit':

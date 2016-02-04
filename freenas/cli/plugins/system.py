@@ -56,7 +56,9 @@ class RebootCommand(Command):
     Usage: reboot delay=<delay>
 
     Examples: reboot
-              reboot delay=2h
+              reboot delay=1:10.10 (1hour 10 minutes 10 seconds)
+              reboot delay=:10 (10 minutes)
+              reboot delay=:0.10 (10 seconds)
 
     Reboots the system.
     """

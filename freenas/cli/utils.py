@@ -34,7 +34,6 @@ import gettext
 import signal
 from datetime import timedelta
 from freenas.cli import output
-from freenas.utils import to_timedelta
 
 t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
@@ -178,8 +177,19 @@ def netmask_to_cidr(entity, netmask):
 
 def parse_timedelta(s):
     delta = timedelta()
-    for i in re.findall(r'(\d+[smhd])', s):
-        delta += to_timedelta(i)
+    time = re.split('[:.]+', s)
+
+    if len(time) == 2:
+        hr, min = time
+        sec = 0
+    else:
+        hr, min, sec = time
+
+    if hr == '':
+        hr = 0
+
+    sec_delta = int(hr) * 60 * 60 + int(min) * 60 + int(sec)
+    delta += timedelta(seconds=sec_delta)
 
     return delta
 

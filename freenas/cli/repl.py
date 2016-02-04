@@ -617,17 +617,26 @@ class Context(object):
         self.ml.skip_prompt_print = False
         return wrapped_result
 
+    def submit_task_common_routine(self, name, callback, *args):
+        """
+        Just a small subrotuine that is used in bot blocking as
+        well as non-blocking tasks in the main submit_task func
+        below.
+        It returns the id of the task.
+        """
+        tid = self.connection.call_sync('task.submit', name, args)
+        if callback:
+            self.task_callbacks[tid] = callback
+        self.global_env['_last_task_id'] = Environment.Variable(tid)
+        return tid
+
     def submit_task(self, name, *args, **kwargs):
         callback = kwargs.pop('callback', None)
         message_formatter = kwargs.pop('message_formatter', None)
 
         if not self.variables.get('tasks_blocking'):
-            tid = self.connection.call_sync('task.submit', name, args)
-            if callback:
-                self.task_callbacks[tid] = callback
-
+            tid = self.submit_task_common_routine(name, callback, *args)
             output_msg_locked(_("Task #{0} submitted".format(tid)))
-            self.global_env['_last_task_id'] = Environment.Variable(tid)
             return tid
         else:
             # lets set the SIGTSTP (Ctrl+Z) handler
@@ -635,9 +644,7 @@ class Context(object):
             output_msg(_("Hit Ctrl+C to terminate task if needed"))
             output_msg(_("To background running task press 'Ctrl+Z'"))
             self.event_divert = True
-            tid = self.connection.call_sync('task.submit', name, args)
-            if callback:
-                self.task_callbacks[tid] = callback
+            tid = self.submit_task_common_routine(name, callback, *args)
             progress = ProgressBar()
             try:
                 while True:

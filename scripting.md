@@ -5,7 +5,7 @@ Fun With FreeNAS!
 An Anonymous FreeNAS Dev (Do Not Git Blame this line): "The Only thing we changed in FreeNAS 10 is
 Everything!"
 
-Yo Dawg I heard you like FreeNAS 10! Did you check out the ALL NEW Freenas CLI? NO! Wy not? I am
+Yo Dawg I heard you like FreeNAS 10! Did you check out the ALL NEW Freenas CLI? NO! Why not? I am
 here to give you some reasons to do so. This is a guide/exploration/example set of all the new shiny
 features in the Amazeballs FreeNAS 10 CLI, with an emphasis on scripting and automation.
 
@@ -16,7 +16,7 @@ power of 'not bar'.
 # Variables
 So lets fire up a cli instance from the shell in FreeNAS10.
 
-```python
+```
 [root@freenas] ~# cli
  _________________________________________ 
 / Welcome to the FreeNAS CLI! Type 'help' \
@@ -42,25 +42,25 @@ unix::>```
 ~~Yes I love cows~~ Oops, I am not supposed to say that.
 
 So how does one declare a variable you ask? Pretty intuitive actually...
-```python
+```
 unix::>var="hello world"
 unix::>mynum=100
 unix::>```
 
 and yes, you can use semicolons!
-```python unix::>a=1;b=2;c=3```
+```unix::>a=1;b=2;c=3```
 
 However, you might observer that if you try to print the variables by directyly typing them at our
 prompt, it errors out as follows:
 
-```python
+```
 unix::>var
 Error: hello world not found```
 
 So how do I print this new variable that I created? Well there really are a bunch of
 different ways to do so but here are the two most easy and intuitve ones:
 
-```python
+```
 unix::>print(var)
 hello world 
 unix::>echo ${mynum}
@@ -75,7 +75,7 @@ unix::>```
 
 Yes!
 
-```python
+```
 unix::>a=[1, 2,  3]
 unix::>print(a)
 [1, 2, 3]
@@ -94,7 +94,7 @@ unix::>```
 
 Ofcourse, this would not be a scripting tutorial if you could not :-P
 
-```python
+```
 unix::>secret_pass=readline("Hey Joe Smith enter your password for me to steal: ");
 Hey Joe Smith enter your password for me to steal: meh
 unix::>echo How do i feel about this password: ${secret_pass}
@@ -112,7 +112,7 @@ __Basic Operators__
 
 Below are some examples of using the basic builtin operators
 
-```python
+```
 unix::>a=2*3
 unix::>print(a)
 6 
@@ -143,7 +143,7 @@ unix::>
 
 Note: These basic operations will not work without an assignemnt operation. .e. the following fails:
 
-```python
+```
 unix::>2*3
 Syntax error: LexToken(MUL,'*',1,1)```
 
@@ -152,7 +152,7 @@ Also here is the full list of operators we support:
 
 __How to use the inbuilt factorial function__
 
-```python
+```
 unix::>factorial(5)
 120
 unix::>```

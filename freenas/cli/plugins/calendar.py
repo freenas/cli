@@ -224,6 +224,7 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
             get=lambda e: self.get_args(e, 'volume'),
             list=False,
             set=self.set_volume,
+            condition=lambda e: self.meets_condition(e, 'volume')
         )
 
         self.add_property(
@@ -233,6 +234,7 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
             list=False,
             set=lambda obj, value: self.set_args(obj, value, 'send_email'),
             type=ValueType.BOOLEAN,
+            condition=lambda e: self.meets_condition(e, 'send_email')
         )
 
         self.add_property(
@@ -242,6 +244,7 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
             list=False,
             type=ValueType.SET,
             set=self.set_disks,
+            condition=lambda e: self.meets_condition(e, 'disks')
         )
 
         self.add_property(
@@ -250,7 +253,8 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
             get=lambda e: self.get_args(e, 'test_type'),
             list=False,
             enum=['short','long','conveyance','offline'],
-            set=lambda obj, value: self.set_args(obj, value, 'test_type')
+            set=lambda obj, value: self.set_args(obj, value, 'test_type'),
+            condition=lambda e: self.meets_condition(e, 'test_type')
         )
 
         self.add_property(
@@ -259,6 +263,7 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
             get=lambda e: self.get_args(e, 'username'),
             list=False,
             set=self.set_username,
+            condition=lambda e: self.meets_condition(e, 'username')
         )
 
         self.add_property(
@@ -266,7 +271,8 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
             name='command',
             get=lambda e: self.get_args(e, 'command'),
             list=False,
-            set=lambda obj, value: self.set_args(obj, value, 'command')
+            set=lambda obj, value: self.set_args(obj, value, 'command'),
+            condition=lambda e: self.meets_condition(e, 'command')
         )
 
         self.primary_key = self.get_mapping('name')
@@ -329,6 +335,12 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
                     row['year'])
         return sched
 
+    def meets_condition(self, entity, prop):
+        if prop in TASK_ARG_MAPPING[entity['name']]:
+            return True
+        else:
+            return False
+
     def get_args(self, entity, prop):
         if prop in TASK_ARG_MAPPING[entity['name']]:
             return entity['args'][TASK_ARG_MAPPING[entity['name']].index(prop)]
@@ -367,7 +379,7 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
     def set_volume(self, entity, args):
         all_volumes = [volume["name"] for volume in self.context.call_sync("volume.query")]
         if args not in all_volumes:
-            raise CommandException(_("Invalid volume: {0}, see '/ volume show' for a list of volumes".format(args)))
+            raise CommandException(_("Invalid volume: {0}, see '/ volume show' for a list of volumes".format()))
         self.set_args(entity, args, 'volume')
 
 

@@ -330,7 +330,7 @@ class ItemNamespace(Namespace):
                     'name': mapping.name,
                     'descr': mapping.descr,
                     'value': format_value(mapping.do_get(entity), mapping.type),
-                    'editable': format_value(True if mapping.set and mapping.usersetable else False, ValueType.BOOLEAN)
+                    'editable': format_value(True if mapping.set and mapping.usersetable and self.parent.allow_edit else False, ValueType.BOOLEAN)
                 }
                 values.append(value)
 

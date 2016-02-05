@@ -146,6 +146,14 @@ def table(data, columns):
     return Table(data, [Table.Column(l, a) for l, a in columns])
 
 
+# Add functions to help script things
+
+def factorial(n):
+    "Computes the factorial of positive integers and zero"
+    if n <= 1:
+        return 1
+    return n*factorial(n-1)
+
 functions = {
     'print': print_,
     'printf': printf,
@@ -172,5 +180,6 @@ functions = {
     'freadline': freadline,
     'fprintf': fprintf,
     'fclose': fclose,
-    'table': table
+    'table': table,
+    'factorial': factorial
 }

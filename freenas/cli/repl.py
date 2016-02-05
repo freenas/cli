@@ -1404,6 +1404,7 @@ class MainLoop(object):
                 append_space = False
                 args = []
                 builtin_command_set = list(self.base_builtin_commands.keys())
+                self.saved_state = None
 
                 if len(readline_buffer.strip()) > 0:
                     tokens = parse(readline_buffer, '<stdin>', True)

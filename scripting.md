@@ -37,7 +37,8 @@ http://192.168.221.136
 http://fe80::20c:29ff:fe23:3169 
 http://169.254.16.1
 http://169.254.169.254
-unix::>```
+unix::>
+```
 
 ~~Yes I love cows~~ Oops, I am not supposed to say that.
 
@@ -45,17 +46,19 @@ So how does one declare a variable you ask? Pretty intuitive actually...
 ```
 unix::>var="hello world"
 unix::>mynum=100
-unix::>```
+unix::>
+```
 
 and yes, you can use semicolons!
-```unix::>a=1;b=2;c=3```
+`unix::>a=1;b=2;c=3`
 
 However, you might observer that if you try to print the variables by directyly typing them at our
 prompt, it errors out as follows:
 
 ```
 unix::>var
-Error: hello world not found```
+Error: hello world not found
+```
 
 So how do I print this new variable that I created? Well there really are a bunch of
 different ways to do so but here are the two most easy and intuitve ones:
@@ -69,7 +72,8 @@ unix::>echo I am saying: ${var} a ${mynum} times
 I am saying: hello world a 100 times
 unix::>print(a, b, c)
 1 2 3 
-unix::>```
+unix::>
+```
 
 "Wait this is getting interesting can I haz other data structures like lists and dicts?"
 
@@ -87,7 +91,8 @@ that=bar  this=foo
 
 unix::>print(b["this"])
 foo 
-unix::>```
+unix::>
+```
 
 
 "Cool, but hey can I get the input from the say, the user?"
@@ -99,7 +104,8 @@ unix::>secret_pass=readline("Hey Joe Smith enter your password for me to steal: 
 Hey Joe Smith enter your password for me to steal: meh
 unix::>echo How do i feel about this password: ${secret_pass}
 How do i feel about this password: meh
-unix::>```
+unix::>
+```
 
 
 "OK I GET IT! The CLI has Variables, what next?"
@@ -116,12 +122,15 @@ Below are some examples of using the basic builtin operators
 unix::>a=2*3
 unix::>print(a)
 6 
+
 unix::>b=5*4/2
 unix::>echo ${b}
 10
+
 unix::>res=10==b
 unix::>print(res)
 true 
+
 unix::>c=1!=0
 unix::>print(c)
 true 
@@ -129,23 +138,26 @@ true
 unix::>logicres=true and c
 unix::>print(logicres)
 true
+
 unix::>logicres=false and c
 unix::>print(logicres)
 false 
+
 unix::>orres=1 or 0
 unix::>print(orres)
 1
+
 unix::>notres=not logicres
 unix::>echo ${notres}
 true
-unix::>
 ```
 
 Note: These basic operations will not work without an assignemnt operation. .e. the following fails:
 
 ```
 unix::>2*3
-Syntax error: LexToken(MUL,'*',1,1)```
+Syntax error: LexToken(MUL,'*',1,1)
+```
 
 Also here is the full list of operators we support:
  `'+','-''*','/','==','!=','>','<','>=','<=','and','or','not'`
@@ -155,5 +167,5 @@ __How to use the inbuilt factorial function__
 ```
 unix::>factorial(5)
 120
-unix::>```
+```
 

@@ -817,6 +817,7 @@ class MainLoop(object):
         self.namespaces = []
         self.connection = None
         self.skip_prompt_print = False
+        self.saved_state = None
         self.cached_values = {
             'rel_cwd': None,
             'rel_tokens': None,
@@ -1378,78 +1379,84 @@ class MainLoop(object):
         return ptr
 
     def complete(self, text, state):
-        def find_arg(args, index):
-            positional_index = 0
-            for a in args:
-                if isinstance(a, (Literal, Symbol)):
-                    if a.column <= index <= a.column_end:
-                        return positional_index
+        if state == 0:
+            def find_arg(args, index):
+                positional_index = 0
+                for a in args:
+                    if isinstance(a, (Literal, Symbol)):
+                        if a.column <= index <= a.column_end:
+                            return positional_index
 
-                    positional_index += 1
+                        positional_index += 1
 
-                if isinstance(a, BinaryParameter):
-                    if a.column + len(a.left) + 1 <= index <= a.column_end:
-                        return a
+                    if isinstance(a, BinaryParameter):
+                        if a.column + len(a.left) + 1 <= index <= a.column_end:
+                            return a
 
-                    if a.column <= index <= a.column + len(a.left) + 1:
-                        return False
+                        if a.column <= index <= a.column + len(a.left) + 1:
+                            return False
 
-            return positional_index
+                return positional_index
 
-        try:
-            readline_buffer = readline.get_line_buffer()
-            token = None
-            append_space = False
-            args = []
-            builtin_command_set = list(self.base_builtin_commands.keys())
+            try:
+                readline_buffer = readline.get_line_buffer()
+                token = None
+                append_space = False
+                args = []
+                builtin_command_set = list(self.base_builtin_commands.keys())
 
-            if len(readline_buffer.strip()) > 0:
-                tokens = parse(readline_buffer, '<stdin>', True)
-                if tokens:
-                    token = tokens.pop(-1)
-                    if isinstance(token, PipeExpr):
-                        token = token.right
-                        builtin_command_set = list(self.pipe_commands.keys())
+                if len(readline_buffer.strip()) > 0:
+                    tokens = parse(readline_buffer, '<stdin>', True)
+                    if tokens:
+                        token = tokens.pop(-1)
+                        if isinstance(token, PipeExpr):
+                            token = token.right
+                            builtin_command_set = list(self.pipe_commands.keys())
 
-                    args = token.args
+                        args = token.args
 
-            if isinstance(token, CommandCall) or not args:
-                obj = self.get_relative_object(self.cwd, args)
-            else:
-                return None
-
-            if issubclass(type(obj), Namespace):
-                choices = [str(i.get_name()) for i in obj.namespaces()]
-                choices += obj.commands().keys()
-                choices += builtin_command_set + ['..', '/', '-']
-                append_space = True
-            elif issubclass(type(obj), Command):
-                completions = obj.complete(self.context)
-                choices = [c.name for c in completions if isinstance(c.name, six.string_types)]
-                arg = find_arg(args, readline.get_begidx())
-
-                if arg is False:
-                    return None
-                elif isinstance(arg, six.integer_types):
-                    completion = first_or_default(lambda c: c.name == arg, completions)
-                    if completion:
-                        choices = completion.choices(self.context, None)
-                elif isinstance(arg, BinaryParameter):
-                    completion = first_or_default(lambda c: c.name == arg.left + '=', completions)
-                    if completion:
-                        choices = completion.choices(self.context, arg)
+                if isinstance(token, CommandCall) or not args:
+                    obj = self.get_relative_object(self.cwd, args)
                 else:
-                    raise AssertionError('Unknown arg returned by find_arg()')
-            else:
-                choices = []
+                    return None
 
-            options = [i + (' ' if append_space else '') for i in choices if i.startswith(text)]
-            if state < len(options):
-                return options[state]
-            else:
-                return None
-        except BaseException as err:
-            output_msg_locked(str(err))
+                if issubclass(type(obj), Namespace):
+                    choices = [str(i.get_name()) for i in obj.namespaces()]
+                    choices += obj.commands().keys()
+                    choices += builtin_command_set + ['..', '/', '-']
+                    append_space = True
+                elif issubclass(type(obj), Command):
+                    completions = obj.complete(self.context)
+                    choices = [c.name for c in completions if isinstance(c.name, six.string_types)]
+                    arg = find_arg(args, readline.get_begidx())
+
+                    if arg is False:
+                        return None
+                    elif isinstance(arg, six.integer_types):
+                        completion = first_or_default(lambda c: c.name == arg, completions)
+                        if completion:
+                            choices = completion.choices(self.context, None)
+                    elif isinstance(arg, BinaryParameter):
+                        completion = first_or_default(lambda c: c.name == arg.left + '=', completions)
+                        if completion:
+                            choices = completion.choices(self.context, arg)
+                    else:
+                        raise AssertionError('Unknown arg returned by find_arg()')
+                else:
+                    choices = []
+
+                options = [i + (' ' if append_space else '') for i in choices if i.startswith(text)]
+                self.saved_state = options
+                if options:
+                    return options[0]
+            except BaseException as err:
+                output_msg_locked(str(err))
+        else:
+            if self.saved_state:
+                if state < len(self.saved_state):
+                    return self.saved_state[state]
+                else:
+                    return None
 
     def sigint(self):
         pass

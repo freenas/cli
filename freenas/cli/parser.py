@@ -336,6 +336,14 @@ def p_block_2(p):
     p[0] = p[3]
 
 
+def p_block_3(p):
+    """
+    block : LBRACE NEWLINE RBRACE
+    block : LBRACE RBRACE
+    """
+    p[0] = []
+
+
 def p_if_stmt(p):
     """
     if_stmt : IF LPAREN expr RPAREN block
@@ -413,9 +421,15 @@ def p_function_argument_list(p):
         p[0] = [p[1]] + p[3]
 
 
-def p_return_stmt(p):
+def p_return_stmt_1(p):
     """
     return_stmt : RETURN
+    """
+    p[0] = ReturnStatement(Literal(None, type(None)), p=p)
+
+
+def p_return_stmt_2(p):
+    """
     return_stmt : RETURN expr
     """
     p[0] = ReturnStatement(p[2], p=p)
@@ -491,6 +505,7 @@ def p_array_literal(p):
 def p_dict_literal_1(p):
     """
     dict_literal : LBRACE RBRACE
+    dict_literal : LBRACE NEWLINE RBRACE
     """
     p[0] = Literal(dict(), dict)
 
@@ -514,11 +529,19 @@ def p_dict_pair_list(p):
     p[0] = [p[1]] + p[3]
 
 
-def p_dict_pair(p):
+def p_dict_pair_1(p):
     """
     dict_pair : STRING COLON expr
     """
     p[0] = (p[1], p[3])
+
+
+def p_dict_pair_2(p):
+    """
+    dict_pair : NEWLINE STRING COLON expr
+    dict_pair : NEWLINE STRING COLON expr NEWLINE
+    """
+    p[0] = (p[2], p[4])
 
 
 def p_literal(p):

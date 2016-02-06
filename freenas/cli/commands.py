@@ -584,10 +584,10 @@ class DumpCommand(Command):
     Diplay configuration of specified namespace or, when not specified,
     the current namespace. Optionally, specify the name of the file to
     send the output to.
-    
+
     Usage: <namespace> dump
            <namespace> dump <filename>
-    
+
     Examples:
     update dump
     dump | less

@@ -328,6 +328,9 @@ class Context(object):
         self.builtin_operators = functions.operators
         self.builtin_functions = functions.functions
         self.global_env = Environment(self)
+        self.global_env['_cli_src_path'] = Environment.Variable(
+            os.path.dirname(os.path.realpath(__file__))
+        )
         self.user = None
         self.pending_tasks = QueryDict()
         self.session_id = None
@@ -472,9 +475,7 @@ class Context(object):
             if hasattr(sys, '_MEIPASS'):
                 plug_dirs = os.path.join(sys._MEIPASS, 'freenas/cli/plugins')
             else:
-                plug_dirs = os.path.join(
-                    os.path.dirname(os.path.realpath(__file__)), 'plugins'
-                )
+                plug_dirs = os.path.join(self.global_env.find('_cli_src_path').value, 'plugins')
             self.plugin_dirs += [plug_dirs]
 
     def discover_plugins(self):

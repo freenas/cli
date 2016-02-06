@@ -1,3 +1,11 @@
+#
+# poorly made snake game clone
+#
+# keys:
+# - w, s, a d   - changing snake direction
+# - ^C          - exit
+#
+
 function wonsz()
 {
     width = 40
@@ -59,7 +67,7 @@ function wonsz()
 
     function seed_worm()
     {
-        startx = rand(0, width - 1)
+        startx = rand(0, width - 1 - worm_initial_length)
         starty = rand(0, height - 1)
 
         resize(worm_position, worm_initial_length)

@@ -799,7 +799,7 @@ def p_error(p):
             parser.errok()
             return e
     else:
-        raise SyntaxError(str(p))
+        raise SyntaxError("Invalid token '{0}' at line {1}, column {2}".format(p.value, p.lineno, p.lexpos))
 
 
 lexer = lex.lex()

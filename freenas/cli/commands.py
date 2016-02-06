@@ -565,6 +565,7 @@ class SourceCommand(Command):
                                    inspect.getdoc(self))
         else:
             for arg in args:
+                arg = os.path.expanduser(arg)
                 if os.path.isfile(arg):
                     try:
                         with open(arg, 'r') as f:

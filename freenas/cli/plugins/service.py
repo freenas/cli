@@ -964,5 +964,19 @@ svc_cli_config = {
             ],
             'type': ValueType.STRING
         },
-    ]
+    ],
+    "rsyncd" : [ 
+        {
+            'descr':'Port',
+            'name':'port',
+            'get':'port',
+            'type':ValueType.NUMBER,
+        },
+        {
+            'descr':'Auxiliary',
+            'name':'auxiliary',
+            'get':'auxiliary',
+            'type':ValueType.STRING,
+        },
+    ],
 }

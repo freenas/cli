@@ -30,11 +30,15 @@ import sys
 import termios
 import copy
 import operator
+import time
+import random
+from threading import Timer
 from builtins import input
 from freenas.cli.namespace import Command
 from freenas.cli.output import format_output, output_msg, Table
 from freenas.cli.parser import unparse, FunctionDefinition
 from freenas.cli import config
+from freenas.utils import decode_escapes
 
 operators = {
     '+': operator.add,
@@ -68,18 +72,22 @@ def print_(*items):
 
 
 def printf(fmt, *args):
-    output_msg(fmt % args)
+    output_msg(decode_escapes(fmt) % args)
+
+
+def printfn(fmt, *args):
+    print(decode_escapes(fmt) % args, end='', flush=True)
 
 
 def sprintf(fmt, *args):
-    return fmt % args
+    return decode_escapes(fmt) % args
 
 
-def map_(fn, array):
+def map_(array, fn):
     return list(map(fn, array))
 
 
-def mapf(fmt, array):
+def mapf(array, fmt):
     return list(map(lambda s: fmt % s, array))
 
 
@@ -95,6 +103,14 @@ def readline(prompt):
     return input(prompt)
 
 
+def rand(a, b):
+    return random.randint(a, b)
+
+
+def setinterval(interval, fn):
+    Timer(interval / 1000, fn).start()
+
+
 def readkey():
     fd = sys.stdin.fileno()
     oldterm = termios.tcgetattr(fd)
@@ -104,9 +120,14 @@ def readkey():
 
     try:
         c = sys.stdin.read(1)
+        if not c:
+            return None
+
         return c
     except IOError:
         raise
+    except KeyboardInterrupt:
+        return None
     finally:
         termios.tcsetattr(fd, termios.TCSAFLUSH, oldterm)
 
@@ -156,7 +177,7 @@ def freadline(fhandle):
 
 
 def fprintf(fhandle, fmt, *args):
-    fhandle.write(fmt % args)
+    fhandle.write(decode_escapes(fmt) % args)
     fhandle.flush()
 
 
@@ -167,6 +188,7 @@ def table(data, columns):
 functions = {
     'print': print_,
     'printf': printf,
+    'printfn': printfn,
     'sprintf': sprintf,
     'map': map_,
     'mapf': mapf,
@@ -175,6 +197,7 @@ functions = {
     'readkey': readkey,
     'readline': readline,
     'unparse': unparse_,
+    'sleep': time.sleep,
     'rpc': rpc,
     'call_task': call_task,
     'cwd': cwd,
@@ -183,9 +206,12 @@ functions = {
     'range': range,
     'str': str,
     'length': len,
+    'rand': rand,
+    'setinterval': setinterval,
     'append': lambda a, i: a.append(i),
     'remove': lambda a, i: a.remove(i),
     'resize': array_resize,
+    'shift': lambda a: a.pop(0),
     'copy': copy.deepcopy,
     'fopen': fopen,
     'freadline': freadline,

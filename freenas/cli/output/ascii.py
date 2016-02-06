@@ -260,5 +260,6 @@ class AsciiOutputFormatter(object):
         table.add_rows([[AsciiOutputFormatter.format_value(resolve_cell(row, i.accessor), i.vt) for i in tab.columns] for row in tab.data], False)
         return table
 
+
 def _formatter():
     return AsciiOutputFormatter

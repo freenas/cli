@@ -765,7 +765,7 @@ class Environment(dict):
         if var in self:
             return self[var]
 
-        if self.outer:
+        if self.outer is not None:
             return self.outer.find(var)
 
         if var in self.context.builtin_functions:

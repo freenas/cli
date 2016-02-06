@@ -1319,6 +1319,7 @@ class MainLoop(object):
             first = True
             for i in tokens:
                 try:
+                    self.context.call_stack = []
                     ret = self.eval(i, first=first, printable_none=True)
                     first = False
                 except SystemExit as err:

@@ -669,6 +669,13 @@ def p_command_item_3(p):
     p[0] = ExpressionExpansion(p[2], p=p)
 
 
+def p_command_item_4(p):
+    """
+    command_item : STRING
+    """
+    p[0] = Literal(p[1])
+
+
 def p_parameter_list(p):
     """
     parameter_list : parameter

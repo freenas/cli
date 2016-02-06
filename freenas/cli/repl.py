@@ -64,7 +64,7 @@ from freenas.cli.parser import (
     Redirection, AnonymousFunction
 )
 from freenas.cli.output import (
-    ValueType, ProgressBar, output_lock, output_msg, read_value, format_value,
+    ValueType, ProgressBar, Sequence, output_lock, output_msg, read_value, format_value,
     format_output, output_msg_locked, refresh_prompt
 )
 from freenas.dispatcher.client import Client, ClientError
@@ -1161,48 +1161,59 @@ class MainLoop(object):
                             self.start_from_root = True
                             return self.eval(token, env, path=path, dry_run=dry_run)
 
+                    if isinstance(top, ExpressionExpansion):
+                        top = Symbol(self.eval(top, env, path=path))
+
                     if isinstance(top, Literal):
-                        top = Symbol(top.value)
-
-                    item = self.eval(top, env, path=path)
-
-                    if isinstance(item, (six.string_types, int, bool)):
-                        item = self.eval(Symbol(item), env, path=path)
-
-                    if isinstance(item, Namespace):
-                        item.on_enter()
-                        return self.eval(token, env, path=path+[item], dry_run=dry_run)
-
-                    if isinstance(item, Command):
-                        completions = item.complete(self.context)
-                        token_args = convert_to_literals(token.args)
-                        args, kwargs, opargs = expand_wildcards(
-                            self.context,
-                            *sort_args([self.eval(i, env) for i in token_args]),
-                            completions=completions
+                        matching = list(map(
+                            lambda ns: Symbol(ns.get_name()),
+                            filter(lambda ns: re.match(top.value, ns.get_name()), cwd.namespaces()))
                         )
+                    else:
+                        matching = [top]
 
-                        item.exec_path = path if len(path) >= 1 else self.path
-                        if dry_run:
-                            return item, cwd, args, kwargs, opargs
+                    resultset = Sequence()
 
-                        if isinstance(item, PipeCommand):
-                            if first:
-                                raise CommandException(_('Invalid usage.\n{0}'.format(inspect.getdoc(item))))
-                            if serialize_filter:
-                                ret = item.serialize_filter(self.context, args, kwargs, opargs)
-                                if ret is not None:
-                                    if 'filter' in ret:
-                                        serialize_filter['filter'] += ret['filter']
+                    for i in matching:
+                        item = self.eval(i, env, path=path)
 
-                                    if 'params' in ret:
-                                        serialize_filter['params'].update(ret['params'])
+                        if isinstance(item, Namespace):
+                            item.on_enter()
+                            resultset.append_flat(self.eval(token, env, path=path+[item], dry_run=dry_run))
 
-                            result = item.run(self.context, args, kwargs, opargs, input=input_data)
-                            return PrintableNone.coerce(result) if not printable_none else result
+                        if isinstance(item, Command):
+                            completions = item.complete(self.context)
+                            token_args = convert_to_literals(token.args)
+                            args, kwargs, opargs = expand_wildcards(
+                                self.context,
+                                *sort_args([self.eval(i, env) for i in token_args]),
+                                completions=completions
+                            )
 
-                        result = item.run(self.context, args, kwargs, opargs)
-                        return PrintableNone.coerce(result) if not printable_none else result
+                            item.exec_path = path if len(path) >= 1 else self.path
+                            if dry_run:
+                                resultset.append((item, cwd, args, kwargs, opargs))
+                                continue
+
+                            if isinstance(item, PipeCommand):
+                                if first:
+                                    raise CommandException(_('Invalid usage.\n{0}'.format(inspect.getdoc(item))))
+                                if serialize_filter:
+                                    ret = item.serialize_filter(self.context, args, kwargs, opargs)
+                                    if ret is not None:
+                                        if 'filter' in ret:
+                                            serialize_filter['filter'] += ret['filter']
+
+                                        if 'params' in ret:
+                                            serialize_filter['params'].update(ret['params'])
+
+                                result = item.run(self.context, args, kwargs, opargs, input=input_data)
+                                resultset.append(PrintableNone.coerce(result) if not printable_none else result)
+
+                            result = item.run(self.context, args, kwargs, opargs)
+                            resultset.append(PrintableNone.coerce(result) if not printable_none else result)
+
+                    return resultset.unwind(dry_run)
                 except BaseException as err:
                     success = False
                     raise err
@@ -1244,26 +1255,33 @@ class MainLoop(object):
                     self.eval(token.right, env, path, serialize_filter=serialize_filter)
                     return
 
-                cmd, cwd, args, kwargs, opargs = self.eval(token.left, env, path, dry_run=True, first=first)
-                cwd.on_enter()
-                self.context.pipe_cwd = cwd
-                if isinstance(cmd, FilteringCommand):
-                    # Do serialize_filter pass
-                    filt = {"filter": [], "params": {}}
-                    self.eval(token.right, env, path, serialize_filter=filt)
-                    result = cmd.run(self.context, args, kwargs, opargs, filtering=filt)
-                elif isinstance(cmd, PipeCommand):
-                    result = cmd.run(self.context, args, kwargs, opargs, input=input_data)
-                else:
-                    result = cmd.run(self.context, args, kwargs, opargs)
+                cmds = self.eval(token.left, env, path, dry_run=True, first=first)
+                resultset = Sequence()
 
-                result = PrintableNone.coerce(result)
-                ret = self.eval(token.right, input_data=result)
-                self.context.pipe_cwd = None
-                if ret is None:
-                    return result
-                else:
-                    return ret
+                print(cmds)
+
+                for cmd, cwd, args, kwargs, opargs in cmds:
+                    cwd.on_enter()
+                    self.context.pipe_cwd = cwd
+                    if isinstance(cmd, FilteringCommand):
+                        # Do serialize_filter pass
+                        filt = {"filter": [], "params": {}}
+                        self.eval(token.right, env, path, serialize_filter=filt)
+                        result = cmd.run(self.context, args, kwargs, opargs, filtering=filt)
+                    elif isinstance(cmd, PipeCommand):
+                        result = cmd.run(self.context, args, kwargs, opargs, input=input_data)
+                    else:
+                        result = cmd.run(self.context, args, kwargs, opargs)
+
+                    result = PrintableNone.coerce(result)
+                    ret = self.eval(token.right, input_data=result)
+                    self.context.pipe_cwd = None
+                    if ret is None:
+                        resultset.append(result)
+                    else:
+                        resultset.append(ret)
+
+                return resultset.unwind()
 
             if isinstance(token, Redirection):
                 with open(token.path, 'a+') as f:

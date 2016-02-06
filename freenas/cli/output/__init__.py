@@ -113,6 +113,16 @@ class Sequence(list):
     def __init__(self, *items):
         super(Sequence, self).__init__(items)
 
+    def unwind(self, force=False):
+        return self if len(self) > 1 or force else self[0]
+
+    def append_flat(self, item):
+        if isinstance(item, Sequence):
+            self.extend(item)
+            return
+
+        self.append(item)
+
 
 class ProgressBar(object):
     def __init__(self):

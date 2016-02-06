@@ -314,8 +314,7 @@ class ItemNamespace(Namespace):
             if len(args) != 0:
                 raise CommandException('Wrong arguments count')
 
-            cols = []
-            values = []
+            values = Object()
             entity = self.parent.entity
 
             for mapping in self.parent.property_mappings:
@@ -326,29 +325,28 @@ class ItemNamespace(Namespace):
                     if not mapping.condition(entity):
                         continue
 
-                value = {
-                    'name': mapping.name,
-                    'descr': mapping.descr,
-                    'value': format_value(mapping.do_get(entity), mapping.type),
-                    'editable': format_value(True if mapping.set and mapping.usersetable and self.parent.allow_edit else False, ValueType.BOOLEAN)
-                }
+                if mapping.set and mapping.usersetable and self.parent.allow_edit:
+                    editable = True
+                else:
+                    editable = False
+
+                value = Object.Item(
+                    mapping.descr,
+                    mapping.name,
+                    mapping.do_get(entity),
+                    mapping.type,
+                    editable,
+                )
                 values.append(value)
-
-            cols.append(Table.Column("Property", 'name'))
-            cols.append(Table.Column("Description", 'descr'))
-            cols.append(Table.Column("Value", 'value'))
-            cols.append(Table.Column("Editable", 'editable'))
-
-            table = Table(values, cols)
 
             if self.parent.leaf_entity:
                 leaf_res = ListCommand(self.parent).run(context, args, kwargs, opargs, filtering)
                 return Sequence(
-                    table,
+                    values,
                     "-- {0} --".format(self.parent.leaf_ns.description),
                     leaf_res
                 )
-            return table
+            return values
 
     @description("Prints single item value")
     class GetEntityCommand(Command):

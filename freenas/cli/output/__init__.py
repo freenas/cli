@@ -60,11 +60,12 @@ class ValueType(enum.Enum):
 
 class Object(list):
     class Item(object):
-        def __init__(self, descr, name, value, vt=ValueType.STRING):
+        def __init__(self, descr, name, value, vt=ValueType.STRING, editable=None):
             self.descr = descr
             self.name = name
             self.value = value
             self.vt = vt
+            self.editable = editable
 
     def append(self, p_object):
         if not isinstance(p_object, self.Item):

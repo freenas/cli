@@ -164,8 +164,15 @@ Also here is the full list of operators we support:
 
 __How to use the inbuilt factorial function__
 
+
+# User Defined Functions
+
+So whats the easiest function one can define for testing/demonstrating the cli scripting: Factorials
+
+So lets define a simple factorial function within the cli,
+
 ```
+unix::>function factorial(n) { if ( n <= 1) { return 1 }; return n*factorial(n-1) }
 unix::>factorial(5)
 120
 ```
-

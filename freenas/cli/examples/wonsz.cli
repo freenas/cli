@@ -2,7 +2,7 @@
 # poorly made snake game clone
 #
 # keys:
-# - w, s, a d   - changing snake direction
+# - w, s, a, d  - changing snake direction
 # - ^C          - exit
 #
 
@@ -24,7 +24,7 @@ function wonsz()
 
     function draw_scene()
     {
-        clear();
+        clear()
         printfn("\n")
         printfn("Score: %d\n", score)
         printfn("\n")
@@ -55,6 +55,8 @@ function wonsz()
     function draw()
     {
         if (exiting) {
+            clear()
+            printf("Game over! Your score: %d", score)
             return
         }
 

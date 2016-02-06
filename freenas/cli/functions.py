@@ -26,6 +26,8 @@
 #
 #####################################################################
 
+import sys
+import termios
 import copy
 import operator
 from builtins import input
@@ -93,6 +95,22 @@ def readline(prompt):
     return input(prompt)
 
 
+def readkey():
+    fd = sys.stdin.fileno()
+    oldterm = termios.tcgetattr(fd)
+    newattr = termios.tcgetattr(fd)
+    newattr[3] = newattr[3] & ~termios.ICANON & ~termios.ECHO
+    termios.tcsetattr(fd, termios.TCSANOW, newattr)
+
+    try:
+        c = sys.stdin.read(1)
+        return c
+    except IOError:
+        raise
+    finally:
+        termios.tcsetattr(fd, termios.TCSAFLUSH, oldterm)
+
+
 def unparse_(fn):
     output_msg(unparse(FunctionDefinition(
         fn.name,
@@ -154,6 +172,7 @@ functions = {
     'mapf': mapf,
     'apply': apply,
     'sum': sum_,
+    'readkey': readkey,
     'readline': readline,
     'unparse': unparse_,
     'rpc': rpc,

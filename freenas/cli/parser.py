@@ -197,7 +197,7 @@ def t_STRING(t):
 
 
 def t_ATOM(t):
-    r'[0-9a-zA-Z_-][0-9a-zA-Z_\-\.\/#@\:]*'
+    r'[0-9a-zA-Z_][0-9a-zA-Z_\.\/#@\:]*'
     t.type = reserved.get(t.value, 'ATOM')
     if t.type == 'TRUE':
         t.value = True

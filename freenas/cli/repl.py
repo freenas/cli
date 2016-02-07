@@ -1000,6 +1000,9 @@ class MainLoop(object):
 
             if isinstance(token, UnaryExpr):
                 expr = self.eval(token.expr, env)
+                if token.op == '-':
+                    return -expr
+
                 return self.context.builtin_operators[token.op](expr)
 
             if isinstance(token, BinaryExpr):

@@ -619,6 +619,7 @@ def p_anon_function_expr_4(p):
 
 def p_unary_expr(p):
     """
+    unary_expr : MINUS expr
     unary_expr : NOT expr
     """
     p[0] = UnaryExpr(p[2], p[1], p=p)

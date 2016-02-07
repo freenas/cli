@@ -72,10 +72,6 @@ def print_(*items):
 
 
 def printf(fmt, *args):
-    output_msg(decode_escapes(fmt) % args)
-
-
-def printfn(fmt, *args):
     print(decode_escapes(fmt) % args, end='', flush=True)
 
 
@@ -192,7 +188,6 @@ def table(data, columns):
 functions = {
     'print': print_,
     'printf': printf,
-    'printfn': printfn,
     'sprintf': sprintf,
     'map': map_,
     'mapf': mapf,

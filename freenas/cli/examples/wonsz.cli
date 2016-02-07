@@ -19,25 +19,25 @@ function wonsz()
 
     function clear()
     {
-        printfn("\033[2J\033[0;0H")
+        printf("\033[2J\033[0;0H")
     }
 
     function draw_scene()
     {
         clear()
-        printfn("\n")
-        printfn("Score: %d\n", score)
-        printfn("\n")
-        printfn(".%s.\n", "-" * width)
+        printf("\n")
+        printf("Score: %d\n", score)
+        printf("\n")
+        printf(".%s.\n", "-" * width)
         for (i in range(0, height)) {
-            printfn("|%s|\n", " " * width)
+            printf("|%s|\n", " " * width)
         }
-        printfn("'%s'\n", "-" * width);
+        printf("'%s'\n", "-" * width);
     }
 
     function draw_block(x, y, ch)
     {
-        printfn("\033[%d;%dH%s", y + 4, x + 1, ch)
+        printf("\033[%d;%dH%s", y + 4, x + 1, ch)
     }
 
     function draw_worm()

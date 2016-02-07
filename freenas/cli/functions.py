@@ -99,6 +99,10 @@ def sum_(array):
     return sum(array)
 
 
+def range_(start, stop=None, step=None):
+    return list(range(start, stop, step))
+
+
 def readline(prompt):
     return input(prompt)
 
@@ -203,7 +207,7 @@ functions = {
     'cwd': cwd,
     'register_command': register_command,
     'unregister_command': unregister_command,
-    'range': range,
+    'range': range_,
     'str': str,
     'length': len,
     'rand': rand,

@@ -162,7 +162,7 @@ def t_SIZE(t):
 
 
 def t_TIMEDELTA(t):
-    r'(\d*:\d+\.?\d*)+'
+    r'(\d+:\d+\.?\d*)+'
     t.type = 'STRING'
     return t
 

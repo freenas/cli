@@ -843,7 +843,6 @@ class NewerThanPipeCommand(PipeCommand):
         return input
 
     def serialize_filter(self, context, args, kwargs, opargs):
-        print(args)
         return {"filter": [
             ('started_at', '!=', None),
             ('started_at', '>=', datetime.now() - parse_timedelta(args[0]))

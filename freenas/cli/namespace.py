@@ -454,7 +454,13 @@ class ItemNamespace(Namespace):
         def complete(self, context):
             return [EnumComplete(0, [p.name for p in self.parent.property_mappings])]
 
+    @description("Deletes single entity")
     class DeleteEntityCommand(Command):
+        """
+        Usage: delete
+
+        Deletes current entity
+        """
         def __init__(self, parent):
             self.parent = parent
 

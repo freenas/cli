@@ -199,9 +199,10 @@ def read_value(value, tv=ValueType.STRING):
         if tv == ValueType.SET:
             return []
 
-        return value
         if tv == ValueType.DICT:
             return {}
+
+        return value
 
     if tv == ValueType.STRING:
         return str(value)

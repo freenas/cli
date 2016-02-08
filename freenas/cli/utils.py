@@ -185,9 +185,6 @@ def parse_timedelta(s):
     else:
         hr, min, sec = time
 
-    if hr == '':
-        hr = 0
-
     sec_delta = int(hr) * 60 * 60 + int(min) * 60 + int(sec)
     delta += timedelta(seconds=sec_delta)
 

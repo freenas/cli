@@ -553,7 +553,7 @@ class ItemNamespace(Namespace):
             base.update(self.subcommands)
 
         return base
-        
+
     def update_commands(self):
         pass
 
@@ -988,6 +988,15 @@ class EntitySubscriberBasedLoadMixin(object):
         self.primary_key_name = 'id'
         self.entity_subscriber_name = None
         self.extra_query_params = []
+
+    def on_enter(self, *args, **kwargs):
+        super(EntitySubscriberBasedLoadMixin, self).on_enter(*args, **kwargs)
+        self.context.entity_subscribers[self.entity_subscriber_name].on_delete = self.on_delete
+
+    def on_delete(self, entity):
+        cwd = self.context.ml.cwd
+        if isinstance(cwd, SingleItemNamespace) and cwd.parent == self and cwd.name == entity[self.primary_key_name]:
+            self.context.ml.cd_up()
 
     def query(self, params, options):
         if not params and not options:

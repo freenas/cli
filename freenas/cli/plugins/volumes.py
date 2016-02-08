@@ -398,17 +398,17 @@ class ImportFromVolumeCommand(Command):
 @description("Detaches given volume")
 class DetachVolumeCommand(Command):
     """
-    Usage: detach <name>
+    Usage: detach
 
     Example: detach mypool
 
     Detaches a volume.
     """
-    def run(self, context, args, kwargs, opargs):
-        if len(args) < 1:
-            raise CommandException('Not enough arguments passed')
+    def __init__(self, parent):
+        self.parent = parent
 
-        result = context.call_task_sync('volume.detach', args[0])
+    def run(self, context, args, kwargs, opargs):
+        result = context.call_task_sync('volume.detach', self.parent.name)
         if result.get('result', None) is not None:
             return Sequence("Detached volume {0} was encrypted!".format(args[0]),
                             "You must save user key listed below to be able to import volume in the future",
@@ -1283,11 +1283,9 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
             'find': FindVolumesCommand(),
             'find_media': FindMediaCommand(),
             'import': ImportVolumeCommand(),
-            'detach': DetachVolumeCommand(),
         }
 
         self.entity_commands = self.get_entity_commands
-
         self.entity_namespaces = lambda this: [
             DatasetsNamespace('dataset', self.context, this),
             SnapshotsNamespace('snapshot', self.context, this)
@@ -1309,7 +1307,8 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
             'offline': OfflineVdevCommand(this),
             'online': OnlineVdevCommand(this),
             'extend_vdev': ExtendVdevCommand(this),
-            'import': ImportFromVolumeCommand(this)
+            'import': ImportFromVolumeCommand(this),
+            'detach': DetachVolumeCommand(this)
         }
 
         if this.entity is not None:

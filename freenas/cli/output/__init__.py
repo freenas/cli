@@ -109,6 +109,9 @@ class Table(object):
     def __getitem__(self, item):
         return self.data[item]
 
+    def pop(self, pop_index):
+        return self.data.pop(pop_index)
+
 
 class Sequence(list):
     def __init__(self, *items):

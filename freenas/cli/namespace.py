@@ -577,7 +577,7 @@ class ConfigNamespace(ItemNamespace):
             return CommandCall([
                 Symbol('set'),
                 BinaryParameter(
-                    Literal(prop.name), '=',
+                    prop.name, '=',
                     Literal(value, type(value))
                 )
             ])
@@ -699,7 +699,7 @@ class SingleItemNamespace(ItemNamespace):
             if mapping.type == ValueType.SET:
                 value = list(value)
 
-            ret.args.append(BinaryParameter(Literal(mapping.name, str), '=', Literal(value, type(value))))
+            ret.args.append(BinaryParameter(mapping.name, '=', Literal(value, type(value))))
 
         yield ret
 

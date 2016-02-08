@@ -454,12 +454,12 @@ class ItemNamespace(Namespace):
         def complete(self, context):
             return [EnumComplete(0, [p.name for p in self.parent.property_mappings])]
 
-    class DeleteCurrentEntityCommand(Command):
+    class DeleteEntityCommand(Command):
         def __init__(self, parent):
             self.parent = parent
 
         def run(self, context, args, kwargs, opargs):
-            pass
+            self.parent.parent.delete(self.parent, kwargs)
 
     def __init__(self, name):
         super(ItemNamespace, self).__init__(name)
@@ -536,14 +536,12 @@ class ItemNamespace(Namespace):
         }
 
         if self.allow_edit:
-            base.update({
-                'set': self.SetEntityCommand(self),
-            })
+            base['set'] = self.SetEntityCommand(self)
             if self.has_editable_string():
-                base.update({
-                    'edit': self.EditEntityCommand(self)
-                })
+                base['edit'] = self.EditEntityCommand(self)
 
+        if self.parent.allow_create:
+            base['delete'] = self.DeleteEntityCommand(self)
 
         if self.commands is not None:
             base.update(self.subcommands)
@@ -717,7 +715,6 @@ class SingleItemNamespace(ItemNamespace):
             if self.leaf_ns.allow_create:
                 command_set.update({
                     'create': CreateEntityCommand(self),
-                    'delete': DeleteEntityCommand(self),
                 })
         return command_set
 
@@ -901,26 +898,6 @@ class CreateEntityCommand(Command):
         return [create_completer(x) for x in self.parent.property_mappings if x.set]
 
 
-@description("Removes <entity>")
-class DeleteEntityCommand(Command):
-    """
-    Usage: delete <primary-key>
-
-    Examples:
-        delete thisthing
-    """
-    def __init__(self, parent):
-        if hasattr(parent, 'leaf_entity') and parent.leaf_entity:
-            self.parent = parent.leaf_ns
-        else:
-            self.parent = parent
-
-    def run(self, context, args, kwargs, opargs):
-        if len(args) == 0:
-            raise CommandException(_("Please specify item to delete."))
-        self.parent.delete(args[0], kwargs)
-
-
 class EntityNamespace(Namespace):
     def __init__(self, name, context):
         super(EntityNamespace, self).__init__(name)
@@ -969,8 +946,7 @@ class EntityNamespace(Namespace):
 
         if self.allow_create:
             base.update({
-                'create': CreateEntityCommand(self),
-                'delete': DeleteEntityCommand(self)
+                'create': CreateEntityCommand(self)
             })
 
         return base
@@ -1044,12 +1020,8 @@ class TaskBasedSaveMixin(object):
             this.get_diff(),
             callback=lambda s: post_save(this, s))
 
-    def delete(self, name, kwargs):
-        entity = self.get_one(name)
-        if entity:
-            self.context.submit_task(self.delete_task, entity[self.save_key_name])
-        else:
-            output_msg("Cannot delete {0}, item does not exist".format(name))
+    def delete(self, this, kwargs):
+        self.context.submit_task(self.delete_task, this.entity[self.save_key_name])
 
 
 class NestedObjectLoadMixin(object):
@@ -1084,9 +1056,9 @@ class NestedObjectSaveMixin(object):
 
         self.parent.save()
 
-    def delete(self, name, kwargs):
+    def delete(self, this, kwargs):
         self.parent.entity[self.parent_path] = list(filter(
-            lambda i: i[self.primary_key_name] != name,
+            lambda i: i[self.primary_key_name] != this.entity[self.primary_key_name],
             self.parent.entity[self.parent_path]
         ))
 

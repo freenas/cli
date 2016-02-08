@@ -209,8 +209,6 @@ def t_ATOM(t):
 
 
 t_ignore = ' \t'
-t_LBRACE = r'\{'
-t_RBRACE = r'\}'
 t_LBRACKET = r'\['
 t_RBRACKET = r'\]'
 t_PIPE = r'\|'
@@ -257,6 +255,18 @@ def t_ESCAPENL(t):
     pass
 
 
+def t_LBRACE(t):
+    r'{'
+    t.lexer.parens += 1
+    return t
+
+
+def t_RBRACE(t):
+    r'}'
+    t.lexer.parens -= 1
+    return t
+
+
 def t_NEWLINE(t):
     r'[\n;]+'
     t.lexer.lineno += len(t.value)
@@ -269,6 +279,15 @@ def t_error(t):
         return
     else:
         raise SyntaxError("Illegal character '%s'" % t.value[0])
+
+
+def t_eof(t):
+    if lexer.parens > 0:
+        more = six.moves.input('... ' * lexer.parens)
+        if more:
+            lexer.input(more + '\n')
+            return lexer.token()
+        return None
 
 
 def p_stmt_list(p):
@@ -809,6 +828,7 @@ parser = yacc.yacc(debug=False, optimize=True, write_tables=False)
 
 def parse(s, filename, recover_errors=False):
     lexer.lineno = 1
+    lexer.parens = 0
     parser.filename = filename
     parser.recover_errors = recover_errors
     return parser.parse(s, lexer=lexer, tracking=True)

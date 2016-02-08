@@ -531,7 +531,7 @@ def p_dict_pair_list(p):
 
 def p_dict_pair_1(p):
     """
-    dict_pair : STRING COLON expr
+    dict_pair : expr COLON expr
     """
     p[0] = (p[1], p[3])
 

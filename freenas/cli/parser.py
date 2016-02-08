@@ -894,6 +894,9 @@ def unparse(token, indent=0, oneliner=False):
     if isinstance(token, CommandCall):
         return ind(' '.join(unparse(i) for i in token.args))
 
+    if isinstance(token, PipeExpr):
+        return ind('{0} | {1}'.format(unparse(token.left), unparse(token.right)))
+
     if isinstance(token, FunctionCall):
         return '{0}({1})'.format(token.name, ', '.join(unparse(i) for i in token.args))
 

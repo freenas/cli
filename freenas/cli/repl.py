@@ -46,7 +46,6 @@ import six
 import paramiko
 import inspect
 import re
-import itertools
 from six.moves.urllib.parse import urlparse
 from socket import gaierror as socket_error
 from freenas.cli.descriptions import events
@@ -58,7 +57,7 @@ from freenas.cli.namespace import (
     Namespace, RootNamespace, Command, FilteringCommand, PipeCommand, CommandException
 )
 from freenas.cli.parser import (
-    parse, Symbol, Literal, BinaryParameter, UnaryExpr, BinaryExpr, PipeExpr, AssignmentStatement,
+    parse, unparse, Symbol, Literal, BinaryParameter, UnaryExpr, BinaryExpr, PipeExpr, AssignmentStatement,
     IfStatement, ForStatement, WhileStatement, FunctionCall, CommandCall, Subscript,
     ExpressionExpansion, FunctionDefinition, ReturnStatement, BreakStatement, UndefStatement,
     Redirection, AnonymousFunction
@@ -904,6 +903,10 @@ class MainLoop(object):
             prompt = self.__get_prompt()
 
         line = six.moves.input(prompt).strip()
+
+        if line:
+            readline.remove_history_item(readline.get_current_history_length() - 1)
+
         return line
 
     def repl(self):
@@ -1329,6 +1332,9 @@ class MainLoop(object):
 
             if not tokens:
                 return
+
+            # Unparse AST to string and add to readline history
+            readline.add_history('; '.join(unparse(t, oneliner=True) for t in tokens))
 
             first = True
             for i in tokens:

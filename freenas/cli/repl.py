@@ -1271,8 +1271,6 @@ class MainLoop(object):
                 cmds = self.eval(token.left, env, path, dry_run=True, first=first)
                 resultset = Sequence()
 
-                print(cmds)
-
                 for cmd, cwd, args, kwargs, opargs in cmds:
                     cwd.on_enter()
                     self.context.pipe_cwd = cwd

@@ -899,6 +899,13 @@ class MainLoop(object):
     def path_string(self):
         return ' '.join([str(x.get_name()) for x in self.path[1:]])
 
+    def input(self, prompt=None):
+        if not prompt:
+            prompt = self.__get_prompt()
+
+        line = six.moves.input(prompt).strip()
+        return line
+
     def repl(self):
         readline.parse_and_bind('tab: complete')
         readline.set_completer(self.complete)
@@ -913,7 +920,7 @@ class MainLoop(object):
 
         while True:
             try:
-                line = six.moves.input(self.__get_prompt()).strip()
+                line = self.input()
             except EOFError:
                 six.print_()
                 return
@@ -1315,7 +1322,11 @@ class MainLoop(object):
             return
 
         try:
-            tokens = parse(line, '<stdin>')
+            try:
+                tokens = parse(line, '<stdin>')
+            except KeyboardInterrupt:
+                return
+
             if not tokens:
                 return
 

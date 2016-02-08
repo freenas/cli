@@ -29,6 +29,7 @@ import six
 import re
 import ply.lex as lex
 import ply.yacc as yacc
+from freenas.cli import config
 
 
 def ASTObject(name, *args):
@@ -283,10 +284,11 @@ def t_error(t):
 
 def t_eof(t):
     if lexer.parens > 0:
-        more = six.moves.input('... ' * lexer.parens)
+        more = config.instance.ml.input('... ' * lexer.parens)
         if more:
             lexer.input(more + '\n')
             return lexer.token()
+
         return None
 
 
@@ -819,6 +821,9 @@ def p_error(p):
             parser.errok()
             return e
     else:
+        if not p:
+            raise SyntaxError("Parse error")
+
         raise SyntaxError("Invalid token '{0}' at line {1}, column {2}".format(p.value, p.lineno, p.lexpos))
 
 

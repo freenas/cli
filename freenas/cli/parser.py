@@ -839,14 +839,26 @@ def parse(s, filename, recover_errors=False):
     return parser.parse(s, lexer=lexer, tracking=True)
 
 
-def unparse(token, indent=0):
+def unparse(token, indent=0, oneliner=False):
     def ind(s):
+        if oneliner:
+            return s
+
         return '\t' * indent + s
+
+    def format_block(block):
+        if oneliner:
+            return '; '.join(unparse(i, indent + 1, oneliner) for i in block)
+
+        return '\n' + '\n'.join(unparse(i, indent + 1, oneliner) for i in block) + '\n'
 
     if isinstance(token, list):
         return '\n'.join(ind(unparse(i)) for i in token)
 
     if isinstance(token, Comment):
+        if oneliner:
+            return ''
+
         return '# ' + token.text
 
     if isinstance(token, Literal):
@@ -863,24 +875,27 @@ def unparse(token, indent=0):
             return str(token.value)
 
         if issubclass(token.type, list):
-            return '[' + ', '.join(unparse(Literal(i, type(i))) for i in token.value) + ']'
+            return '[' + ', '.join(unparse(i) for i in token.value) + ']'
 
         if issubclass(token.type, dict):
             return '{' + ', '.join('{0}: {1}'.format(
-                unparse(Literal(k, type(k))),
-                unparse(Literal(v, type(v)))
+                unparse(k),
+                unparse(v)
             ) for k, v in token.value.items()) + '}'
 
         return str(token.value)
 
     if isinstance(token, BinaryParameter):
-        return ind(''.join([token.left.value, token.op, unparse(token.right)]))
+        return ind(''.join([token.left, token.op, unparse(token.right)]))
 
     if isinstance(token, Symbol):
         return ind(token.name)
 
     if isinstance(token, CommandCall):
         return ind(' '.join(unparse(i) for i in token.args))
+
+    if isinstance(token, FunctionCall):
+        return '{0}({1})'.format(token.name, ', '.join(unparse(i) for i in token.args))
 
     if isinstance(token, Subscript):
         return ind('{0}[{1}]'.format(unparse(token.expr), unparse(token.index)))
@@ -897,27 +912,29 @@ def unparse(token, indent=0):
         return ind(' '.join([unparse(token.left), token.op, unparse(token.right)]))
 
     if isinstance(token, IfStatement):
-        lines = [ind('if ({0}) {{'.format(unparse(token.expr)))]
-        for i in token.body:
-            lines.append(unparse(i, indent + 1))
+        return ind('if ({0}) {{{1}}}'.format(
+            unparse(token.expr),
+            format_block(token.body)
+        ))
 
-        lines.append(ind('}'))
-        return '\n'.join(lines)
+    if isinstance(token, ForStatement):
+        return ind('for ({0} in {1}) {{{2}}}'.format(
+            token.var,
+            unparse(token.expr),
+            format_block(token.body)
+        ))
 
     if isinstance(token, WhileStatement):
-        lines = [ind('while ({0}) {{'.format(unparse(token.expr)))]
-        for i in token.body:
-            lines.append(unparse(i, indent + 1))
-
-        lines.append(ind('}'))
-        return '\n'.join(lines)
+        return ind('while ({0}) {{{1}}}'.format(
+            unparse(token.expr),
+            format_block(token.body)
+        ))
 
     if isinstance(token, FunctionDefinition):
-        lines = [ind('function {0}({1}) {{'.format(token.name, ', '.join(token.args)))]
-        for i in token.body:
-            lines.append(unparse(i, indent + 1))
-
-        lines.append(ind('}'))
-        return '\n'.join(lines)
+        return ind('function {0}({1}) {{{2}}}'.format(
+            token.name,
+            ', '.join(token.args),
+            format_block(token.body)
+        ))
 
     return ''

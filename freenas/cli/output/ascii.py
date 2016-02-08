@@ -91,6 +91,12 @@ class AsciiOutputFormatter(object):
 
             return '\n'.join(value)
 
+        if vt == ValueType.DICT:
+            if not bool(value):
+                return _("empty")
+
+            return value
+
         if vt == ValueType.STRING:
             return value
 

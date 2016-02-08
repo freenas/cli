@@ -56,6 +56,7 @@ class ValueType(enum.Enum):
     SIZE = 5
     TIME = 6
     SET = 7
+    DICT = 8
 
 
 class Object(list):
@@ -196,6 +197,8 @@ def read_value(value, tv=ValueType.STRING):
             return []
 
         return value
+        if tv == ValueType.DICT:
+            return {}
 
     if tv == ValueType.STRING:
         return str(value)
@@ -218,6 +221,10 @@ def read_value(value, tv=ValueType.STRING):
             return value
         else:
             return [value]
+
+    if tv == ValueType.DICT:
+        if type(value) is dict:
+            return value
 
     raise ValueError(_("Invalid value '{0}', expected {1} value".format(value, str(tv).split('ValueType.')[-1].lower())))
 

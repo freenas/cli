@@ -206,10 +206,10 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
         self.add_property(
             descr='Schedule',
             name='schedule',
-            get=self.get_schedule,
-            set=self.set_schedule,
+            get='schedule',
+            set='schedule',
             list=True,
-            type=ValueType.STRING)
+            type=ValueType.DICT)
 
         self.add_property(
             descr='Enabled',

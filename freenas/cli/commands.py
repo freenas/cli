@@ -630,7 +630,7 @@ class EchoCommand(Command):
     (' ') characters and followed by a newline ('\\n') character, to the
     standard output. It also has the ability to expand and substitute
     variables in place using the '${variable_name}' syntax.
-  
+
     Usage: echo <string_to_display>
 
     Examples:

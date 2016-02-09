@@ -106,7 +106,7 @@ tokens = list(reserved.values()) + [
     'ASSIGN', 'LPAREN', 'RPAREN', 'EQ', 'NE', 'GT', 'GE', 'LT', 'LE',
     'REGEX', 'UP', 'PIPE', 'LIST', 'COMMA', 'INC', 'DEC', 'PLUS', 'MINUS',
     'MUL', 'DIV', 'EOPEN', 'COPEN', 'LBRACE',
-    'RBRACE', 'LBRACKET', 'RBRACKET', 'NEWLINE', 'COLON', 'REDIRECT'
+    'RBRACE', 'LBRACKET', 'RBRACKET', 'NEWLINE', 'COLON', 'REDIRECT', 'MOD'
 ]
 
 
@@ -231,6 +231,7 @@ t_PLUS = r'\+'
 t_MINUS = r'-'
 t_MUL = r'\*'
 t_DIV = r'\/'
+t_MOD = r'\%'
 t_REGEX = r'~='
 t_COMMA = r'\,'
 t_UP = r'\.\.'
@@ -245,7 +246,7 @@ precedence = (
     ('left', 'AND', 'OR'),
     ('right', 'NOT'),
     ('left', 'MINUS', 'PLUS'),
-    ('left', 'MUL', 'DIV'),
+    ('left', 'MUL', 'DIV', 'MOD'),
     ('left', 'REGEX'),
     ('right', 'LBRACKET', 'RBRACKET'),
     ('left', 'INC', 'DEC'),
@@ -664,6 +665,7 @@ def p_binary_expr(p):
     binary_expr : expr AND expr
     binary_expr : expr OR expr
     binary_expr : expr NOT expr
+    binary_expr : expr MOD expr
     """
     p[0] = BinaryExpr(p[1], p[2], p[3], p=p)
 

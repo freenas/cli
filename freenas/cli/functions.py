@@ -51,6 +51,7 @@ operators = {
     '<': operator.lt,
     '>=': operator.ge,
     '<=': operator.le,
+    '%': operator.mod,
     'and': operator.and_,
     'or': operator.or_,
     'not': operator.not_

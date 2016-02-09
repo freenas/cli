@@ -240,11 +240,11 @@ t_COLON = r':'
 t_REDIRECT = r'>>'
 
 precedence = (
+    ('left', 'AND', 'OR'),
+    ('right', 'NOT'),
     ('left', 'GT', 'LT'),
     ('left', 'GE', 'LE'),
     ('left', 'EQ', 'NE'),
-    ('left', 'AND', 'OR'),
-    ('right', 'NOT'),
     ('left', 'MINUS', 'PLUS'),
     ('left', 'MUL', 'DIV', 'MOD'),
     ('left', 'REGEX'),

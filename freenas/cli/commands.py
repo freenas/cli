@@ -379,6 +379,8 @@ class HelpCommand(Command):
                 if hasattr(obj, 'property_mappings'):
                     prop_dict_list = []
                     for prop in obj.property_mappings:
+                        if prop.condition and hasattr(obj, 'entity') and not prop.condition(obj.entity):
+                            continue
                         if prop.usage:
                             prop_usage = prop.usage
                         else:

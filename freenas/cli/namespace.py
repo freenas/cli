@@ -546,7 +546,7 @@ class ItemNamespace(Namespace):
             if self.has_editable_string():
                 base['edit'] = self.EditEntityCommand(self)
 
-        if self.parent.allow_create:
+        if hasattr(self, 'parent') and self.parent.allow_create:
             base['delete'] = self.DeleteEntityCommand(self)
 
         if self.commands is not None:

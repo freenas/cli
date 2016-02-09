@@ -247,7 +247,8 @@ precedence = (
     ('left', 'GT', 'LT'),
     ('left', 'GE', 'LE'),
     ('left', 'EQ', 'NE'),
-    ('left', 'INC', 'DEC')
+    ('left', 'INC', 'DEC'),
+    ('right', 'LBRACKET')
 )
 
 

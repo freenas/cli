@@ -394,7 +394,7 @@ class HelpCommand(Command):
                                 prop_usage = "{0}, accepts {1} values".format(prop.descr, prop_type)
                         prop_dict = {
                                 'propname': prop.name,
-                                'propusage': textwrap.dedent(prop_usage)
+                                'propusage': ' '.join(prop_usage.split())
                         }
                         prop_dict_list.append(prop_dict)
                 if len(prop_dict_list) > 0:

@@ -136,14 +136,14 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
             Usage: create <name> type=<type> <property>=<value>
 
             Examples: create myscrub type=scrub volume=mypool
-                      create myscrub2 type=scrub volume=mypool schedule="0 0 3" enabled=true
+                      create myscrub2 type=scrub volume=mypool schedule={"second":0, "minute":0, "hour":3} enabled=true
                       create myupdate type=check_updates send_email=false
                       create mysmart type=smart disks=ada0,ada1,ada2 test_type=short
                       create mycommand type=command username=myuser command="some useful unix command"
 
             Creates a calendar task.  Tasks are disabled by default, you must set enabled=true to turn it on.  If a schedule is not set then all values will be set to * (i.e. run all the time).
 
-            The schedule property takes in values of *, */integer, or integer in the following order: second minute hour day_of_month month day_of_week week year.
+            The schedule property takes a key/value pair dictionary with keys of second, minute, hour, day_of_month, month, day_of_week, week and year with values of *, */integer, or integer.
 
             Valid types for calendar task creation include: scrub, smart, snapshot, replication and check_updates.
             - A 'scrub' task requires a valid volume passed with the 'volume' property.
@@ -160,7 +160,7 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
 
             Examples: set enabled=true
                       set coalesce=false
-                      set test_type=long
+                      set schedule={"month":"*/2","day":5}
 
             Sets a calendar task property.""")
 

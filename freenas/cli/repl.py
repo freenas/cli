@@ -1243,7 +1243,9 @@ class MainLoop(object):
                     if isinstance(func, Environment.Variable):
                         func = func.value
 
-                    self.context.call_stack.append(CallStackEntry(func.name, args, token.file, token.line, token.column))
+                    self.context.call_stack.append(
+                        CallStackEntry(func.name, args, token.file, token.line, token.column)
+                    )
                     result = func(*args)
                     self.context.call_stack.pop()
                     return result

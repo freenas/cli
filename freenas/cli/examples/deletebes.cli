@@ -10,15 +10,15 @@ function delete_bootenvs() {
     delete_flag = "no";
     print("At any point hit q to quit this routine")
     print()
-    while ( ${delete_flag} != "q" and length(bootenvs) != 0 ) {
+    while (delete_flag != "q" and length(bootenvs) != 0) {
         select_boot_env=shift(bootenvs);
         delete_flag= user_input_routine(select_boot_env);
-        while ( delete_flag == "show" ) {
+        while (delete_flag == "show") {
             print(select_boot_env);
-            delete_flag=user_input_routine(select_boot_env);
+            delete_flag=user_input_routine(select_boot_env)
         }
-        if ( delete_flag == "yes" ) {
-            foo=$(boot environment ${select_boot_env["id"]} delete);
+        if (delete_flag == "yes") {
+            boot environment ${select_boot_env["id"]} delete
         }
     }
 }

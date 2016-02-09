@@ -898,6 +898,9 @@ def unparse(token, indent=0, oneliner=False):
     if isinstance(token, CommandExpansion):
         return '$({0})'.format(unparse(token.expr))
 
+    if isinstance(token, ExpressionExpansion):
+        return '${{{0}}}'.format(unparse(token.expr))
+
     if isinstance(token, PipeExpr):
         return ind('{0} | {1}'.format(unparse(token.left), unparse(token.right)))
 

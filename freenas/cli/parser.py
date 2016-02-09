@@ -64,6 +64,7 @@ UnaryExpr = ASTObject('UnaryExpr', 'expr', 'op')
 BinaryExpr = ASTObject('BinaryExpr', 'left', 'op', 'right')
 BinaryParameter = ASTObject('BinaryParameter', 'left', 'op', 'right')
 Literal = ASTObject('Literal', 'value', 'type')
+CommandExpansion = ASTObject('CommandExpansion', 'expr')
 ExpressionExpansion = ASTObject('ExpressionExpansion', 'expr')
 PipeExpr = ASTObject('PipeExpr', 'left', 'right')
 FunctionCall = ASTObject('FunctionCall', 'name', 'args')
@@ -508,7 +509,7 @@ def p_expr_expansion(p):
     """
     expr_expansion : EOPEN command RPAREN
     """
-    p[0] = p[2]
+    p[0] = CommandExpansion(p[2])
 
 
 def p_array_literal(p):
@@ -893,6 +894,9 @@ def unparse(token, indent=0, oneliner=False):
 
     if isinstance(token, CommandCall):
         return ind(' '.join(unparse(i) for i in token.args))
+
+    if isinstance(token, CommandExpansion):
+        return '$({0})'.format(unparse(token.expr))
 
     if isinstance(token, PipeExpr):
         return ind('{0} | {1}'.format(unparse(token.left), unparse(token.right)))

@@ -59,8 +59,8 @@ from freenas.cli.namespace import (
 from freenas.cli.parser import (
     parse, unparse, Symbol, Literal, BinaryParameter, UnaryExpr, BinaryExpr, PipeExpr, AssignmentStatement,
     IfStatement, ForStatement, WhileStatement, FunctionCall, CommandCall, Subscript,
-    ExpressionExpansion, FunctionDefinition, ReturnStatement, BreakStatement, UndefStatement,
-    Redirection, AnonymousFunction
+    ExpressionExpansion, CommandExpansion, FunctionDefinition, ReturnStatement, BreakStatement,
+    UndefStatement, Redirection, AnonymousFunction
 )
 from freenas.cli.output import (
     ValueType, ProgressBar, Sequence, output_lock, output_msg, read_value, format_value,
@@ -1134,7 +1134,7 @@ class MainLoop(object):
                 del env[token.name]
                 return
 
-            if isinstance(token, ExpressionExpansion):
+            if isinstance(token, (ExpressionExpansion, CommandExpansion)):
                 expr = self.eval(token.expr, env)
                 return expr
 

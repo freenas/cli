@@ -208,7 +208,7 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
         self.add_property(
             descr='Schedule',
             name='schedule',
-            get='schedule',
+            get=self.get_schedule,
             set='schedule',
             list=True,
             type=ValueType.DICT)
@@ -326,16 +326,14 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
 
     def get_schedule(self, entity):
         row = entity['schedule']
-        sched = "{0} {1} {2} {3} {4} {5} {6} {7}".format(
-                    row['second'],
-                    row['minute'],
-                    row['hour'],
-                    row['day'],
-                    row['month'],
-                    row['day_of_week'],
-                    row['week'],
-                    row['year'])
-        return sched
+#        hidden = []
+#        for k, v in row.items():
+#            if v == "*" or isinstance(v, bool):
+#                hidden.append(k)
+#        for key in hidden:
+#            del row[key]
+#        return row 
+        return dict({k:v for k, v in row.items() if v != "*" and not isinstance(v, bool)})
 
     def meets_condition(self, entity, prop):
         if prop in TASK_ARG_MAPPING[entity['name']]:

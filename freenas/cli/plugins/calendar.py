@@ -193,7 +193,7 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
             name='args',
             get=lambda row: [format_value(i) for i in row['args']],
             set=None,
-            list=True
+            list=False
         )
 
         self.add_property(

@@ -173,8 +173,9 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
             descr='Name',
             name='name',
             get='id',
-            usage=_("""Alphanumeric name for the task which becomes
-            read-only after the task is created."""),
+            usage=_("""\
+                    Alphanumeric name for the task which becomes
+                    read-only after the task is created."""),
             set='id',
             list=True)
 
@@ -182,9 +183,10 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
             descr='Type',
             name='type',
             get=lambda row: TASK_TYPES_REVERSE[row['name']],
-            usage=_("""Indicates the type of task. Allowable values
-            are scrub, smart, snapshot, replication, and
-            check_updates."""),
+            usage=_("""\
+                    Indicates the type of task. Allowable values
+                    are scrub, smart, snapshot, replication, and
+                    check_updates."""),
             set=self.set_type,
             list=True)
 

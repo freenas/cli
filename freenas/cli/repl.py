@@ -1050,7 +1050,7 @@ class MainLoop(object):
                 raise SyntaxError(_('{0} not found'.format(token.name)))
 
             if isinstance(token, AssignmentStatement):
-                expr = self.eval(token.expr, env)
+                expr = self.eval(token.expr, env, first=first)
 
                 try:
                     self.context.variables.variables[token.name]
@@ -1135,7 +1135,7 @@ class MainLoop(object):
                 return
 
             if isinstance(token, (ExpressionExpansion, CommandExpansion)):
-                expr = self.eval(token.expr, env)
+                expr = self.eval(token.expr, env, first=first)
                 return expr
 
             if isinstance(token, CommandCall):

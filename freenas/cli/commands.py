@@ -392,7 +392,6 @@ class HelpCommand(Command):
                                 prop_usage = "{0}, read_only {1} value".format(prop.descr, prop_type)
                             else:
                                 prop_usage = "{0}, accepts {1} values".format(prop.descr, prop_type)
-                        prop_usage_lines=prop_usage.split('\n')
                         prop_dict = {
                                 'propname': prop.name,
                                 'propusage': textwrap.dedent(prop_usage)

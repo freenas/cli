@@ -239,16 +239,16 @@ t_COLON = r':'
 t_REDIRECT = r'>>'
 
 precedence = (
-    ('left', 'MINUS', 'PLUS'),
-    ('left', 'MUL', 'DIV'),
-    ('left', 'AND', 'OR'),
-    ('right', 'NOT'),
-    ('left', 'REGEX'),
     ('left', 'GT', 'LT'),
     ('left', 'GE', 'LE'),
     ('left', 'EQ', 'NE'),
+    ('left', 'AND', 'OR'),
+    ('right', 'NOT'),
+    ('left', 'MINUS', 'PLUS'),
+    ('left', 'MUL', 'DIV'),
+    ('left', 'REGEX'),
+    ('right', 'LBRACKET', 'RBRACKET'),
     ('left', 'INC', 'DEC'),
-    ('right', 'LBRACKET', 'RBRACKET')
 )
 
 

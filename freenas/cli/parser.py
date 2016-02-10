@@ -846,9 +846,9 @@ def parse(s, filename, recover_errors=False):
 def unparse(token, indent=0, oneliner=False):
     def ind(s):
         if oneliner:
-            return s
+            return str(s)
 
-        return '\t' * indent + s
+        return '\t' * indent + str(s)
 
     def format_block(block):
         if oneliner:

@@ -1021,6 +1021,10 @@ class MainLoop(object):
                 return self.context.builtin_operators[token.op](left, right)
 
             if isinstance(token, Literal):
+
+                if token.type in six.string_types:
+                    return token.value.replace('\\\"', '"')
+
                 if token.type is list:
                     return [self.eval(i, env) for i in token.value]
 

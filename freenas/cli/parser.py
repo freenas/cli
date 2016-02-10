@@ -192,6 +192,14 @@ def t_NUMBER(t):
     return t
 
 
+def t_SUPERSTR(t):
+    r'\"{3}([^\\\n]|(\\.))*?\"{3}'
+    t.value = t.value[3:-3]
+    t.value = t.value.replace('"', '\\\"')
+    t.type = 'STRING'
+    return t
+
+
 def t_STRING(t):
     r'\"([^\\\n]|(\\.))*?\"'
     t.value = t.value[1:-1]

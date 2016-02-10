@@ -483,6 +483,13 @@ class ItemNamespace(Namespace):
     def on_enter(self):
         self.load()
 
+    def literalize_value(self, value):
+        if isinstance(value, list):
+            value = [Literal(v, type(v)) for v in value]
+        if isinstance(value, dict):
+            value = {Literal(k, type(k)): Literal(v, type(v)) for k, v in value.items()}
+        return Literal(value, type(value))
+
     def on_leave(self):
         # if self.modified:
         #     output_msg('Object was modified. '
@@ -578,7 +585,7 @@ class ConfigNamespace(ItemNamespace):
                 Symbol('set'),
                 BinaryParameter(
                     prop.name, '=',
-                    Literal(value, type(value))
+                    self.literalize_value(value)
                 )
             ])
 
@@ -699,7 +706,7 @@ class SingleItemNamespace(ItemNamespace):
             if mapping.type == ValueType.SET:
                 value = list(value)
 
-            ret.args.append(BinaryParameter(mapping.name, '=', Literal(value, type(value))))
+            ret.args.append(BinaryParameter(mapping.name, '=', self.literalize_value(value)))
 
         yield ret
 

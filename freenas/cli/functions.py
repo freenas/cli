@@ -32,6 +32,7 @@ import copy
 import operator
 import time
 import random
+import json
 from threading import Timer
 from builtins import input
 from freenas.cli.namespace import Command
@@ -186,6 +187,23 @@ def table(data, columns):
     return Table(data, [Table.Column(l, a) for l, a in columns])
 
 
+# Reads a json object from a file or a str and returns a parsed dict of it
+def json_load(data):
+    if hasattr(data, 'read'):
+        return json.load(data)
+    return json.loads(data)
+
+
+# Accepts obj and serializes it to json, which it then returns.
+# If the optional file handler is provided, it writes the serialized
+# json to that file and returns nothing
+def json_dump(obj, file=None):
+    if file is not None:
+        json.dump(obj, file)
+    else:
+        return json.dumps(obj)
+
+
 functions = {
     'print': print_,
     'printf': printf,
@@ -217,5 +235,7 @@ functions = {
     'freadline': freadline,
     'fprintf': fprintf,
     'fclose': fclose,
-    'table': table
+    'table': table,
+    'json_load': json_load,
+    'json_dump': json_dump,
 }

@@ -703,7 +703,7 @@ class SingleItemNamespace(ItemNamespace):
 
             value = mapping.do_get(self.entity)
 
-            if mapping.type == ValueType.SET:
+            if mapping.type == ValueType.SET and value is not None:
                 value = list(value)
 
             ret.args.append(BinaryParameter(mapping.name, '=', self.literalize_value(value)))

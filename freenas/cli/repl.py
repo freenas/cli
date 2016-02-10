@@ -1180,7 +1180,7 @@ class MainLoop(object):
                     if isinstance(top, Literal):
                         matching = list(map(
                             lambda ns: Symbol(ns.get_name()),
-                            filter(lambda ns: re.match(top.value, ns.get_name()), cwd.namespaces()))
+                            filter(lambda ns: re.match(str(top.value), str(ns.get_name())), cwd.namespaces()))
                         )
                     else:
                         matching = [top]

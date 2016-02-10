@@ -856,6 +856,9 @@ def unparse(token, indent=0, oneliner=False):
 
         return '\n' + '\n'.join(unparse(i, indent + 1, oneliner) for i in block) + '\n'
 
+    if isinstance(token, str):
+        return token
+
     if isinstance(token, list):
         return '\n'.join(ind(unparse(i)) for i in token)
 

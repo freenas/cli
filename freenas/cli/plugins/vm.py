@@ -301,7 +301,8 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
         self.primary_key = self.get_mapping('name')
         self.entity_namespaces = lambda this: [
             VMDisksNamespace('disks', self.context, this),
-            VMNicsNamespace('nic', self.context, this)
+            VMNicsNamespace('nic', self.context, this),
+            VMVolumesNamespace('volume', self.context, this)
         ]
 
         self.entity_commands = lambda this: {
@@ -399,6 +400,45 @@ class VMNicsNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNamesp
             descr='MAC address',
             name='macaddr',
             get='properties.link_address'
+        )
+
+        self.primary_key = self.get_mapping('name')
+
+
+class VMVolumesNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNamespace):
+    def __init__(self, name, context, parent):
+        super(VMVolumesNamespace, self).__init__(name, context)
+        self.parent = parent
+        self.primary_key_name = 'name'
+        self.extra_query_params = [('type', '=', 'VOLUME')]
+        self.parent_path = 'devices'
+        self.skeleton_entity = {
+            'type': 'VOLUME',
+            'properties': {}
+        }
+
+        self.add_property(
+            descr='Volume name',
+            name='name',
+            get='name'
+        )
+
+        self.add_property(
+            descr='Volume type',
+            name='type',
+            get='properties.type'
+        )
+
+        self.add_property(
+            descr='Destination path',
+            name='bridge',
+            get='properties.destination'
+        )
+
+        self.add_property(
+            descr='Automatically create storage',
+            name='macaddr',
+            get='properties.auto'
         )
 
         self.primary_key = self.get_mapping('name')

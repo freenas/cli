@@ -215,6 +215,9 @@ def t_ATOM(t):
         t.value = False
     elif t.type == 'NULL':
         t.value = None
+    elif t.value == 'null':
+        t.type = 'NULL'
+        t.value = None
     return t
 
 

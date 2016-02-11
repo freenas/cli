@@ -485,6 +485,44 @@ class HelpCommand(Command):
             return output_seq
 
 
+@description("Lists available commands or items in this namespace")
+class IndexCommand(Command):
+    """
+    Usage: ?
+
+    Lists all the possible commands and EntityNamespaces accessible form the
+    current namespace or the one supplied in the arguments. It also always lists
+    the globally avaible builtin set of commands.
+
+    Example:
+    ?
+    volumes ?
+    """
+
+    def run(self, context, args, kwargs, opargs):
+        obj = context.ml.get_relative_object(self.exec_path[-1], args)
+        nss = obj.namespaces()
+        cmds = obj.commands()
+
+        # Only display builtin items if in the RootNamespace
+        obj = context.ml.get_relative_object(self.exec_path[-1], args)
+        outseq = None
+        if obj.__class__.__name__ == 'RootNamespace':
+            outseq = Sequence(_("Builtin items"), sorted(list(context.ml.builtin_commands.keys())))
+
+        ns_seq = Sequence(
+            _("Current namespace items:"),
+            sorted(list(cmds.keys())) +
+            [ns.get_name() for ns in sorted(nss, key=lambda i: i.get_name())]
+        )
+        if outseq is not None:
+            outseq += ns_seq
+        else:
+            outseq = ns_seq
+
+        return outseq
+
+
 @description("Sends the user to the top level")
 class TopCommand(Command):
 

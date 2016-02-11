@@ -100,13 +100,7 @@ class Namespace(object):
                 continue
 
     def commands(self):
-        # lazy import to avoid circular import hell
-        # TODO: can this be avoided? If so please!
-        from .commands import HelpCommand
-        return {
-            '?': IndexCommand(self),
-            'help': HelpCommand(),
-        }
+        return {}
 
     def namespaces(self):
         return self.nslist
@@ -176,45 +170,6 @@ class CommandException(Exception):
             return '{0}'.format(self.message)
         else:
             return '{0}: {1}'.format(errno.errorcode[self.code], self.message)
-
-
-@description("Lists available commands or items in this namespace")
-class IndexCommand(Command):
-    """
-    Usage: ?
-
-    Lists all the possible commands and EntityNamespaces accessible form the
-    current namespace or the one supplied in the arguments. It also always lists
-    the globally avaible builtin set of commands.
-
-    Example:
-    ?
-    volumes ?
-    """
-    def __init__(self, target):
-        self.target = target
-
-    def run(self, context, args, kwargs, opargs):
-        nss = self.target.namespaces()
-        cmds = self.target.commands()
-
-        # Only display builtin items if in the RootNamespace
-        obj = context.ml.get_relative_object(self.exec_path[-1], args)
-        outseq = None
-        if obj.__class__.__name__ == 'RootNamespace':
-            outseq = Sequence(_("Builtin items"), sorted(list(context.ml.builtin_commands.keys())))
- 
-        ns_seq = Sequence(
-            _("Current namespace items:"),
-            sorted(list(cmds.keys())) +
-            [ns.get_name() for ns in sorted(nss, key=lambda i: i.get_name())]
-        )
-        if outseq is not None:
-            outseq += ns_seq
-        else:
-            outseq = ns_seq
-
-        return outseq
 
 
 class LongIndexCommand(Command):
@@ -550,7 +505,6 @@ class ItemNamespace(Namespace):
 
     def commands(self):
         base = {
-            '?': IndexCommand(self),
             'get': self.GetEntityCommand(self),
             'show': self.ShowEntityCommand(self),
         }
@@ -958,7 +912,6 @@ class EntityNamespace(Namespace):
 
     def commands(self):
         base = {
-            '?': IndexCommand(self),
             'show': ListCommand(self)
         }
 

@@ -27,7 +27,7 @@
 
 from freenas.cli.namespace import (
     Namespace, ConfigNamespace, Command, CommandException, description,
-    RpcBasedLoadMixin, EntityNamespace, IndexCommand
+    RpcBasedLoadMixin, EntityNamespace
 )
 from freenas.cli.output import Table, Object, Sequence, ValueType, format_value
 from freenas.cli.descriptions import events
@@ -546,7 +546,6 @@ class ConfigDbNamespace(Namespace):
     def commands(self):
         return {
             'factory_restore': FactoryRestoreCommand(),
-            '?': IndexCommand(self)
         }
 
 
@@ -585,7 +584,6 @@ class ReplicationNamespace(Namespace):
     def commands(self):
         return {
             'show_key': ShowReplicationKeyCommand(),
-            '?': IndexCommand(self)
         }
 
 

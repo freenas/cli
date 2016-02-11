@@ -28,7 +28,7 @@
 import os
 import gettext
 from freenas.cli.namespace import (
-    EntityNamespace, Command, IndexCommand, RpcBasedLoadMixin,
+    EntityNamespace, Command, RpcBasedLoadMixin,
     EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, description,
     CommandException, ListCommand
 )
@@ -153,7 +153,6 @@ class SharesNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
 
     def commands(self):
         return {
-            '?': IndexCommand(self),
             'show': ListCommand(self),
         }
 

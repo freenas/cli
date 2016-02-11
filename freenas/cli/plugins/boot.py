@@ -29,7 +29,7 @@
 import gettext
 from freenas.cli.namespace import (
     Namespace, EntityNamespace, Command, RpcBasedLoadMixin,
-    IndexCommand, description, CommandException
+    description, CommandException
 )
 from freenas.cli.utils import iterate_vdevs, post_save, correct_disk_path
 from freenas.cli.output import ValueType, Table, output_msg
@@ -244,7 +244,6 @@ class BootPoolNamespace(Namespace):
 
     def commands(self):
         return {
-            '?': IndexCommand(self),
             'show_disks': BootPoolShowDisksCommand(),
             'attach_disk': BootPoolAttachDiskCommand(),
             'detach_disk': BootPoolDetachDiskCommand(),
@@ -331,11 +330,6 @@ class BootNamespace(Namespace):
     def __init__(self, name, context):
         super(BootNamespace, self).__init__(name)
         self.context = context
-
-    def commands(self):
-        return {
-            '?': IndexCommand(self)
-        }
 
     def namespaces(self):
         return [

@@ -77,7 +77,7 @@ from freenas.cli.commands import (
     SaveenvCommand, EchoCommand, SourceCommand, MorePipeCommand, SearchPipeCommand,
     ExcludePipeCommand, SortPipeCommand, LimitPipeCommand, SelectPipeCommand,
     LoginCommand, DumpCommand, WhoamiCommand, PendingCommand, WaitCommand,
-    OlderThanPipeCommand, NewerThanPipeCommand
+    OlderThanPipeCommand, NewerThanPipeCommand, IndexCommand
 )
 import collections
 
@@ -786,6 +786,7 @@ class MainLoop(object):
         'newer_than': NewerThanPipeCommand()
     }
     base_builtin_commands = {
+        '?': IndexCommand(),
         'login': LoginCommand(),
         'exit': ExitCommand(),
         'setenv': SetenvCommand(),

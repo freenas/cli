@@ -28,7 +28,7 @@
 
 import gettext
 from freenas.cli.namespace import (
-    Namespace, EntityNamespace, IndexCommand, TaskBasedSaveMixin,
+    Namespace, EntityNamespace, TaskBasedSaveMixin,
     RpcBasedLoadMixin, description
 )
 from freenas.cli.output import ValueType
@@ -164,11 +164,6 @@ class StatisticNamespace(Namespace):
     def __init__(self, name, context):
         super(StatisticNamespace, self).__init__(name)
         self.context = context
-
-    def commands(self):
-        return {
-            '?': IndexCommand(self)
-        }
 
     def namespaces(self):
         return [

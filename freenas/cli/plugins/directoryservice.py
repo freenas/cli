@@ -27,7 +27,6 @@
 
 from freenas.cli.namespace import (
     Command,
-    IndexCommand,
     Namespace,
     ConfigNamespace,
     EntityNamespace,

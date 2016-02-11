@@ -29,7 +29,7 @@
 
 import gettext
 from freenas.cli.namespace import (
-    Command, Namespace, EntityNamespace, IndexCommand, TaskBasedSaveMixin,
+    Command, Namespace, EntityNamespace, TaskBasedSaveMixin,
     EntitySubscriberBasedLoadMixin, description, CommandException
 )
 from freenas.cli.output import ValueType, Sequence
@@ -366,11 +366,6 @@ class AccountNamespace(Namespace):
     def __init__(self, name, context):
         super(AccountNamespace, self).__init__(name)
         self.context = context
-
-    def commands(self):
-        return {
-            '?': IndexCommand(self)
-        }
 
     def namespaces(self):
         return [

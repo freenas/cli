@@ -53,6 +53,7 @@ class StatisticNamespaceBase(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamesp
             descr='Name',
             name='name',
             get='short_name',
+            usersetable=False,
             list=True)
 
         self.add_property(
@@ -60,12 +61,14 @@ class StatisticNamespaceBase(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamesp
             name='value',
             get='normalized_value',
             type=ValueType.NUMBER,
+            usersetable=False,
             list=True)
 
         self.add_property(
             descr='Unit',
             name='unit',
             get='unit',
+            usersetable=False,
             list=True)
 
         self.add_property(

@@ -733,7 +733,7 @@ def p_command_item_4(p):
     """
     command_item : STRING
     """
-    p[0] = Literal(p[1])
+    p[0] = Literal(p[1], type(str))
 
 
 def p_parameter_list(p):

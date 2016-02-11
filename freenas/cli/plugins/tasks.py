@@ -28,7 +28,7 @@
 import gettext
 from freenas.cli.output import ValueType
 from freenas.cli.descriptions import tasks
-from freenas.cli.namespace import EntityNamespace, EntitySubscriberBasedLoadMixin, Command, ListCommand, description
+from freenas.cli.namespace import EntityNamespace, EntitySubscriberBasedLoadMixin, Command, BaseListCommand, description
 from freenas.cli.complete import NullComplete
 from freenas.cli.utils import describe_task_state
 
@@ -69,7 +69,7 @@ class AbortCommand(Command):
         context.call_sync('task.abort', self.parent.entity['id'])
 
 
-class TaskListCommand(ListCommand):
+class TaskListCommand(BaseListCommand):
     RUNNING_STATES = ['CREATED', 'WAITING', 'EXECUTING', 'ROLLBACK']
 
     def run(self, context, args, kwargs, opargs, filtering=None):

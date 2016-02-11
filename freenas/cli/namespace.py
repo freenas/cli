@@ -708,7 +708,7 @@ class SingleItemNamespace(ItemNamespace):
 
 
 @description("Lists <entity>s")
-class ListCommand(FilteringCommand):
+class BaseListCommand(FilteringCommand):
     """
     Usage: show
 
@@ -752,9 +752,6 @@ class ListCommand(FilteringCommand):
         params = []
         options = {}
 
-        if args or kwargs or opargs:
-            raise CommandException(_('"show" command doesn\'t take any arguments'))
-
         if filtering:
             for k, v in filtering['params'].items():
                 if k == 'limit':
@@ -789,6 +786,15 @@ class ListCommand(FilteringCommand):
             cols.append(Table.Column(col.descr, col.do_get, col.type))
 
         return Table(self.parent.query(params, options), cols)
+
+
+@description("Lists <entity>s")
+class ListCommand(BaseListCommand):
+    def run(self, context, args, kwargs, opargs, filtering=None):
+        if args or kwargs or opargs:
+            raise CommandException(_('"show" command doesn\'t take any arguments'))
+
+        return super(ListCommand, self).run(context, args, kwargs, opargs, filtering)
 
 
 @description("Creates new <entity>")

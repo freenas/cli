@@ -436,7 +436,7 @@ class HelpCommand(Command):
             for nss in obj.namespaces():
                 if not isinstance(nss, SingleItemNamespace):
                     if hasattr(nss,'description') and nss.description is not None:
-                        description = value.description
+                        description = nss.description
                     else:
                         description = nss.name
                     namespace_dict = {

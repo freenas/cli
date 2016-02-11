@@ -28,6 +28,7 @@
 import os
 import copy
 import gettext
+import six
 from freenas.cli.namespace import (
     EntityNamespace, Command, CommandException, SingleItemNamespace,
     EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, description
@@ -1076,7 +1077,7 @@ class CreateVolumeCommand(Command):
             raise CommandException(_("Please specify one or more disks using the disks property"))
         else:
             disks = kwargs.pop('disks')
-            if isinstance(disks, str):
+            if isinstance(disks, six.string_types):
                 disks = [disks]
 
         if read_value(kwargs.pop('encryption', False), ValueType.BOOLEAN) is True:
@@ -1088,13 +1089,13 @@ class CreateVolumeCommand(Command):
 
         cache_disks = kwargs.pop('cache', [])
         log_disks = kwargs.pop('log', [])
-        if cache_disks == None:
+        if cache_disks is None:
             cache_disks = []
-        if log_disks == None:
+        if log_disks is None:
             log_disks = []
-        if isinstance(cache_disks, str):
+        if isinstance(cache_disks, six.string_types):
             cache_disks = [cache_disks]
-        if isinstance(log_disks, str):
+        if isinstance(log_disks, six.string_types):
             log_disks = [log_disks]
 
         ns = SingleItemNamespace(None, self.parent)

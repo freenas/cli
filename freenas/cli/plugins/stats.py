@@ -90,8 +90,8 @@ class StatisticNamespaceBase(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamesp
         self.add_property(
             descr='Value too low alert level',
             name='alert_low',
-            get='alerts.alert',
-            set='alerts.alert',
+            get='alerts.alert_low',
+            set='alerts.alert_low',
             list=False,
             type=ValueType.NUMBER)
 

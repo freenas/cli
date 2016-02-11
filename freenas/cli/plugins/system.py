@@ -580,6 +580,7 @@ class SystemDatasetNamespace(ConfigNamespace):
         )
 
 
+@description("Replication info")
 class ReplicationNamespace(Namespace):
     def commands(self):
         return {

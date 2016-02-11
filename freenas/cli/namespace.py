@@ -200,14 +200,16 @@ class IndexCommand(Command):
 
         # Only display builtin items if in the RootNamespace
         obj = context.ml.get_relative_object(self.exec_path[-1], args)
+        outseq = None
         if obj.__class__.__name__ == 'RootNamespace':
-            output_msg('Builtin items:', attrs=['bold'])
-            output_list(sorted(list(context.ml.builtin_commands.keys())))
+            outseq = Sequence(_("Builtin items"), sorted(list(context.ml.builtin_commands.keys())))
 
-        output_msg('Current namespace items:', attrs=['bold'])
-        out = sorted(list(cmds.keys()))
-        out += [ns.get_name() for ns in sorted(nss, key=lambda i: i.get_name())]
-        output_list(out)
+        outseq += Sequence(
+            _("Current namespace items:"),
+            sorted(list(cmds.keys())) +
+            [ns.get_name() for ns in sorted(nss, key=lambda i: i.get_name())]
+        )
+        return outseq
 
 
 class LongIndexCommand(Command):

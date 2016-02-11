@@ -134,7 +134,7 @@ class AsciiOutputFormatter(object):
         return output
 
     @staticmethod
-    def output_list(data, label, vt=ValueType.STRING):
+    def output_list(data, label, vt=ValueType.STRING, **kwargs):
         sys.stdout.write(columnize(data))
         sys.stdout.flush()
 

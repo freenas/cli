@@ -101,9 +101,6 @@ class StatisticNamespaceBase(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamesp
             type=ValueType.BOOLEAN)
 
         self.primary_key = self.get_mapping('name')
-        self.extra_commands = {
-            'show': QueryShowCommand(self)
-        }
 
     def set_high(self, obj, value):
         obj.update({
@@ -132,25 +129,6 @@ class StatisticNamespaceBase(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamesp
                 'alert_low_enabled': value
             }
         })
-
-
-@description("Lists <entity>s")
-class QueryShowCommand(Command):
-    """
-    Usage: show
-
-    Example: show
-    """
-    def __init__(self, parent):
-        if hasattr(parent, 'leaf_entity') and parent.leaf_entity:
-            self.parent = parent.leaf_ns
-        else:
-            self.parent = parent
-
-    def run(self, context, args, kwargs, opargs, filtering=None):
-        #self.parent.query()
-        show = ListCommand(self.parent)
-        return show.run(context, args, kwargs, opargs, filtering)
 
 
 @description(_("View CPUs statistics and set alert levels"))

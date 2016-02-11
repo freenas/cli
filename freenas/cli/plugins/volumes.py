@@ -1247,8 +1247,8 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
             set=None)
 
         self.add_property(
-            descr='Providers presence',
-            name='providers_presence',
+            descr='Providers',
+            name='providers',
             get='providers_presence',
             type=ValueType.STRING,
             set=None)

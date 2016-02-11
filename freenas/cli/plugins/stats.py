@@ -45,9 +45,9 @@ class StatisticNamespaceBase(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamesp
         super(StatisticNamespaceBase, self).__init__(name, context)
 
         self.primary_key_name = 'short_name'
+        self.save_key_name = 'name'
         self.allow_create = False
         self.update_task = 'stat.alert_update'
-        self.required_props = ['short_name']
 
         self.add_property(
             descr='Name',

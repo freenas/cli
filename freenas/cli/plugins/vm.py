@@ -526,10 +526,7 @@ class FetchShowCommand(Command):
     Refreshes local cache of VM templates and then shows them.
     """
     def __init__(self, parent):
-        if hasattr(parent, 'leaf_entity') and parent.leaf_entity:
-            self.parent = parent.leaf_ns
-        else:
-            self.parent = parent
+        self.parent = parent
 
     def run(self, context, args, kwargs, opargs, filtering=None):
         context.call_task_sync('vm_template.fetch')

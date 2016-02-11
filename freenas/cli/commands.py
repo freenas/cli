@@ -410,9 +410,9 @@ class HelpCommand(Command):
                 hasattr(obj.parent, 'localdoc') and
                 command_name in obj.parent.localdoc.keys()
                ):
-                output_msg(textwrap.dedent(obj.parent.localdoc[command_name]))
+                output_msg(textwrap.dedent(obj.parent.localdoc[command_name]) + "\n")
             else:
-                output_msg(inspect.getdoc(obj))
+                output_msg(inspect.getdoc(obj) + "\n")
 
         if isinstance(obj, Namespace):
             # First listing the Current Namespace's commands

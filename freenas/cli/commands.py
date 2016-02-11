@@ -481,7 +481,9 @@ class HelpCommand(Command):
                 help_message = inspect.getdoc(obj)
             elif isinstance(obj, SingleItemNamespace):
                 help_message = obj.entity_doc()
-            output_seq.append(help_message)
+            if help_message != "":
+                output_seq.append(help_message)
+            output_seq.append("")
             return output_seq
 
 

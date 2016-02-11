@@ -28,8 +28,8 @@
 
 import gettext
 from freenas.cli.namespace import (
-    Command, Namespace, EntityNamespace, IndexCommand, TaskBasedSaveMixin,
-    RpcBasedLoadMixin, description, ListCommand
+    Namespace, EntityNamespace, IndexCommand, TaskBasedSaveMixin,
+    RpcBasedLoadMixin, description
 )
 from freenas.cli.output import ValueType
 
@@ -71,64 +71,36 @@ class StatisticNamespaceBase(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamesp
         self.add_property(
             descr='Value too high alert level',
             name='alert_high',
-            get=lambda x: x['alerts']['alert_high'],
-            set=self.set_high,
+            get='alerts.alert_high',
+            set='alerts.alert_high',
             list=False,
             type=ValueType.NUMBER)
 
         self.add_property(
             descr='Value too high alert activity',
             name='alert_high_enabled',
-            get=lambda x: x['alerts']['alert_high_enabled'],
-            set=self.set_high_enabled,
+            get='alerts.alert_high_enabled',
+            set='alerts.alert_high_enabled',
             list=False,
             type=ValueType.BOOLEAN)
 
         self.add_property(
             descr='Value too low alert level',
             name='alert_low',
-            get=lambda x: x['alerts']['alert_low'],
-            set=self.set_low,
+            get='alerts.alert',
+            set='alerts.alert',
             list=False,
             type=ValueType.NUMBER)
 
         self.add_property(
             descr='Value too low alert activity',
             name='alert_low_enabled',
-            get=lambda x: x['alerts']['alert_low_enabled'],
-            set=self.set_low_enabled,
+            get='alerts.alert_low_enabled',
+            set='alerts.alert_low_enabled',
             list=False,
             type=ValueType.BOOLEAN)
 
         self.primary_key = self.get_mapping('name')
-
-    def set_high(self, obj, value):
-        obj.update({
-            'alerts': {
-                'alert_high': value
-            }
-        })
-
-    def set_high_enabled(self, obj, value):
-        obj.update({
-            'alerts': {
-                'alert_high_enabled': value
-            }
-        })
-
-    def set_low(self, obj, value):
-        obj.update({
-            'alerts': {
-                'alert_low': value
-            }
-        })
-
-    def set_low_enabled(self, obj, value):
-        obj.update({
-            'alerts': {
-                'alert_low_enabled': value
-            }
-        })
 
 
 @description(_("View CPUs statistics and set alert levels"))

@@ -37,7 +37,7 @@ from threading import Timer
 from builtins import input
 from freenas.cli.namespace import Command
 from freenas.cli.output import format_output, output_msg, Table
-from freenas.cli.parser import unparse, FunctionDefinition
+from freenas.cli.parser import parse, unparse, FunctionDefinition
 from freenas.cli import config
 from freenas.utils import decode_escapes
 
@@ -188,7 +188,7 @@ def table(data, columns):
 
 
 def eval_(line):
-    config.instance.ml.process(line)
+    return config.instance.eval(parse(line, '<stdin>'))
 
 
 # Reads a json object from a file or a str and returns a parsed dict of it

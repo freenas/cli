@@ -37,7 +37,7 @@ from threading import Timer
 from builtins import input
 from freenas.cli.namespace import Command
 from freenas.cli.output import format_output, output_msg, Table
-from freenas.cli.parser import parse, unparse, FunctionDefinition
+from freenas.cli.parser import unparse, FunctionDefinition
 from freenas.cli import config
 from freenas.utils import decode_escapes
 
@@ -190,14 +190,8 @@ def table(data, columns):
 # Reads a json object from a file or a str and returns a parsed dict of it
 def json_load(data):
     if hasattr(data, 'read'):
-        # Yuck! i need json.load to properly parse the file
-        # Then i need to convert said python dict to a str
-        # so that I can later provide the cli with said str
-        # to tokenize and eval and THAT can finally give me a "CLI DICT!"
-        # If you can fix this please do so!
-        data = json.dumps(json.load(data))
-    ast = parse('echo '+data, '<stdin>')
-    return config.instance.eval(ast)[0][0]
+        return json.load(data)
+    return json.loads(data)
 
 
 # Accepts obj and serializes it to json, which it then returns.

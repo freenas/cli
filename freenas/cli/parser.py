@@ -134,29 +134,17 @@ def t_SIZE(t):
     suffix = m.group(2).lower()
     value = int(m.group(1))
 
-    if suffix == 'kib':
+    if suffix in ('k', 'kb', 'kib'):
         value *= 1024
 
-    if suffix in ('k', 'kb'):
-        value *= 1000
-
-    if suffix == 'mib':
+    if suffix in ('m', 'mb', 'mib'):
         value *= 1024 * 1024
 
-    if suffix in ('m', 'mb'):
-        value *= 1000 * 1000
-
-    if suffix == 'gib':
+    if suffix in ('g', 'gb', 'gib'):
         value *= 1024 * 1024 * 1024
 
-    if suffix in ('g', 'gb'):
-        value *= 1000 * 1000 * 1000
-
-    if suffix == 'tib':
+    if suffix in ('t', 'tb', 'tib'):
         value *= 1024 * 1024 * 1024 * 1024
-
-    if suffix in ('t', 'tb'):
-        value *= 1000 * 1000 * 1000 * 1000
 
     t.value = value
     return t

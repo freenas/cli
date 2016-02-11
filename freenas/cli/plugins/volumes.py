@@ -1088,6 +1088,10 @@ class CreateVolumeCommand(Command):
 
         cache_disks = kwargs.pop('cache', [])
         log_disks = kwargs.pop('log', [])
+        if cache_disks == None:
+            cache_disks = []
+        if log_disks == None:
+            log_disks = []
         if isinstance(cache_disks, str):
             cache_disks = [cache_disks]
         if isinstance(log_disks, str):

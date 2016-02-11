@@ -203,12 +203,17 @@ class IndexCommand(Command):
         outseq = None
         if obj.__class__.__name__ == 'RootNamespace':
             outseq = Sequence(_("Builtin items"), sorted(list(context.ml.builtin_commands.keys())))
-
-        outseq += Sequence(
+ 
+        ns_seq = Sequence(
             _("Current namespace items:"),
             sorted(list(cmds.keys())) +
             [ns.get_name() for ns in sorted(nss, key=lambda i: i.get_name())]
         )
+        if outseq is not None:
+            outseq += ns_seq
+        else:
+            outseq = ns_seq
+
         return outseq
 
 

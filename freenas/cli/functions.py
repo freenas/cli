@@ -187,6 +187,10 @@ def table(data, columns):
     return Table(data, [Table.Column(l, a) for l, a in columns])
 
 
+def eval_(line):
+    config.instance.ml.process(line)
+
+
 # Reads a json object from a file or a str and returns a parsed dict of it
 def json_load(data):
     if hasattr(data, 'read'):
@@ -238,4 +242,5 @@ functions = {
     'table': table,
     'json_load': json_load,
     'json_dump': json_dump,
+    'eval': eval_,
 }

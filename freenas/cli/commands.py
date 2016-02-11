@@ -416,11 +416,7 @@ class HelpCommand(Command):
 
         if isinstance(obj, Namespace):
             # First listing the Current Namespace's commands
-            cmd_dict_list = [
-                {"cmd": "/", "description": "Go to the root namespace"},
-                {"cmd": "..", "description": "Go up one namespace"},
-                {"cmd": "-", "description": "Go back to previous namespace"}
-            ]
+            cmd_dict_list = []
             ns_cmds = obj.commands()
             for key, value in ns_cmds.items():
                 if hasattr(value,'description') and value.description is not None:
@@ -450,7 +446,11 @@ class HelpCommand(Command):
                     cmd_dict_list.append(namespace_dict)
 
             # Finally listing the builtin cmds
-            builtin_cmd_dict_list = []
+            builtin_cmd_dict_list = [
+                {"cmd": "/", "description": "Go to the root namespace"},
+                {"cmd": "..", "description": "Go up one namespace"},
+                {"cmd": "-", "description": "Go back to previous namespace"}
+            ]
             for key, value in context.ml.builtin_commands.items():
                 if hasattr(value,'description') and value.description is not None:
                     description = value.description

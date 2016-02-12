@@ -870,6 +870,15 @@ class SearchPipeCommand(PipeCommand):
 
 @description("Selects tasks started before or at time-delta")
 class OlderThanPipeCommand(PipeCommand):
+    """
+    Return all elements of a list that contains time values that are older than
+    the given time delta.
+
+    Usage: <command> | older_than <hh>:<mm>
+           <command> | older_than <hh>:<mm>:<ss>
+
+    Example: task show all | older_than 2:00
+    """
     def run(self, context, args, kwargs, opargs, input=None):
         return input
 
@@ -882,6 +891,15 @@ class OlderThanPipeCommand(PipeCommand):
 
 @description("Selects tasks started at or since time-delta")
 class NewerThanPipeCommand(PipeCommand):
+    """
+    Return all elements of a list that contains time values that are newer than
+    the given time delta.
+
+    Usage: <command> | newer_than <hh>:<mm>
+           <command> | newer_than <hh>:<mm>:<ss>
+
+    Example: task show all | newer_than 2:00
+    """
     def run(self, context, args, kwargs, opargs, input=None):
         return input
 

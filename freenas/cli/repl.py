@@ -1312,7 +1312,7 @@ class MainLoop(object):
         except BaseException as err:
             raise err
 
-        raise SyntaxError("Unknown AST token: {0}".format(token))
+        raise SyntaxError("Invalid syntax: {0}".format(token))
 
     def process(self, line):
         if len(line) == 0:

@@ -25,8 +25,11 @@
 #####################################################################
 import platform
 import sys
+import os
+import glob
 from setuptools import setup, find_packages
 
+example_files = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'freenas/cli/examples/*')
 
 dependency_links = []
 install_requires = [
@@ -77,12 +80,13 @@ setup(
     ],
     install_requires=install_requires,
     dependency_links=dependency_links,
-    entry_points = {
+    entry_points={
         'console_scripts': [
             'freenas-cli = freenas.cli.repl:main',
         ],
     },
     setup_requires=['freenas.utils', 'six', 'ply'],
+    data_files=[('freenas/cli/examples', [f for f in glob.glob(example_files)])],
     use_freenas=True,
 )
 

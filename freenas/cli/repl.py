@@ -1538,7 +1538,10 @@ def main():
             # not there no probs or cannot make this symlink move on
             pass
 
-    parser = argparse.ArgumentParser()
+    if os.environ.get('FREENAS_SYSTEM'):
+        parser = argparse.ArgumentParser(prog="cli")
+    else:
+        parser = argparse.ArgumentParser()
     parser.add_argument('uri', metavar='URI', nargs='?',
                         default='unix:')
     parser.add_argument('-m', metavar='MIDDLEWARECONFIG',

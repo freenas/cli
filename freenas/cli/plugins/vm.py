@@ -431,13 +431,13 @@ class VMVolumesNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNam
 
         self.add_property(
             descr='Destination path',
-            name='bridge',
+            name='destination',
             get='properties.destination'
         )
 
         self.add_property(
             descr='Automatically create storage',
-            name='macaddr',
+            name='auto',
             get='properties.auto'
         )
 

@@ -441,7 +441,7 @@ class HelpCommand(Command):
                         description = nss.name
                     namespace_dict = {
                         'cmd': nss.name,
-                        'description': nss.description,
+                        'description': description,
                     }
                     cmd_dict_list.append(namespace_dict)
 

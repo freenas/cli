@@ -380,25 +380,6 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
 
             yield '{0}/{1}'.format(i['address'], i['netmask'])
 
-    def save(self, this, new=False, callback=None):
-        if callback is None:
-            callback = lambda s: post_save(this, s)
-        if new:
-            self.context.submit_task(
-                'network.interface.create',
-                this.entity['type'],
-                callback=callback
-            )
-            this.modified = False
-            return
-
-        self.context.submit_task(
-            'network.interface.configure',
-            this.entity['id'], this.get_diff(),
-            callback=callback
-        )
-        this.modified = False
-
 
 @description("Interface addresses")
 class AliasesNamespace(EntityNamespace):

@@ -29,7 +29,6 @@ import io
 import six
 import sys
 import datetime
-import dateutil.tz
 import time
 import gettext
 import natural.date
@@ -38,6 +37,7 @@ from texttable import Texttable
 from columnize import columnize
 from freenas.cli import config
 from freenas.cli.output import ValueType, get_terminal_size, resolve_cell, get_humanized_size, Table
+from freenas.cli.utils import get_localtime_offset
 
 
 t = gettext.translation('freenas-cli', fallback=True)
@@ -111,15 +111,11 @@ class AsciiOutputFormatter(object):
 
         if vt == ValueType.TIME:
             fmt = config.instance.variables.get('datetime_format')
-            localtz = dateutil.tz.tzlocal()
-            localoffset = localtz.utcoffset(datetime.datetime.now(localtz))
-            offset = localoffset.total_seconds()
 
             if isinstance(value, str):
-                offset = localoffset
                 value = parse(value)
             if fmt == 'natural':
-                return natural.date.duration(value + datetime.timedelta(seconds=offset))
+                return natural.date.duration(value + datetime.timedelta(seconds=get_localtime_offset()))
 
             return time.strftime(fmt, time.localtime(value))
 

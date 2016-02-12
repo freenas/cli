@@ -32,7 +32,8 @@ import platform
 import ipaddress
 import gettext
 import signal
-from datetime import timedelta
+import dateutil.tz
+from datetime import timedelta, datetime
 from freenas.cli import output
 
 t = gettext.translation('freenas-cli', fallback=True)
@@ -186,9 +187,16 @@ def parse_timedelta(s):
         hr, min, sec = time
 
     sec_delta = int(hr) * 60 * 60 + int(min) * 60 + int(sec)
+    sec_delta += get_localtime_offset()
     delta += timedelta(seconds=sec_delta)
 
     return delta
+
+
+def get_localtime_offset():
+    localtz = dateutil.tz.tzlocal()
+    localoffset = localtz.utcoffset(datetime.now(localtz))
+    return localoffset.total_seconds()
 
 
 class PrintableNone(object):

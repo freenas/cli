@@ -15,8 +15,10 @@ install:
 	install -d ${PREFIX}/lib/freenascli
 	install -d ${PREFIX}/lib/freenascli/src
 	install -d ${PREFIX}/lib/freenascli/plugins
+	install -d ${PREFIX}/lib/freenascli/examples
 	cp -R src/ ${PREFIX}/lib/freenascli/src/
 	cp -R plugins/ ${PREFIX}/lib/freenascli/plugins/
+	cp -R examples/ ${PREFIX}/lib/freenascli/examples/
 
 bin:
 	virtualenv-3.4 venv

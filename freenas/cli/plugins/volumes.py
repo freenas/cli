@@ -854,11 +854,11 @@ class DatasetsNamespace(EntityNamespace):
         self.parent.load()
         return first_or_default(lambda d: d['name'] == name, self.parent.entity['datasets'])
 
-    def delete(self, name, kwargs):
+    def delete(self, this, kwargs):
         self.context.submit_task(
             'volume.dataset.delete',
-            self.parent.entity['name'],
-            name,
+            this.parent.parent.entity['name'],
+            this.entity['name'],
             kwargs.pop('recursive', False)
         )
 

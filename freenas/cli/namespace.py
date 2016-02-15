@@ -995,19 +995,21 @@ class TaskBasedSaveMixin(object):
         super(TaskBasedSaveMixin, self).__init__(*args, **kwargs)
         self.save_key_name = getattr(self, 'primary_key_name', 'id')
 
-    def save(self, this, new=False):
+    def save(self, this, new=False, callback=None):
+        if callback is None:
+            callback = lambda s: post_save(this, s)
         if new:
             self.context.submit_task(
                 self.create_task,
                 this.entity,
-                callback=lambda s: post_save(this, s))
+                callback=callback)
             return
 
         self.context.submit_task(
             self.update_task,
             this.orig_entity[self.save_key_name],
             this.get_diff(),
-            callback=lambda s: post_save(this, s))
+            callback=callback)
 
     def delete(self, this, kwargs):
         self.context.submit_task(self.delete_task, this.entity[self.save_key_name])

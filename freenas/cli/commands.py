@@ -961,7 +961,7 @@ class SortPipeCommand(PipeCommand):
 @description("Limits output to <n> items")
 class LimitPipeCommand(PipeCommand):
     """
-    Return only the n elements of a list.
+    Return only the specified number of elements in a list.
 
     Usage: <command> | limit <n>
 

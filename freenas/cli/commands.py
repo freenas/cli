@@ -800,8 +800,9 @@ class WaitCommand(Command):
 class MorePipeCommand(PipeCommand):
 
     """
-    Allow paging and scrolling through long outputs of text.
-    It has an alias of 'less' i.e. 'more' and 'less' do the same thing.
+    Allow paging and scrolling through long outputs of text, where
+    'more' and 'less' are interchangeable. Press 'q' to return to
+    the prompt.
 
     Usage: <command> | more
            <command> | less

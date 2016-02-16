@@ -414,6 +414,10 @@ class Context(object):
         self.entity_subscribers['task'].on_add = update_task
         self.entity_subscribers['task'].on_update = lambda o, n: update_task(n, o)
 
+    def wait_entity_subscribers(self):
+        for i in self.entity_subscribers.values():
+            i.wait_ready()
+
     def connect(self, password=None):
         try:
             self.connection.connect(self.uri, password=password)
@@ -1615,6 +1619,7 @@ def main():
         return
 
     if args.f:
+        context.wait_entity_subscribers()
         try:
             f = sys.stdin if args.f == '-' else open(args.f)
             for line in f:

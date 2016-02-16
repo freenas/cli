@@ -1045,8 +1045,8 @@ class CreateVolumeCommand(Command):
 
     For more advanced pool topologies, create a volume with a single vdev
     using the 'type' option with one of the following options: disk, mirror, raidz1,
-    raidz2 or raidz3.  You may then use the 'volume add_vdev' command to build on this
-    topology.
+    raidz2 or raidz3.  You may then use the 'volume add_vdev' command to build on 
+    this topology.
     """
 
     def __init__(self, parent):

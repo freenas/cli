@@ -682,7 +682,7 @@ class EchoCommand(Command):
     output: Hello the current cli session timeout is 10 seconds
 
     echo Hi there, you are using ${language}lang
-    output Hi there, you are using Clang
+    output Hi there, you are using C lang
     """
 
     def run(sef, context, args, kwargs, opargs):

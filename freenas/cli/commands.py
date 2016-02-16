@@ -445,6 +445,8 @@ class HelpCommand(Command):
                     }
                     cmd_dict_list.append(namespace_dict)
 
+            cmd_dict_list = sorted(cmd_dict_list, key=lambda k: k['cmd'])
+
             # Finally listing the builtin cmds
             builtin_cmd_dict_list = [
                 {"cmd": "/", "description": "Go to the root namespace"},
@@ -461,6 +463,8 @@ class HelpCommand(Command):
                     'description': description,
                 }
                 builtin_cmd_dict_list.append(builtin_cmd_dict)
+
+            builtin_cmd_dict_list = sorted(builtin_cmd_dict_list, key=lambda k: k['cmd'])
 
             # Finally printing all this out in unix `LESS(1)` pager style
             output_seq = Sequence()

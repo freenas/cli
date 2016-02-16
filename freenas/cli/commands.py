@@ -163,7 +163,7 @@ class SaveenvCommand(Command):
 
     Examples:
            saveenv
-           saveenv /root/myclisave.conf
+           saveenv "/root/myclisave.conf"
     """
 
     def run(self, context, args, kwargs, opargs):
@@ -639,7 +639,7 @@ class DumpCommand(Command):
     Examples:
     update dump
     dump | less
-    dump /root/mydumpfile.cli
+    dump "/root/mydumpfile.cli"
     """
 
     def run(self, context, args, kwargs, opargs):

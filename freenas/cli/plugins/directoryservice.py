@@ -46,7 +46,8 @@ from freenas.cli.utils import post_save
 class DirectoryServiceNamespace(Namespace):
     """
     The directoryservice namespace contains the
-    activedirectory and ldap namespaces.
+    namespaces for managing activedirectory and ldap
+    settings.
     """
     def __init__(self, name, context):
         super(DirectoryServiceNamespace, self).__init__(name)

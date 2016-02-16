@@ -726,8 +726,11 @@ class PendingCommand(Command):
 @description("Waits for a task to complete and shows task progress")
 class WaitCommand(Command):
     """
+    Shows task progress of either all waiting tasks or the
+    specified task. Use "task show' to determine the task ID.
+    
     Usage: wait
-           wait <task id>
+           wait <task ID>
 
     """
     def run(self, context, args, kwargs, opargs):

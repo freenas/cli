@@ -123,6 +123,10 @@ class ScheduleNamespace(ConfigNamespace):
 
 @description("Provides access to task scheduled on a regular basis")
 class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
+    """
+    The calendar namespace provides commands for listing and creating
+    calendar tasks.
+    """
     def __init__(self, name, context):
         super(CalendarTasksNamespace, self).__init__(name, context)
 

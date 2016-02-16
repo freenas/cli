@@ -344,7 +344,7 @@ class HelpCommand(Command):
     Examples:
         help
         help printenv
-        help account user show
+        help account user create
         account group help properties
     """
 

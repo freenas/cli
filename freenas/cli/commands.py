@@ -192,7 +192,7 @@ class ShellCommand(Command):
     Usage: shell <command>
 
     Examples:
-           shell /usr/local/bin/bash
+           shell "/usr/local/bin/bash"
            shell "tail /var/log/messages"
     """
 

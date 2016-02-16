@@ -705,9 +705,10 @@ class EchoCommand(Command):
 @description("Shows pending tasks")
 class PendingCommand(Command):
     """
+    Display the list of currently pending tasks.
+    
     Usage: pending
 
-    Shows a list of currently pending tasks.
     """
     def run(self, context, args, kwargs, opargs):
         pending = list(filter(

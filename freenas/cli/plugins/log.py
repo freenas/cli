@@ -37,7 +37,7 @@ _ = t.gettext
 @description("System logs")
 class LogNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
     """
-    The log namespace allows to browse and query system logs
+    The log namespace can be used to browse and query system logs.
     """
     def __init__(self, name, context):
         super(LogNamespace, self).__init__(name, context)

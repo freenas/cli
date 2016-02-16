@@ -255,7 +255,7 @@ class ShowIpsCommand(Command):
 class ShowUrlsCommand(Command):
 
     """
-    Display the URL\(s\) for accessing the web GUI.
+    Display the URLs for accessing the web GUI.
 
     Usage: showurls
     """

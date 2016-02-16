@@ -591,9 +591,9 @@ class HistoryCommand(Command):
 @description("Imports a script for parsing")
 class SourceCommand(Command):
     """
-    Run specified file\(s\), where each file contains a list
+    Run specified file or files, where each file contains a list
     of CLI commands. When creating the source file, separate
-    each CLI command with a semicolon \";\" or place each
+    each CLI command with a semicolon or place each
     CLI command on its own line. If multiple files are
     specified, they are run in the order given. If a CLI
     command fails, the source operation aborts.

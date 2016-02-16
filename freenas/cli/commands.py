@@ -678,7 +678,7 @@ class EchoCommand(Command):
     echo Have a nice Day!
     output: Have a nice Day!
 
-    echo Hello the current cli session timeout is $timeout seconds
+    echo Hello the current cli session timeout is ${timeout} seconds
     output: Hello the current cli session timeout is 10 seconds
 
     echo Hi there, you are using ${language}lang

@@ -60,7 +60,8 @@ class DismissAlertCommand(Command):
 @description("System alerts")
 class AlertNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
     """
-    The alert namespace provides commands for listing and managing system alerts.
+    The alert namespace provides commands for listing and dismissing
+    system alerts.
     """
     def __init__(self, name, context):
         super(AlertNamespace, self).__init__(name, context)

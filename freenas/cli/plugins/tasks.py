@@ -110,6 +110,10 @@ class TaskListCommand(BaseListCommand):
 
 @description("Manage tasks")
 class TasksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
+    """
+    The task namespace provides commands for browsing task history
+    and for aborting running tasks.
+    """
     def __init__(self, name, context):
         super(TasksNamespace, self).__init__(name, context)
 

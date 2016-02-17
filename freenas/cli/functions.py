@@ -81,7 +81,11 @@ def sprintf(fmt, *args):
     return decode_escapes(fmt) % args
 
 
-def map_(array, fn):
+def map_(data, fn):
+    if isinstance(data, dict):
+        array = [{"key": k, "value": v} for k, v in data.items()]
+    else:
+        array = data
     return list(map(fn, array))
 
 

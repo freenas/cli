@@ -139,6 +139,9 @@ class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
             descr='Mount point',
             name='mountpoint',
             get='mountpoint',
+            usage=_("""
+            Read-only value indicating the amount of space used
+            by the boot environment."""),
             list=False,
             set=None,
             )
@@ -147,6 +150,9 @@ class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
             descr='Space used',
             name='space',
             get='space',
+            usage=_("""
+            Read-only timestamp indicating when the boot
+            environment was created."""),
             list=True,
             set=None,
             )

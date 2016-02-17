@@ -336,6 +336,7 @@ class GroupsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
             descr='Group name',
             name='name',
             get='name',
+            usage=_("Alpanumeric group name."),
             list=True)
 
         self.add_property(
@@ -345,6 +346,9 @@ class GroupsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
             set='id',
             usersetable=False,            
             type=ValueType.NUMBER,
+            usage=_("""\
+            "Group ID. Read-only value assigned by operating
+            system."""),
             list=True)
 
         self.add_property(
@@ -353,6 +357,9 @@ class GroupsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
             get='builtin',
             set=None,
             list=True,
+            usage=_("""\
+            "Read-only value that indicates whether or not
+            the group was created by the operating system."""),
             type=ValueType.BOOLEAN)
 
         self.primary_key = self.get_mapping('name')

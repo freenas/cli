@@ -336,7 +336,7 @@ class GroupsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
             descr='Group name',
             name='name',
             get='name',
-            usage=_("Alpanumeric group name."),
+            usage=_("Editable group name."),
             list=True)
 
         self.add_property(

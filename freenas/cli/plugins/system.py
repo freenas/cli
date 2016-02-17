@@ -590,8 +590,8 @@ class ReplicationNamespace(Namespace):
 @description("System info and configuration")
 class SystemNamespace(ConfigNamespace):
     """
-    System top level command, expands into commands for configuring system
-    settings and getting system information.
+    The system namespace provides commands for configuring system
+    settings and listing system information.
     """
     def __init__(self, name, context):
         super(SystemNamespace, self).__init__(name, context)

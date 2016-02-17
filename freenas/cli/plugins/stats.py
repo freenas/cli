@@ -157,9 +157,8 @@ class SystemStatisticNamespace(StatisticNamespaceBase):
 @description(_("View system statistics and set alert levels"))
 class StatisticNamespace(Namespace):
     """
-    The statistic namespace is used to view system statistics.
-    User can also set boundary levels for each of statistics,
-    causing an alert to be generated when exceeded.
+    The statistic namespace is used to view system statistics
+    and to configure which threshholds result in an alert.
     """
     def __init__(self, name, context):
         super(StatisticNamespace, self).__init__(name)

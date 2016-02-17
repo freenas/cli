@@ -1195,6 +1195,10 @@ class SetPasswordCommand(Command):
 @description("Manage volumes")
 class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):
     class ShowTopologyCommand(Command):
+    """
+    The volume namespace provides commands for managing volumes,
+    datasets, snapshots, replications, and scrubs.
+    """
         def run(self, context, args, kwargs, opargs):
             pass
 

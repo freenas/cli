@@ -203,6 +203,10 @@ class ImportVMCommand(Command):
 
 @description("Configure and manage virtual machines")
 class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):
+    """
+    The vm namespace provides commands for listing, importing,
+    creating, and managing virtual machines.
+    """
     def __init__(self, name, context):
         super(VMNamespace, self).__init__(name, context)
         self.entity_subscriber_name = 'container'

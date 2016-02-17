@@ -60,7 +60,7 @@ from freenas.cli.parser import (
     parse, unparse, Symbol, Literal, BinaryParameter, UnaryExpr, BinaryExpr, PipeExpr, AssignmentStatement,
     IfStatement, ForStatement, WhileStatement, FunctionCall, CommandCall, Subscript,
     ExpressionExpansion, CommandExpansion, FunctionDefinition, ReturnStatement, BreakStatement,
-    UndefStatement, Redirection, AnonymousFunction
+    UndefStatement, Redirection, AnonymousFunction, ShellEscape
 )
 from freenas.cli.output import (
     ValueType, ProgressBar, Sequence, output_lock, output_msg, read_value, format_value,
@@ -1305,6 +1305,13 @@ class MainLoop(object):
 
                 return resultset.unwind()
 
+            if isinstance(token, ShellEscape):
+                return self.builtin_commands['shell'].run(
+                    self.context,
+                    [' '.join(token.args)],
+                    {}, {}
+                )
+
             if isinstance(token, Redirection):
                 with open(token.path, 'a+') as f:
                     format_output(self.eval(token.body, env, path, first=first), file=f)
@@ -1320,11 +1327,6 @@ class MainLoop(object):
 
     def process(self, line):
         if len(line) == 0:
-            return
-
-        if line[0] == '!':
-            self.builtin_commands['shell'].run(
-                self.context, [line[1:]], {}, {})
             return
 
         if line == '-':

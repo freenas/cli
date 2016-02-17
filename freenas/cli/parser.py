@@ -80,6 +80,7 @@ BreakStatement = ASTObject('BreakStatement')
 FunctionDefinition = ASTObject('FunctionDefinition', 'name', 'args', 'body')
 AnonymousFunction = ASTObject('AnonymousFunction', 'args', 'body')
 Redirection = ASTObject('Redirection', 'body', 'path')
+ShellEscape = ASTObject('ShellEscape', 'args')
 
 
 reserved = {
@@ -105,8 +106,8 @@ tokens = list(reserved.values()) + [
     'ATOM', 'NUMBER', 'HEXNUMBER', 'BINNUMBER', 'OCTNUMBER', 'STRING',
     'ASSIGN', 'LPAREN', 'RPAREN', 'EQ', 'NE', 'GT', 'GE', 'LT', 'LE',
     'REGEX', 'UP', 'PIPE', 'LIST', 'COMMA', 'INC', 'DEC', 'PLUS', 'MINUS',
-    'MUL', 'DIV', 'EOPEN', 'COPEN', 'LBRACE',
-    'RBRACE', 'LBRACKET', 'RBRACKET', 'NEWLINE', 'COLON', 'REDIRECT', 'MOD'
+    'MUL', 'DIV', 'EOPEN', 'COPEN', 'LBRACE', 'RBRACE', 'LBRACKET', 'RBRACKET',
+    'NEWLINE', 'COLON', 'REDIRECT', 'MOD', 'SHELL'
 ]
 
 
@@ -237,6 +238,7 @@ t_UP = r'\.\.'
 t_LIST = r'\?'
 t_COLON = r':'
 t_REDIRECT = r'>>'
+t_SHELL = r'!'
 
 precedence = (
     ('left', 'AND', 'OR'),
@@ -341,6 +343,7 @@ def p_stmt(p):
     stmt : undef_stmt
     stmt : command
     stmt : call
+    stmt : shell
     """
     p[0] = p[1]
 
@@ -811,6 +814,35 @@ def p_binary_parameter(p):
     binary_parameter : ATOM DEC parameter
     """
     p[0] = BinaryParameter(p[1], p[2], p[3], p=p)
+
+
+def p_shell(p):
+    """
+    shell : SHELL
+    shell : SHELL shell_parameter_list
+    """
+    p[0] = ShellEscape(p[2])
+
+
+def p_shell_parameter_list(p):
+    """
+    shell_parameter_list : shell_parameter
+    shell_parameter_list : shell_parameter shell_parameter_list
+    """
+    if len(p) == 2:
+        p[0] = [p[1]]
+
+    if len(p) > 2:
+        p[0] = [p[1]] + p[2]
+
+
+def p_shell_parameter(p):
+    """
+    shell_parameter : ATOM
+    shell_parameter : STRING
+    shell_parameter : NUMBER
+    """
+    p[0] = str(p[1])
 
 
 def p_error(p):

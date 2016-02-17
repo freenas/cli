@@ -212,7 +212,6 @@ functions = {
     'print': print_,
     'printf': printf,
     'sprintf': sprintf,
-    'dictiter': lambda a: [{"key": k, "value": v} for k, v in a.items()],
     'map': map_,
     'mapf': mapf,
     'apply': apply,

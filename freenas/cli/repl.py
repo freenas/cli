@@ -1474,6 +1474,10 @@ class MainLoop(object):
                     choices = [str(i.get_name()) for i in obj.namespaces()]
                     choices += obj.commands().keys()
                     choices += builtin_command_set + ['..', '/', '-']
+
+                    if text.startswith('/'):
+                        choices = ['/' + i for i in choices]
+
                     append_space = True
                 elif issubclass(type(obj), Command):
                     completions = obj.complete(self.context)

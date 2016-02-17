@@ -701,6 +701,8 @@ class EchoCommand(Command):
                     isinstance(args[i-1], (Table, output_obj, dict, Sequence, list))
                 ):
                     echo_seq[-1] = ' '.join([echo_seq[-1], str(item)])
+                elif isinstance(item, list):
+                    echo_seq.append(', '.join(item))
                 else:
                     echo_seq.append(item)
             return Sequence(*echo_seq)

@@ -63,6 +63,10 @@ class ServiceManageCommand(Command):
 
 @description("Configure and manage services")
 class ServicesNamespace(RpcBasedLoadMixin, EntityNamespace):
+    """
+    The service namespace is used to configure, start, and
+    stop system services.
+    """
     def __init__(self, name, context):
         super(ServicesNamespace, self).__init__(name, context)
         self.query_call = 'service.query'

@@ -85,6 +85,11 @@ class ImportShareCommand(Command):
 
 @description("Configure and manage shares")
 class SharesNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
+    """
+    The share namespace contains the namespaces
+    for managing afp, iscsi, nfs, smb, and webdav
+    shares.
+    """
     def __init__(self, name, context):
         super(SharesNamespace, self).__init__(name, context)
         self.context = context

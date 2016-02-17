@@ -53,7 +53,7 @@ class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
         self.required_props = ['name']
 
         self.localdoc['CreateEntityCommand'] = ("""\
-            Usage: create name=<bootenv name>
+            Usage: create <bootenv name>
 
             Example: create mybootenv
 

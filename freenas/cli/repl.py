@@ -1296,12 +1296,13 @@ class MainLoop(object):
                         result = cmd.run(self.context, args, kwargs, opargs)
 
                     result = PrintableNone.coerce(result)
-                    ret = self.eval(token.right, input_data=result)
-                    self.context.pipe_cwd = None
-                    if ret is None:
-                        resultset.append(result)
-                    else:
+                    if result is None:
+                        ret = self.eval(token.right, input_data=result)
                         resultset.append(ret)
+                    else:
+                        resultset.append(result)
+
+                    self.context.pipe_cwd = None
 
                 return resultset.unwind()
 

@@ -309,7 +309,8 @@ class GroupsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
 
             Examples: set name=mygroup
 
-            Allows renaming a group.""")
+            Sets the "name" property in order to rename the group. This
+            will fail for builtin groups.""")
         self.localdoc['DeleteEntityCommand'] = ("""\
             Usage: delete <groupname>
 

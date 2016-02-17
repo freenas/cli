@@ -1475,7 +1475,7 @@ class MainLoop(object):
                     choices += obj.commands().keys()
                     choices += builtin_command_set + ['..', '/', '-']
 
-                    if text.startswith('/'):
+                    if text.startswith('/') and isinstance(obj, RootNamespace):
                         choices = ['/' + i for i in choices]
 
                     append_space = True

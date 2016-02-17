@@ -135,16 +135,16 @@ class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
             set=None,
             )
 
-        self.add_property(
-            descr='Mount point',
-            name='mountpoint',
-            get='mountpoint',
-            usage=_("""
-            Read-only value indicating the amount of space used
-            by the boot environment."""),
-            list=False,
-            set=None,
-            )
+#        self.add_property(
+#            descr='Mount point',
+#            name='mountpoint',
+#            get='mountpoint',
+#            usage=_("""
+#            Read-only value indicating the amount of space used
+#            by the boot environment."""),
+#            list=False,
+#            set=None,
+#            )
 
         self.add_property(
             descr='Space used',

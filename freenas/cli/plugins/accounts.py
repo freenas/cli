@@ -130,7 +130,7 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             interoperability. Can not begin with a hyphen or contain a space,
             a tab, a double quote, or any of these characters:
             r" , : + & # % ^ & ( ) ! @ ~ * ? < > =
-            If a \$ is used, it can only be the last character."""),
+            r" If a $ is used, it can only be the last character."""),
             list=True)
 
         self.add_property(
@@ -171,7 +171,7 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             name='shell',
             get='shell',
             usage=_("""
-            r" Default is /bin/sh. Otherwise,
+            Default is "/bin/sh". Otherwise,
             specify full path to an existing shell."""),
             list=False,
             enum=UsersNamespace.shells
@@ -194,7 +194,7 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             get=None,
             set='password',
             usage=_("""\
-            r" Mandatory unless password_disabled=true is
+            Mandatory unless "password_disabled=true" is
             specified when creating the user. Passwords
             cannot contain a question mark."""),
             list=False

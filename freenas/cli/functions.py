@@ -97,6 +97,10 @@ def apply(fn, *args):
     return fn(*args)
 
 
+def strjoin(array, sep=' '):
+    return sep.join(array)
+
+
 def sum_(array):
     return sum(array)
 
@@ -247,4 +251,5 @@ functions = {
     'json_load': json_load,
     'json_dump': json_dump,
     'eval': eval_,
+    'join': strjoin,
 }

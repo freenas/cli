@@ -238,6 +238,10 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             descr='Sudo allowed',
             name='sudo',
             get='sudo',
+            usage=_("""
+            Can be set to true or false. When set to true, the
+            user is allowed to use sudo to run commands
+            with administrative permissions."""),
             list=False,
             type=ValueType.BOOLEAN
         )
@@ -246,6 +250,9 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             descr='SSH public key',
             name='pubkey',
             get='sshpubkey',
+            usage=_("""
+            To configure key-based authentication, use the "set" command
+            to paste the user's SSH public key."""),
             type=ValueType.STRING,
             list=False
         )

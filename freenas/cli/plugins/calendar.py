@@ -59,8 +59,8 @@ TASK_ARG_MAPPING = {
 @description("Runs calendar task right now")
 class RunCommand(Command):
     """
-    The calendar namespace provides commands for listing and managing
-    scheduled tasks. For a list of properties, see 'help properties'.
+    The calendar namespace provides commands for listing and configuring
+    tasks that run on a schedule.
     """
     def run(self, args, kwargs, opargs):
         pass

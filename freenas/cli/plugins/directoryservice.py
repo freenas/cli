@@ -414,6 +414,8 @@ class LDAPDirectoryNamespace(BaseDirectoryServiceNamespace):
             descr='Bind Name',
             name='binddn',
             get='binddn',
+            usage=_("""\
+            Name of the administrative account on LDAP server."""),
             type=ValueType.STRING,
             list=True
         ) 
@@ -422,6 +424,8 @@ class LDAPDirectoryNamespace(BaseDirectoryServiceNamespace):
             descr='Bind Password',
             name='bindpw',
             get='bindpw',
+            usage=_("""\
+            Password associated with the "binddn"."""),
             type=ValueType.STRING,
             list=True
         ) 
@@ -430,6 +434,8 @@ class LDAPDirectoryNamespace(BaseDirectoryServiceNamespace):
             descr='Host Name',
             name='host',
             get='host',
+            usage=_("""\
+            Hostname or IP address of LDAP server."""),
             type=ValueType.STRING,
             list=False
         )
@@ -438,6 +444,9 @@ class LDAPDirectoryNamespace(BaseDirectoryServiceNamespace):
             descr='Base DN',
             name='baseDN',
             get='baseDN',
+            usage=_("""\
+            Top level of the LDAP directory tree to be used when searching
+            for resources."""),
             type=ValueType.STRING,
             list=False
         )
@@ -446,6 +455,9 @@ class LDAPDirectoryNamespace(BaseDirectoryServiceNamespace):
             descr='Kerberos KDC',
             name='kdchost',
             get='kdchost',
+            usage=_("""\
+            Hostname of the Key Distribution Center. If specified, it
+            must be resolvable."""),
             type=ValueType.STRING,
             list=False
         )

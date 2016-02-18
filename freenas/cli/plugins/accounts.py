@@ -344,6 +344,7 @@ class GroupsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
             descr='Group name',
             name='name',
             get='name',
+            usersetable = lambda entity: not entity['builtin'],
             usage=_("Editable group name."),
             list=True)
 

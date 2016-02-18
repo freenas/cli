@@ -665,6 +665,7 @@ class SingleItemNamespace(ItemNamespace):
                 Symbol('set')
             ])
 
+        postcreation_mappings = []
         for mapping in self.property_mappings:
             if not mapping.get:
                 continue
@@ -672,9 +673,16 @@ class SingleItemNamespace(ItemNamespace):
             if not mapping.set:
                 continue
 
+            if not createable and not mapping.is_usersetable(self.entity):
+                continue
+
             if mapping.condition is not None:
                 if not mapping.condition(self.entity):
                     continue
+
+            if createable and not mapping.createsetable and mapping.is_usersetable(self.entity):
+                postcreation_mappings.append(mapping)
+                continue
 
             value = mapping.do_get(self.entity)
 
@@ -684,6 +692,22 @@ class SingleItemNamespace(ItemNamespace):
             ret.args.append(BinaryParameter(mapping.name, '=', self.literalize_value(value)))
 
         yield ret
+
+        if len(postcreation_mappings) > 0:
+            ret = CommandCall([
+                Symbol(self.primary_key),
+                Symbol('set')
+            ])
+
+            for mapping in postcreation_mappings:
+                value = mapping.do_get(self.entity)
+
+                if mapping.type == ValueType.SET and value is not None:
+                    value = list(value)
+
+                ret.args.append(BinaryParameter(mapping.name, '=', self.literalize_value(value)))
+
+            yield ret
 
     def load(self):
         if self.saved:

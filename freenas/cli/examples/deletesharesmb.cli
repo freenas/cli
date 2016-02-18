@@ -1,0 +1,5 @@
+service smb config set enable=no
+share smb smbshare delete;
+account group myuser delete;
+account user myuser delete;
+volume myvolume delete;

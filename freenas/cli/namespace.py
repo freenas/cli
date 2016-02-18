@@ -665,6 +665,7 @@ class SingleItemNamespace(ItemNamespace):
                 Symbol('set')
             ])
 
+        return_args = []
         postcreation_mappings = []
         for mapping in self.property_mappings:
             if not mapping.get:
@@ -689,9 +690,11 @@ class SingleItemNamespace(ItemNamespace):
             if mapping.type == ValueType.SET and value is not None:
                 value = list(value)
 
-            ret.args.append(BinaryParameter(mapping.name, '=', self.literalize_value(value)))
+            return_args.append(BinaryParameter(mapping.name, '=', self.literalize_value(value)))
 
-        yield ret
+        if len(return_args) > 0:
+            ret.args += return_args
+            yield ret
 
         if len(postcreation_mappings) > 0:
             ret = CommandCall([

@@ -278,6 +278,10 @@ class ActiveDirectoryNamespace(BaseDirectoryServiceNamespace):
             descr='Domain',
             name='domain',
             get='domain',
+            usage=_("""\
+            Name of Active Directory domain or child domain.
+            This setting is mandatory and the domain controller
+            for the specified domain must be reachable."""),
             type=ValueType.STRING,
             list=True
         ) 
@@ -286,6 +290,10 @@ class ActiveDirectoryNamespace(BaseDirectoryServiceNamespace):
             descr='Bind Name',
             name='binddn',
             get='binddn',
+            usage=_("""\
+            Name of the Active Directory administrator account.
+            This setting is mandatory and the specified name must
+            be able to connect to the domain controller."""),
             type=ValueType.STRING,
             list=True
         ) 
@@ -294,6 +302,11 @@ class ActiveDirectoryNamespace(BaseDirectoryServiceNamespace):
             descr='Bind Password',
             name='bindpw',
             get='bindpw',
+            usage=_("""\
+            Password associated with the Active Directory.
+            administrative account This setting is mandatory and
+            the specified password must result in a successful
+            connection to the domain controller."""),
             type=ValueType.STRING,
             list=True
         ) 
@@ -302,6 +315,9 @@ class ActiveDirectoryNamespace(BaseDirectoryServiceNamespace):
             descr='Domain Controller',
             name='dchost',
             get='dchost',
+            usage=_("""\
+            Hostname of the domain controller. If specified, it must
+            be resolvable."""),
             type=ValueType.STRING,
             list=False
         )
@@ -310,6 +326,9 @@ class ActiveDirectoryNamespace(BaseDirectoryServiceNamespace):
             descr='Global Catalog',
             name='gchost',
             get='gchost',
+            usage=_("""\
+            Hostname of the global catalog server. If specified, it
+            must be resolvable."""),
             type=ValueType.STRING,
             list=False
         )
@@ -318,6 +337,9 @@ class ActiveDirectoryNamespace(BaseDirectoryServiceNamespace):
             descr='Kerberos KDC',
             name='kdchost',
             get='kdchost',
+            usage=_("""\
+            Hostname of the Key Distribution Center. If specified, it
+            must be resolvable."""),
             type=ValueType.STRING,
             list=False
         )
@@ -326,6 +348,9 @@ class ActiveDirectoryNamespace(BaseDirectoryServiceNamespace):
             descr='Site Name',
             name='site',
             get='site',
+            sage=_("""\
+            Relative distinguished name of the site object in Active
+            Directory."""),
             type=ValueType.STRING,
             list=False
         )

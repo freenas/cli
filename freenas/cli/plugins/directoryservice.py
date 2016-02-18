@@ -348,7 +348,7 @@ class ActiveDirectoryNamespace(BaseDirectoryServiceNamespace):
             descr='Site Name',
             name='site',
             get='site',
-            sage=_("""\
+            usage=_("""\
             Relative distinguished name of the site object in Active
             Directory."""),
             type=ValueType.STRING,

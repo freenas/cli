@@ -66,6 +66,56 @@ class RunCommand(Command):
         pass
 
 
+@description("Task status")
+class StatusNamespace(ConfigNamespace):
+    def __init__(self, name, context, parent):
+        super(StatusNamespace, self).__init__(name, context)
+        self.parent = parent
+
+        self.add_property(
+            descr='Next run time',
+            name='next_run_time',
+            get='next_run_time',
+            set=None,
+            list=True
+        )
+
+        self.add_property(
+            descr='Last run time',
+            name='last_run_time',
+            get='last_run_time',
+            set=None,
+            list=True
+        )
+
+        self.add_property(
+            descr='Last run status',
+            name='last_run_status',
+            get='last_run_status',
+            set=None,
+            list=True
+        )
+
+        self.add_property(
+            descr='Current run status',
+            name='current_run_status',
+            get='current_run_status',
+            set=None,
+            list=True
+        )
+
+        self.add_property(
+            descr='Current run progress',
+            name='current_run_progress',
+            get='current_run_progress',
+            set=None,
+            list=True
+        )
+
+    def load(self):
+        self.entity = self.parent.entity['status']
+
+
 @description("Global network configuration")
 class ScheduleNamespace(ConfigNamespace):
     def __init__(self, name, context, parent):
@@ -283,6 +333,7 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
 
         self.primary_key = self.get_mapping('name')
         self.entity_namespaces = lambda this: [
+            StatusNamespace('status', self.context, this),
             ScheduleNamespace('schedule', self.context, this)
         ]
 

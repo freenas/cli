@@ -167,7 +167,7 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             get='apm_mode',
             usage=_("""\
             Integer that indicates the power management mode
-            as described in ataidle\(8\). A value of 0
+            as described in ataidle(8). A value of 0
             disables power management."""),
             type=ValueType.NUMBER,
             list=False
@@ -201,7 +201,7 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             name='smart_options',
             get='smart_options',
             usage=_("""\
-            Additional options from smartctl\(8\). When
+            Additional options from smartctl(8). When
             setting options, place entire options string
             between double quotes and use a space to
             separate multiple options. Can only set options

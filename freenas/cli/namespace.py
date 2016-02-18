@@ -202,6 +202,12 @@ class PropertyMapping(object):
         self.regex = kwargs.pop('regex', None)
         self.condition = kwargs.pop('condition', None)
 
+    def is_usersetable(self, obj):
+        if hasattr(self.usersetable, '__call__'):
+            return self.usersetable(obj)
+        else:
+            return self.usersetable
+
     def do_get(self, obj):
         if self.condition and not self.condition(obj):
             return None
@@ -287,7 +293,7 @@ class ItemNamespace(Namespace):
                     if not mapping.condition(entity):
                         continue
 
-                if mapping.set and mapping.usersetable and self.parent.allow_edit:
+                if mapping.set and mapping.is_usersetable(entity) and self.parent.allow_edit:
                     editable = True
                 else:
                     editable = False
@@ -364,7 +370,7 @@ class ItemNamespace(Namespace):
 
             for k, v in list(kwargs.items()):
                 prop = self.parent.get_mapping(k)
-                if prop.set is None or not prop.usersetable:
+                if prop.set is None or not prop.is_usersetable(entity):
                     raise CommandException('Property {0} is not writable'.format(k))
                 if prop.regex is not None and not re.match(prop.regex, str(v)):
                     raise CommandException('Invalid input {0} for property {1}.'.format(v, k))
@@ -496,7 +502,7 @@ class ItemNamespace(Namespace):
 
     def has_editable_string(self):
         for prop in self.property_mappings:
-            if prop.set is not None and prop.usersetable and prop.type == ValueType.STRING:
+            if prop.set is not None and prop.is_usersetable(self.entity) and prop.type == ValueType.STRING:
                 if prop.condition and not prop.condition(self.entity):
                     continue
                 else:

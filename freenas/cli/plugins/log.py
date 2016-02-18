@@ -37,7 +37,8 @@ _ = t.gettext
 @description("System logs")
 class LogNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
     """
-    The log namespace can be used to browse and query system logs.
+    The log namespace can be used to browse and query system log entries, where each
+    entry is assigned a numeric log ID.
     """
     def __init__(self, name, context):
         super(LogNamespace, self).__init__(name, context)
@@ -50,6 +51,9 @@ class LogNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             descr='ID',
             name='id',
             get='seqnum',
+            usage=_("""\
+            Log entry ID. Read-only value as
+            assigned by operating system."""),
             set=None,
             list=True
         )
@@ -58,6 +62,9 @@ class LogNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             descr='Timestamp',
             name='timestamp',
             get='created_at',
+            usage=_("""\
+            Time the log entry was created. Read-only value
+            as assigned by operating system."""),
             set=None,
             list=True,
             type=ValueType.TIME
@@ -67,6 +74,11 @@ class LogNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             descr='Priority',
             name='priority',
             get='priority',
+            usage=_("""\
+            Log entry priority. Read-only value as
+            assigned by operating system. Possible values
+            are emerg, alert, crit, err, warning, notice,
+            info, and debug."""),
             list=True,
             set=None,
         )
@@ -75,6 +87,9 @@ class LogNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             descr='Program',
             name='program',
             get='program',
+            usage=_("""\
+            Name of application which generated the log message. Read-only
+            value as reported by operating system."""),
             list=True,
             set=None,
         )
@@ -83,6 +98,9 @@ class LogNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             descr='Message',
             name='message',
             get='message',
+            usage=_("""\
+            Actual log entry. Read-only value as
+            reported by the logging system."""),
             list=True,
             set=None,
         )

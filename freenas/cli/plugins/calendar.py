@@ -85,7 +85,8 @@ class StatusNamespace(ConfigNamespace):
             name='last_run_time',
             get='last_run_time',
             set=None,
-            list=True
+            list=True,
+            type=ValueType.TIME
         )
 
         self.add_property(

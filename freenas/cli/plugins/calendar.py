@@ -268,6 +268,12 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
             type=ValueType.DICT)
 
         self.add_property(
+            descr='Timezone',
+            name='timezone',
+            get='schedule.timezone',
+            list=True)
+
+        self.add_property(
             descr='Enabled',
             name='enabled',
             get='enabled',
@@ -341,6 +347,21 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
             'run': RunCommand()
         }
 
+    def save(self, this, new=False):
+        if new:
+            if 'timezone' not in this.entity['schedule']:
+                this.entity['schedule']['timezone'] = self.context.call_sync('system.general.get_config')['timezone']
+            self.context.submit_task(
+                self.create_task,
+                this.entity,
+                callback=lambda s: post_save(this, s))
+            return
+
+        self.context.submit_task(
+            self.update_task,
+            this.orig_entity[self.save_key_name],
+            this.get_diff(),
+            callback=lambda s: post_save(this, s))
 
     def conditional_required_props(self, kwargs):
         prop_table = {'scrub':['volume'],
@@ -353,35 +374,12 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
                 missing_args.append(prop)
         return missing_args
 
-    def set_schedule(self, entity, row):
-        items = row.split(' ')
-        i = 0
-        sched = {}
-        if len(items) > 8:
-            raise CommandException("Invalid input: {0}".format(row))
-        for item in items:
-            if i == 0:
-                sched['second'] = item
-            elif i == 1:
-                sched['minute'] = item
-            elif i == 2:
-                sched['hour'] = item
-            elif i == 3:
-                sched['day'] = item
-            elif i == 4:
-                sched['month'] = item
-            elif i == 5:
-                sched['day_of_week'] = item
-            elif i == 6:
-                sched['week'] = item
-            elif i == 7:
-                sched['year'] = item
-            i = i + 1
-        entity['schedule'] = sched
-
     def get_schedule(self, entity):
         row = entity['schedule']
-        return dict({k:v for k, v in row.items() if v != "*" and not isinstance(v, bool)})
+        sched = dict({k:v for k, v in row.items() if v != "*" and not isinstance(v, bool)})
+        sched.pop('timezone')
+
+        return sched
 
     def meets_condition(self, entity, prop):
         if prop in TASK_ARG_MAPPING[entity['name']]:

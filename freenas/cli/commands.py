@@ -128,10 +128,10 @@ class PrintenvCommand(Command):
             var_dict_list = []
             for k, v in context.variables.get_all_printable():
                 var_dict = {
-                        'varname': k,
-                        'vardescr': context.variables.variable_doc[k],
-                        'varvalue': v,
-                        }
+                    'varname': k,
+                    'vardescr': context.variables.variable_doc[k],
+                    'varvalue': v,
+                }
                 var_dict_list.append(var_dict)
             return Table(var_dict_list, [
                 Table.Column('Variable', 'varname', ValueType.STRING),

@@ -469,9 +469,8 @@ svc_cli_config = {
             'name': 'homedir_path',
             'get': 'homedir_path',
             'usage': _("""
-            Must be set when "homedir_enable" is set to "yes". Enclose
-            the path to the volume or dataset which contain the home
-            directories between double quotes."""),
+            Enclose the path to the volume or dataset which contains the
+            home directories between double quotes."""),
             'type': ValueType.STRING
         },
         {

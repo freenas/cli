@@ -53,7 +53,18 @@ TASK_ARG_MAPPING = {
     'disk.parallel_test': ['disks','test_type'],
     'update.checkfetch' : ['send_email'],
     'calendar_task.command' : ['username', 'command'],
+    'volume.snapshot_dataset' : ['volume', 'dataset', 'recursive', 'lifetime', 'prefix', 'replicable'],
 }
+
+
+REQUIRED_PROP_TABLE = {'scrub':['volume'],
+                       'smart':['disks', 'test_type'],
+                       'check_updates':['send_email'],
+                       'command':['username','command'],
+                       'snapshot':['volume', 'dataset', 'recursive', 'lifetime']}
+
+
+SKELETON_TASK = {'volume.snapshot_dataset':[ None, None, None, None, "auto", False ]}
 
 
 @description("Runs calendar task right now")
@@ -195,6 +206,7 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
                       create myupdate type=check_updates send_email=false
                       create mysmart type=smart disks=ada0,ada1,ada2 test_type=short
                       create mycommand type=command username=myuser command="some useful unix command"
+                      create mysnapshot type=snapshot volume=mypool dataset=mypool/mydataset recursive=true lifetime="1h"
 
             Creates a calendar task.  Tasks are disabled by default, you must set enabled=true to turn it on.  If a schedule is not set then all values will be set to * (i.e. run all the time).
 
@@ -203,7 +215,8 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
             Valid types for calendar task creation include: scrub, smart, snapshot, replication and check_updates.
             - A 'scrub' task requires a valid volume passed with the 'volume' property.
             - A 'smart' task requires a list of valid disks for the 'disks' property and a test type for the 'test_type' property that is one of short, long, conveyance or offline.
-            - A 'check_updates' task requires a boolean for the 'send_email' property which tells the task whether or not to send an alert by email when a new update is available.""")
+            - A 'check_updates' task requires a boolean for the 'send_email' property which tells the task whether or not to send an alert by email when a new update is available.
+            - A 'snapshot' task requires a valid volume and dataset to snapshot, a boolean for the 'recursive' property, a string value of [0-9]+[hdmy] for lifetime and optionally a boolean for 'replicable' and a string for the 'prefix'.  """)
         self.localdoc["DeleteEntityCommand"] = ("""\
             Usage: delete <name>
 
@@ -338,6 +351,54 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
             condition=lambda e: self.meets_condition(e, 'command')
         )
 
+        self.add_property(
+            descr='Dataset',
+            name='dataset',
+            get=lambda e: self.get_args(e, 'dataset'),
+            list=False,
+            set=lambda obj, value: self.set_args(obj, value, 'dataset'),
+            condition=lambda e: self.meets_condition(e, 'dataset')
+        )
+        
+        self.add_property(
+            descr='Lifetime',
+            name='lifetime',
+            get=lambda e: self.get_args(e, 'lifetime'),
+            list=False,
+            set=lambda obj, value: self.set_args(obj, value, 'lifetime'),
+            condition=lambda e: self.meets_condition(e, 'lifetime')
+        )
+
+        self.add_property(
+            descr='Recursive',
+            name='recursive',
+            get=lambda e: self.get_args(e, 'recursive'),
+            list=False,
+            set=lambda obj, value: self.set_args(obj, value, 'recursive'),
+            condition=lambda e: self.meets_condition(e, 'recursive'),
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
+            descr='Prefix',
+            name='prefix',
+            get=lambda e: self.get_args(e, 'prefix'),
+            list=False,
+            set=lambda obj, value: self.set_args(obj, value, 'prefix'),
+            condition=lambda e: self.meets_condition(e, 'prefix')
+        )
+
+        self.add_property(
+            descr='Replicable',
+            name='replicable',
+            get=lambda e: self.get_args(e, 'replicable'),
+            list=False,
+            set=lambda obj, value: self.set_args(obj, value, 'replicable'),
+            condition=lambda e: self.meets_condition(e, 'replicable'),
+            type=ValueType.BOOLEAN
+        )
+
+
         self.primary_key = self.get_mapping('name')
         self.entity_namespaces = lambda this: [
             StatusNamespace('status', self.context, this),
@@ -365,13 +426,10 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
             callback=lambda s: post_save(this, s))
 
     def conditional_required_props(self, kwargs):
-        prop_table = {'scrub':['volume'],
-                      'smart':['disks', 'test_type'],
-                      'check_updates':['send_email'],
-                      'command':['username','command']}
+
         missing_args = []
-        if kwargs['type'] in prop_table:
-            for prop in prop_table[kwargs['type']]:
+        if kwargs['type'] in REQUIRED_PROP_TABLE:
+            for prop in REQUIRED_PROP_TABLE[kwargs['type']]:
                 missing_args.append(prop)
         return missing_args
 
@@ -397,8 +455,11 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
     def set_args(self, entity, args, name):
         if 'args' not in entity:
             entity['args'] = []
-            while len(entity['args']) < len(TASK_ARG_MAPPING[entity['name']]):
-                entity['args'].append(None)
+            if entity['name'] in SKELETON_TASK and len(entity['args']) < len(TASK_ARG_MAPPING[entity['name']]):
+                entity['args'] = SKELETON_TASK[entity['name']]
+            else:
+                while len(entity['args']) < len(TASK_ARG_MAPPING[entity['name']]):
+                    entity['args'].append(None)
         entity['args'][TASK_ARG_MAPPING[entity['name']].index(name)] = args
 
     def set_type(self, entity, row):

@@ -838,7 +838,6 @@ class WaitCommand(Command):
             SIGTSTP_setter(set_flag=False)
 
 
-
 @description("Allows the user to scroll through output")
 class MorePipeCommand(PipeCommand):
 

@@ -128,7 +128,7 @@ class StatusNamespace(ConfigNamespace):
         self.entity = self.parent.entity['status']
 
 
-@description("Global network configuration")
+@description("Schedule configuration")
 class ScheduleNamespace(ConfigNamespace):
     def __init__(self, name, context, parent):
         super(ScheduleNamespace, self).__init__(name, context)
@@ -175,6 +175,21 @@ class ScheduleNamespace(ConfigNamespace):
             get='minute',
             list=True
         )
+
+        self.add_property(
+            descr='Second',
+            name='second',
+            get='second',
+            list=True
+        )
+
+        self.add_property(
+            descr='Day of Week',
+            name='day_of_week',
+            get='day_of_week',
+            list=True
+        )
+
 
     def load(self):
         self.entity = self.parent.entity['schedule']

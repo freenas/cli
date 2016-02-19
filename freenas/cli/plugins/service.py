@@ -458,48 +458,74 @@ svc_cli_config = {
             'descr': 'Share Home Directory',
             'name': 'homedir_enable',
             'get': 'homedir_enable',
+            usage=_("""
+            Can be set to yes or no. When set to "yes", user home
+            directories located under “homedir_path” will be available
+            over AFP shares."""),
             'type': ValueType.BOOLEAN
         },
         {
             'descr': 'Home Directory Path',
             'name': 'homedir_path',
             'get': 'homedir_path',
+            usage=_("""
+            Must be set when "homedir_enable" is set to "yes". Enclose
+            the path to the volume or dataset which contain the home
+            directories between double quotes."""),
             'type': ValueType.STRING
         },
         {
             'descr': 'Home Directory Name',
             'name': 'homedir_name',
             'get': 'homedir_name',
+            usage=_("""
+            Optional setting which overrides default home folder name
+            with the specified value."""),
             'type': ValueType.STRING
         },
         {
             'descr': 'Auxiliary Parameters',
             'name': 'auxiliary',
             'get': 'auxiliary',
+            usage=_("""
+            Optional, additional afp.conf(5) parameters not provided
+            by other properties. Space delimited list of parameters
+            enclosed between double quotes."""),
             'type': ValueType.STRING
         },
         {
             'descr': 'Connections limit',
             'name': 'connections_limit',
             'get': 'connections_limit',
+            usage=_("""
+            Maximum number of simultaneous connections."""),
             'type': ValueType.NUMBER
         },
         {
             'descr': 'Guest user',
             'name': 'guest_user',
             'get': 'guest_user',
+            usage=_("""
+            The specified user account must exist and have permissions to the
+            volume or dataset being shared."""),
             'type': ValueType.STRING
         },
         {
             'descr': 'Enable guest user',
             'name': 'guest_enable',
             'get': 'guest_enable',
+            usage=_("""
+            Can be set to yes or no. When set to yes, clients will not be
+            prompted to authenticate before accessing AFP shares."""),
             'type': ValueType.BOOLEAN
         },
         {
             'descr': 'Bind Addresses',
             'name': 'bind_addresses',
             'get': 'bind_addresses',
+            usage=_("""
+            IP address(es) to listen for FTP connections. Separate multiple
+            IP addresses with a space and enclose between double quotes."""),
             'list': True,
             'type': ValueType.SET
         },
@@ -507,6 +533,10 @@ svc_cli_config = {
             'descr': 'Database Path',
             'name': 'dbpath',
             'get': 'dbpath',
+            usage=_("""
+            Optional. Specify the path to store the CNID databases used by AFP,
+            where the default is the root of the volume. The path must be
+            writable and enclosed between double quotes."""),
             'type': ValueType.STRING
         },
     ],

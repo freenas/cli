@@ -547,7 +547,15 @@ class IndexCommand(Command):
         obj = context.ml.get_relative_object(self.exec_path[-1], args)
         outseq = None
         if obj.__class__.__name__ == 'RootNamespace':
-            outseq = Sequence(_("Builtin items"), sorted(list(context.ml.builtin_commands.keys())))
+            globalcmd = ['/','..','-']
+            filtercmd = []
+            for k in context.ml.builtin_commands.keys():
+                if k in context.ml.pipe_commands:
+                    filtercmd.append(k)
+                else:
+                    globalcmd.append(k)
+            outseq = Sequence(_("Global commands:"), sorted(globalcmd))
+            outseq += Sequence(_("Filtering commands:"), sorted(filtercmd))
 
         ns_seq = Sequence(
             _("Current namespace items:"),

@@ -732,9 +732,9 @@ svc_cli_config = {
             'descr': 'Auxiliary',
             'name': 'auxiliary',
             'usage': _("""
-            Optional, additional parameters passed to the provider during record
-            update. Separate multiple parameters by a space and enclose them
-            between double quotes."""),
+            Optional, additional parameters passed to the provider during
+            record update. Separate multiple parameters by a space and
+            enclose them between double quotes."""),
             'get': 'auxiliary'
         },
     ],

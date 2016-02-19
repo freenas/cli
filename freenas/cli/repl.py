@@ -77,7 +77,8 @@ from freenas.cli.commands import (
     SaveenvCommand, EchoCommand, SourceCommand, MorePipeCommand, SearchPipeCommand,
     ExcludePipeCommand, SortPipeCommand, LimitPipeCommand, SelectPipeCommand,
     LoginCommand, DumpCommand, WhoamiCommand, PendingCommand, WaitCommand,
-    OlderThanPipeCommand, NewerThanPipeCommand, IndexCommand
+    OlderThanPipeCommand, NewerThanPipeCommand, IndexCommand, AliasCommand,
+    UnaliasCommand
 )
 import collections
 
@@ -192,6 +193,11 @@ def convert_to_literals(tokens):
 class FlowControlInstructionType(enum.Enum):
     RETURN = 'RETURN'
     BREAK = 'BREAK'
+
+
+class Alias(object):
+    def __init__(self, context, string):
+        self.ast = parse(string, '<alias>')
 
 
 class VariableStore(object):
@@ -808,7 +814,9 @@ class MainLoop(object):
         'echo': EchoCommand(),
         'whoami': WhoamiCommand(),
         'pending': PendingCommand(),
-        'wait': WaitCommand()
+        'wait': WaitCommand(),
+        'alias': AliasCommand(),
+        'unalias': UnaliasCommand()
     }
     builtin_commands = base_builtin_commands.copy()
     builtin_commands.update(pipe_commands)
@@ -820,6 +828,7 @@ class MainLoop(object):
         self.prev_path = self.path[:]
         self.start_from_root = False
         self.namespaces = []
+        self.aliases = {}
         self.connection = None
         self.skip_prompt_print = False
         self.saved_state = None
@@ -945,6 +954,9 @@ class MainLoop(object):
 
         if token in list(self.builtin_commands.keys()):
             return self.builtin_commands[token]
+
+        if token in list(self.aliases.keys()):
+            return Alias(self.context, self.aliases[token])
 
         cwd_namespaces = cwd.namespaces()
         cwd_commands = list(cwd.commands().items())
@@ -1202,6 +1214,9 @@ class MainLoop(object):
                         if isinstance(item, Namespace):
                             item.on_enter()
                             resultset.append_flat(self.eval(token, env, path=path+[item], dry_run=dry_run))
+
+                        if isinstance(item, Alias):
+                            resultset.append_flat(self.eval(item.ast, env, path=path)[0])
 
                         if isinstance(item, Command):
                             completions = item.complete(self.context)

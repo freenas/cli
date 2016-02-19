@@ -181,6 +181,28 @@ class SaveenvCommand(Command):
             ))
 
 
+@description("Creates aliases for commands")
+class AliasCommand(Command):
+    def run(self, context, args, kwargs, opargs):
+        if not kwargs:
+            data = [{'label': k, 'value': v} for k, v in context.ml.aliases.items()]
+            return Table(data, [
+                Table.Column('Alias name', 'label'),
+                Table.Column('Alias value', 'value')
+            ])
+
+        for name, value in kwargs.items():
+            context.ml.aliases[name] = value
+
+
+@description("Removes previously defined aliases")
+class UnaliasCommand(Command):
+    def run(self, context, args, kwargs, opargs):
+        for name in args:
+            if name in context.ml.aliases:
+                del context.ml.aliases[name]
+
+
 @description("Spawns shell, enter \"!shell\" (example: \"!sh\")")
 class ShellCommand(Command):
 

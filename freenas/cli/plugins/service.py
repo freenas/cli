@@ -674,44 +674,67 @@ svc_cli_config = {
         {
             'descr': 'DynDNS Provider',
             'name': 'provider',
+            'usage': _("""
+            Name of the DDNS provider."""),
             'get': 'provider'
         },
         {
             'descr': 'IP Server',
             'name': 'ipserver',
+            'usage': _("""
+            Can be used to specify the hostname and port of the IP
+            check server."""),
             'get': 'ipserver'
         },
         {
             'descr': 'Domains',
             'name': 'domains',
             'get': 'domains',
+            'usage': _("""
+            Your system's fully qualified domain name in the format
+            "yourname.dyndns.org"."""),
             'type': ValueType.SET
         },
         {
             'descr': 'Username',
             'name': 'username',
+            'usage': _("""
+            Username used to logon to the provider and update the
+            record."""),
             'get': 'username'
         },
         {
             'descr': 'Password',
             'name': 'password',
+            'usage': _("""
+            Password used to logon to the provider and update the
+            record."""),
             'get': 'password'
         },
         {
             'descr': 'Update period',
             'name': 'update_period',
+            'usage': _("""
+            Number representing how often the IP is checked in seconds."""),
             'get': 'update_period',
             'type': ValueType.NUMBER
         },
         {
             'descr': 'Force update period',
             'name': 'force_update_period',
+            'usage': _("""
+            Number representing how often the IP should be updated, even it
+            has not changed, in seconds."""),
             'get': 'force_update_period',
             'type': ValueType.NUMBER
         },
         {
             'descr': 'Auxiliary',
             'name': 'auxiliary',
+            'usage': _("""
+            Optional, additional parameters passed to the provider during record
+            update. Separate multiple parameters by a space and enclose them
+            between double quotes."""),
             'get': 'auxiliary'
         },
     ],

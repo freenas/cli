@@ -475,6 +475,7 @@ class HelpCommand(Command):
                 {"cmd": "..", "description": "Go up one namespace"},
                 {"cmd": "-", "description": "Go back to previous namespace"}
             ]
+            filtering_cmd_dict_list = []
             for key, value in context.ml.builtin_commands.items():
                 if hasattr(value,'description') and value.description is not None:
                     description = value.description
@@ -484,9 +485,13 @@ class HelpCommand(Command):
                     'cmd': key,
                     'description': description,
                 }
-                builtin_cmd_dict_list.append(builtin_cmd_dict)
+                if key in context.ml.pipe_commands:
+                    filtering_cmd_dict_list.append(builtin_cmd_dict)
+                else:
+                    builtin_cmd_dict_list.append(builtin_cmd_dict)
 
             builtin_cmd_dict_list = sorted(builtin_cmd_dict_list, key=lambda k: k['cmd'])
+            filtering_cmd_dict_list = sorted(filtering_cmd_dict_list, key=lambda k: k['cmd'])
 
             # Finally printing all this out in unix `LESS(1)` pager style
             output_seq = Sequence()
@@ -500,6 +505,11 @@ class HelpCommand(Command):
                 output_seq.append(
                     Table(builtin_cmd_dict_list, [
                         Table.Column('Global Command', 'cmd', ValueType.STRING),
+                        Table.Column('Description', 'description', ValueType.STRING)
+                    ]))
+                output_seq.append(
+                    Table(filtering_cmd_dict_list, [
+                        Table.Column('Filter Command', 'cmd', ValueType.STRING),
                         Table.Column('Description', 'description', ValueType.STRING)
                     ]))
             help_message = ""

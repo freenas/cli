@@ -100,7 +100,7 @@ class ServicesNamespace(RpcBasedLoadMixin, EntityNamespace):
             name='pid',
             get='pid',
             usage=_("""
-            Process ID of the service. Read-only value assigned
+            Process ID of the RUNNING service. Read-only value assigned
             by the operating system."""),
             set=None,
             list=True

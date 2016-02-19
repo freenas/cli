@@ -26,12 +26,17 @@
 #####################################################################
 
 
+import gettext
 from freenas.cli.namespace import (
     Namespace, ConfigNamespace, EntityNamespace, RpcBasedLoadMixin,
     Command, description
 )
 from freenas.cli.output import ValueType
 from freenas.cli.utils import post_save
+
+
+t = gettext.translation('freenas-cli', fallback=True)
+_ = t.gettext
 
 
 @description("Start/stop/restart/reload a service")

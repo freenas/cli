@@ -27,12 +27,10 @@
 
 
 import gettext
-import time
 import copy
 from datetime import datetime
-from threading import Event
-from freenas.cli.namespace import ConfigNamespace, Command, description, CommandException
-from freenas.cli.output import output_msg, ValueType, Table, output_table
+from freenas.cli.namespace import ConfigNamespace, Command, description
+from freenas.cli.output import output_msg, ValueType, Table
 from freenas.cli.utils import post_save
 
 
@@ -168,56 +166,34 @@ class UpdateNowCommand(Command):
     """
 
     def __init__(self):
-        super(Command, self).__init__()
-        self.task_done_event = Event()
-        self.task_state = None
+        super(UpdateNowCommand, self).__init__()
+        self.task_id = None
+        self.reboot = False
+        self.context = None
 
     def task_callback(self, task_state):
-        if task_state in ('FINISHED', 'CANCELLED', 'ABORTED', 'FAILED'):
-            self.task_state = task_state
-            self.task_done_event.set()
+        if task_state in ('FINISHED'):
+            task_data = self.context.entity_subscribers['task'].get(self.task_id)
+            if task_data["result"]:
+                if self.reboot:
+                    output_msg(_(
+                        "Updates Downloaded and Installed SUccessfully."
+                        " System going for a reboot now."
+                    ))
+                else:
+                    output_msg(_(
+                        "System successfully updated."
+                        " Please reboot now using the '/ system reboot' command"
+                    ))
 
     def run(self, context, args, kwargs, opargs):
-        reboot = False
-        if 'reboot' in kwargs and kwargs['reboot']:
-            reboot = True
-        output_msg(_("Checking for new updates..."))
-        update_ops = update_check_utility(context)
-        if update_ops:
-            output_msg(_("The following update packages are available: "))
-            output_table(update_ops)
-        else:
-            output_msg(_("No updates currently available for download and installation"))
-            return
-        original_tasks_blocking = context.variables.variables['tasks_blocking'].value
-        context.variables.set('tasks_blocking', True)
-        output_msg(_("Downloading update packages now..."))
-        context.submit_task(
-            'update.download',
-            message_formatter=download_message_formatter,
+        self.context = context
+        self.reboot = kwargs.get('reboot', self.reboot)
+        self.task_id = context.submit_task(
+            'update.updatenow',
+            self.reboot,
             callback=self.task_callback
         )
-        while not self.task_done_event.wait(timeout=1):
-            pass
-        if self.task_state != 'FINISHED':
-            raise CommandException(_("Updates failed to download"))
-        output_msg(_("System going for an update now..."))
-        self.task_done_event.clear()
-        context.submit_task(
-            'update.update',
-            reboot,
-            callback=self.task_callback
-        )
-        while not self.task_done_event.wait(timeout=1):
-            pass
-        context.variables.set('tasks_blocking', original_tasks_blocking)
-        if self.task_state != 'FINISHED':
-            raise CommandException(_("Updates failed to apply"))
-        else:
-            output_msg(_(
-                "System successfully updated."
-                " Please reboot now using the '/ system reboot' command"
-            ))
 
 
 @description("System Updates and their Configuration")

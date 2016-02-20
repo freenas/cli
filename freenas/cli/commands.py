@@ -745,7 +745,7 @@ class EchoCommand(Command):
 class PendingCommand(Command):
     """
     Display the list of currently pending tasks.
-    
+
     Usage: pending
 
     """
@@ -767,7 +767,7 @@ class WaitCommand(Command):
     """
     Shows task progress of either all waiting tasks or the
     specified task. Use "task show' to determine the task ID.
-    
+
     Usage: wait
            wait <task ID>
 

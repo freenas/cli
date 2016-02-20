@@ -1523,6 +1523,8 @@ class MainLoop(object):
                     return options[0]
             except BaseException as err:
                 output_msg_locked(str(err))
+                if self.context.variables.get('debug'):
+                    output_msg_locked(traceback.format_exc())
         else:
             if self.saved_state:
                 if state < len(self.saved_state):

@@ -369,11 +369,9 @@ class Context(object):
 
         def update_task(task, old_task=None):
             self.pending_tasks[task['id']] = task
-            refresh_prompt()
 
             if task['state'] in ('FINISHED', 'FAILED', 'ABORTED'):
                 del self.pending_tasks[task['id']]
-                refresh_prompt()
 
             if task['id'] in self.task_callbacks:
                 self.handle_task_callback(task)

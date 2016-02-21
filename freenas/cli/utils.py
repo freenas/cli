@@ -118,7 +118,6 @@ def post_save(this, status):
         this.modified = False
         this.load()
         this.update_commands()
-        output.refresh_prompt()
 
 
 def to_list(item):

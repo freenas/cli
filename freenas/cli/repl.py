@@ -42,6 +42,7 @@ import time
 import gettext
 import getpass
 import traceback
+import threading
 import six
 import paramiko
 import inspect
@@ -326,6 +327,7 @@ class Context(object):
         self.event_masks = ['*']
         self.event_divert = False
         self.event_queue = six.moves.queue.Queue()
+        self.output_queue = six.moves.queue.Queue()
         self.keepalive_timer = None
         self.argparse_parser = None
         self.entity_subscribers = {}
@@ -341,6 +343,10 @@ class Context(object):
         self.session_id = None
         self.user_commands = []
         config.instance = self
+
+        self.output_thread = threading.Thread(target=self.output_thread)
+        self.output_thread.daemon = True
+        self.output_thread.start()
 
     @property
     def is_interactive(self):
@@ -377,7 +383,7 @@ class Context(object):
                 self.handle_task_callback(task)
 
             if self.variables.get('verbosity') > 1 and task['state'] in ('CREATED', 'FINISHED'):
-                output_msg_locked(_(
+                self.output_queue.put(_(
                     "Task #{0}: {1}: {2}".format(
                         task['id'],
                         tasks.translate(self, task['name'], task['args']),
@@ -386,7 +392,7 @@ class Context(object):
                 ))
 
             if self.variables.get('verbosity') > 2 and task['state'] == 'WAITING':
-                output_msg_locked(_(
+                self.output_queue.put(_(
                     "Task #{0}: {1}: {2}".format(
                         task['id'],
                         tasks.translate(self, task['name'], task['args']),
@@ -396,7 +402,7 @@ class Context(object):
 
             if task['state'] == 'FAILED':
                 if not task['parent'] or self.variables.get('verbosity') > 1:
-                    output_msg_locked(_(
+                    self.output_queue.put(_(
                         "Task #{0} error: {1}".format(
                             task['id'],
                             task['error'].get('message', '') if task.get('error') else ''
@@ -404,12 +410,12 @@ class Context(object):
                     ))
 
             if task['state'] == 'ABORTED':
-                output_msg_locked(_("Task #{0} aborted".format(task['id'])))
+                self.output_queue.put(_("Task #{0} aborted".format(task['id'])))
 
             if old_task:
                 if len(task['warnings']) > len(old_task['warnings']):
                     for i in task['warnings'][len(old_task['warnings']):]:
-                        output_msg_locked(_("Task #{0}: {1}: warning: {2}".format(
+                        self.output_queue.put(_("Task #{0}: {1}: warning: {2}".format(
                             task['id'],
                             tasks.translate(self, task['name'], task['args']),
                             i['message']
@@ -571,7 +577,7 @@ class Context(object):
 
     def connection_error(self, event, **kwargs):
         if event == ClientError.LOGOUT:
-            output_msg_locked('Logged out from server.')
+            self.output_queue.put('Logged out from server.')
             self.connection.disconnect()
             sys.exit(0)
 
@@ -595,6 +601,11 @@ class Context(object):
 
         self.print_event(event, data)
 
+    def output_thread(self):
+        while True:
+            item = self.output_queue.get()
+            output_msg_locked(item)
+
     def handle_task_callback(self, data):
         if data['state'] in ('FINISHED', 'CANCELLED', 'ABORTED', 'FAILED'):
             self.task_callbacks[data['id']](data['state'])
@@ -606,7 +617,7 @@ class Context(object):
 
         translation = events.translate(self, event, data)
         if translation:
-            output_msg_locked(translation)
+            self.output_queue.put(translation)
 
     def call_sync(self, name, *args, **kwargs):
         return wrap(self.connection.call_sync(name, *args, **kwargs))
@@ -636,7 +647,7 @@ class Context(object):
 
         if not self.variables.get('tasks_blocking'):
             tid = self.submit_task_common_routine(name, callback, *args)
-            output_msg_locked(_("Task #{0} submitted".format(tid)))
+            self.output_queue.put(_("Task #{0} submitted".format(tid)))
             return tid
         else:
             # lets set the SIGTSTP (Ctrl+Z) handler
@@ -944,7 +955,9 @@ class MainLoop(object):
                 output_msg(_('User terminated command'))
                 continue
 
+            output_lock.acquire()
             self.process(line)
+            output_lock.release()
 
     def find_in_scope(self, token, cwd=None):
         if not cwd:
@@ -1520,9 +1533,9 @@ class MainLoop(object):
                 if options:
                     return options[0]
             except BaseException as err:
-                output_msg_locked(str(err))
+                output_msg(str(err))
                 if self.context.variables.get('debug'):
-                    output_msg_locked(traceback.format_exc())
+                    output_msg(traceback.format_exc())
         else:
             if self.saved_state:
                 if state < len(self.saved_state):

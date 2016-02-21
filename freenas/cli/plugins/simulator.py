@@ -159,7 +159,16 @@ class DisksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
                     action = "created"
                 else:
                     action = "updated"
-                output_msg_locked(_("Disk '{0}' has been {1} but the service '{2}' is not currently running, please enable the service with '/ service {2} config set enable=yes'".format(this.entity['id'], action, service_name)))
+
+                output_msg_locked(_(
+                    "Disk '{0}' has been {1} but the service '{2}' is not currently running, "
+                    "please enable the service with '/ service {2} config set enable=yes'".format(
+                        this.entity['id'],
+                        action,
+                        service_name
+                    )
+                ))
+
         post_save(this, status)
 
 

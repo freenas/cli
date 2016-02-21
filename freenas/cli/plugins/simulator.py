@@ -160,7 +160,7 @@ class DisksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
                 else:
                     action = "updated"
 
-                output_msg_locked(_(
+                self.context.output_queue.put(_(
                     "Disk '{0}' has been {1} but the service '{2}' is not currently running, "
                     "please enable the service with '/ service {2} config set enable=yes'".format(
                         this.entity['id'],

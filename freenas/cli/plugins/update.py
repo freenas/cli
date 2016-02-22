@@ -30,7 +30,7 @@ import gettext
 import copy
 from datetime import datetime
 from freenas.cli.namespace import ConfigNamespace, Command, description
-from freenas.cli.output import output_msg, ValueType, Table
+from freenas.cli.output import output_msg, ValueType, Table, read_value
 from freenas.cli.utils import post_save
 
 
@@ -188,7 +188,7 @@ class UpdateNowCommand(Command):
 
     def run(self, context, args, kwargs, opargs):
         self.context = context
-        self.reboot = kwargs.get('reboot', self.reboot)
+        self.reboot = read_value(kwargs.get('reboot', self.reboot), tv=ValueType.BOOLEAN)
         self.task_id = context.submit_task(
             'update.updatenow',
             self.reboot,

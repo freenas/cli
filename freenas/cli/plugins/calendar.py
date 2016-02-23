@@ -73,8 +73,11 @@ class RunCommand(Command):
     The calendar namespace provides commands for listing and configuring
     tasks that run on a schedule.
     """
-    def run(self, args, kwargs, opargs):
-        pass
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        context.submit_task('calendar_task.run', self.parent.entity['id'])
 
 
 @description("Task status")
@@ -421,7 +424,7 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
         ]
 
         self.entity_commands = lambda this: {
-            'run': RunCommand()
+            'run': RunCommand(this)
         }
 
     def save(self, this, new=False):

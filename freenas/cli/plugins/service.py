@@ -93,7 +93,7 @@ class ServicesNamespace(RpcBasedLoadMixin, EntityNamespace):
             descr='State',
             name='state',
             get='state',
-            'usage': _("""
+            usage= _("""
             Indicates whether the service is RUNNING or STOPPED.
             Read-only value assigned by the operating system."""),
             set=None,
@@ -104,7 +104,7 @@ class ServicesNamespace(RpcBasedLoadMixin, EntityNamespace):
             descr='Process ID',
             name='pid',
             get='pid',
-            'usage': _("""
+            usage= _("""
             Process ID of the RUNNING service. Read-only value assigned
             by the operating system."""),
             set=None,

@@ -999,18 +999,28 @@ svc_cli_config = {
         {
             'descr': 'Save description',
             'name': 'save_description',
+            'usage': _("""
+            Can be set to yes or no. When set to yes,
+            receive mode is enabled and received peer information
+            is saved in interface descriptions."""),
             'get': 'save_description',
             'type': ValueType.BOOLEAN
         },
         {
             'descr': 'Country code',
             'name': 'country_code',
+            'usage': _("""
+            Required for LLDP location support. Input 2 letter ISO 3166
+            country code."""),
             'get': 'country_code',
             'type': ValueType.STRING
         },
         {
             'descr': 'Location',
             'name': 'location',
+            'usage': _("""
+            Optional, physical location of the host enclosed within
+            double quotes."""),
             'get': 'location',
             'type': ValueType.STRING
         },

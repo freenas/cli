@@ -858,48 +858,76 @@ svc_cli_config = {
         {
             'descr': 'Number of servers',
             'name': 'servers',
+            'usage': _("""
+            When setting this number, do not exceed the number
+            of CPUS shown from running shell "sysctl -n
+            kern.smp.cpus"."""),
+            'get': 'update_period',
             'get': 'servers',
             'type': ValueType.NUMBER
         },
         {
             'descr': 'Enable UDP',
             'name': 'udp',
+            'usage': _("""
+            Can be set to yes or no. When set to yes,
+            older NFS clients that require UDP are supported."""),
+            'get': 'update_period',
             'get': 'udp',
             'type': ValueType.BOOLEAN
         },
         {
             'descr': 'Enable NFSv4',
             'name': 'v4',
+            'usage': _("""
+            Can be set to yes or no. When set to yes,
+            both NFSv3 and NFSv4 are supported."""),
             'get': 'v4',
             'type': ValueType.BOOLEAN
         },
         {
             'descr': 'Enable NFSv4 Kerberos',
             'name': 'v4_kerberos',
+            'usage': _("""
+            Can be set to yes or no. When set to yes,
+            NFS shares will fail if the Kerberos ticket is
+            unavailable."""),
             'get': 'v4_kerberos',
             'type': ValueType.BOOLEAN
         },
         {
             'descr': 'Bind addresses',
             'name': 'bind_addresses',
+            'usage': _("""
+            Space delimited list of IP addresses to listen for NFS
+            requests, placed between double quotes. Unless specified,
+            NFS will listen on all available addresses."""),
+            'get': 'update_period',
             'get': 'bind_addresses',
             'type': ValueType.SET
         },
         {
             'descr': 'Mountd port',
             'name': 'mountd_port',
+            'usage': _("""
+            Number representing the port for mountd(8) to bind to."""),
+            'get': 'update_period',
             'get': 'mountd_port',
             'type': ValueType.NUMBER
         },
         {
             'descr': 'RPC statd port',
             'name': 'rpcstatd_port',
+            'usage': _("""
+            Number representing the port for rpcstatd(8) to bind to."""),
             'get': 'rpcstatd_port',
             'type': ValueType.NUMBER
         },
         {
             'descr': 'RPC Lockd port',
             'name': 'rpclockd_port',
+            'usage': _("""
+            Number representing the port for rpclockd(8) to bind to."""),
             'get': 'rpclockd_port',
             'type': ValueType.NUMBER
         },

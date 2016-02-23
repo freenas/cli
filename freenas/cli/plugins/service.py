@@ -694,24 +694,43 @@ svc_cli_config = {
         {
             'descr': 'Log in syslog',
             'name': 'syslog',
+            'usage': _("""
+            Can be set to yes or no. When set to yes,
+            authentication failures are logged to /var/log/messages
+            instead of the default of /var/log/samba4/log.smbd."""),
             'get': 'syslog',
             'type': ValueType.BOOLEAN
         },
         {
             'descr': 'Local master',
             'name': 'local_master',
+            'usage': _("""
+            Can be set to yes or no. When set to yes, the system
+            will participate in a browser election. Should be set
+            to no when network contains an AD or LDAP server. Does
+            not need to be set if Vista or Windows 7 machines are
+            present."""),
             'get': 'local_master',
             'type': ValueType.BOOLEAN
         },
         {
             'descr': 'Domain logons',
             'name': 'domain_logons',
+            'usage': _("""
+            Can be set to yes or no. Only set to yes when
+            if need to provide the netlogin service for older
+            Windows clients."""),
             'get': 'domain_logons',
             'type': ValueType.BOOLEAN
         },
         {
             'descr': 'Time server',
             'name': 'time_server',
+            'usage': _("""
+            Can be set to yes or no and determines whether or not the
+            system advertises itself as a time server to Windows
+            clients. Do not set to yes if the network contains an AD
+            or LDAP server."""),
             'get': 'time_server',
             'type': ValueType.BOOLEAN
         },

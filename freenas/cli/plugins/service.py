@@ -514,6 +514,16 @@ svc_cli_config = {
         {
             'descr': 'TLS Options',
             'name': 'tls_options',
+            'usage': _("""
+            The following options can be set: 
+            ALLOW_CLIENT_RENEGOTIATIONS, ALLOW_DOT_LOGIN,
+            ALLOW_PER_USER, COMMON_NAME_REQUIRED,
+            ENABLE_DIAGNOSTICS, EXPORT_CERTIFICATE_DATA,
+            NO_CERTIFICATE_REQUEST, NO_EMPTY_FRAGMENTS,
+            NO_SESSION_REUSE_REQUIRED, STANDARD_ENV_VARS,
+            DNS_NAME_REQUIRED, IP_ADDRESS_REQUIRED. Separate
+            mutiple options with a space and enclose between
+            double quotes."""),
             'get': 'tls_options',
             'enum': [
                     'ALLOW_CLIENT_RENEGOTIATIONS',
@@ -534,12 +544,20 @@ svc_cli_config = {
         {
             'descr': 'TLS SSL Certificate',
             'name': 'tls_ssl_certificate',
+            'usage': _("""
+            The SSL certificate to be used for TLS FTP
+            connections. Enclose the certificate between double
+            quotes"""),
             'get': 'tls_ssl_certificate',
             'type': ValueType.STRING
         },
         {
             'descr': 'Auxiliary parameters',
             'name': 'auxiliary',
+            'usage': _("""
+            Optional, additional proftpd(8) parameters not provided
+            by other properties. Space delimited list of parameters
+            enclosed between double quotes."""),
             'get': 'auxiliary',
             'type': ValueType.STRING
         },

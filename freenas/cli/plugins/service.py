@@ -338,6 +338,10 @@ svc_cli_config = {
         {
             'descr': 'Login message',
             'name': 'display_login',
+            'usage': _("""
+            Message displayed to local login users after authentication.
+            It is not displayed to anonymous login users. Enclose the
+            message between double quotes."""),
             'get': 'display_login',
             'type': ValueType.STRING
         },
@@ -359,29 +363,51 @@ svc_cli_config = {
             'descr': 'Enable FXP protocol',
             'name': 'fxp',
             'get': 'fxp',
+            'usage': _("""
+            Can be set to yes or no. When set to yes,
+            it enables the File eXchange Protocol which is
+            discouraged as it makes the server vulnerable to
+            FTP bounce attacks."""),
             'type': ValueType.BOOLEAN
         },
         {
             'descr': 'Automatic transfer resumption',
             'name': 'resume',
+            'usage': _("""
+            Can be set to yes or no. When set to yes,
+            FTP clients can resume interrupted transfers."""),
             'get': 'resume',
             'type': ValueType.BOOLEAN
         },
         {
             'descr': 'Chroot local users',
             'name': 'chroot',
+            'usage': _("""
+            Can be set to yes or no. When set to yes,
+            local users are restricted to their own home
+            directory except for users which are members of
+            the wheel group."""),
             'get': 'chroot',
             'type': ValueType.BOOLEAN
         },
         {
             'descr': 'Require identd authentication',
             'name': 'ident',
+            'usage': _("""
+            Can be set to yes or no. When set to yes,
+            timeouts will occur if the identd service is not
+            running on the client."""),
             'get': 'ident',
             'type': ValueType.BOOLEAN
         },
         {
             'descr': 'Perform reverse DNS lookups',
             'name': 'reverse_dns',
+            'usage': _("""
+            Can be set to yes or no. When set to yes,
+            the system will perform reverse DNS lookups on client
+            IPs. This can cause long delays if reverse DNS is not
+            configured."""),
             'get': 'reverse_dns',
             'type': ValueType.BOOLEAN
         },

@@ -414,54 +414,88 @@ svc_cli_config = {
         {
             'descr': 'Masquerade address',
             'name': 'masquerade_address',
+            'usage': _("""
+            System's public IP address or hostname. Set this
+            property if FTP clients can not connect through a
+            NAT device."""),
             'get': 'masquerade_address',
             'type': ValueType.STRING
         },
         {
             'descr': 'Minimum passive ports',
             'name': 'passive_ports_min',
+            'usage': _("""
+            Numeric port number indicating the lowest port number
+            available to FTP clients in PASV mode. Default of 0
+            means any port above 1023."""),
             'get': 'passive_ports_min',
             'type': ValueType.NUMBER
         },
         {
             'descr': 'Maximum passive ports',
             'name': 'passive_ports_max',
+            'usage': _("""
+            Numeric port number indicating the highest port number
+            available to FTP clients in PASV mode. Default of 0
+            means any port above 1023."""),
             'get': 'passive_ports_max',
             'type': ValueType.NUMBER
         },
         {
             'descr': 'Local user upload bandwidth',
             'name': 'local_up_bandwidth',
+            'usage': _("""
+            Number representing the maximum upload bandwidth per local
+            user in KB/s. Default of 0 means unlimited."""),
             'get': 'local_up_bandwidth',
             'type': ValueType.NUMBER
         },
         {
             'descr': 'Local user download bandwidth',
             'name': 'local_down_bandwidth',
+            'usage': _("""
+            Number representing the maximum download bandwidth per
+            local user in KB/s. Default of 0 means unlimited."""),
             'get': 'local_down_bandwidth',
             'type': ValueType.NUMBER
         },
         {
             'descr': 'Anonymous upload bandwidth',
             'name': 'anon_up_bandwidth',
+            'usage': _("""
+            Number representing the maximum upload bandwidth per
+            anonymous user in KB/s. Default of 0 means unlimited."""),
             'get': 'anon_up_bandwidth',
             'type': ValueType.NUMBER
         },
         {
             'descr': 'Anonymous download bandwidth',
             'name': 'anon_down_bandwidth',
+            'usage': _("""
+            Number representing the maximum download bandwidth per
+            anonymous user in KB/s. Default of 0 means unlimited."""),
             'get': 'anon_down_bandwidth',
             'type': ValueType.NUMBER
         },
         {
             'descr': 'Enable TLS',
             'name': 'tls',
+            'usage': _("""
+            Can be set to yes or no. When set to yes, it
+            enables encrypted connections and requires a certificate to
+            be created or imported."""),
             'get': 'tls',
             'type': ValueType.BOOLEAN
         },
         {
             'descr': 'TLS Policy',
             'name': 'tls_policy',
+            'usage': _("""
+            The specified policy defines whether the control
+            channel, data channel, both channels, or neither
+            channel of an FTP session must occur over SSL/TLS.
+            Valid values are ON, OFF, DATA, !DATA, AUTH, CTRL,
+            CTRL+DATA, CTRL+!DATA, AUTH+DATA, or AUTH+!DATA."""),
             'get': 'tls_policy',
             'enum': [
                 'ON',

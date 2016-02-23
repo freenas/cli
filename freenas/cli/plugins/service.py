@@ -258,54 +258,80 @@ svc_cli_config = {
         {
             'descr': 'ftp port',
             'name': 'port',
+            'usage': _("""
+            Numeric port the FTP service listens on."""),
             'get': 'port',
             'type': ValueType.NUMBER
         },
         {
             'descr': 'Maximum clients',
             'name': 'max_clients',
+            'usage': _("""
+            Number representing the maximum number of simultaneous
+            clients."""),
             'get': 'max_clients',
             'type': ValueType.NUMBER
         },
         {
             'descr': 'Maximum connections per IP',
             'name': 'ip_connections',
+            'usage': _("""
+            Number representing the maximum number of connections
+            per IP address, where 0 means unlimited."""),
             'get': 'ip_connections',
             'type': ValueType.NUMBER
         },
         {
             'descr': 'Maximum login attempts',
             'name': 'login_attempts',
+            'usage': _("""
+            Number representing the maximum number of failed login
+            attempts before client is disconnected."""),
             'get': 'login_atempt',
             'type': ValueType.NUMBER
         },
         {
             'descr': 'Idle timeout',
             'name': 'timeout',
+            'usage': _("""
+            Number representing the maximum client idle time, in
+            seconds, before client is disconnected."""),
             'get': 'timeout',
             'type': ValueType.NUMBER
         },
         {
             'descr': 'root login',
             'name': 'root_login',
+            'usage': _("""
+            Can be set to yes or no and indicates whether or not
+            root logins are allowed."""),
             'get': 'root_login',
             'type': ValueType.BOOLEAN
         },
         {
             'descr': 'Path for anonymous login',
             'name': 'anonymous_path',
+            'usage': _("""
+            Full path to the root directory for anonymous FTP
+            connections."""),
             'get': 'anonymous_path',
             'type': ValueType.STRING
         },
         {
             'descr': 'Only allow anonymous login',
             'name': 'only_anonymous',
+            'usage': _("""
+            Can be set to yes or no and indicates whether or not
+            only anonymous logins are allowed."""),
             'get': 'only_anonymous',
             'type': ValueType.BOOLEAN
         },
         {
             'descr': 'Only allow local user login',
             'name': 'only_local',
+            'usage': _("""
+            Can be set to yes or no. When set to yes,
+            anonymous logins are not allowed."""),
             'get': 'only_local',
             'type': ValueType.BOOLEAN
         },

@@ -1192,12 +1192,18 @@ svc_cli_config = {
         {
             'descr':'Port',
             'name':'port',
+            'usage': _("""
+            Number representing the port for rsyncd to listen on."""),
             'get':'port',
             'type':ValueType.NUMBER,
         },
         {
             'descr':'Auxiliary',
             'name':'auxiliary',
+            'usage': _("""
+            Optional, additional rsyncd.conf(5) parameters not provided
+            by other properties. Space delimited list of parameters
+            enclosed between double quotes."""),
             'get':'auxiliary',
             'type':ValueType.STRING,
         },

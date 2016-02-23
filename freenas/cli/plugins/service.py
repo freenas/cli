@@ -464,8 +464,8 @@ svc_cli_config = {
             'name': 'homedir_enable',
             'get': 'homedir_enable',
             'usage': _("""
-            Can be set to yes or no. When set to "yes", user home
-            directories located under “homedir_path” will be available
+            Can be set to yes or no. When set to 'yes', user home
+            directories located under 'homedir_path' will be available
             over AFP shares."""),
             'type': ValueType.BOOLEAN
         },

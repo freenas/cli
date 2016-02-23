@@ -1117,12 +1117,20 @@ svc_cli_config = {
         {
             'descr': 'Interval',
             'name': 'interval',
+            'usage': _("""
+            Number representing how often, in minutes, to wake
+            up smartd to check to see if any tests have been
+            configured to run."""),
             'get': 'interval',
             'type': ValueType.NUMBER
         },
         {
             'descr': 'Power mode',
             'name': 'power_mode',
+            'usage': _("""
+            Configured tests are not performed if the system enters
+            the specified power mode. Values are: NEVER, SLEEP,
+            STANDBY, or IDLE."""),
             'get': 'power_mode',
             'enum': [
                 'NEVER',
@@ -1135,18 +1143,32 @@ svc_cli_config = {
         {
             'descr': 'Temperature difference',
             'name': 'temp_difference',
+            'usage': _("""
+            Default of 0 disables this check. Otherwise, reports if
+            the temperature of a drive has changed by the specified
+            number of degrees Celsius since last report."""),
             'get': 'temp_difference',
             'type': ValueType.NUMBER
         },
         {
             'descr': 'Temperature informational',
             'name': 'temp_informational',
+            'usage': _("""
+            By default, this check is disabled. If set, will log
+            an entry of LOG_INFO if the temperature is higher than
+            the specified number of degrees Celsius since the last
+            report."""),
             'get': 'temp_informational',
             'type': ValueType.NUMBER
         },
         {
             'descr': 'Temperature critical',
             'name': 'temp_critical',
+            'usage': _("""
+            By default, this check is disabled. If set, will log
+            an entry of LOG_CRIT and will send an email if the
+            temperature is higher than the specified number of degrees
+            Celsius since the last report."""),
             'get': 'temp_critical',
             'type': ValueType.NUMBER
         },

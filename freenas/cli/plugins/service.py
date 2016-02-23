@@ -652,22 +652,33 @@ svc_cli_config = {
         {
             'descr': 'NetBIOS Name',
             'name': 'netbiosname',
+            'usage': _("""
+            Must be different from the 'Workgroup'."""),
             'get': 'netbiosname',
             'type': ValueType.SET
         },
         {
             'descr': 'Workgroup',
             'name': 'workgroup',
+            'usage': _("""
+            Must match the Windows workgroup name. This setting is
+            ignored if the Active Directory or LDAP service is
+            running."""),
             'get': 'workgroup'
         },
         {
             'descr': 'description',
             'name': 'description',
+            'usage': _("""
+            Optional. Enclose between double quotes if it contains
+            a space."""),
             'get': 'description',
         },
         {
             'descr': 'DOS Character Set',
             'name': 'dos_charset',
+            'usage': _("""
+            Must be different from the 'Workgroup'."""),
             'get': 'dos_charset'
         },
         {

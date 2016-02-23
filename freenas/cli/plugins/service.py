@@ -737,6 +737,9 @@ svc_cli_config = {
         {
             'descr': 'Guest User',
             'name': 'guest_user',
+            'usage': _("""
+            The specified user account must exist and have permissions to the
+            volume or dataset being shared."""),
             'get': 'guest_user'
         },
         {
@@ -752,12 +755,22 @@ svc_cli_config = {
         {
             'descr': 'Empty password logons',
             'name': 'empty_password',
+            'usage': _("""
+            Can be set to yes or no. If set to yes,
+            users can just press Enter when prompted for a 
+            password. Requires that the username/password be the
+            same as the Windows user account."""),
             'get': 'empty_password',
             'type': ValueType.BOOLEAN
         },
         {
             'descr': 'UNIX Extensions',
             'name': 'unixext',
+            'usage': _("""
+            Can be set to yes or no. If set to yes,
+            non-Windows clients can access symbolic links
+            and hard links. This property has no effect on Windows
+            clients."""),
             'get': 'unixext',
             'type': ValueType.BOOLEAN
         },
@@ -765,23 +778,44 @@ svc_cli_config = {
         {
             'descr': 'Zero Configuration',
             'name': 'zeroconf',
+            'usage': _("""
+            Can be set to yes or no. Set to yes if MAC
+            clients will be connecting to the smb share."""),
             'get': 'zeroconf',
             'type': ValueType.BOOLEAN
         },
         {
             'descr': 'Host lookup',
             'name': 'hostlookup',
+            'usage': _("""
+            Can be set to yes or no. If set to yes, you can
+            specify hostnames rather than IP addresses in the
+            hosts_allow or hosts_deny properties of a smb share.
+            Set to no if you only use IP addresses as it saves
+            the time of a host lookup."""),
             'get': 'hostlookup',
             'type': ValueType.BOOLEAN
         },
         {
             'descr': 'Minimum Protocol',
             'name': 'min_protocol',
+            'usage': _("""
+            The minimum protocol version the server will support.
+            Valid values, in order, are: CORE, COREPLUS, LANMAN1,
+            LANMAN2, NT1, SMB2, SMB2_02, SMB2_10, SMB2_22, 
+            SMB2_24, SMB3,, or SMB3_00. The set value must be lower
+            than the max_protocol."""),
             'get': 'min_protocol',
         },
         {
             'descr': 'Maximum Protocol',
             'name': 'max_protocol',
+            'usage': _("""
+            The maximum protocol version the server will support.
+            Valid values, in order, are: CORE, COREPLUS, LANMAN1,
+            LANMAN2, NT1, SMB2, SMB2_02, SMB2_10, SMB2_22, 
+            SMB2_24, SMB3,, or SMB3_00. The set value must be higher
+            than the min_protocol."""),
             'get': 'max_protocol',
         },
         {

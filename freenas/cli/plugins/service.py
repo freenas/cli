@@ -968,18 +968,29 @@ svc_cli_config = {
         {
             'descr': 'Base name',
             'name': 'base_name',
+            'usage': _("""
+            Name in IQN format as described by RFC 3721. Enclose
+            name between double quotes."""),
             'get': 'base_name',
             'type': ValueType.STRING
         },
         {
             'descr': 'Pool space threshold',
             'name': 'pool_space_threshold',
+            'usage': _("""
+            Number representing the percentage of free space that should
+            remain in the pool. When this percentage is reached, the 
+            system will issue an alert, but only if zvols are used."""),
             'get': 'pool_space_threshold',
             'type': ValueType.NUMBER
         },
         {
             'descr': 'ISNS servers',
             'name': 'isns_servers',
+            'usage': _("""
+            Space delimited list of hostnames or IP addresses of ISNS server(s)
+            to register the system’s iSCSI targets and portals with. Enclose
+            the list between double quotes."""),
             'get': 'isns_servers',
             'type': ValueType.SET
         },

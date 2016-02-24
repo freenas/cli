@@ -1166,12 +1166,18 @@ svc_cli_config = {
         {
             'descr': 'SNMPv3 Username',
             'name': 'v3_username',
+            'usage': _("""
+            Only set if 'v3' is set. Specify the username to
+            register with the SNMPv3 service."""),
             'get': 'v3_username',
             'type': ValueType.STRING
         },
         {
             'descr': 'SNMPv3 Password',
             'name': 'v3_password',
+            'usage': _("""
+            Only set if 'v3' is set. Specify a password of
+            at least 8 characters."""),
             'get': 'v3_password',
             'list': False,
             'type': ValueType.STRING
@@ -1179,6 +1185,9 @@ svc_cli_config = {
         {
             'descr': 'SNMPv3 Auth Type',
             'name': 'v3_auth_type',
+            'usage': _("""
+            Only set if 'v3' is set. Specify either
+            MD5 or SHA."""),
             'get': 'v3_auth_type',
             'enum': ['MD5', 'SHA'],
             'type': ValueType.STRING
@@ -1186,6 +1195,9 @@ svc_cli_config = {
         {
             'descr': 'SNMPv3 Privacy Protocol',
             'name': 'v3_privacy_protocol',
+            'usage': _("""
+            Only set if 'v3' is set. Specify either
+            AES or DES."""),
             'get': 'v3_privacy_protocol',
             'enum': ['AES', 'DES'],
             'type': ValueType.STRING
@@ -1193,6 +1205,10 @@ svc_cli_config = {
         {
             'descr': 'SNMPv3 Privacy Passphrase',
             'name': 'v3_privacy_passphrase',
+            'usage': _("""
+            Only set if 'v3' is set and 'v3_password' is not
+            set. Specify a passphrase of at least 8
+            characters."""),
             'get': 'v3_privacy_passphrase',
             'list': False,
             'type': ValueType.STRING
@@ -1200,6 +1216,10 @@ svc_cli_config = {
         {
             'descr': 'Auxiliary parameters',
             'name': 'auxiliary',
+            'usage': _("""
+            Optional, additional snmpd.conf(5) parameters. Separate
+            multiple parameters by a space and enclose them between
+            double quotes."""),
             'get': 'auxiliary',
             'type': ValueType.STRING
         },

@@ -186,7 +186,7 @@ class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
     def save(self, this, new=False):
         if new:
             self.context.submit_task(
-                'boot.environment.create',
+                'boot.environment.clone',
                 this.entity['id'],
                 callback=lambda s: post_save(this, s),
                 )

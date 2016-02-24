@@ -111,7 +111,7 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
         self.entity_subscriber_name = 'network.interface'
         self.create_task = 'network.interface.create'
         self.delete_task = 'network.interface.delete'
-        self.update_task = 'network.interface.configure'
+        self.update_task = 'network.interface.update'
         self.required_props = ['type']
         self.localdoc['CreateEntityCommand'] = ("""\
             Usage: create type=<type>
@@ -619,7 +619,7 @@ class GlobalConfigNamespace(ConfigNamespace):
 
     def save(self):
         return self.context.submit_task(
-            'network.configure',
+            'network.update',
             self.get_diff(),
             callback=lambda s: post_save(self, s)
         )
@@ -777,7 +777,7 @@ class IPMINamespace(EntityNamespace):
         assert not new
 
         self.context.submit_task(
-            'ipmi.configure',
+            'ipmi.update',
             this.entity['channel'],
             this.get_diff(),
             callback=lambda s: post_save(this, s)

@@ -441,7 +441,7 @@ class MailNamespace(ConfigNamespace):
 
     def save(self):
         self.context.submit_task(
-            'mail.configure',
+            'mail.update',
             self.get_diff(),
             callback=lambda s: post_save(self, s)
         )

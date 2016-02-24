@@ -148,7 +148,7 @@ class ServiceConfigNamespace(ConfigNamespace):
 
     def save(self):
         return self.context.submit_task(
-            'service.configure',
+            'service.update',
             self.parent.entity['name'],
             self.get_diff(),
             callback=lambda s: post_save(self, s))

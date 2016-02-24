@@ -586,9 +586,7 @@ class ClearCommand(Command):
     """
 
     def run(self, context, args, kwargs, opargs):
-        output_lock.acquire()
-        os.system('cls' if os.name == 'nt' else 'clear')
-        output_lock.release()
+        sys.stderr.write('\x1b[2J\x1b[H')
 
 
 @description("Shows the CLI command history")

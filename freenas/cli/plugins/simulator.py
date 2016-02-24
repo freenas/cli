@@ -57,7 +57,8 @@ class DisksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
                 create mydisk mediasize=1T rpm=7200 vendor=Quantum model=Fireball
                 create mydisk mediasize=150G rpm=SSD
 
-            Creates a simulated disk for testing. For a list of properties, see 'help properties'.""")
+            Creates a simulated disk for testing. For a list of
+            properties, see 'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] =  ("""\
             Usage: set <property>=<value> ...
 
@@ -66,7 +67,8 @@ class DisksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
                       set mediasize=30G
                       set rpm=15000
 
-            Sets a simulated disk property. For a list of properties, see 'help properties'.""")
+            Sets a simulated disk property. For a list of
+            properties, see 'help properties'.""")
         self.localdoc['DeleteEntityCommand'] = ("""\
             Usage: delete <name>
 

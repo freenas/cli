@@ -176,30 +176,47 @@ svc_cli_config = {
         {
             'descr': 'Allow public key authentication',
             'name': 'allow_pubkey_auth',
+            'usage': _("""
+            Can be set to yes. If set to yes, properly
+            configured key-based authentication for all users
+            is required."""),
             'get': 'allow_pubkey_auth',
             'type': ValueType.BOOLEAN
         },
         {
             'descr': 'Enable compression',
             'name': 'compression',
+            'usage': _("""
+            Can be set to yes or no. When set to yes,
+            compression may reduce latency over slow networks."""),
             'get': 'compression',
             'type': ValueType.BOOLEAN
         },
         {
             'descr': 'Allow password authentication',
             'name': 'allow_password_auth',
+            'usage': _("""
+            Can be set to yes or no. If set to yes,
+            passoword logins are allowed."""),
             'get': 'allow_password_auth',
             'type': ValueType.BOOLEAN
         },
         {
             'descr': 'Allow port forwarding',
             'name': 'allow_port_forwarding',
+            'usage': _("""
+            Can be set to yes or no. If set to yes, users can
+            bypass firewall restrictions using SSH’s port forwarding
+            feature."""),
             'get': 'allow_port_forwarding',
             'type': ValueType.BOOLEAN
         },
         {
             'descr': 'Permit root login',
             'name': 'permit_root_login',
+            'usage': _("""
+            Can be set to yes or no. Setting to yes is discouraged
+            for security reasons."""),
             'get': 'permit_root_login',
             'type': ValueType.BOOLEAN
         },
@@ -212,6 +229,8 @@ svc_cli_config = {
         {
             'descr': 'Port',
             'name': 'port',
+            'usage': _("""
+            Numeric port to open for SSH connection requests."""),
             'get': 'port',
             'type': ValueType.NUMBER
         }

@@ -574,6 +574,10 @@ class SMBSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Allowed hosts',
             name='hosts_allow',
+            usage=_("""
+            Space delimited list, enclosed within double quotes, of allowed
+            hostnames or IP addresses. Note that setting this property
+            will deny any host/IP that is not specified."""),
             get='properties.hosts_allow',
             list=False,
             type=ValueType.SET
@@ -582,6 +586,10 @@ class SMBSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Denied hosts',
             name='hosts_deny',
+            usage=_("""
+            Space delimited list, enclosed within double quotes, of denied
+            hostnames or IP addresses. Note that setting this property
+            will allow any host/IP that is not specified."""),
             get='properties.hosts_deny',
             list=False,
             type=ValueType.SET
@@ -590,6 +598,9 @@ class SMBSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Read only',
             name='read_only',
+            usage=_("""
+            Can be set to yes or no. When set to yes, write access to the
+            share is not allowed."""),
             get='properties.read_only',
             list=True,
             type=ValueType.BOOLEAN
@@ -598,6 +609,10 @@ class SMBSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Guest OK',
             name='guest_ok',
+            usage=_("""
+            Can be set to yes or no. When set to yes, no password is required
+            to connect to the share and all users share the permissions of the
+            guest user set by 'guest_user' in service/smb."""),
             get='properties.guest_ok',
             list=True,
             type=ValueType.BOOLEAN
@@ -606,6 +621,9 @@ class SMBSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Guest only',
             name='guest_only',
+            usage=_("""
+            Can be set to yes or no. When set to yes, guest access is
+            forced for all connections."""),
             get='properties.guest_only',
             list=False,
             type=ValueType.BOOLEAN
@@ -614,6 +632,10 @@ class SMBSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Browseable',
             name='browseable',
+            usage=_("""
+            Can be set to yes or no. When set to yes, users see the contents of
+            other users’ home directories. When set to no, users see only their
+            own home directory."""),
             get='properties.browseable',
             list=False,
             type=ValueType.BOOLEAN
@@ -622,6 +644,9 @@ class SMBSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Show hidden files',
             name='show_hidden_files',
+            usage=_("""
+            Can be set to yes or no. When set to yes, filenames that begin with
+            a dot will be listed."""),
             get='properties.show_hidden_files',
             list=False,
             type=ValueType.BOOLEAN

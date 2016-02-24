@@ -728,14 +728,16 @@ class ISCSIPortalsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespa
                 create myiscsi listen=192.168.1.10
                 create someiscsi listen=127.0.0.1,somehost.local:8888
 
-            Creates an iSCSI portal. For a list of properties, see 'help properties'.""")
+            Creates an iSCSI portal. For a list of properties, see
+            'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
             Usage: set <property>=<value> ...
 
             Examples: set discovery_auth_group=somegroup
                       set listen=hostname,127.0.0.1,192.168.1.10:8888
 
-            Sets a iSCSI portal property. For a list of properties, see 'help properties'.""")
+            Sets a iSCSI portal property. For a list of properties, see
+            'help properties'.""")
 
         self.add_property(
             descr='Portal name',
@@ -801,14 +803,16 @@ class ISCSIAuthGroupsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityName
                 create myiscsi policy=NONE
                 create someiscsi policy=DENY
 
-            Creates an iSCSI auth group. For a list of properties, see 'help properties'.""")
+            Creates an iSCSI auth group. For a list of properties, see
+            'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
             Usage: set <property>=<value> ...
 
             Examples: set name=newname
                       set policy=CHAP
 
-            Sets a iSCSI auth group property. For a list of properties, see 'help properties'.""")
+            Sets a iSCSI auth group property. For a list of properties, see
+            'help properties'.""")
 
         self.add_property(
             descr='Portal name',
@@ -845,7 +849,8 @@ class ISCSIUsersNamespace(EntityNamespace):
                 create myiscsi secret=abcdefghijkl
                 create myiscsi secret=abcdefghijkl peer_name=peeriscsi peer_secret=mnopqrstuvwx
 
-            Creates an iSCSI auth user. For a list of properties, see 'help properties'.""")
+            Creates an iSCSI auth user. For a list of properties, see
+            'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
             Usage: set <property>=<value> ...
 
@@ -854,7 +859,8 @@ class ISCSIUsersNamespace(EntityNamespace):
                       set peer_name=newpeer
                       set peer_secret=klmnopqrstuv
 
-            Sets a iSCSI auth user property. For a list of properties, see 'help properties'.""")
+            Sets a iSCSI auth user property. For a list of properties, see
+            'help properties'.""")
 
         self.add_property(
             descr='User name',
@@ -920,7 +926,8 @@ class ISCSITargetsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespa
                 create myiscsi
                 create myiscsi description="some share" auth_group=somegroup
 
-            Creates an iSCSI target. For a list of properties, see 'help properties'.""")
+            Creates an iSCSI target. For a list of properties, see
+            'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
             Usage: set <property>=<value> ...
 
@@ -928,7 +935,8 @@ class ISCSITargetsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespa
                       set description="describe me"
                       set auth_group=group
 
-            Sets a iSCSI target property. For a list of properties, see 'help properties'.""")
+            Sets a iSCSI target property. For a list of properties, see
+            'help properties'.""")
 
         self.add_property(
             descr='Target name',
@@ -966,14 +974,16 @@ class ISCSITargetMapingNamespace(EntityNamespace):
             Examples:
                 create 12 name=myiscsi
 
-            Creates an iSCSI lun. For a list of properties, see 'help properties'.""")
+            Creates an iSCSI lun. For a list of properties, see
+            'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
             Usage: set <property>=<value> ...
 
             Examples: set name=newname
                       set number=13
 
-            Sets a iSCSI lun property. For a list of properties, see 'help properties'.""")
+            Sets a iSCSI lun property. For a list of properties, see
+            'help properties'.""")
 
         self.add_property(
             descr='LUN number',
@@ -1026,7 +1036,8 @@ class ISCSISharesNamespace(BaseSharesNamespace):
                 create myiscsi target=mypool/somedataset size=3G
                 create myiscsi path="/mnt/mypool/some/directory/" size=3G
 
-            Creates an iSCSI share. For a list of properties, see 'help properties'.""")
+            Creates an iSCSI share. For a list of properties, see
+            'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
             Usage: set <property>=<value> ...
 
@@ -1034,7 +1045,8 @@ class ISCSISharesNamespace(BaseSharesNamespace):
                       set block_size=256
                       set compression=gzip
 
-            Sets a iSCSI share property. For a list of properties, see 'help properties'.""")
+            Sets a iSCSI share property. For a list of properties, see
+            'help properties'.""")
 
         self.add_property(
             descr='Serial number',

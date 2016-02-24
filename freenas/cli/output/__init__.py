@@ -30,14 +30,12 @@ import importlib
 import sys
 import gettext
 import enum
-import string
 from threading import Lock
 import contextlib
 import io
 import six
 import pydoc
 import collections
-import re
 
 from freenas.cli import config
 from freenas.utils import first_or_default

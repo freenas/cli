@@ -678,18 +678,23 @@ class WebDAVSharesNamespace(BaseSharesNamespace):
                 create myshare target=mypool/somedataset
                 create myshare path="/mnt/mypool/some/directory/"
 
-            Creates WebDAV share. For a list of properties, see 'help properties'.""")
+            Creates WebDAV share. For a list of properties, see 'help
+            properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
             Usage: set <property>=<value> ...
 
             Examples: set permission=true
                       set read_only=true
 
-            Sets a WebDAV share property. For a list of properties, see 'help properties'.""")
+            Sets a WebDAV share property. For a list of properties, see
+            'help properties'.""")
 
         self.add_property(
             descr='Read only',
             name='read_only',
+            usage=_("""
+            Can be set to yes or no. When set to yes, users cannot write
+            to the share."""),
             get='properties.read_only',
             list=True,
             type=ValueType.BOOLEAN
@@ -698,6 +703,9 @@ class WebDAVSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Webdav user permission',
             name='permission',
+            usage=_("""
+            Can be set to yes or no. When set to yes, it automatically sets
+            the share’s permissions to the webdav user and group."""),
             get='properties.permission',
             list=True,
             type=ValueType.BOOLEAN

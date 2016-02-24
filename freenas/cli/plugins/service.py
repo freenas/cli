@@ -842,7 +842,7 @@ svc_cli_config = {
             'name': 'execute_always',
             'usage': _("""
             Can be set to yes or no. If set to yes, any user can
-            execute a file, even if that user’s permissions are
+            execute a file, even if that user's permissions are
             not set to execute."""),
             'get': 'execute_always',
             'type': ValueType.BOOLEAN

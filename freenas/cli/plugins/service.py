@@ -919,7 +919,8 @@ svc_cli_config = {
             'usage': _("""
             Password used to logon to the provider and update the
             record."""),
-            'get': 'password'
+            'get': None,
+            'set': 'password'
         },
         {
             'descr': 'Update period',
@@ -1197,7 +1198,8 @@ svc_cli_config = {
             'usage': _("""
             Only set if 'v3' is set. Specify a password of
             at least 8 characters."""),
-            'get': 'v3_password',
+            'set': 'v3_password',
+            'get': None,
             'list': False,
             'type': ValueType.STRING
         },
@@ -1228,7 +1230,8 @@ svc_cli_config = {
             Only set if 'v3' is set and 'v3_password' is not
             set. Specify a passphrase of at least 8
             characters."""),
-            'get': 'v3_privacy_passphrase',
+            'get': None,
+            'set': 'v3_privacy_passphrase',
             'list': False,
             'type': ValueType.STRING
         },
@@ -1340,7 +1343,8 @@ svc_cli_config = {
             'name': 'password',
             'usage': _("""
             Set a secure password to be used by the webdav user."""),
-            'get': 'password',
+            'get': None,
+            'set': 'password',
             'type': ValueType.STRING
         },
         {

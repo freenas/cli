@@ -218,7 +218,7 @@ class FactoryRestoreCommand(Command):
     Usage: factory_restore
     """
     def run(self, context, args, kwargs, opargs):
-        context.call_task_sync('database.restore_factory')
+        context.call_task_sync('database.factory_restore')
 
 
 class ShowReplicationKeyCommand(Command):

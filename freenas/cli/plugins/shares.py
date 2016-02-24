@@ -349,7 +349,8 @@ class NFSSharesNamespace(BaseSharesNamespace):
                 create myshare target=mypool/somedataset
                 create myshare path="/mnt/mypool/some/directory/"
 
-            Creates an NFS share. For a list of properties, see 'help properties'.""")
+            Creates an NFS share. For a list of properties, see 'help
+            properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
             Usage: set <property>=<value> ...
 
@@ -358,7 +359,8 @@ class NFSSharesNamespace(BaseSharesNamespace):
                       set root_user=myuser
                       set hosts=192.168.1.1, somehost.local
 
-            Sets an NFS share property. For a list of properties, see 'help properties'.""")
+            Sets an NFS share property. For a list of properties, see
+            'help properties'.""")
 
         self.add_property(
             descr='All directories',
@@ -466,7 +468,8 @@ class AFPSharesNamespace(BaseSharesNamespace):
                 create myshare target=mypool/somedataset
                 create myshare path="/mnt/mypool/some/directory/"
 
-            Creates an AFP share. For a list of properties, see 'help properties'.""")
+            Creates an AFP share. For a list of properties, see 'help
+            properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
             Usage: set <property>=<value> ...
 
@@ -475,15 +478,16 @@ class AFPSharesNamespace(BaseSharesNamespace):
                       set users_allow=myuser, anotheruser
                       set hosts_allow=192.168.1.1, somehost.local
 
-            Sets an AFP share property. For a list of properties, see 'help properties'.""")
+            Sets an AFP share property. For a list of properties, see
+            'help properties'.""")
 
         self.add_property(
             descr='Allowed hosts/networks',
             name='hosts_allow',
             usage=_("""
-            Space delimited list, enclosed within double quotes, of allowed
-            hostnames or IP addresses. Note that setting this property
-            will deny any host/IP that is not specified."""),
+            Space delimited list, enclosed within double quotes, of
+            allowed hostnames or IP addresses. Note that setting this
+            property will deny any host/IP that is not specified."""),
             get='properties.hosts_allow',
             list=False,
             type=ValueType.SET
@@ -493,9 +497,9 @@ class AFPSharesNamespace(BaseSharesNamespace):
             descr='Denied hosts/networks',
             name='hosts_deny',
             usage=_("""
-            Space delimited list, enclosed within double quotes, of denied
-            hostnames or IP addresses. Note that setting this property
-            will allow any host/IP that is not specified."""),
+            Space delimited list, enclosed within double quotes, of
+            denied hostnames or IP addresses. Note that setting this
+            property will allow any host/IP that is not specified."""),
             get='properties.hosts_deny',
             list=False,
             type=ValueType.SET
@@ -505,9 +509,10 @@ class AFPSharesNamespace(BaseSharesNamespace):
             descr='Allowed users/groups',
             name='users_allow',
             usage=_("""
-            Space delimited list, enclosed within double quotes, of allowed users
-            and/or groups, where groupname begins with a @. Note that setting this
-            property will deny any user/group that is not specified."""),
+            Space delimited list, enclosed within double quotes, of
+            allowed users and/or groups, where groupname begins with a
+            @. Note that setting this property will deny any user/group
+            that is not specified."""),
             get='properties.users_allow',
             list=False,
             type=ValueType.SET
@@ -517,9 +522,10 @@ class AFPSharesNamespace(BaseSharesNamespace):
             descr='Denied users/groups',
             name='users_deny',
             usage=_("""
-            Space delimited list, enclosed within double quotes, of denied users
-            and/or groups, where groupname begins with a @. Note that setting this
-            property will allow any user/group that is not specified."""),
+            Space delimited list, enclosed within double quotes, of
+            denied users and/or groups, where groupname begins with a
+            @. Note that setting this property will allow any user/group
+            that is not specified."""),
             get='properties.users_deny',
             list=False,
             type=ValueType.SET
@@ -537,8 +543,9 @@ class AFPSharesNamespace(BaseSharesNamespace):
             descr='Time machine',
             name='time_machine',
             usage=_("""
-            Can be set to yes or no. When set to yes, FreeNAS will advertise
-            itself as a Time Machine disk so it can be found by Macs."""),
+            Can be set to yes or no. When set to yes, FreeNAS will
+            advertise itself as a Time Machine disk so it can be
+            found by Macs."""),
             get='properties.time_machine',
             list=True,
             type=ValueType.BOOLEAN
@@ -560,7 +567,8 @@ class SMBSharesNamespace(BaseSharesNamespace):
                 create myshare target=mypool/somedataset
                 create myshare path="/mnt/mypool/some/directory/"
 
-            Creates a SMB share. For a list of properties, see 'help properties'.""")
+            Creates a SMB share. For a list of properties, see 'help
+            properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
             Usage: set <property>=<value> ...
 
@@ -569,15 +577,16 @@ class SMBSharesNamespace(BaseSharesNamespace):
                       set browseable=true
                       set hosts_allow=192.168.1.1, somehost.local
 
-            Sets a SMB share property. For a list of properties, see 'help properties'.""")
+            Sets a SMB share property. For a list of properties, see
+            'help properties'.""")
 
         self.add_property(
             descr='Allowed hosts',
             name='hosts_allow',
             usage=_("""
-            Space delimited list, enclosed within double quotes, of allowed
-            hostnames or IP addresses. Note that setting this property
-            will deny any host/IP that is not specified."""),
+            Space delimited list, enclosed within double quotes, of
+            allowed hostnames or IP addresses. Note that setting this
+            property will deny any host/IP that is not specified."""),
             get='properties.hosts_allow',
             list=False,
             type=ValueType.SET
@@ -587,9 +596,9 @@ class SMBSharesNamespace(BaseSharesNamespace):
             descr='Denied hosts',
             name='hosts_deny',
             usage=_("""
-            Space delimited list, enclosed within double quotes, of denied
-            hostnames or IP addresses. Note that setting this property
-            will allow any host/IP that is not specified."""),
+            Space delimited list, enclosed within double quotes, of
+            denied hostnames or IP addresses. Note that setting this
+            property will allow any host/IP that is not specified."""),
             get='properties.hosts_deny',
             list=False,
             type=ValueType.SET
@@ -599,8 +608,8 @@ class SMBSharesNamespace(BaseSharesNamespace):
             descr='Read only',
             name='read_only',
             usage=_("""
-            Can be set to yes or no. When set to yes, write access to the
-            share is not allowed."""),
+            Can be set to yes or no. When set to yes, write access to
+            the share is not allowed."""),
             get='properties.read_only',
             list=True,
             type=ValueType.BOOLEAN
@@ -610,9 +619,10 @@ class SMBSharesNamespace(BaseSharesNamespace):
             descr='Guest OK',
             name='guest_ok',
             usage=_("""
-            Can be set to yes or no. When set to yes, no password is required
-            to connect to the share and all users share the permissions of the
-            guest user set by 'guest_user' in service/smb."""),
+            Can be set to yes or no. When set to yes, no password is
+            required to connect to the share and all users share the
+            permissions of the guest user set by 'guest_user' in
+            service/smb."""),
             get='properties.guest_ok',
             list=True,
             type=ValueType.BOOLEAN
@@ -633,9 +643,9 @@ class SMBSharesNamespace(BaseSharesNamespace):
             descr='Browseable',
             name='browseable',
             usage=_("""
-            Can be set to yes or no. When set to yes, users see the contents of
-            other users’ home directories. When set to no, users see only their
-            own home directory."""),
+            Can be set to yes or no. When set to yes, users see the
+            contents of other users’ home directories. When set to no,
+            users see only their own home directory."""),
             get='properties.browseable',
             list=False,
             type=ValueType.BOOLEAN
@@ -645,8 +655,8 @@ class SMBSharesNamespace(BaseSharesNamespace):
             descr='Show hidden files',
             name='show_hidden_files',
             usage=_("""
-            Can be set to yes or no. When set to yes, filenames that begin with
-            a dot will be listed."""),
+            Can be set to yes or no. When set to yes, filenames that
+            begin with a dot will be listed."""),
             get='properties.show_hidden_files',
             list=False,
             type=ValueType.BOOLEAN

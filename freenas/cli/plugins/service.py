@@ -1307,6 +1307,10 @@ svc_cli_config = {
         {
             'descr': 'Protocol',
             'name': 'protocol',
+            'usage': _("""
+            Set to HTTP (connection always unencrypted), HTTPS
+            (connection always encrypted), or HTTP+HTTPS (both
+            types of connections allowed)."""),
             'get': 'protocol',
             'type': ValueType.SET,
             'list': True,
@@ -1314,24 +1318,38 @@ svc_cli_config = {
         {
             'descr': 'HTTP Port',
             'name': 'http_port',
+            'usage': _("""
+            Only set if 'protocol' is HTTP or HTTP+HTTPS. Numeric
+            port to be used for unencrypted connections. Do not set a
+            port number already being used by another service."""),
             'get': 'http_port',
             'type': ValueType.NUMBER,
         },
         {
             'descr': 'HTTPS Port',
             'name': 'https_port',
+            'usage': _("""
+            Only set if 'protocol' is HTTPS or HTTP+HTTPS. Numeric
+            port to be used for encrypted connections. Do not set a
+            port number already being used by another service."""),
             'get': 'https_port',
             'type': ValueType.NUMBER,
         },
         {
             'descr': 'Password',
             'name': 'password',
+            'usage': _("""
+            Set a secure password to be used by the webdav user."""),
             'get': 'password',
             'type': ValueType.STRING
         },
         {
             'descr': 'Authentication mode',
             'name': 'authentication',
+            'usage': _("""
+            Determines whether or not authentication occurs over
+            an encrypted channel. Set either BASIC (unencrypted)
+            or DIGEST (encrypted)."""),
             'get': 'authentication',
             'enum': [
                 'BASIC',

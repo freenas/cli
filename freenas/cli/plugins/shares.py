@@ -667,12 +667,16 @@ class ISCSIPortalsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespa
         self.add_property(
             descr='Portal name',
             name='name',
+            usage=_("""
+            Mandatory setting. Name of the portal."""),
             get='id'
         )
 
         self.add_property(
             descr='Discovery auth group',
             name='discovery_auth_group',
+            usage=_("""
+            Only set when using CHAP or Mutual CHAP."""),
             get='discovery_auth_group',
             type=ValueType.STRING,
         )
@@ -680,6 +684,11 @@ class ISCSIPortalsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespa
         self.add_property(
             descr='Listen addresses and ports',
             name='listen',
+            usage=_("""
+            Mandatory setting. IP address or wildcard of 0.0.0.0.
+            Separate multiple listen addresses with a space and enclose
+            between double quotes. To change the default listen port of
+            3260, add a colon and the port number after the IP address."""),
             get=self.get_portals,
             set=self.set_portals,
             type=ValueType.SET

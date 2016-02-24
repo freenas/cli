@@ -1139,18 +1139,27 @@ svc_cli_config = {
         {
             'descr': 'Location',
             'name': 'location',
+            'usage': _("""
+            Optional, physical location of the host enclosed within
+            double quotes."""),
             'get': 'location',
             'type': ValueType.STRING
         },
         {
             'descr': 'Contact',
             'name': 'contact',
+            'usage': _("""
+            Optional, email address of administrator enclosed within
+            double quotes."""),
             'get': 'contact',
             'type': ValueType.STRING
         },
         {
             'descr': 'Enable SNMPv3',
             'name': 'v3',
+            'usage': _("""
+            Can be set to yes or no. When set to yes,
+            support for SNMP version 3 is enabled."""),
             'get': 'v3',
             'type': ValueType.BOOLEAN
         },

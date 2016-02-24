@@ -363,6 +363,9 @@ class NFSSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='All directories',
             name='alldirs',
+            usage=_("""
+            Can be set to yes or no. When set to yes, the NFS client
+            can mount any subdirectory within the 'path'."""),
             get='properties.alldirs',
             list=True,
             type=ValueType.BOOLEAN
@@ -371,6 +374,9 @@ class NFSSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Read only',
             name='read_only',
+            usage=_("""
+            Can be set to yes or no. When set to yes, NFS clients are
+            prohibited from writing to the share."""),
             get='properties.read_only',
             list=True,
             type=ValueType.BOOLEAN
@@ -379,6 +385,10 @@ class NFSSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Root user',
             name='root_user',
+            usage=_("""
+            If set, the root user is limited to the specified user’s
+            permissions. This setting prevents 'all_user' from being
+            set."""),
             get='properties.maproot_user',
             list=False
         )
@@ -386,6 +396,10 @@ class NFSSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Root group',
             name='root_group',
+            usage=_("""
+            If set, the root user is limited to the specified group’s
+            permissions. This setting prevents 'all_group' from being
+            set."""),
             get='properties.maproot_group',
             list=False
         )
@@ -393,6 +407,10 @@ class NFSSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='All user',
             name='all_user',
+            usage=_("""
+            If set, the specified user’s permissions are used by all
+            NFS clients. This setting prevents 'root_user' from being
+            set."""),
             get='properties.mapall_user',
             list=False
         )
@@ -400,6 +418,10 @@ class NFSSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='All group',
             name='all_group',
+            usage=_("""
+            If set, the specified group’s permissions are used by all
+            NFS clients. This setting prevents root_group' from being
+            set."""),
             get='properties.mapall_group',
             list=False
         )
@@ -407,6 +429,9 @@ class NFSSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Allowed hosts/networks',
             name='hosts',
+            usage=_("""
+            Space delimited list of allowed IP addresses or hostnames,
+            enclosed between double quotes."""),
             get='properties.hosts',
             list=False,
             type=ValueType.SET
@@ -415,6 +440,11 @@ class NFSSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Security',
             name='security',
+            usage=_("""
+            Allowed values are sys, krb5 (Kerberos authentication only),
+            krb5i (Kerberos authentication and integrity), and krb5p
+            (Kerberos authentication and privacy). Requires 'v4' to be
+            set in services/nfs."""),
             get='properties.security',
             list=True,
             type=ValueType.SET

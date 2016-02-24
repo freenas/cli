@@ -821,18 +821,33 @@ svc_cli_config = {
         {
             'descr': 'Always Execute',
             'name': 'execute_always',
+            'usage': _("""
+            Can be set to yes or no. If set to yes, any user can
+            execute a file, even if that user’s permissions are
+            not set to execute."""),
             'get': 'execute_always',
             'type': ValueType.BOOLEAN
         },
         {
             'descr': 'Obey PAM Restrictions',
             'name': 'obey_pam_restrictions',
+            'usage': _("""
+            Can be set to yes or no. If set to no, cross-domain
+            authentication is allowed so that users and groups can
+            be managed on another forest, and permissions can be
+            delegated from AD users and groups to domain admins on
+            another forest."""),
             'get': 'obey_pam_restrictions',
             'type': ValueType.BOOLEAN
         },
         {
             'descr': 'Bind addresses',
             'name': 'bind_addresses',
+            'usage': _("""
+            Space delimited list of IP address(es) that the smb service
+            should listen on. Enclose the list between double quotes.
+            If not set, the service will listen on all available
+            addresses."""),
             'get': 'bind_addresses',
             'list': True,
             'type': ValueType.SET
@@ -840,6 +855,9 @@ svc_cli_config = {
         {
             'descr': 'Auxiliary',
             'name': 'auxiliary',
+            'usage': _("""
+            Optional, additional smb.conf parameters. Separate multiple 
+            parameters by a space and enclose them between double quotes."""),
             'get': 'auxiliary'
         },
     ],

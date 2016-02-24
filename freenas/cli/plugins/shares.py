@@ -450,6 +450,10 @@ class AFPSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Allowed hosts/networks',
             name='hosts_allow',
+            usage=_("""
+            Space delimited list, enclosed within double quotes, of allowed
+            hostnames or IP addresses. Note that setting this property
+            will deny any host/IP that is not specified."""),
             get='properties.hosts_allow',
             list=False,
             type=ValueType.SET
@@ -458,6 +462,10 @@ class AFPSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Denied hosts/networks',
             name='hosts_deny',
+            usage=_("""
+            Space delimited list, enclosed within double quotes, of denied
+            hostnames or IP addresses. Note that setting this property
+            will allow any host/IP that is not specified."""),
             get='properties.hosts_deny',
             list=False,
             type=ValueType.SET
@@ -466,6 +474,10 @@ class AFPSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Allowed users/groups',
             name='users_allow',
+            usage=_("""
+            Space delimited list, enclosed within double quotes, of allowed users
+            and/or groups, where groupname begins with a @. Note that setting this
+            property will deny any user/group that is not specified."""),
             get='properties.users_allow',
             list=False,
             type=ValueType.SET
@@ -474,6 +486,10 @@ class AFPSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Denied users/groups',
             name='users_deny',
+            usage=_("""
+            Space delimited list, enclosed within double quotes, of denied users
+            and/or groups, where groupname begins with a @. Note that setting this
+            property will allow any user/group that is not specified."""),
             get='properties.users_deny',
             list=False,
             type=ValueType.SET
@@ -490,6 +506,9 @@ class AFPSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Time machine',
             name='time_machine',
+            usage=_("""
+            Can be set to yes or no. When set to yes, FreeNAS will advertise
+            itself as a Time Machine disk so it can be found by Macs."""),
             get='properties.time_machine',
             list=True,
             type=ValueType.BOOLEAN

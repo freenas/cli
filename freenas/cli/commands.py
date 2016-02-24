@@ -803,11 +803,11 @@ class WaitCommand(Command):
             SIGTSTP_setter(set_flag=True)
             output_msg(_("Hit Ctrl+C to terminate task if needed"))
             output_msg(_("To background running task press 'Ctrl+Z'"))
-            context.ml.skip_prompt_print = True
 
             progress = ProgressBar()
             update(progress, task)
-            for op, old, new in context.entity_subscribers['task'].listen(tid):
+            generator = context.entity_subscribers['task'].listen(tid)
+            for op, old, new in generator:
                 update(progress, new)
 
                 if new['state'] == 'FINISHED':
@@ -823,7 +823,7 @@ class WaitCommand(Command):
                     break
         except KeyboardInterrupt:
             six.print_()
-            output_msg(_("User requested task termination. Sending abort signal sent"))
+            output_msg(_("User requested task termination. Abort signal sent"))
             context.call_sync('task.abort', tid)
         except SIGTSTPException:
                 # The User backgrounded the task by sending SIGTSTP (Ctrl+Z)
@@ -832,9 +832,9 @@ class WaitCommand(Command):
                 output_msg(_("To bring it back to the foreground execute 'wait {0}'".format(tid)))
                 output_msg(_("Use the 'pending' command to see pending tasks (of this session)"))
         finally:
-            context.ml.skip_prompt_print = False
             # Now that we are done with the task unset the Ctrl+Z handler
             # lets set the SIGTSTP (Ctrl+Z) handler
+            del generator
             SIGTSTP_setter(set_flag=False)
 
 

@@ -227,6 +227,8 @@ class FactoryRestoreCommand(Command):
 class ShowReplicationKeyCommand(Command):
     """
     Usage: show_key
+    
+    Diplays a copy of the public key for the replication user.
     """
     def run(self, context, args, kwargs, opargs):
         return context.call_sync('replication.get_public_key')

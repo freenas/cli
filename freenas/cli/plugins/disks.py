@@ -273,7 +273,7 @@ class FormatDiskCommand(Command):
 
     def run(self, context, args, kwargs, opargs):
         fstype = kwargs.pop('fstype', 'freebsd-zfs')
-        context.submit_task('disk.format.gpt', self.parent.entity['path'], fstype)
+        context.submit_task('disk.format.gpt', self.parent.entity['id'], fstype)
 
 
 @description("Erases all data on disk safely")

@@ -47,7 +47,7 @@ class ShutdownCommand(Command):
     """
     def run(self, context, args, kwargs, opargs):
         context.submit_task('system.shutdown')
-        return _("System going for a shutdown...")
+        return _("The system will now shutdown...")
 
 
 @description("Reboots the system")
@@ -67,7 +67,7 @@ class RebootCommand(Command):
         if delay:
             delay = parse_timedelta(delay).seconds
         context.submit_task('system.reboot', delay)
-        return _("System going for a reboot...")
+        return _("The system will now reboot...")
 
 
 @description("Provides status information about the server")

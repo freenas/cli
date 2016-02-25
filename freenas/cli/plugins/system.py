@@ -216,6 +216,9 @@ class VersionCommand(Command):
 class FactoryRestoreCommand(Command):
     """
     Usage: factory_restore
+    
+    Resets the configuration database to the default FreeNAS base, deleting
+    all configuration changes. Running this command will reboot the system.
     """
     def run(self, context, args, kwargs, opargs):
         context.call_task_sync('database.factory_restore')

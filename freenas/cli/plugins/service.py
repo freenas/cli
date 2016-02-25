@@ -534,7 +534,7 @@ svc_cli_config = {
             'descr': 'TLS Options',
             'name': 'tls_options',
             'usage': _("""
-            The following options can be set: 
+            The following options can be set:
             ALLOW_CLIENT_RENEGOTIATIONS, ALLOW_DOT_LOGIN,
             ALLOW_PER_USER, COMMON_NAME_REQUIRED,
             ENABLE_DIAGNOSTICS, EXPORT_CERTIFICATE_DATA,
@@ -776,7 +776,7 @@ svc_cli_config = {
             'name': 'empty_password',
             'usage': _("""
             Can be set to yes or no. If set to yes,
-            users can just press Enter when prompted for a 
+            users can just press Enter when prompted for a
             password. Requires that the username/password be the
             same as the Windows user account."""),
             'get': 'empty_password',
@@ -821,7 +821,7 @@ svc_cli_config = {
             'usage': _("""
             The minimum protocol version the server will support.
             Valid values, in order, are: CORE, COREPLUS, LANMAN1,
-            LANMAN2, NT1, SMB2, SMB2_02, SMB2_10, SMB2_22, 
+            LANMAN2, NT1, SMB2, SMB2_02, SMB2_10, SMB2_22,
             SMB2_24, SMB3,, or SMB3_00. The set value must be lower
             than the max_protocol."""),
             'get': 'min_protocol',
@@ -1109,7 +1109,7 @@ svc_cli_config = {
             'name': 'pool_space_threshold',
             'usage': _("""
             Number representing the percentage of free space that should
-            remain in the pool. When this percentage is reached, the 
+            remain in the pool. When this percentage is reached, the
             system will issue an alert, but only if zvols are used."""),
             'get': 'pool_space_threshold',
             'type': ValueType.NUMBER
@@ -1362,24 +1362,24 @@ svc_cli_config = {
             'type': ValueType.STRING
         },
     ],
-    "rsyncd" : [ 
+    "rsyncd": [
         {
-            'descr':'Port',
-            'name':'port',
-            'usage': _("""
-            Number representing the port for rsyncd to listen on."""),
-            'get':'port',
-            'type':ValueType.NUMBER,
+            'descr': 'Port',
+            'name': 'port',
+            'usage': _("""Number representing the port for rsyncd to listen on."""),
+            'get': 'port',
+            'type': ValueType.NUMBER,
         },
         {
-            'descr':'Auxiliary',
-            'name':'auxiliary',
+            'descr': 'Auxiliary',
+            'name': 'auxiliary',
             'usage': _("""
-            Optional, additional rsyncd.conf(5) parameters not provided
-            by other properties. Space delimited list of parameters
-            enclosed between double quotes."""),
-            'get':'auxiliary',
-            'type':ValueType.STRING,
+                Optional, additional rsyncd.conf(5) parameters not provided
+                by other properties. Space delimited list of parameters
+                enclosed between double quotes.
+            """),
+            'get': 'auxiliary',
+            'type': ValueType.STRING,
         },
     ],
 }

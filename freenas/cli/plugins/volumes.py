@@ -878,7 +878,7 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
 
         self.context.submit_task(
             'volume.dataset.update',
-            this.entity['id'],
+            this.orig_entity['id'],
             this.get_diff(),
             callback=lambda s: post_save(this, s)
         )

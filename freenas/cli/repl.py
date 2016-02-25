@@ -118,6 +118,7 @@ ENTITY_SUBSCRIBERS = [
     'group',
     'disk',
     'volume',
+    'volume.dataset',
     'volume.snapshot',
     'network.interface',
     'network.host',

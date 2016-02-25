@@ -369,6 +369,9 @@ class TimeNamespace(ConfigNamespace):
         self.add_property(
             descr='Time zone',
             name='timezone',
+            usage=_("""
+            Use set or edit to change the timezone. Type
+            timezones to see the list of valid timezones."""),
             get='timezone',
             list=True
         )
@@ -601,30 +604,49 @@ class SystemNamespace(ConfigNamespace):
         self.add_property(
             descr='Time zone',
             name='timezone',
+            usage=_("""
+            Use set or edit to change the timezone. Type
+            timezones to see the list of valid timezones."""),
             get='timezone',
         )
 
         self.add_property(
             descr='Hostname',
             name='hostname',
+            usage=_("""
+            Use set or edit to change the system's hostname. The
+            hostname must include the domain name. If the network does
+            not use a domain name add .local to the end of the
+            hostname.."""),
             get='hostname'
         )
 
         self.add_property(
             descr='Syslog Server',
             name='syslog_server',
+            usage=_("""
+            Use set or edit to set the IP address or 
+            hostname:optional_port_number of remote syslog server to
+            send logs to. If set, log entries will be written to both
+            the log namespace and the remote server."""),
             get='syslog_server'
         )
 
         self.add_property(
             descr='Language',
             name='language',
+            usage=_("""
+            Use set or edit to change the localization to the
+            two-letter ISO 3166 country code."""),
             get='language'
         )
 
         self.add_property(
             descr='Console Keymap',
             name='console_keymap',
+            usage=_("""
+            Use set or edit to change the console keyboard
+            layout."""),
             get='console_keymap'
         )
 

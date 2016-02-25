@@ -503,7 +503,7 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
         self.set_args(entity, disks, 'disks')
 
     def set_volume(self, entity, args):
-        all_volumes = [volume["name"] for volume in self.context.call_sync("volume.query")]
+        all_volumes = [volume["id"] for volume in self.context.call_sync("volume.query")]
         if args not in all_volumes:
             raise CommandException(_("Invalid volume: {0}, see '/ volume show' for a list of volumes".format(args)))
         self.set_args(entity, args, 'volume')

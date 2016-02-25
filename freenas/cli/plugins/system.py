@@ -464,6 +464,11 @@ class AdvancedNamespace(ConfigNamespace):
         self.add_property(
             descr='Enable Console CLI',
             name='console_cli',
+            usage=_("""
+            Can be set to yes or no. When set to yes,
+            the system will boot into a login prompt instead
+            of the CLI. You can still start the CLI by
+            typing cli after a successful login."""),
             get='console_cli',
             type=ValueType.BOOLEAN
         )
@@ -471,6 +476,10 @@ class AdvancedNamespace(ConfigNamespace):
         self.add_property(
             descr='Enable Console Screensaver',
             name='console_screensaver',
+            usage=_("""
+            Can be set to yes or no. When set to yes,
+            a screensaver will start after a period of
+            CLI inactivity."""),
             get='console_screensaver',
             type=ValueType.BOOLEAN
         )
@@ -478,6 +487,11 @@ class AdvancedNamespace(ConfigNamespace):
         self.add_property(
             descr='Enable Serial Console',
             name='serial_console',
+            usage=_("""
+            Can be set to yes or no. Only set to yes,
+            if the system has an active serial port and
+            you want to access the system using that serial
+            port."""),
             get='serial_console',
             type=ValueType.BOOLEAN
         )
@@ -485,12 +499,18 @@ class AdvancedNamespace(ConfigNamespace):
         self.add_property(
             descr='Serial Console Port',
             name='serial_port',
+            usage=_("""
+            Use set or edit to specify the serial port
+            to use for console access."""),
             get='serial_port',
         )
 
         self.add_property(
             descr='Serial Port Speed',
             name='serial_speed',
+            sage=_("""
+            Use set to specify the speed of the serial port
+            used for console access."""),
             get='serial_speed',
             type=ValueType.NUMBER
         )

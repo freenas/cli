@@ -1198,7 +1198,7 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
         self.entity_subscriber_name = 'volume'
         self.create_task = 'volume.create'
         self.update_task = 'volume.update'
-        self.delete_task = 'volume.destroy'
+        self.delete_task = 'volume.delete'
         self.localdoc['DeleteEntityCommand'] = ("""\
             Usage: delete <volume>
 

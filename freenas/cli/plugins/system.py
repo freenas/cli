@@ -518,6 +518,10 @@ class AdvancedNamespace(ConfigNamespace):
         self.add_property(
             descr='Enable powerd',
             name='powerd',
+            usage=_("""
+            Can be set to yes or no. When set to yes,
+            enables powerd(8) which monitors the system state and
+            sets the CPU frequency accordingly."""),
             get='powerd',
             type=ValueType.BOOLEAN
         )
@@ -525,6 +529,9 @@ class AdvancedNamespace(ConfigNamespace):
         self.add_property(
             descr='Default swap on drives',
             name='swapondrive',
+            usage=_("""
+            Non-zero number representing the default swap size, for each
+            formatted disk, in GiB."""),
             get='swapondrive',
             type=ValueType.NUMBER
         )
@@ -532,6 +539,10 @@ class AdvancedNamespace(ConfigNamespace):
         self.add_property(
             descr='Enable Debug Kernel',
             name='debugkernel',
+            usage=_("""
+            Can be set to yes or no. When set to yes, the
+            next boot will boot into a debug version of the kernel which
+            can be useful when troubleshooting."""),
             get='debugkernel',
             type=ValueType.BOOLEAN
         )
@@ -539,6 +550,11 @@ class AdvancedNamespace(ConfigNamespace):
         self.add_property(
             descr='Automatically upload crash dumps to iXsystems',
             name='uploadcrash',
+            usage=_("""
+            Can be set to yes or no. When set to yes, kernel
+            crash dumps and telemetry (some system statatistics and syslog
+            messages) are automatically sent to the FreeNAS development
+            team for diagnosis."""),
             get='uploadcrash',
             type=ValueType.BOOLEAN
         )
@@ -546,12 +562,21 @@ class AdvancedNamespace(ConfigNamespace):
         self.add_property(
             descr='Message of the day',
             name='motd',
+            usage=_("""
+            Use set or edit to modify the message to be seen when a user
+            logs in over SSH. When using set, enclose the message between
+            double quotes"""),
             get='motd',
         )
 
         self.add_property(
             descr='Periodic Notify User UID',
             name='periodic_notify_user',
+            usage=_("""
+            Set to the number representing the UID of the user to
+            receive security output emails. this output runs nightly,
+            but only sends an email when the system reboots or
+            encounters an error."""),
             get='periodic_notify_user',
             type=ValueType.NUMBER
         )

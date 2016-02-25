@@ -292,7 +292,7 @@ class EraseDiskCommand(Command):
 
     def run(self, context, args, kwargs, opargs):
         erase_data = str.upper(kwargs.pop('wipe', 'quick'))
-        context.submit_task('disk.erase', self.parent.entity['path'], erase_data)
+        context.submit_task('disk.erase', self.parent.entity['id'], erase_data)
 
 
 def _init(context):

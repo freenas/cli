@@ -126,7 +126,7 @@ class DirectoryServiceConfigureHostnameCommand(DirectoryServiceCommandBase):
         ds_id = self.parent.entity['id']
         args = [ ds_id, 'hostname', self.enable ]
 
-        context.submit_task('directoryservice.configure', args,
+        context.submit_task('directoryservice.update', args,
             callback=lambda s: post_save(self.parent, s))
 
 
@@ -136,7 +136,7 @@ class DirectoryServiceConfigureHostsCommand(DirectoryServiceCommandBase):
         ds_id = self.parent.entity['id']
         args = [ ds_id, 'hosts', self.enable ]
 
-        context.submit_task('directoryservice.configure', args,
+        context.submit_task('directoryservice.update', args,
             callback=lambda s: post_save(self.parent, s))
 
 
@@ -146,7 +146,7 @@ class DirectoryServiceConfigureKerberosCommand(DirectoryServiceCommandBase):
         ds_id = self.parent.entity['id']
         args = [ ds_id, 'kerberos', self.enable ]
 
-        context.submit_task('directoryservice.configure', args,
+        context.submit_task('directoryservice.update', args,
             callback=lambda s: post_save(self.parent, s))
 
 
@@ -156,7 +156,7 @@ class DirectoryServiceConfigureNSSWitchCommand(DirectoryServiceCommandBase):
         ds_id = self.parent.entity['id']
         args = [ ds_id, 'nsswitch', self.enable ]
 
-        context.submit_task('directoryservice.configure', args,
+        context.submit_task('directoryservice.update', args,
             callback=lambda s: post_save(self.parent, s))
 
 
@@ -166,7 +166,7 @@ class DirectoryServiceConfigureOpenLDAPCommand(DirectoryServiceCommandBase):
         ds_id = self.parent.entity['id']
         args = [ ds_id, 'openldap', self.enable ]
 
-        context.submit_task('directoryservice.configure', args,
+        context.submit_task('directoryservice.update', args,
             callback=lambda s: post_save(self.parent, s))
 
 
@@ -176,7 +176,7 @@ class DirectoryServiceConfigureNSSLDAPCommand(DirectoryServiceCommandBase):
         ds_id = self.parent.entity['id']
         args = [ ds_id, 'nssldap', self.enable ]
 
-        context.submit_task('directoryservice.configure', args,
+        context.submit_task('directoryservice.update', args,
             callback=lambda s: post_save(self.parent, s))
 
 
@@ -186,7 +186,7 @@ class DirectoryServiceConfigureSSSDCommand(DirectoryServiceCommandBase):
         ds_id = self.parent.entity['id']
         args = [ ds_id, 'sssd', self.enable ]
 
-        context.submit_task('directoryservice.configure', args,
+        context.submit_task('directoryservice.update', args,
             callback=lambda s: post_save(self.parent, s))
 
 
@@ -196,7 +196,7 @@ class DirectoryServiceConfigureSambaCommand(DirectoryServiceCommandBase):
         ds_id = self.parent.entity['id']
         args = [ ds_id, 'samba', self.enable ]
 
-        context.submit_task('directoryservice.configure', args,
+        context.submit_task('directoryservice.update', args,
             callback=lambda s: post_save(self.parent, s))
 
 
@@ -206,7 +206,7 @@ class DirectoryServiceConfigurePAMCommand(DirectoryServiceCommandBase):
         ds_id = self.parent.entity['id']
         args = [ ds_id, 'pam', self.enable ]
 
-        context.submit_task('directoryservice.configure', args,
+        context.submit_task('directoryservice.update', args,
             callback=lambda s: post_save(self.parent, s))
 
 
@@ -216,7 +216,7 @@ class DirectoryServiceConfigureActiveDirectoryCommand(DirectoryServiceCommandBas
         ds_id = self.parent.entity['id']
         args = [ ds_id, 'activedirectory', self.enable ]
 
-        context.submit_task('directoryservice.configure', args,
+        context.submit_task('directoryservice.update', args,
             callback=lambda s: post_save(self.parent, s))
 
 

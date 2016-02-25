@@ -255,7 +255,7 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
 
     def save(self, this, new=False):
         self.context.submit_task(
-            'disk.configure',
+            'disk.update',
             this.entity['id'],
             this.get_diff(),
             callback=lambda s: post_save(this, s))

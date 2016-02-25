@@ -375,7 +375,7 @@ class TimeNamespace(ConfigNamespace):
 
     def save(self):
         self.context.submit_task(
-            'system.time.configure',
+            'system.time.update',
             self.get_diff(),
             callback=lambda s: post_save(self, s)
         )
@@ -535,7 +535,7 @@ class AdvancedNamespace(ConfigNamespace):
 
     def save(self):
         self.context.submit_task(
-            'system.advanced.configure',
+            'system.advanced.update',
             self.get_diff(),
             callback=lambda s: post_save(self, s)
         )
@@ -639,7 +639,7 @@ class SystemNamespace(ConfigNamespace):
 
     def save(self):
         return self.context.submit_task(
-            'system.general.configure',
+            'system.general.update',
             self.entity,
             callback=lambda s: post_save(self, s)
         )

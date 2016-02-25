@@ -45,7 +45,7 @@ tasks = {
     'user.update': (_("Update user profile"), lambda c, a: _("Update user {0} profile".format(get_username(c, a[0])))),
     'group.create': (_("Create group"), lambda c, a: _("Create group {0}".format(a[0]['name']))),
     'group.update': (_("Update group"), lambda c, a: _("Update group {0}".format(a[0]))),
-    'volume.create': (_("Create volume"), lambda c, a: _("Create volume {0}".format(a[0]['name']))),
+    'volume.create': (_("Create volume"), lambda c, a: _("Create volume {0}".format(a[0]['id']))),
     'volume.create_auto': (_("Create volume"), lambda c, a: _("Create volume {0}".format(a[0]))),
     'volume.destroy': (_("Destroy volume"), lambda c, a: _("Destroy volume {0}".format(a[0]))),
     'disk.format.gpt': (_("Format disk"), lambda c, a: _("Format disk {0}".format(a[0]))),

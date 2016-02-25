@@ -250,7 +250,7 @@ class OfflineVdevCommand(Command):
             raise CommandException(_("Disk {0} is not part of the volume.".format(disk)))
         context.submit_task(
             'zfs.pool.offline_disk',
-            self.parent.entity['name'],
+            self.parent.entity['id'],
             guid,
             callback=lambda s: post_save(self.parent, s)
         )
@@ -287,7 +287,7 @@ class OnlineVdevCommand(Command):
             raise CommandException(_("Disk {0} is not part of the volume.".format(disk)))
         context.submit_task(
             'zfs.pool.online_disk',
-            self.parent.entity['name'],
+            self.parent.entity['id'],
             guid,
             callback=lambda s: post_save(self.parent, s)
         )
@@ -393,7 +393,7 @@ class ImportFromVolumeCommand(Command):
         if scope not in ['all', 'containers', 'shares', 'system']:
             raise CommandException('Import scope must be one of all\containers\shares\system')
 
-        context.submit_task('volume.autoimport', self.parent.entity['name'], scope)
+        context.submit_task('volume.autoimport', self.parent.entity['id'], scope)
 
 
 @description("Detaches given volume")
@@ -436,7 +436,7 @@ class UnlockVolumeCommand(Command):
         if self.parent.entity.get('providers_presence', 'ALL') == 'ALL':
             raise CommandException('Volume is already fully unlocked')
         password = self.parent.password
-        name = self.parent.entity['name']
+        name = self.parent.entity['id']
         context.submit_task('volume.unlock', name, password, callback=lambda s: post_save(self.parent, s))
 
 
@@ -455,7 +455,7 @@ class LockVolumeCommand(Command):
     def run(self, context, args, kwargs, opargs):
         if self.parent.entity.get('providers_presence', 'NONE') == 'NONE':
             raise CommandException('Volume is already fully locked')
-        name = self.parent.entity['name']
+        name = self.parent.entity['id']
         context.submit_task('volume.lock', name, callback=lambda s: post_save(self.parent, s))
 
 
@@ -477,7 +477,7 @@ class RekeyVolumeCommand(Command):
         if self.parent.entity.get('providers_presence', 'NONE') != 'ALL':
             raise CommandException('You must unlock your volume first')
         password = kwargs.get('password', None)
-        name = self.parent.entity['name']
+        name = self.parent.entity['id']
         context.submit_task('volume.rekey', name, password)
 
 
@@ -514,7 +514,7 @@ class BackupVolumeMasterKeyCommand(Command):
         if path is None:
             raise CommandException('You must provide an output path for a backup file')
 
-        name = self.parent.entity['name']
+        name = self.parent.entity['id']
         result = context.call_task_sync('volume.keys.backup', name, path)
         return Sequence("Backup password:",
                         str(result['result']))
@@ -547,7 +547,7 @@ class RestoreVolumeMasterKeyCommand(Command):
         if password is None:
             raise CommandException('You must provide a password protecting a backup file')
 
-        name = self.parent.entity['name']
+        name = self.parent.entity['id']
         context.submit_task('volume.keys.restore', name, password, path)
 
 
@@ -605,7 +605,7 @@ class ScrubCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        context.submit_task('zfs.pool.scrub', self.parent.entity['name'])
+        context.submit_task('zfs.pool.scrub', self.parent.entity['id'])
 
 
 @description("Replicates dataset to another system")
@@ -623,7 +623,7 @@ class ReplicateCommand(Command):
 
         args = (
             'replication.replicate_dataset',
-            self.parent.parent.parent.entity['name'],
+            self.parent.parent.parent.entity['id'],
             self.parent.entity['name'],
             {
                 'remote': remote,
@@ -710,7 +710,7 @@ class DatasetsNamespace(EntityNamespace):
         self.add_property(
             descr='Name',
             name='name',
-            get='name',
+            get='id',
             list=True
         )
 
@@ -852,25 +852,23 @@ class DatasetsNamespace(EntityNamespace):
 
     def get_one(self, name):
         self.parent.load()
-        return first_or_default(lambda d: d['name'] == name, self.parent.entity['datasets'])
+        return first_or_default(lambda d: d['id'] == name, self.parent.entity['datasets'])
 
     def delete(self, this, kwargs):
         self.context.submit_task(
             'volume.dataset.delete',
-            this.parent.parent.entity['name'],
-            this.entity['name'],
-            kwargs.pop('recursive', False)
+            this.entity['id']
         )
 
     def save(self, this, new=False):
         if new:
-            newname = this.entity['name']
+            newname = this.entity['id']
             newpath = '/'.join(newname.split('/')[:-1])
             validpath = False
             if len(newname.split('/')) < 2:
                 raise CommandException(_("Please include a volume in the dataset's path"))
             for dataset in self.parent.entity['datasets']:
-                if newpath in dataset['name']:
+                if newpath in dataset['id']:
                     validpath = True
                     break
             if not validpath:
@@ -879,15 +877,15 @@ class DatasetsNamespace(EntityNamespace):
 
             self.context.submit_task(
                 'volume.dataset.create',
-                extend(this.entity, {'pool': self.parent.entity['name']}),
+                extend(this.entity, {'volume': self.parent.entity['id']}),
                 callback=lambda s: post_save(this, s)
             )
             return
 
         self.context.submit_task(
             'volume.dataset.update',
-            self.parent.entity['name'],
-            this.entity['name'],
+            self.parent.entity['id'],
+            this.entity['id'],
             this.get_diff(),
             callback=lambda s: post_save(this, s)
         )
@@ -1122,7 +1120,7 @@ class CreateVolumeCommand(Command):
 
             context.submit_task('volume.create_auto', name, 'zfs', layout, disks, cache_disks, log_disks, encryption['encryption'], password)
         else:
-            ns.entity['name'] = name
+            ns.entity['id'] = name
             ns.entity['topology'] = {}
             ns.entity['topology']['data'] = []
             if volume_type == 'disk':
@@ -1202,8 +1200,8 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
     def __init__(self, name, context):
         super(VolumesNamespace, self).__init__(name, context)
 
-        self.primary_key_name = 'name'
-        self.save_key_name = 'name'
+        self.primary_key_name = 'id'
+        self.save_key_name = 'id'
         self.entity_subscriber_name = 'volume'
         self.create_task = 'volume.create'
         self.update_task = 'volume.update'
@@ -1231,13 +1229,10 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
             }
         }
 
-        self.primary_key_name = 'name'
-        self.query_call = 'volume.query'
-
         self.add_property(
             descr='Volume name',
             name='name',
-            get='name',
+            get='id',
             list=True)
 
         self.add_property(

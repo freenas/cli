@@ -112,10 +112,13 @@ class AsciiOutputFormatter(object):
         if vt == ValueType.TIME:
             fmt = config.instance.variables.get('datetime_format')
 
+            delta = datetime.timedelta(seconds=get_localtime_offset())
             if isinstance(value, str):
                 value = parse(value)
+            if isinstance(value, float):
+                delta = delta.total_seconds()
             if fmt == 'natural':
-                return natural.date.duration(value + datetime.timedelta(seconds=get_localtime_offset()))
+                return natural.date.duration(value + delta)
 
             return time.strftime(fmt, time.localtime(value))
 

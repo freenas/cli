@@ -400,6 +400,10 @@ class MailNamespace(ConfigNamespace):
         self.add_property(
             descr='Email address',
             name='email',
+            usage=_("""
+            Use set or edit to set the from email address to be
+            used when sending email notifications. When using set,
+            enclose the email address between double quotes."""),
             get='from',
             set='from',
         )
@@ -407,12 +411,20 @@ class MailNamespace(ConfigNamespace):
         self.add_property(
             descr='Email server',
             name='server',
+            usage=_("""
+            Use set or edit to set the hostname or IP address of
+            the SMTP server. When using set, enclose the value
+            between double quotes."""),
             get='server',
         )
 
         self.add_property(
             descr='SMTP port',
             name='port',
+            usage=_("""
+            Use set or edit to set the number of the SMTP port.
+            Typically set to 25, 465 (secure SMTP), or 587
+            (submission)."""),
             get='port',
             type=ValueType.NUMBER,
         )
@@ -420,6 +432,10 @@ class MailNamespace(ConfigNamespace):
         self.add_property(
             descr='Authentication required',
             name='auth',
+            usage=_("""
+            Can be set to yes or no. When set to yes,
+            enables SMTP AUTH using PLAIN SASL and requires both
+            'username' and 'password' to be set."""),
             get='auth',
             type=ValueType.BOOLEAN,
         )
@@ -427,6 +443,9 @@ class MailNamespace(ConfigNamespace):
         self.add_property(
             descr='Encryption type',
             name='encryption',
+            usage=_("""
+            Use set or edit to set to PLAIN (no encryption),
+            TLS, or SSL.."""),
             get='encryption',
             enum=['PLAIN', 'TLS', 'SSL']
         )
@@ -434,6 +453,10 @@ class MailNamespace(ConfigNamespace):
         self.add_property(
             descr='Username for Authentication',
             name='username',
+            usage=_("""
+            Use set or edit to set the username used by
+            SMTP authentication. Requires 'auth' to be set
+            to yes."""),
             get='user',
             set='user',
         )
@@ -441,6 +464,11 @@ class MailNamespace(ConfigNamespace):
         self.add_property(
             descr='Password for Authentication',
             name='password',
+            usage=_("""
+            Use set to set the password used by
+            SMTP authentication. Requires 'auth' to be set
+            to yes. For security reasons, the password is
+            not displayed by get or edit."""),
             get=None,
             set='pass',
         )

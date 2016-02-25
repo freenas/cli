@@ -25,6 +25,7 @@
 #
 #####################################################################
 
+import gettext
 from freenas.cli.namespace import (
     Command,
     Namespace,
@@ -41,6 +42,10 @@ from freenas.cli.output import (
 )
 
 from freenas.cli.utils import post_save
+
+t = gettext.translation('freenas-cli', fallback=True)
+_ = t.gettext
+
 
 @description("Configure and manage directory service")
 class DirectoryServiceNamespace(Namespace):

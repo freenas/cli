@@ -573,7 +573,7 @@ class SystemDatasetNamespace(ConfigNamespace):
 
     def save(self):
         self.context.submit_task(
-            'system_dataset.configure',
+            'system_dataset.migrate',
             self.entity['pool'],
             callback=lambda s: post_save(self, s)
         )

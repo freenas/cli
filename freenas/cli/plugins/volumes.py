@@ -668,11 +668,13 @@ class ReplicateCommand(Command):
 
 
 @description("Datasets")
-class DatasetsNamespace(EntityNamespace):
+class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
     def __init__(self, name, context, parent):
         super(DatasetsNamespace, self).__init__(name, context)
         self.parent = parent
         self.path = name
+        self.entity_subscriber_name = 'volume.dataset'
+        self.extra_query_params = [('volume', '=', self.parent.entity['id'])]
         self.required_props = ['name']
 
         self.localdoc['CreateEntityCommand'] = ("""\
@@ -846,14 +848,6 @@ class DatasetsNamespace(EntityNamespace):
             'replicate': ReplicateCommand(this)
         }
 
-    def query(self, params, options):
-        self.parent.load()
-        return self.parent.entity['datasets']
-
-    def get_one(self, name):
-        self.parent.load()
-        return first_or_default(lambda d: d['id'] == name, self.parent.entity['datasets'])
-
     def delete(self, this, kwargs):
         self.context.submit_task(
             'volume.dataset.delete',
@@ -884,7 +878,6 @@ class DatasetsNamespace(EntityNamespace):
 
         self.context.submit_task(
             'volume.dataset.update',
-            self.parent.entity['id'],
             this.entity['id'],
             this.get_diff(),
             callback=lambda s: post_save(this, s)

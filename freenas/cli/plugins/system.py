@@ -574,7 +574,7 @@ class AdvancedNamespace(ConfigNamespace):
             name='periodic_notify_user',
             usage=_("""
             Set to the number representing the UID of the user to
-            receive security output emails. this output runs nightly,
+            receive security output emails. This output runs nightly,
             but only sends an email when the system reboots or
             encounters an error."""),
             get='periodic_notify_user',
@@ -670,7 +670,7 @@ class SystemNamespace(ConfigNamespace):
             descr='Syslog Server',
             name='syslog_server',
             usage=_("""
-            Use set or edit to set the IP address or 
+            Use set or edit to set the IP address or
             hostname:optional_port_number of remote syslog server to
             send logs to. If set, log entries will be written to both
             the log namespace and the remote server."""),

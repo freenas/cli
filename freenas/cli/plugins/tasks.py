@@ -124,6 +124,9 @@ class TasksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         self.add_property(
             descr='ID',
             name='id',
+            usage=_("""
+            Task ID. Read-only value assigned by the operating
+            system."""),
             get='id',
             list=True,
         )
@@ -131,12 +134,18 @@ class TasksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         self.add_property(
             descr='Description',
             name='description',
+            usage=_("""
+            Task description. Read-only value assigned by the operating
+            system."""),
             get=self.describe_task,
         )
 
         self.add_property(
             descr='Started at',
             name='started_at',
+            usage=_("""
+            When the task started. Read-only value assigned by the
+            operating system."""),
             get='started_at',
             list=True,
             type=ValueType.TIME
@@ -145,6 +154,9 @@ class TasksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         self.add_property(
             descr='Finished at',
             name='finished_at',
+            usage=_("""
+            When the task finished. Read-only value assigned by the
+            operating system."""),
             get='finished_at',
             list=True,
             type=ValueType.TIME
@@ -153,6 +165,9 @@ class TasksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         self.add_property(
             descr='State',
             name='state',
+            usage=_("""
+            Current state of the task. Read-only value assigned by the
+            operating system."""),
             get='state',
             set=None
         )
@@ -160,6 +175,9 @@ class TasksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         self.add_property(
             descr='Status',
             name='status',
+            usage=_("""
+            Current task status. Read-only value assigned by the
+            operating system."""),
             get=describe_task_state,
             set=None
         )

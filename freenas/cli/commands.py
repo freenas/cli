@@ -207,9 +207,10 @@ class UnaliasCommand(Command):
 class ShellCommand(Command):
 
     """
-    Launch current logged in user's login shell. Type "exit" to return to the CLI.
-    If a command is specified, run the specified command then return to the CLI.
-    If the full path to an installed shell is specifed, launch the specified shell.
+    Launch current logged in user's login shell. Type "exit" to return
+    to the CLI. If a command is specified, run the specified command
+    then return to the CLI. If the full path to an installed shell is
+    specifed, launch the specified shell.
 
     Usage: shell <command>
 
@@ -258,7 +259,8 @@ class ShellCommand(Command):
 class ShowIpsCommand(Command):
 
     """
-    Display the IP addresses from all configured and active network interfaces.
+    Display the IP addresses from all configured and active network
+    interfaces.
 
     Usage: showips
     """
@@ -324,8 +326,9 @@ class LoginCommand(Command):
 class ExitCommand(Command):
 
     """
-    Exit the CLI. Note that the CLI will restart if this command is run from the
-    local console. The keyboard shortcut for this command is (ctrl+d).
+    Exit the CLI. Note that the CLI will restart if this command
+    is run from the local console. The keyboard shortcut for this
+    command is (ctrl+d).
 
     Usage: exit
     """
@@ -351,12 +354,12 @@ class WhoamiCommand(Command):
 class HelpCommand(Command):
 
     """
-    Provide general usage information for current namespace. Alternately,
-    provide usage information for specified command or for specified
-    namespace.
+    Provide general usage information for current namespace.
+    Alternately, provide usage information for specified
+    command or for specified namespace.
 
-    To see the available properties for the current or specified namespace,
-    use 'help properties'.
+    To see the available properties for the current or
+    specified namespace, use 'help properties'.
 
     Usage: help
            help <command>
@@ -912,8 +915,8 @@ class SearchPipeCommand(PipeCommand):
 @description("Selects tasks started before or at time-delta")
 class OlderThanPipeCommand(PipeCommand):
     """
-    Return all elements of a list that contains time values that are older than
-    the given time delta.
+    Return all elements of a list that contains time values that are
+    older than the given time delta.
 
     Usage: <command> | older_than <hh>:<mm>
            <command> | older_than <hh>:<mm>:<ss>
@@ -954,7 +957,8 @@ class NewerThanPipeCommand(PipeCommand):
 @description("Excludes certain results from result set basing on specified conditions")
 class ExcludePipeCommand(PipeCommand):
     """
-    Return all the elements of a list that do not match the given key value.
+    Return all the elements of a list that do not match the given key
+    value.
 
     Usage: <command> | exclude <key> <op> <value> ...
 

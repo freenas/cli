@@ -1423,7 +1423,8 @@ svc_cli_config = {
         {
             'descr': 'Mode',
             'name': 'mode',
-            'usage': _(""""""),
+            'usage': _("""
+            Can be set to MASTER or SLAVE."""),
             'get': 'mode',
             'type': ValueType.STRING,
             'enum': ['MASTER', 'SLAVE'],
@@ -1431,7 +1432,8 @@ svc_cli_config = {
         {
             'descr': 'Identifier',
             'name': 'identifier',
-            'usage': _(""""""),
+            'usage': _("""
+            Can be set to an alphanumeric description."""),
             'get': 'identifier',
             'type': ValueType.STRING,
         },
@@ -1466,14 +1468,19 @@ svc_cli_config = {
         {
             'descr': 'Description',
             'name': 'description',
-            'usage': _(""""""),
+            'usage': _("""
+            Optional description. If it contains any spaces,
+            enclose it between double quotes."""),
             'get': 'description',
             'type': ValueType.STRING,
         },
         {
             'descr': 'Shutdown Mode',
             'name': 'shutdown_mode',
-            'usage': _(""""""),
+            'usage': _("""
+            Indicates when the UPS should shutdown. Can be set
+            to BATT (UPS goes on battery) or LOWBATT (UPS
+            reaches low battery)."""),
             'get': 'shutdown_mode',
             'type': ValueType.STRING,
             'enum': ['BATT', 'LOWBATT'],
@@ -1481,7 +1488,10 @@ svc_cli_config = {
         {
             'descr': 'Shutdown Timer',
             'name': 'shutdown_timer',
-            'usage': _(""""""),
+            'usage': _("""
+            Number in seconds. UPS will initiate shutdown this many
+            seconds after UPS enters UPS goes on battery, unless power
+            is restored"""),
             'get': 'shutdown_timer',
             'type': ValueType.NUMBER,
         },
@@ -1503,7 +1513,11 @@ svc_cli_config = {
         {
             'descr': 'Monitor Remote',
             'name': 'monitor_remote',
-            'usage': _(""""""),
+            'usage': _("""
+            Can be set to yes or no. When set to yes,
+            the default is to listen on all interfaces and to use
+            the known values upsmon for 'monitor_user' and
+            fixmepass for 'monitor_password'."""),
             'get': 'monitor_remote',
             'type': ValueType.BOOLEAN,
         },
@@ -1517,35 +1531,51 @@ svc_cli_config = {
         {
             'descr': 'Email Notify',
             'name': 'email_notify',
-            'usage': _(""""""),
+            'usage': _("""
+            Can be set to yes or no. When set to yes,
+            status updates will be emailed to
+            'email_recipients'."""),
             'get': 'email_notify',
             'type': ValueType.BOOLEAN,
         },
         {
             'descr': 'Email Recipients',
             'name': 'email_recipients',
-            'usage': _(""""""),
+            'usage': _("""
+            Space delimited list, enclosed between double
+            quotes, of email addresses to receive status
+            updates. This requires 'email_notify' to be set
+            to yes."""),
             'get': 'email_recipients',
             'type': ValueType.SET,
         },
         {
             'descr': 'Email Subject',
             'name': 'email_subject',
-            'usage': _(""""""),
+            'usage': _("""
+            Subject to use in status emails. Enclose between
+            double quotes if it contains a space. Requires
+            'email_notify' to be set to yes."""),
             'get': 'email_subject',
             'type': ValueType.STRING,
         },
         {
             'descr': 'Powerdown',
             'name': 'powerdown',
-            'usage': _(""""""),
+            'usage': _("""
+            Can be set to yes or no. When set to yes,
+            the UPS will also power off after shutting down the
+            FreeNAS system"""),
             'get': 'powerdown',
             'type': ValueType.BOOLEAN,
         },
         {
             'descr': 'Auxiliary',
             'name': 'auxiliary',
-            'usage': _(""""""),
+            'usage': _("""
+            Optional, additional ups.conf(5) parameters not provided
+            by other properties. Space delimited list of parameters
+            enclosed between double quotes."""),
             'get': 'auxiliary',
             'type': ValueType.STRING,
         },

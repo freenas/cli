@@ -1748,7 +1748,7 @@ svc_cli_config = {
             'usage': _(""" """),
             'get': 'listener_https_internal_port',
             'type': ValueType.NUMBER,
-        },        
+        },
         {
             'descr': 'Object Size Warning Threshold',
             'name': 'object_size_warning_threshold',
@@ -1764,4 +1764,53 @@ svc_cli_config = {
             'type': ValueType.STRING,
         },
     ],
+    "swift": [
+        {
+            'descr': 'Hash Path Prefix',
+            'name': 'hash_path_prefix',
+            'usage': _("""String to be prefixed to Swift Hash Path"""),
+            'get': 'swift_hash_path_prefix',
+            'type': ValueType.STRING,
+        },
+        {
+            'descr': 'Hash Path Suffix',
+            'name': 'hash_path_suffix',
+            'usage': _("""String to be suffixed to Swift Hash Path"""),
+            'get': 'swift_hash_path_suffix',
+            'type': ValueType.STRING,
+        },
+    ],
 }
+
+# A lot of riack_cs properties are stanchion repeats thus doing it in the following way:
+svc_cli_config['riak_cs'] = svc_cli_config['stanchion'].copy()
+svc_cli_config['riak_cs'].extend([
+    {
+        'descr': 'Stanchion Host IP',
+        'name': 'stanchion_host_ip',
+        'usage': _("""Stanchion Host IP"""),
+        'get': 'stanchion_host_ip',
+        'type': ValueType.STRING,
+    },
+    {
+        'descr': 'Stanchion Host Port',
+        'name': 'stanchion_host_port',
+        'usage': _("""Stanchion Host Port"""),
+        'get': 'stanchion_host_port',
+        'type': ValueType.NUMBER,
+    },
+    {
+        'descr': 'Anonymous User Creation',
+        'name': 'anonymous_user_creation',
+        'usage': _("""Boolean flag to allow/disallow anonymous user creation"""),
+        'get': 'anonymous_user_creation',
+        'type': ValueType.BOOLEAN,
+    },
+    {
+        'descr': 'Max buckets per User',
+        'name': 'max_buckets_per_user',
+        'usage': _("""Specify the maximum number of buckets per user"""),
+        'get': 'max_buckets_per_user',
+        'type': ValueType.NUMBER,
+    },
+])

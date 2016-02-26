@@ -832,7 +832,7 @@ svc_cli_config = {
             'usage': _("""
             The maximum protocol version the server will support.
             Valid values, in order, are: CORE, COREPLUS, LANMAN1,
-            LANMAN2, NT1, SMB2, SMB2_02, SMB2_10, SMB2_22, 
+            LANMAN2, NT1, SMB2, SMB2_02, SMB2_10, SMB2_22,
             SMB2_24, SMB3,, or SMB3_00. The set value must be higher
             than the min_protocol."""),
             'get': 'max_protocol',
@@ -875,7 +875,7 @@ svc_cli_config = {
             'descr': 'Auxiliary',
             'name': 'auxiliary',
             'usage': _("""
-            Optional, additional smb.conf parameters. Separate multiple 
+            Optional, additional smb.conf parameters. Separate multiple
             parameters by a space and enclose them between double quotes."""),
             'get': 'auxiliary'
         },
@@ -1366,7 +1366,8 @@ svc_cli_config = {
         {
             'descr': 'Port',
             'name': 'port',
-            'usage': _("""Number representing the port for rsyncd to listen on."""),
+            'usage': _("""Number representing the port for rsyncd to
+            listen on."""),
             'get': 'port',
             'type': ValueType.NUMBER,
         },
@@ -1386,7 +1387,8 @@ svc_cli_config = {
         {
             'descr': 'Port',
             'name': 'port',
-            'usage': _("""Number representing the port for tftpd to listen on."""),
+            'usage': _("""Number representing the port for tftpd to
+            listen on."""),
             'get': 'port',
             'type': ValueType.NUMBER,
         },

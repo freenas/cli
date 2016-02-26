@@ -173,7 +173,7 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
             Can only be specified when using the 'create'
             command. Allowable values are VLAN,
             BRIDGE, or LAGG."""),
-            enum_set=['VLAN', 'BRIDGE', 'LAGG'],
+            enum=['VLAN', 'BRIDGE', 'LAGG'],
             usersetable=False,
             list=True
         )

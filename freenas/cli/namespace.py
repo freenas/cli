@@ -196,7 +196,6 @@ class PropertyMapping(object):
         self.type = kwargs.pop('type', ValueType.STRING)
         self.usage = kwargs.pop('usage', None)
         self.enum = kwargs.pop('enum', None)
-        self.enum_set = kwargs.pop('enum_set') if kwargs.get('enum_set') else self.enum
         self.usersetable = kwargs.pop('usersetable', True)
         self.createsetable = kwargs.pop('createsetable', True)
         self.regex = kwargs.pop('regex', None)
@@ -221,9 +220,12 @@ class PropertyMapping(object):
         if self.condition and not self.condition(obj):
             raise ValueError(_("Property '{0}' is not settable for this entity".format(self.name)))
 
-        if self.enum_set:
-            if str(value) not in self.enum_set:
-                raise ValueError("Invalid value for property '{0}'. Should be one of: {1}".format(self.get_name, ', '.join(self.enum_set)))
+        if self.enum:
+            if str(value) not in self.enum:
+                raise ValueError(
+                    "Invalid value for property '{0}'. Should be one of: {1}".format(
+                        self.get_name, ', '.join(self.enum))
+                )
 
         value = read_value(value, self.type)
         if isinstance(self.set, collections.Callable):

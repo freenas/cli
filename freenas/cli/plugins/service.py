@@ -1617,7 +1617,7 @@ svc_cli_config = {
             'name': 'riak_host_port',
             'usage': _(""" """),
             'get': 'riak_host_port',
-            'type': ValueType.STRING,
+            'type': ValueType.NUMBER,
         },
         {
             'descr': 'Node name',

@@ -821,7 +821,7 @@ def p_shell(p):
     shell : SHELL
     shell : SHELL shell_parameter_list
     """
-    p[0] = ShellEscape(p[2])
+    p[0] = ShellEscape(p[2] if len(p) > 1 else [])
 
 
 def p_shell_parameter_list(p):

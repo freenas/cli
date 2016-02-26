@@ -1490,7 +1490,7 @@ svc_cli_config = {
             'name': 'shutdown_timer',
             'usage': _("""
             Number in seconds. UPS will initiate shutdown this many
-            seconds after UPS enters UPS goes on battery, unless power
+            seconds after UPS enters BATT 'shutdown_mode', unless power
             is restored"""),
             'get': 'shutdown_timer',
             'type': ValueType.NUMBER,

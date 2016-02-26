@@ -529,13 +529,12 @@ class IndexCommand(Command):
     """
     Usage: ?
 
-    Lists all the possible commands and EntityNamespaces accessible form the
-    current namespace or the one supplied in the arguments. It also always lists
-    the globally avaible builtin set of commands.
+    Lists the commands and namespaces accessible from the current
+    or specified namespace.
 
     Example:
     ?
-    volumes ?
+    volume ?
     """
 
     def run(self, context, args, kwargs, opargs):

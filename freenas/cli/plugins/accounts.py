@@ -358,7 +358,7 @@ class GroupsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
             usersetable=False,            
             type=ValueType.NUMBER,
             usage=_("""\
-            "Group ID. Read-only value assigned by operating
+            Group ID. Read-only value assigned by operating
             system."""),
             list=True)
 
@@ -369,7 +369,7 @@ class GroupsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
             set=None,
             list=True,
             usage=_("""\
-            "Read-only value that indicates whether or not
+            Read-only value that indicates whether or not
             the group was created by the operating system."""),
             type=ValueType.BOOLEAN)
 

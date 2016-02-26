@@ -282,14 +282,14 @@ class SessionsNamespace(RpcBasedLoadMixin, EntityNamespace):
         self.add_property(
             descr='Started at',
             name='started',
-            get='started-at',
+            get='started_at',
             type=ValueType.TIME
         )
 
         self.add_property(
             descr='Ended at',
             name='ended',
-            get='ended-at',
+            get='ended_at',
             type=ValueType.TIME
         )
 
@@ -332,13 +332,13 @@ class EventsNamespace(RpcBasedLoadMixin, EntityNamespace):
         self.add_property(
             descr='Created at',
             name='created',
-            get='created-at',
+            get='created_at',
         )
 
         self.add_property(
             descr='Updated at',
             name='updated',
-            get='updated-at',
+            get='updated_at',
         )
 
         self.primary_key = self.get_mapping('id')

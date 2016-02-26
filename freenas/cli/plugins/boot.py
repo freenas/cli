@@ -64,17 +64,18 @@ class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
 
             Example: set name=mybootenv
 
-            Set the name of the current boot environment""")
+            Edit the name of the specified boot environment.""")
         self.localdoc['DeleteEntityCommand'] = ("""\
             Usage: delete <bootenv name>
 
             Example: delete mybootenv
 
-            Deletes a boot environment.""")
+            Deletes the specified boot environment. This command will
+            fail if the boot environment is active.""")
         self.localdoc['ListCommand'] = ("""\
             Usage: show
 
-            Lists boot environments, optionally doing filtering and sorting.
+            Lists boot environments.
 
             Examples:
                 show
@@ -202,7 +203,7 @@ class RenameBootEnvCommand(Command):
     """
     Usage: rename
 
-    Renames the current boot environment.
+    Rename the specified boot environment.
     """
     def __init__(self, parent):
         self.parent = parent
@@ -230,7 +231,7 @@ class ActivateBootEnvCommand(Command):
     """
     Usage: activate
 
-    Activates the current boot environment
+    Activates the specified boot environment.
     """
     def __init__(self, parent):
         self.parent = parent
@@ -264,7 +265,7 @@ class BootPoolShowDisksCommand(Command):
     """
     Usage: show_disks
 
-    List the device\(s\) in the boot pool and display
+    List the device(s) in the boot pool and display
     the status of the boot pool.
     """
 
@@ -284,7 +285,7 @@ class BootPoolAttachDiskCommand(Command):
 
     Example: attach_disk ada1
 
-    Attaches the specified device\(s\) to the boot pool,
+    Attaches the specified devices) to the boot pool,
     creating an N-way mirror where N is the total number
     of devices in the pool. The command will fail if a
     device is smaller than the smallest device already in
@@ -318,7 +319,7 @@ class BootPoolDetachDiskCommand(Command):
 
     Example: detach_disk ada1
 
-    Detaches the specified device\(s\) from the boot pool,
+    Detaches the specified device(s) from the boot pool,
     reducing the number of devices in the N-way mirror. If
     only one device remains, it has no redundancy. At least
     one device must remain in the pool.

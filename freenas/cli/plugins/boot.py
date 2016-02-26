@@ -151,8 +151,8 @@ class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
             name='space',
             get='space',
             usage=_("""
-            Read-only timestamp indicating when the boot
-            environment was created."""),
+            Read-only value indicating how much space the boot
+            environment occupies."""),
             list=True,
             set=None,
             )
@@ -161,6 +161,9 @@ class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
             descr='Date created',
             name='created',
             get='created',
+            usage=_("""
+            Read-only timestamp indicating when the boot
+            environment was created."""),
             list=True,
             set=None,
             )

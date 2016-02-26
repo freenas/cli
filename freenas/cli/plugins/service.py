@@ -1386,7 +1386,7 @@ svc_cli_config = {
         {
             'descr': 'Port',
             'name': 'port',
-            'usage': _("""Number representing the port for tftp to listen on."""),
+            'usage': _("""Number representing the port for tftpd to listen on."""),
             'get': 'port',
             'type': ValueType.NUMBER,
         },
@@ -1400,21 +1400,29 @@ svc_cli_config = {
         {
             'descr': 'Allow New Files',
             'name': 'alllow_new_files',
-            'usage': _(""" """),
+            'usage': _("""
+            Can be set to yes or no. When set to yes,
+            network devices can save files on the system."""),
             'get': 'alllow_new_files',
             'type': ValueType.BOOLEAN
         },
         {
             'descr': 'UMASK',
             'name': 'umask',
-            'usage': _(""" """),
+            'usage': _("""
+            Number representing the umask for newly created files, default
+            is 022 (everyone can read, nobody can write). Some devices
+            require a less strict umask."""),
             'get': 'umask',
             'type': ValueType.STRING
         },
         {
             'descr': 'Auxiliary',
             'name': 'auxiliary',
-            'usage': _(""" """),
+            'usage': _("""
+            Optional, additional tftpd(8) parameters not provided
+            by other properties. Space delimited list of parameters
+            enclosed between double quotes."""),
             'get': 'auxiliary',
             'type': ValueType.STRING
         }

@@ -156,7 +156,7 @@ class SaveenvCommand(Command):
     """
     Save the current set of environment variables to either the specified filename
     or, when not specified, to "~/.freenascli.conf". To start the CLI with the saved
-    variables, type "cli -c filename" from either shell or an SSH session.
+    variables, type "cli -c filename" from the shell or an SSH session.
     
     Usage: saveenv
            saveenv <filename>

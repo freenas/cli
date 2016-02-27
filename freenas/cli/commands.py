@@ -565,6 +565,26 @@ class IndexCommand(Command):
         return outseq
 
 
+class ListVarsCommand(Command):
+    """
+    Usage: vars
+
+    Lists the variables in the current scope where the command
+    is run in.
+
+    Example:
+    vars
+    Variable (var)                      Value (val)
+    _cli_src_path    /usr/local/lib/python3.4/site-packages/freenas/cli
+    """
+
+    def run(self, context, args, kwargs, opargs):
+        return Table(
+            [{'var': k, 'val': v.value} for k, v in self.current_env.items()],
+            [Table.Column(_("Variable (var)"), 'var'), Table.Column(_("Value (val)"), 'val')]
+        )
+
+
 @description("Sends the user to the top level")
 class TopCommand(Command):
 

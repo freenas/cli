@@ -79,7 +79,7 @@ from freenas.cli.commands import (
     ExcludePipeCommand, SortPipeCommand, LimitPipeCommand, SelectPipeCommand,
     LoginCommand, DumpCommand, WhoamiCommand, PendingCommand, WaitCommand,
     OlderThanPipeCommand, NewerThanPipeCommand, IndexCommand, AliasCommand,
-    UnaliasCommand
+    UnaliasCommand, ListVarsCommand
 )
 import collections
 
@@ -826,7 +826,8 @@ class MainLoop(object):
         'pending': PendingCommand(),
         'wait': WaitCommand(),
         'alias': AliasCommand(),
-        'unalias': UnaliasCommand()
+        'unalias': UnaliasCommand(),
+        'vars': ListVarsCommand(),
     }
     builtin_commands = base_builtin_commands.copy()
     builtin_commands.update(pipe_commands)
@@ -1240,6 +1241,7 @@ class MainLoop(object):
                             )
 
                             item.exec_path = path if len(path) >= 1 else self.path
+                            item.current_env = env
                             if dry_run:
                                 resultset.append((item, cwd, args, kwargs, opargs))
                                 continue

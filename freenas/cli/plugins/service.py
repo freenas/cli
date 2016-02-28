@@ -28,7 +28,7 @@
 
 import gettext
 from freenas.cli.namespace import (
-    Namespace, ConfigNamespace, EntityNamespace, RpcBasedLoadMixin,
+    Namespace, ItemNamespace, EntityNamespace, RpcBasedLoadMixin, TaskBasedSaveMixin,
     Command, description
 )
 from freenas.cli.output import ValueType
@@ -67,7 +67,7 @@ class ServiceManageCommand(Command):
 
 
 @description("Configure and manage services")
-class ServicesNamespace(RpcBasedLoadMixin, EntityNamespace):
+class ServicesNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
     """
     The service namespace is used to configure, start, and
     stop system services.
@@ -75,6 +75,8 @@ class ServicesNamespace(RpcBasedLoadMixin, EntityNamespace):
     def __init__(self, name, context):
         super(ServicesNamespace, self).__init__(name, context)
         self.query_call = 'service.query'
+        self.save_key_name = 'id'
+        self.update_task = 'service.update'
         self.extra_query_params = [('builtin', '=', False)]
 
         self.primary_key_name = 'name'
@@ -129,12 +131,11 @@ class ServicesNamespace(RpcBasedLoadMixin, EntityNamespace):
         return Namespace.serialize(this)
 
 
-class ServiceConfigNamespace(ConfigNamespace):
+class ServiceConfigNamespace(ItemNamespace):
     def __init__(self, name, context, parent):
-        super(ServiceConfigNamespace, self).__init__(name, context)
+        super(ServiceConfigNamespace, self).__init__(name)
+        self.context = context
         self.parent = parent
-        self.config_call = 'service.get_service_config'
-        self.config_extra_params = parent.name
 
         self.add_property(
             descr='Enabled',
@@ -146,12 +147,11 @@ class ServiceConfigNamespace(ConfigNamespace):
 
         self.get_properties(parent.name)
 
+    def load(self):
+        self.entity = self.parent.entity['config']
+
     def save(self):
-        return self.context.submit_task(
-            'service.update',
-            self.parent.entity['name'],
-            self.get_diff(),
-            callback=lambda s: post_save(self, s))
+        return self.parent.save()
 
     def get_properties(self, name):
         svc_props = svc_cli_config.get(name)

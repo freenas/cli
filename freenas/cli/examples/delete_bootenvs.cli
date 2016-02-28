@@ -5,7 +5,7 @@ function user_input_routine(select_boot_env) {
 }
 
 function delete_bootenvs() {
-    bootenvs = $(/ boot environment show);
+    bootenvs = $(/ boot environment show | exclude active==True);
     print("Iterating through boot environments in ascending order w.r.t date created");
     delete_flag = "no";
     print("At any point hit q to quit this routine")

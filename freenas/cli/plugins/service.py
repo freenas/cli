@@ -60,7 +60,7 @@ class ServiceManageCommand(Command):
     def run(self, context, args, kwargs, opargs):
         context.submit_task(
             'service.manage',
-            self.parent.primary_key,
+            self.parent.entity['id'],
             self.action,
             callback=lambda s: post_save(self.parent, s)
         )

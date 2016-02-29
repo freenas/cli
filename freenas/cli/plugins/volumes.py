@@ -674,8 +674,10 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
         self.parent = parent
         self.path = name
         self.entity_subscriber_name = 'volume.dataset'
-        self.extra_query_params = [('volume', '=', self.parent.entity['id'])]
         self.required_props = ['name']
+
+        if self.parent.entity:
+            self.extra_query_params = [('volume', '=', self.parent.entity['id'])]
 
         self.localdoc['CreateEntityCommand'] = ("""\
             Usage: create <volume>/<dataset>

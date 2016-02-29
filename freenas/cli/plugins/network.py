@@ -536,7 +536,7 @@ class GlobalConfigNamespace(ConfigNamespace):
     """
     def __init__(self, name, context):
         super(GlobalConfigNamespace, self).__init__(name, context)
-        self.config_call = "network.config.get_global_config"
+        self.config_call = "network.config.get_config"
 
         self.add_property(
             descr='IPv4 gateway',
@@ -619,7 +619,7 @@ class GlobalConfigNamespace(ConfigNamespace):
 
     def save(self):
         return self.context.submit_task(
-            'network.update',
+            'network.config.update',
             self.get_diff(),
             callback=lambda s: post_save(self, s)
         )

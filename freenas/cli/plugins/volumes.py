@@ -1185,7 +1185,7 @@ class SetPasswordCommand(Command):
         self.parent.password = args[0]
 
 
-@description("Manage volumes")
+@description("Manage volumes, snapshots, replications, and scrubs")
 class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):
     """
     The volume namespace provides commands for managing volumes,

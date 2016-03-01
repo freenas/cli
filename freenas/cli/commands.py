@@ -107,7 +107,7 @@ class SetenvCommand(Command):
         return [create_variable_completer(k, v) for k, v in context.variables.get_all()]
 
 
-@description("Prints variable value")
+@description("Print environment variable values")
 class PrintenvCommand(Command):
 
     """
@@ -182,7 +182,7 @@ class SaveenvCommand(Command):
             ))
 
 
-@description("Creates aliases for commands")
+@description("Create aliases for commonly used commands")
 class AliasCommand(Command):
 
     """
@@ -329,7 +329,7 @@ class ShowUrlsCommand(Command):
         )
 
 
-@description("Logs in to the server")
+@description("Login to the CLI as the specified user")
 class LoginCommand(Command):
 
     """
@@ -348,7 +348,7 @@ class LoginCommand(Command):
         context.login_plugins()
 
 
-@description("Exits the CLI, enter \"^D\" (ctrl+D)")
+@description("Exit the CLI")
 class ExitCommand(Command):
 
     """
@@ -376,7 +376,7 @@ class WhoamiCommand(Command):
         return context.user
 
 
-@description("Provides help on commands")
+@description("Display help")
 class HelpCommand(Command):
 
     """
@@ -553,7 +553,7 @@ class HelpCommand(Command):
             return output_seq
 
 
-@description("Lists available commands or items in this namespace")
+@description("List available commands or items in this namespace")
 class IndexCommand(Command):
     """
     Usage: ?
@@ -618,7 +618,7 @@ class TopCommand(Command):
         context.ml.path = [context.root_ns]
 
 
-@description("Clears the cli stdout")
+@description("Clear the screen")
 class ClearCommand(Command):
 
     """
@@ -631,7 +631,7 @@ class ClearCommand(Command):
         sys.stderr.write('\x1b[2J\x1b[H')
 
 
-@description("Shows the CLI command history")
+@description("Show the CLI command history")
 class HistoryCommand(Command):
     """
     Usage: history <number>
@@ -698,7 +698,7 @@ class SourceCommand(Command):
                     raise CommandException(_("File {0} does not exist.".format(arg)))
 
 
-@description("Dumps namespace configuration to a series of CLI commands")
+@description("Dump namespace configuration to a series of CLI commands")
 class DumpCommand(Command):
     """
     Usage: <namespace> dump
@@ -739,7 +739,7 @@ class DumpCommand(Command):
             return contents
 
 
-@description("Prints the provided message to the output")
+@description("Display the specified message")
 class EchoCommand(Command):
 
     """
@@ -780,7 +780,7 @@ class EchoCommand(Command):
             return Sequence(*echo_seq)
 
 
-@description("Shows pending tasks")
+@description("Display list of pending tasks")
 class PendingCommand(Command):
     """
     Usage: pending

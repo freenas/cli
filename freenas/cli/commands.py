@@ -239,7 +239,7 @@ class ShellCommand(Command):
            shell "/usr/local/bin/bash"
            shell "tail /var/log/messages"
 
-    Launch current logged in user's login shell. Type "exit" to return
+    Launch current logged in user's login shell. Type 'exit' to return
     to the CLI. If a command is specified, run the specified command
     then return to the CLI. If the full path to an installed shell is
     specifed, launch the specified shell.

@@ -281,7 +281,7 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             ('gid', 'in', entity['groups'])
         )
         for group in groups:
-            yield group['name'] if group else 'GID:{0}'.format(group['id'])
+            yield group['name'] if group else 'GID:{0}'.format(group['gid'])
 
     def set_aux_groups(self, entity, value):
         groups = self.context.call_sync('group.query', [('name', 'in', list(value))])
@@ -353,8 +353,8 @@ class GroupsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
         self.add_property(
             descr='Group ID',
             name='gid',
-            get='id',
-            set='id',
+            get='gid',
+            set='gid',
             usersetable=False,            
             type=ValueType.NUMBER,
             usage=_("""\

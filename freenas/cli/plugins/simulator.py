@@ -193,7 +193,7 @@ class DisksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
         post_save(this, status)
 
 
-@description("Tools for simulating aspects of a NAS")
+@description("NAS simulation tools for testing")
 class SimulatorNamespace(Namespace):
     """
     The simulator namespace provides tools for simulating aspects of a NAS for testing.

@@ -183,6 +183,18 @@ class SaveenvCommand(Command):
 
 @description("Creates aliases for commands")
 class AliasCommand(Command):
+  
+    """
+    Map a shortcut to the specified CLI command. You can create an alias for
+    anything you can type within the CLI. Once the alias is created, type
+    its name to run its associated command.
+    
+    Usage: alias name="CLI command"
+ 
+    Example:
+           alias us="account user show"
+    """
+
     def run(self, context, args, kwargs, opargs):
         if not kwargs:
             data = [{'label': k, 'value': v} for k, v in context.ml.aliases.items()]

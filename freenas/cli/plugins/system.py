@@ -371,16 +371,6 @@ class TimeNamespace(ConfigNamespace):
             list=True
         )
 
-        self.add_property(
-            descr='Time zone',
-            name='timezone',
-            usage=_("""
-            Use set or edit to change the timezone. Type
-            timezones to see the list of valid timezones."""),
-            get='timezone',
-            list=True
-        )
-
     def save(self):
         self.context.submit_task(
             'system.time.update',

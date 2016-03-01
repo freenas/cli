@@ -237,17 +237,17 @@ class VariableStore(object):
             'verbosity': self.Variable(1, ValueType.NUMBER)
         }
         self.variable_doc = {
-            'output_format': _('Sets the console output format, valid values are: "ascii", "json" and "table"'),
-            'datetime_format': _('Sets the date/time format'),
-            'language': _('Sets the console language'),
-            'prompt': _('Sets the console prompt'),
-            'timeout': _('Set the console timeout period'),
-            'tasks_blocking': _('Toggle tasks blocking console output'),
-            'show_events': _('Toggle displaying of events'),
-            'debug': _('Toggle displaying of debug messages'),
-            'abort_on_errors': _('Toggle console aborting on errors'),
-            'output': _('Send output to specified file, "none" outputs to console'),
-            'verbosity': _('Verbosity of event messages in range from 1 to 5')
+            'output_format': _('Console output format. Can be set to 'ascii', 'json', or 'table'.'),
+            'datetime_format': _('Date and time format.'),
+            'language': _('Console language.'),
+            'prompt': _('Console prompt.'),
+            'timeout': _('Console timeout period in minutes.'),
+            'tasks_blocking': _('Toggle tasks blocking console output. Can be set to yes or no.'),
+            'show_events': _('Toggle displaying of events. Can be set to yes or no.'),
+            'debug': _('Toggle display of debug messages. Can be set to yes or no.'),
+            'abort_on_errors': _('Toggle console aborting on errors. Can be set to yes or no.'),
+            'output': _('Send output to specified file. Set to 'none' to send output to console.'),
+            'verbosity': _('Increasing verbosity of event messages. Can be set from 1 to 5')
         }
 
     def load(self, filename):

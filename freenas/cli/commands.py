@@ -784,7 +784,7 @@ class EchoCommand(Command):
 class PendingCommand(Command):
     """
     Usage: pending
-    
+
     Display the list of currently pending tasks.
     """
     def run(self, context, args, kwargs, opargs):
@@ -886,7 +886,7 @@ class MorePipeCommand(PipeCommand):
     Examples: task show | more
               account user show | more
               system advanced show | less
- 
+
     Allow paging and scrolling through long outputs of text, where
     'more' and 'less' are interchangeable. Press 'q' to return to
     the prompt.
@@ -1032,7 +1032,7 @@ class SortPipeCommand(PipeCommand):
     Usage: <command> | sort <field> [<-field> ...]
 
     Example: account user show | sort name
- 
+
     Sort the elements of a list by the given key.
     """
     def serialize_filter(self, context, args, kwargs, opargs):

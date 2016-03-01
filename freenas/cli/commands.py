@@ -157,7 +157,7 @@ class SaveenvCommand(Command):
     Save the current set of environment variables to either the specified filename
     or, when not specified, to "~/.freenascli.conf". To start the CLI with the saved
     variables, type "cli -c filename" from the shell or an SSH session.
-    
+  
     Usage: saveenv
            saveenv <filename>
 
@@ -183,16 +183,16 @@ class SaveenvCommand(Command):
 
 @description("Creates aliases for commands")
 class AliasCommand(Command):
-  
+
     """
     Map a shortcut to the specified CLI command. You can create an alias for
     anything you can type within the CLI. Once the alias is created, type
     its name to run its associated command. When run without any arguments,
     displays any defined aliases.
-    
+
     Usage: alias name="CLI command"
            alias
- 
+
     Example:
            alias us="account user show"
     """
@@ -211,17 +211,17 @@ class AliasCommand(Command):
 
 @description("Removes previously defined aliases")
 class UnaliasCommand(Command):
-  
+
     """
     Remove the specified, previously defined alias. Use 'alias' to
     list the defined aliases.
-    
+
     Usage: unalias <name>
 
     Example:
            unalias us
     """
-  
+
     def run(self, context, args, kwargs, opargs):
         for name in args:
             if name in context.ml.aliases:
@@ -474,7 +474,7 @@ class HelpCommand(Command):
                 else:
                     description = obj.get_name()
                 value_description = re.sub('<entity>',
-                                           obj.get_name(), 
+                                           obj.get_name(),
                                            description)
                 cmd_dict = {
                     'cmd': key,

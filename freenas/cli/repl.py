@@ -237,7 +237,7 @@ class VariableStore(object):
             'verbosity': self.Variable(1, ValueType.NUMBER)
         }
         self.variable_doc = {
-            'output_format': _('Console output format. Can be set to 'ascii', 'json', or 'table'.'),
+            'output_format': _('Console output format. Can be set to \'ascii\', \'json\', or \'table\'.'),
             'datetime_format': _('Date and time format.'),
             'language': _('Display the console language.'),
             'prompt': _('Console prompt.'),
@@ -246,7 +246,7 @@ class VariableStore(object):
             'show_events': _('Toggle displaying of events. Can be set to yes or no.'),
             'debug': _('Toggle display of debug messages. Can be set to yes or no.'),
             'abort_on_errors': _('Toggle console aborting on errors. Can be set to yes or no.'),
-            'output': _('Either send all output to specified file or set to 'none' to display output on the console.'),
+            'output': _('Either send all output to specified file or set to \'none\' to display output on the console.'),
             'verbosity': _('Increasing verbosity of event messages. Can be set from 1 to 5')
         }
 

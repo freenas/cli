@@ -876,7 +876,7 @@ class WaitCommand(Command):
             SIGTSTP_setter(set_flag=False)
 
 
-@description("Allows the user to scroll through output")
+@description("Scroll through long output")
 class MorePipeCommand(PipeCommand):
 
     """
@@ -917,7 +917,7 @@ def map_opargs(opargs, context):
     return mapped_opargs
 
 
-@description("Filters result set basing on specified conditions")
+@description("Filter results based on specified conditions")
 class SearchPipeCommand(PipeCommand):
 
     """
@@ -949,7 +949,7 @@ class SearchPipeCommand(PipeCommand):
         return {"filter": mapped_opargs}
 
 
-@description("Selects tasks started before or at time-delta")
+@description("Select tasks started before or at the specified time")
 class OlderThanPipeCommand(PipeCommand):
     """
     Usage: <command> | older_than <hh>:<mm>
@@ -970,7 +970,7 @@ class OlderThanPipeCommand(PipeCommand):
         ]}
 
 
-@description("Selects tasks started at or since time-delta")
+@description("Select tasks started at or since specified time")
 class NewerThanPipeCommand(PipeCommand):
     """
     Usage: <command> | newer_than <hh>:<mm>
@@ -991,7 +991,7 @@ class NewerThanPipeCommand(PipeCommand):
         ]}
 
 
-@description("Excludes certain results from result set basing on specified conditions")
+@description("Exclude results which match specified condition")
 class ExcludePipeCommand(PipeCommand):
     """
     Usage: <command> | exclude <key> <op> <value> ...
@@ -1026,7 +1026,7 @@ class ExcludePipeCommand(PipeCommand):
         return {"filter": result}
 
 
-@description("Sorts result set")
+@description("Sort results")
 class SortPipeCommand(PipeCommand):
     """
     Usage: <command> | sort <field> [<-field> ...]
@@ -1039,7 +1039,7 @@ class SortPipeCommand(PipeCommand):
         return {"params": {"sort": args}}
 
 
-@description("Limits output to <n> items")
+@description("Limit output to specified number of items")
 class LimitPipeCommand(PipeCommand):
     """
     Usage: <command> | limit <n>
@@ -1059,7 +1059,7 @@ class LimitPipeCommand(PipeCommand):
         return {"params": {"limit": args[0]}}
 
 
-@description("Displays the output for a specific field")
+@description("Display output of the specific field")
 class SelectPipeCommand(PipeCommand):
     """
     Usage: <command> | select <field>

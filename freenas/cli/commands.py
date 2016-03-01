@@ -74,7 +74,7 @@ def create_variable_completer(name, var):
     return NullComplete(name + '=')
 
 
-@description("Sets variable value")
+@description("Set environment variable value")
 class SetenvCommand(Command):
 
     """
@@ -151,7 +151,7 @@ class PrintenvCommand(Command):
         return [create_variable_completer(k, v) for k, v in context.variables.get_all()]
 
 
-@description("Saves the Environment Variables to cli config file")
+@description("Save environment variables to CLI configuration file")
 class SaveenvCommand(Command):
 
     """
@@ -210,7 +210,7 @@ class AliasCommand(Command):
             context.ml.aliases[name] = value
 
 
-@description("Removes previously defined aliases")
+@description("Remove previously defined alias")
 class UnaliasCommand(Command):
 
     """
@@ -229,7 +229,7 @@ class UnaliasCommand(Command):
                 del context.ml.aliases[name]
 
 
-@description("Spawns shell, enter \"!shell\" (example: \"!sh\")")
+@description("Launch shell or shell command")
 class ShellCommand(Command):
 
     """
@@ -281,7 +281,7 @@ class ShellCommand(Command):
             termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
 
 
-@description("Displays the active IP addresses from all configured network interface")
+@description("Display active IP addresses from all configured network interfaces")
 class ShowIpsCommand(Command):
 
     """
@@ -301,7 +301,7 @@ class ShowIpsCommand(Command):
         )
 
 
-@description("Displays the URLs to access the web GUI from")
+@description("Display the URLs for accessing the web GUI")
 class ShowUrlsCommand(Command):
 
     """
@@ -363,7 +363,7 @@ class ExitCommand(Command):
         sys.exit(0)
 
 
-@description("Specifies the current cli session's user")
+@description("Display the current CLI user")
 class WhoamiCommand(Command):
 
     """
@@ -590,7 +590,7 @@ class IndexCommand(Command):
 
         return outseq
 
-
+@description("List command variables")
 class ListVarsCommand(Command):
     """
     Usage: vars
@@ -605,7 +605,7 @@ class ListVarsCommand(Command):
         )
 
 
-@description("Sends the user to the top level")
+@description("Return to the root of the CLI")
 class TopCommand(Command):
 
     """
@@ -664,7 +664,7 @@ class HistoryCommand(Command):
         )
 
 
-@description("Imports a script for parsing")
+@description("Run specified script")
 class SourceCommand(Command):
     """
     Usage: source </path/filename>
@@ -800,7 +800,7 @@ class PendingCommand(Command):
         ])
 
 
-@description("Waits for a task to complete and shows task progress")
+@description("Wait for a task to complete and show its progress")
 class WaitCommand(Command):
     """
     Usage: wait

@@ -196,7 +196,7 @@ class UpdateNowCommand(Command):
         )
 
 
-@description("System Updates and their Configuration")
+@description("Configure system updates")
 class UpdateNamespace(ConfigNamespace):
     """
     The update namespace provides commands for updating and for

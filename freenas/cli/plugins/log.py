@@ -34,7 +34,7 @@ t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
 
 
-@description("System logs")
+@description("Browse and query system log entries")
 class LogNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
     """
     The log namespace can be used to browse and query system log

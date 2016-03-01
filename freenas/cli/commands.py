@@ -78,16 +78,16 @@ def create_variable_completer(name, var):
 class SetenvCommand(Command):
 
     """
-    Set value of environment variable. Use printenv to display
-    available variables and their current values.
-
-    If the value contains any non-alphanumeric characters,
-    enclose it between double quotes.
-
     Usage: setenv <variable>=<value>
 
     Example: setenv debug=yes
              setenv prompt="{path}>"
+
+    Set value of environment variable. Use 'printenv' to display
+    available variables and their current values.
+
+    If the value contains any non-alphanumeric characters,
+    enclose it between double quotes.
     """
 
     def run(self, context, args, kwargs, opargs):
@@ -111,13 +111,14 @@ class SetenvCommand(Command):
 class PrintenvCommand(Command):
 
     """
-    Either print a list of all environment variables and their values
-    or the value of the specified environment variable.
 
     Usage: printenv <variable>
 
     Example: printenv
              printenv timeout
+    
+    Print a list of all environment variables and their values
+    or the value of the specified environment variable.
     """
 
     def run(self, context, args, kwargs, opargs):
@@ -154,16 +155,16 @@ class PrintenvCommand(Command):
 class SaveenvCommand(Command):
 
     """
-    Save the current set of environment variables to either the specified filename
-    or, when not specified, to "~/.freenascli.conf". To start the CLI with the saved
-    variables, type "cli -c filename" from the shell or an SSH session.
-  
     Usage: saveenv
            saveenv <filename>
 
     Examples:
            saveenv
            saveenv "/root/myclisave.conf"
+    
+    Save the current set of environment variables to either the specified filename
+    or, when not specified, to "~/.freenascli.conf". To start the CLI with the saved
+    variables, type "cli -c filename" from the shell or an SSH session.
     """
 
     def run(self, context, args, kwargs, opargs):
@@ -185,16 +186,16 @@ class SaveenvCommand(Command):
 class AliasCommand(Command):
 
     """
-    Map a shortcut to the specified CLI command. You can create an alias for
-    anything you can type within the CLI. Once the alias is created, type
-    its name to run its associated command. When run without any arguments,
-    displays any defined aliases.
-
     Usage: alias name="CLI command"
            alias
 
     Example:
            alias us="account user show"
+    
+    Map a shortcut to the specified CLI command. You can create an alias for
+    anything you can type within the CLI. Once the alias is created, type
+    its name to run its associated command. When run without any arguments,
+    displays any defined aliases.
     """
 
     def run(self, context, args, kwargs, opargs):
@@ -213,13 +214,13 @@ class AliasCommand(Command):
 class UnaliasCommand(Command):
 
     """
-    Remove the specified, previously defined alias. Use 'alias' to
-    list the defined aliases.
-
     Usage: unalias <name>
 
     Example:
            unalias us
+    
+    Remove the specified, previously defined alias. Use 'alias' to
+    list the defined aliases.
     """
 
     def run(self, context, args, kwargs, opargs):
@@ -232,16 +233,16 @@ class UnaliasCommand(Command):
 class ShellCommand(Command):
 
     """
-    Launch current logged in user's login shell. Type "exit" to return
-    to the CLI. If a command is specified, run the specified command
-    then return to the CLI. If the full path to an installed shell is
-    specifed, launch the specified shell.
-
     Usage: shell <command>
 
     Examples:
            shell "/usr/local/bin/bash"
            shell "tail /var/log/messages"
+    
+    Launch current logged in user's login shell. Type "exit" to return
+    to the CLI. If a command is specified, run the specified command
+    then return to the CLI. If the full path to an installed shell is
+    specifed, launch the specified shell.
     """
 
     def __init__(self):
@@ -284,10 +285,10 @@ class ShellCommand(Command):
 class ShowIpsCommand(Command):
 
     """
+    Usage: showips
+  
     Display the IP addresses from all configured and active network
     interfaces.
-
-    Usage: showips
     """
 
     def run(self, context, args, kwargs, opargs):
@@ -304,9 +305,9 @@ class ShowIpsCommand(Command):
 class ShowUrlsCommand(Command):
 
     """
-    Display the URLs for accessing the web GUI.
-
     Usage: showurls
+    
+    Display the URLs for accessing the web GUI.
     """
 
     def run(self, context, args, kwargs, opargs):
@@ -332,9 +333,9 @@ class ShowUrlsCommand(Command):
 class LoginCommand(Command):
 
     """
-    Login to the CLI as the specified user.
-
     Usage: login <username> <password>
+    
+    Login to the CLI as the specified user.
     """
 
     def run(self, context, args, kwargs, opargs):
@@ -351,11 +352,11 @@ class LoginCommand(Command):
 class ExitCommand(Command):
 
     """
+    Usage: exit
+    
     Exit the CLI. Note that the CLI will restart if this command
     is run from the local console. The keyboard shortcut for this
     command is (ctrl+d).
-
-    Usage: exit
     """
 
     def run(self, context, args, kwargs, opargs):
@@ -366,9 +367,9 @@ class ExitCommand(Command):
 class WhoamiCommand(Command):
 
     """
-    Display the current CLI user.
-
     Usage: whoami
+    
+    Display the current CLI user.
     """
 
     def run(self, context, args, kwargs, opargs):
@@ -379,13 +380,6 @@ class WhoamiCommand(Command):
 class HelpCommand(Command):
 
     """
-    Provide general usage information for current namespace.
-    Alternately, provide usage information for specified
-    command or for specified namespace.
-
-    To see the available properties for the current or
-    specified namespace, use 'help properties'.
-
     Usage: help
            help <command>
            help <namespace>
@@ -396,6 +390,13 @@ class HelpCommand(Command):
         help printenv
         help account user create
         account group help properties
+    
+    Provide general usage information for current namespace.
+    Alternately, provide usage information for specified
+    command or for specified namespace.
+
+    To see the available properties for the current or
+    specified namespace, use 'help properties'.
     """
 
     def run(self, context, args, kwargs, opargs):
@@ -557,12 +558,12 @@ class IndexCommand(Command):
     """
     Usage: ?
 
-    Lists the commands and namespaces accessible from the current
-    or specified namespace.
-
     Example:
     ?
     volume ?
+    
+    Lists the commands and namespaces accessible from the current
+    or specified namespace.
     """
 
     def run(self, context, args, kwargs, opargs):
@@ -593,14 +594,8 @@ class IndexCommand(Command):
 class ListVarsCommand(Command):
     """
     Usage: vars
-
-    Lists the variables in the current scope where the command
-    is run in.
-
-    Example:
-    vars
-    Variable (var)                      Value (val)
-    _cli_src_path    /usr/local/lib/python3.4/site-packages/freenas/cli
+    
+    List the command variables for the current scope.
     """
 
     def run(self, context, args, kwargs, opargs):
@@ -614,9 +609,9 @@ class ListVarsCommand(Command):
 class TopCommand(Command):
 
     """
-    Go back to the root of the command tree.
-
     Usage: top
+    
+    Return to the root of the command tree.
     """
 
     def run(self, context, args, kwargs, opargs):
@@ -627,9 +622,9 @@ class TopCommand(Command):
 class ClearCommand(Command):
 
     """
-    Clear the screen.
-
     Usage: clear
+    
+    Clear the screen.
     """
 
     def run(self, context, args, kwargs, opargs):
@@ -639,15 +634,14 @@ class ClearCommand(Command):
 @description("Shows the CLI command history")
 class HistoryCommand(Command):
     """
-    List the commands previously executed in this CLI instance.
-    Optionally, provide a number to specify the number of lines,
-    from the last line of history, to display.
-
     Usage: history <number>
 
     Example: history
              history 10
-
+    
+    List the commands previously executed in this CLI instance.
+    Optionally, provide a number to specify the number of lines,
+    from the last line of history, to display.
     """
 
     def run(self, context, args, kwargs, opargs):
@@ -673,15 +667,15 @@ class HistoryCommand(Command):
 @description("Imports a script for parsing")
 class SourceCommand(Command):
     """
+    Usage: source </path/filename>
+           source </path/filename1> </path/filename2> </path/filename3>
+    
     Run specified file or files, where each file contains a list
     of CLI commands. When creating the source file, separate
     each CLI command with a semicolon or place each
     CLI command on its own line. If multiple files are
     specified, they are run in the order given. If a CLI
     command fails, the source operation aborts.
-
-    Usage: source </path/filename>
-           source </path/filename1> </path/filename2> </path/filename3>
     """
 
     def run(self, context, args, kwargs, opargs):
@@ -707,10 +701,6 @@ class SourceCommand(Command):
 @description("Dumps namespace configuration to a series of CLI commands")
 class DumpCommand(Command):
     """
-    Diplay configuration of specified namespace or, when not specified,
-    the current namespace. Optionally, specify the name of the file to
-    send the output to.
-
     Usage: <namespace> dump
            <namespace> dump <filename>
 
@@ -718,6 +708,10 @@ class DumpCommand(Command):
     update dump
     dump | less
     dump "/root/mydumpfile.cli"
+    
+    Display configuration of specified namespace or, when not specified,
+    the current namespace. Optionally, specify the name of the file to
+    send the output to.
     """
 
     def run(self, context, args, kwargs, opargs):
@@ -749,11 +743,6 @@ class DumpCommand(Command):
 class EchoCommand(Command):
 
     """
-    Write any specified operands, separated by single blank
-    (' ') characters and followed by a newline ('\\n') character, to the
-    standard output. It also has the ability to expand and substitute
-    variables in place using the '${variable_name}' syntax.
-
     Usage: echo <string_to_display>
 
     Examples:
@@ -765,6 +754,11 @@ class EchoCommand(Command):
 
     echo Hi there, you are using the ${language} lang
     output: Hi there, you are using the C lang
+    
+    Write any specified operands, separated by single blank
+    characters and followed by a newline ('\\n') character, to the
+    standard output. It also has the ability to expand and substitute
+    variables in place using the '${variable_name}' syntax.
     """
 
     def run(sef, context, args, kwargs, opargs):
@@ -789,10 +783,9 @@ class EchoCommand(Command):
 @description("Shows pending tasks")
 class PendingCommand(Command):
     """
-    Display the list of currently pending tasks.
-
     Usage: pending
-
+    
+    Display the list of currently pending tasks.
     """
     def run(self, context, args, kwargs, opargs):
         pending = list(filter(
@@ -810,12 +803,11 @@ class PendingCommand(Command):
 @description("Waits for a task to complete and shows task progress")
 class WaitCommand(Command):
     """
-    Shows task progress of either all waiting tasks or the
-    specified task. Use "task show' to determine the task ID.
-
     Usage: wait
            wait <task ID>
 
+    Show task progress of either all waiting tasks or the
+    specified task. Use 'task show' to determine the task ID.
     """
     def run(self, context, args, kwargs, opargs):
         if args:
@@ -888,16 +880,16 @@ class WaitCommand(Command):
 class MorePipeCommand(PipeCommand):
 
     """
-    Allow paging and scrolling through long outputs of text, where
-    'more' and 'less' are interchangeable. Press 'q' to return to
-    the prompt.
-
     Usage: <command> | more
            <command> | less
 
     Examples: task show | more
               account user show | more
               system advanced show | less
+    
+    Allow paging and scrolling through long outputs of text, where
+    'more' and 'less' are interchangeable. Press 'q' to return to
+    the prompt.
     """
 
     def __init__(self):
@@ -929,11 +921,11 @@ def map_opargs(opargs, context):
 class SearchPipeCommand(PipeCommand):
 
     """
-    Return an element in a list that matches the given key value.
-
     Usage: <command> | search <key> <op> <value> ...
 
     Example: account user show | search username==root
+    
+    Return an element in a list that matches the given key value.
     """
 
     def run(self, context, args, kwargs, opargs, input=None):
@@ -960,13 +952,13 @@ class SearchPipeCommand(PipeCommand):
 @description("Selects tasks started before or at time-delta")
 class OlderThanPipeCommand(PipeCommand):
     """
-    Return all elements of a list that contains time values that are
-    older than the given time delta.
-
     Usage: <command> | older_than <hh>:<mm>
            <command> | older_than <hh>:<mm>:<ss>
 
     Example: task show all | older_than 2:00
+    
+    Return all elements of a list that contains time values that are
+    older than the given time delta.
     """
     def run(self, context, args, kwargs, opargs, input=None):
         return input
@@ -981,13 +973,13 @@ class OlderThanPipeCommand(PipeCommand):
 @description("Selects tasks started at or since time-delta")
 class NewerThanPipeCommand(PipeCommand):
     """
-    Return all elements of a list that contains time values that are newer than
-    the given time delta.
-
     Usage: <command> | newer_than <hh>:<mm>
            <command> | newer_than <hh>:<mm>:<ss>
 
     Example: task show all | newer_than 2:00
+    
+    Return all elements of a list that contains time values that are newer than
+    the given time delta.
     """
     def run(self, context, args, kwargs, opargs, input=None):
         return input
@@ -1002,12 +994,12 @@ class NewerThanPipeCommand(PipeCommand):
 @description("Excludes certain results from result set basing on specified conditions")
 class ExcludePipeCommand(PipeCommand):
     """
-    Return all the elements of a list that do not match the given key
-    value.
-
     Usage: <command> | exclude <key> <op> <value> ...
 
     Example: account user show | exclude username==root
+    
+    Return all the elements of a list that do not match the given key
+    value.
     """
     def run(self, context, args, kwargs, opargs, input=None):
         return input
@@ -1037,11 +1029,11 @@ class ExcludePipeCommand(PipeCommand):
 @description("Sorts result set")
 class SortPipeCommand(PipeCommand):
     """
-    Sort the elements of a list by the given key.
-
     Usage: <command> | sort <field> [<-field> ...]
 
     Example: account user show | sort name
+    
+    Sort the elements of a list by the given key.
     """
     def serialize_filter(self, context, args, kwargs, opargs):
         return {"params": {"sort": args}}
@@ -1050,11 +1042,11 @@ class SortPipeCommand(PipeCommand):
 @description("Limits output to <n> items")
 class LimitPipeCommand(PipeCommand):
     """
-    Return only the specified number of elements in a list.
-
     Usage: <command> | limit <n>
 
     Example: account user show | limit 10
+    
+    Return only the specified number of elements in a list.
     """
     def serialize_filter(self, context, args, kwargs, opargs):
         if len(args) == 0:
@@ -1070,11 +1062,11 @@ class LimitPipeCommand(PipeCommand):
 @description("Displays the output for a specific field")
 class SelectPipeCommand(PipeCommand):
     """
-    Return only the output of the specific field for a list.
-
     Usage: <command> | select <field>
 
     Example: account user show | select username
+    
+    Return only the output of the specific field for a list.
     """
     def run(self, context, args, kwargs, opargs, input=None):
         ns = context.pipe_cwd

@@ -859,17 +859,8 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
     def save(self, this, new=False):
         if new:
             newname = this.entity['id']
-            newpath = '/'.join(newname.split('/')[:-1])
-            validpath = False
             if len(newname.split('/')) < 2:
                 raise CommandException(_("Please include a volume in the dataset's path"))
-            for dataset in self.parent.entity['datasets']:
-                if newpath in dataset['id']:
-                    validpath = True
-                    break
-            if not validpath:
-                raise CommandException(_(
-                    "{0} is not a proper target for creating a new dataset on").format(newname))
 
             self.context.submit_task(
                 'volume.dataset.create',

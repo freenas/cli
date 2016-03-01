@@ -57,7 +57,7 @@ class DismissAlertCommand(Command):
             context.ml.cd_up()
 
 
-@description("System alerts")
+@description("List or dismiss system alerts")
 class AlertNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
     """
     The alert namespace provides commands for listing and dismissing

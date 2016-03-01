@@ -116,7 +116,7 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
         self.add_property(
             descr='User ID',
             name='uid',
-            get='id',
+            get='uid',
             list=True,
             usage=_("An unused number greater than 1000 and less than 65535."),
             type=ValueType.NUMBER)
@@ -264,7 +264,7 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
 
     def display_group(self, entity):
         group = self.context.entity_subscribers['group'].query(
-            ('id', '=', entity['group']),
+            ('gid', '=', entity['group']),
             single=True
         )
         return group['name'] if group else 'GID:{0}'.format(entity['group'])
@@ -272,13 +272,13 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
     def set_group(self, entity, value):
         group = self.context.call_sync('group.query', [('name', '=', value)], {'single': True})
         if group:
-            entity['group'] = group['id']
+            entity['group'] = group['gid']
         else:
             raise CommandException(_('Group {0} does not exist.'.format(value)))
 
     def display_aux_groups(self, entity):
         groups = self.context.entity_subscribers['group'].query(
-            ('id', 'in', entity['groups'])
+            ('gid', 'in', entity['groups'])
         )
         for group in groups:
             yield group['name'] if group else 'GID:{0}'.format(group['id'])
@@ -288,7 +288,7 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
         diff_groups = set.difference(set([x['name'] for x in groups]), set(value))
         if len(diff_groups):
             raise CommandException(_('Groups {0} do not exist.'.format(diff_groups)))
-        entity['groups'] = [group['id'] for group in groups]
+        entity['groups'] = [group['gid'] for group in groups]
 
 
 @description(_("Manage local groups"))

@@ -25,7 +25,7 @@
 #
 #####################################################################
 
-
+import copy
 import gettext
 from freenas.cli.namespace import (
     Namespace, ItemNamespace, EntityNamespace, RpcBasedLoadMixin, TaskBasedSaveMixin,
@@ -149,6 +149,7 @@ class ServiceConfigNamespace(ItemNamespace):
 
     def load(self):
         self.entity = self.parent.entity['config']
+        self.orig_entity = copy.deepcopy(self.entity)
 
     def save(self):
         return self.parent.save()

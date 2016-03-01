@@ -116,7 +116,7 @@ class PrintenvCommand(Command):
 
     Example: printenv
              printenv timeout
-    
+
     Print a list of all environment variables and their values
     or the value of the specified environment variable.
     """
@@ -161,7 +161,7 @@ class SaveenvCommand(Command):
     Examples:
            saveenv
            saveenv "/root/myclisave.conf"
-    
+
     Save the current set of environment variables to either the specified filename
     or, when not specified, to "~/.freenascli.conf". To start the CLI with the saved
     variables, type "cli -c filename" from the shell or an SSH session.
@@ -191,7 +191,7 @@ class AliasCommand(Command):
 
     Example:
            alias us="account user show"
-    
+
     Map a shortcut to the specified CLI command. You can create an alias for
     anything you can type within the CLI. Once the alias is created, type
     its name to run its associated command. When run without any arguments,
@@ -218,7 +218,7 @@ class UnaliasCommand(Command):
 
     Example:
            unalias us
-    
+
     Remove the specified, previously defined alias. Use 'alias' to
     list the defined aliases.
     """
@@ -238,7 +238,7 @@ class ShellCommand(Command):
     Examples:
            shell "/usr/local/bin/bash"
            shell "tail /var/log/messages"
-    
+
     Launch current logged in user's login shell. Type "exit" to return
     to the CLI. If a command is specified, run the specified command
     then return to the CLI. If the full path to an installed shell is
@@ -286,7 +286,7 @@ class ShowIpsCommand(Command):
 
     """
     Usage: showips
-  
+
     Display the IP addresses from all configured and active network
     interfaces.
     """
@@ -306,7 +306,7 @@ class ShowUrlsCommand(Command):
 
     """
     Usage: showurls
-    
+
     Display the URLs for accessing the web GUI.
     """
 
@@ -334,7 +334,7 @@ class LoginCommand(Command):
 
     """
     Usage: login <username> <password>
-    
+
     Login to the CLI as the specified user.
     """
 
@@ -353,7 +353,7 @@ class ExitCommand(Command):
 
     """
     Usage: exit
-    
+
     Exit the CLI. Note that the CLI will restart if this command
     is run from the local console. The keyboard shortcut for this
     command is (ctrl+d).
@@ -368,7 +368,7 @@ class WhoamiCommand(Command):
 
     """
     Usage: whoami
-    
+
     Display the current CLI user.
     """
 
@@ -390,7 +390,7 @@ class HelpCommand(Command):
         help printenv
         help account user create
         account group help properties
-    
+
     Provide general usage information for current namespace.
     Alternately, provide usage information for specified
     command or for specified namespace.
@@ -561,7 +561,7 @@ class IndexCommand(Command):
     Example:
     ?
     volume ?
-    
+
     Lists the commands and namespaces accessible from the current
     or specified namespace.
     """
@@ -594,7 +594,7 @@ class IndexCommand(Command):
 class ListVarsCommand(Command):
     """
     Usage: vars
-    
+
     List the command variables for the current scope.
     """
 
@@ -610,7 +610,7 @@ class TopCommand(Command):
 
     """
     Usage: top
-    
+
     Return to the root of the command tree.
     """
 
@@ -623,7 +623,7 @@ class ClearCommand(Command):
 
     """
     Usage: clear
-    
+
     Clear the screen.
     """
 
@@ -638,7 +638,7 @@ class HistoryCommand(Command):
 
     Example: history
              history 10
-    
+
     List the commands previously executed in this CLI instance.
     Optionally, provide a number to specify the number of lines,
     from the last line of history, to display.
@@ -669,7 +669,7 @@ class SourceCommand(Command):
     """
     Usage: source </path/filename>
            source </path/filename1> </path/filename2> </path/filename3>
-    
+
     Run specified file or files, where each file contains a list
     of CLI commands. When creating the source file, separate
     each CLI command with a semicolon or place each
@@ -708,7 +708,7 @@ class DumpCommand(Command):
     update dump
     dump | less
     dump "/root/mydumpfile.cli"
-    
+
     Display configuration of specified namespace or, when not specified,
     the current namespace. Optionally, specify the name of the file to
     send the output to.
@@ -754,7 +754,7 @@ class EchoCommand(Command):
 
     echo Hi there, you are using the ${language} lang
     output: Hi there, you are using the C lang
-    
+
     Write any specified operands, separated by single blank
     characters and followed by a newline ('\\n') character, to the
     standard output. It also has the ability to expand and substitute
@@ -886,7 +886,7 @@ class MorePipeCommand(PipeCommand):
     Examples: task show | more
               account user show | more
               system advanced show | less
-    
+ 
     Allow paging and scrolling through long outputs of text, where
     'more' and 'less' are interchangeable. Press 'q' to return to
     the prompt.
@@ -924,7 +924,7 @@ class SearchPipeCommand(PipeCommand):
     Usage: <command> | search <key> <op> <value> ...
 
     Example: account user show | search username==root
-    
+
     Return an element in a list that matches the given key value.
     """
 
@@ -956,7 +956,7 @@ class OlderThanPipeCommand(PipeCommand):
            <command> | older_than <hh>:<mm>:<ss>
 
     Example: task show all | older_than 2:00
-    
+
     Return all elements of a list that contains time values that are
     older than the given time delta.
     """
@@ -977,7 +977,7 @@ class NewerThanPipeCommand(PipeCommand):
            <command> | newer_than <hh>:<mm>:<ss>
 
     Example: task show all | newer_than 2:00
-    
+
     Return all elements of a list that contains time values that are newer than
     the given time delta.
     """
@@ -997,7 +997,7 @@ class ExcludePipeCommand(PipeCommand):
     Usage: <command> | exclude <key> <op> <value> ...
 
     Example: account user show | exclude username==root
-    
+
     Return all the elements of a list that do not match the given key
     value.
     """
@@ -1032,7 +1032,7 @@ class SortPipeCommand(PipeCommand):
     Usage: <command> | sort <field> [<-field> ...]
 
     Example: account user show | sort name
-    
+ 
     Sort the elements of a list by the given key.
     """
     def serialize_filter(self, context, args, kwargs, opargs):
@@ -1045,7 +1045,7 @@ class LimitPipeCommand(PipeCommand):
     Usage: <command> | limit <n>
 
     Example: account user show | limit 10
-    
+
     Return only the specified number of elements in a list.
     """
     def serialize_filter(self, context, args, kwargs, opargs):
@@ -1065,7 +1065,7 @@ class SelectPipeCommand(PipeCommand):
     Usage: <command> | select <field>
 
     Example: account user show | select username
-    
+
     Return only the output of the specific field for a list.
     """
     def run(self, context, args, kwargs, opargs, input=None):

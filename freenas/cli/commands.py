@@ -746,7 +746,7 @@ class EchoCommand(Command):
     Usage: echo <string_to_display>
 
     Examples:
-    echo Have a nice Day!
+    echo "Have a nice Day!"
     output: Have a nice Day!
 
     echo Hello the current cli session timeout is ${timeout} seconds
@@ -755,10 +755,10 @@ class EchoCommand(Command):
     echo Hi there, you are using the ${language} lang
     output: Hi there, you are using the C lang
 
-    Write any specified operands, separated by single blank
-    characters and followed by a newline ('\\n') character, to the
-    standard output. It also has the ability to expand and substitute
-    variables in place using the '${variable_name}' syntax.
+    Displays the specified text. If the text contains a symbol, enclose it
+    between double quotes. This command can expand and substitute
+    variables using the '${variable_name}' syntax, as long as they are not
+    enclosed between double quotes.
     """
 
     def run(sef, context, args, kwargs, opargs):

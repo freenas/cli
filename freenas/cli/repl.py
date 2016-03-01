@@ -246,7 +246,7 @@ class VariableStore(object):
             'show_events': _('Toggle displaying of events. Can be set to yes or no.'),
             'debug': _('Toggle display of debug messages. Can be set to yes or no.'),
             'abort_on_errors': _('Toggle console aborting on errors. Can be set to yes or no.'),
-            'output': _('Send output to specified file. Set to 'none' to send output to console.'),
+            'output': _('Either send all output to specified file or set to 'none' to display output on the console.'),
             'verbosity': _('Increasing verbosity of event messages. Can be set from 1 to 5')
         }
 

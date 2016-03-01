@@ -187,9 +187,11 @@ class AliasCommand(Command):
     """
     Map a shortcut to the specified CLI command. You can create an alias for
     anything you can type within the CLI. Once the alias is created, type
-    its name to run its associated command.
+    its name to run its associated command. When run without any arguments,
+    displays any defined aliases.
     
     Usage: alias name="CLI command"
+           alias
  
     Example:
            alias us="account user show"
@@ -209,6 +211,17 @@ class AliasCommand(Command):
 
 @description("Removes previously defined aliases")
 class UnaliasCommand(Command):
+  
+    """
+    Remove the specified, previously defined alias. Use 'alias' to
+    list the defined aliases.
+    
+    Usage: unalias <name>
+
+    Example:
+           unalias us
+    """
+  
     def run(self, context, args, kwargs, opargs):
         for name in args:
             if name in context.ml.aliases:

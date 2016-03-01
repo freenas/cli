@@ -108,7 +108,7 @@ class TaskListCommand(BaseListCommand):
         ]
 
 
-@description("Manage tasks")
+@description("Browse and abort running tasks")
 class TasksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
     """
     The task namespace provides commands for browsing task history

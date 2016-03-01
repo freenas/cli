@@ -239,7 +239,7 @@ class VariableStore(object):
         self.variable_doc = {
             'output_format': _('Console output format. Can be set to 'ascii', 'json', or 'table'.'),
             'datetime_format': _('Date and time format.'),
-            'language': _('Console language.'),
+            'language': _('Display the console language.'),
             'prompt': _('Console prompt.'),
             'timeout': _('Console timeout period in minutes.'),
             'tasks_blocking': _('Toggle tasks blocking console output. Can be set to yes or no.'),

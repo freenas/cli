@@ -47,7 +47,7 @@ t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
 
 
-@description("Configure and manage directory service")
+@description("Configure and manage directory services")
 class DirectoryServiceNamespace(Namespace):
     """
     The directoryservice namespace contains the

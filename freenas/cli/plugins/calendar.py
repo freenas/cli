@@ -201,7 +201,7 @@ class ScheduleNamespace(ConfigNamespace):
         self.parent.save()
 
 
-@description("Provides access to task scheduled on a regular basis")
+@description("List and create regularly scheduled tasks")
 class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
     """
     The calendar namespace provides commands for listing and creating

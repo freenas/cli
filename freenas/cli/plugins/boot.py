@@ -331,7 +331,7 @@ class BootPoolDetachDiskCommand(Command):
         return
 
 
-@description("Boot management")
+@description("Manage boot environments and the boot pool")
 class BootNamespace(Namespace):
     """
     The boot namespace provides commands for listing and managing

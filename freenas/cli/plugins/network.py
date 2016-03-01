@@ -784,7 +784,7 @@ class IPMINamespace(EntityNamespace):
         )
 
 
-@description("Network configuration")
+@description("Configure networking")
 class NetworkNamespace(Namespace):
     """
     The network namespace is used to configure the network interfaces

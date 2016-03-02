@@ -323,6 +323,8 @@ class ItemNamespace(Namespace):
     class GetEntityCommand(Command):
         """
         Usage: get <field>
+        
+        Display value of specified field.
         """
         def __init__(self, parent):
             self.parent = parent
@@ -432,7 +434,7 @@ class ItemNamespace(Namespace):
         """
         Usage: delete
 
-        Deletes current entity
+        Delete current entity.
         """
         def __init__(self, parent):
             self.parent = parent

@@ -201,9 +201,9 @@ class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
 @description("Rename a boot environment")
 class RenameBootEnvCommand(Command):
     """
-    Usage: rename
+    Usage: rename <newname>
 
-    Rename the specified boot environment.
+    Rename the boot environment.
     """
     def __init__(self, parent):
         self.parent = parent

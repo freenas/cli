@@ -226,9 +226,12 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
                       create mycommand type=command username=myuser command="some useful unix command"
                       create mysnapshot type=snapshot volume=mypool dataset=mypool/mydataset recursive=true lifetime="1h"
 
-            Creates a calendar task.  Tasks are disabled by default, you must set enabled=true to turn it on.  If a schedule is not set then all values will be set to * (i.e. run all the time).
-
-            The schedule property takes a key/value pair dictionary with keys of second, minute, hour, day_of_month, month, day_of_week, week and year with values of *, */integer, or integer.
+            Create a calendar task.  
+    
+            If a schedule is not set, all time values will be set to * (run all the time).
+            The schedule property takes a key/value pair with keys of second, minute, hour,
+            day_of_month, month, day_of_week, week, and year with values of *, */integer, or
+            integer.
 
             Valid types for calendar task creation include: scrub, smart, snapshot, replication and check_updates.
             - A 'scrub' task requires a valid volume passed with the 'volume' property.
@@ -307,6 +310,9 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
         self.add_property(
             descr='Enabled',
             name='enabled',
+            usage=_("""\
+            Can be set to yes or no. By default, new tasks are disabled
+            until set to yes."""),
             get='enabled',
             list=True,
             type=ValueType.BOOLEAN)

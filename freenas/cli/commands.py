@@ -706,6 +706,7 @@ class DumpCommand(Command):
 
     Examples:
     update dump
+    account user root dump
     dump | less
     dump "/root/mydumpfile.cli"
 

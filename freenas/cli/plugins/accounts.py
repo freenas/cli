@@ -129,8 +129,8 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             Maximum 16 characters, though a maximum of 8 is recommended for
             interoperability. Can not begin with a hyphen or contain a space,
             a tab, a double quote, or any of these characters:
-            r" , : + & # % ^ & ( ) ! @ ~ * ? < > =
-            r" If a $ is used, it can only be the last character."""),
+            , : + & # % ^ & ( ) ! @ ~ * ? < > =
+            If a $ is used, it can only be the last character."""),
             list=True)
 
         self.add_property(

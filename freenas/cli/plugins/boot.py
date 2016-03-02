@@ -325,6 +325,9 @@ class BootPoolDetachDiskCommand(Command):
     one device must remain in the pool.
     """
     def run(self, context, args, kwargs, opargs):
+        if not args:
+            output_msg("detach_disk requires more arguments.\n{0}".format(inspect.getdoc(self)))
+            return
         disk = args.pop(0)
         disk = correct_disk_path(disk)
         context.submit_task('boot.detach_disk', disk)

@@ -57,7 +57,7 @@ class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
 
             Example: create mybootenv
 
-            Creates a boot environment""")
+            Create a boot environment.""")
 
         self.entity_localdoc['SetEntityCommand'] = ("""\
             Usage: set name=<newname>
@@ -70,7 +70,7 @@ class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
 
             Example: delete mybootenv
 
-            Deletes the specified boot environment. This command will
+            Delete the specified boot environment. This command will
             fail if the boot environment is active.""")
         self.localdoc['ListCommand'] = ("""\
             Usage: show
@@ -231,7 +231,7 @@ class ActivateBootEnvCommand(Command):
     """
     Usage: activate
 
-    Activates the specified boot environment.
+    Activate the specified boot environment.
     """
     def __init__(self, parent):
         self.parent = parent
@@ -285,7 +285,7 @@ class BootPoolAttachDiskCommand(Command):
 
     Example: attach_disk ada1
 
-    Attaches the specified devices) to the boot pool,
+    Attach the specified device(s) to the boot pool,
     creating an N-way mirror where N is the total number
     of devices in the pool. The command will fail if a
     device is smaller than the smallest device already in
@@ -319,7 +319,7 @@ class BootPoolDetachDiskCommand(Command):
 
     Example: detach_disk ada1
 
-    Detaches the specified device(s) from the boot pool,
+    Detach the specified device(s) from the boot pool,
     reducing the number of devices in the N-way mirror. If
     only one device remains, it has no redundancy. At least
     one device must remain in the pool.

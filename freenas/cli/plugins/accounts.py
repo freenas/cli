@@ -184,8 +184,8 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             get='home',
             usage=_("""\
             By default when a user is created, their home
-            directory is not created. To create one, specify
-            the full path to an existing dataset."""),
+            directory is not created. To create one, specify the
+            full path to an existing dataset between double quotes."""),
             list=False
         )
 
@@ -230,8 +230,8 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             name='email',
             get='email',
             usage=_("""
-            Specify email address to send that user's
-            notifications to."""),
+            Specify email address, enclosed between double quotes,
+            to send that user's notifications to."""),
             list=False
         )
 
@@ -252,7 +252,7 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             name='pubkey',
             get='sshpubkey',
             usage=_("""
-            To configure key-based authentication, use the "set" command
+            To configure key-based authentication, use the 'set' command
             to paste the user's SSH public key."""),
             type=ValueType.STRING,
             list=False

@@ -158,9 +158,9 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             get=self.display_aux_groups,
             get_name='groups',
             usage=_("""
-            List of additional groups the user is a member of.
-            To add the user to other groups, specify a comma delimited
-            list and ensure the groups already exist."""),
+            List of additional groups the user is a member of. To add
+            the user to other groups, enclose a space delimited list
+            between double quotes and ensure the groups already exist."""),
             set=self.set_aux_groups,
             type=ValueType.SET,
             list=False

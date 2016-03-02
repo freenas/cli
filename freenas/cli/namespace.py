@@ -403,9 +403,9 @@ class ItemNamespace(Namespace):
         """
         Usage: edit <property>
 
-        Opens the default editor for the specified property. The default editor is
-        inherited from the shell's $EDITOR which can be set from the shell. For a
-        list of properties for the current namespace, see 'help properties'.
+        Opens the default editor for the specified property. The default editor
+        is inherited from the shell's $EDITOR which can be set from the shell.
+        For a list of properties for the current namespace, see 'help properties'.
         """
 
         def __init__(self, parent):
@@ -526,7 +526,6 @@ class ItemNamespace(Namespace):
                 else:
                     return True
         return False
-
 
     def commands(self):
         base = {

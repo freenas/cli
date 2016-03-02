@@ -171,8 +171,9 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             name='shell',
             get='shell',
             usage=_("""
-            Default is "/bin/sh". Otherwise,
-            specify full path to an existing shell."""),
+            Default is "/bin/sh". Can be set to full path of an
+            existing shell. Type 'shells' to see the list of
+            available shells."""),
             list=False,
             enum=UsersNamespace.shells
         )

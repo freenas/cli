@@ -277,6 +277,8 @@ class ItemNamespace(Namespace):
     class ShowEntityCommand(FilteringCommand):
         """
         Usage: show
+        
+        Display the property values for current entity.
         """
         def __init__(self, parent):
             self.parent = parent
@@ -351,7 +353,8 @@ class ItemNamespace(Namespace):
         """
         Usage: set <property>=<value> ...
 
-        For a list of properties for the current namespace, see 'help properties'.
+        Set the specified property to the specified value. For a list of properties for the
+        current namespace, see 'help properties'.
         """
         def __init__(self, parent):
             self.parent = parent
@@ -766,13 +769,13 @@ class BaseListCommand(FilteringCommand):
     """
     Usage: show
 
-    Lists items in current namespace, optinally doing filtering and sorting.
-
     Examples:
         show
         show | search username == root
         show | search uid > 1000
         show | search fullname~="John" | sort fullname
+
+    Lists items in current namespace, optinally doing filtering and sorting.
     """
     def __init__(self, parent):
         if hasattr(parent, 'leaf_entity') and parent.leaf_entity:

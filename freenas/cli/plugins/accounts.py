@@ -265,31 +265,31 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
 
     def display_group(self, entity):
         group = self.context.entity_subscribers['group'].query(
-            ('gid', '=', entity['group']),
+            ('id', '=', entity['group']),
             single=True
         )
-        return group['name'] if group else 'GID:{0}'.format(entity['group'])
+        return group['name'] if group else '<unknown group>'
 
     def set_group(self, entity, value):
         group = self.context.call_sync('group.query', [('name', '=', value)], {'single': True})
         if group:
-            entity['group'] = group['gid']
+            entity['group'] = group['id']
         else:
             raise CommandException(_('Group {0} does not exist.'.format(value)))
 
     def display_aux_groups(self, entity):
         groups = self.context.entity_subscribers['group'].query(
-            ('gid', 'in', entity['groups'])
+            ('id', 'in', entity['groups'])
         )
         for group in groups:
-            yield group['name'] if group else 'GID:{0}'.format(group['gid'])
+            yield group['name'] if group else '<unknown group>'
 
     def set_aux_groups(self, entity, value):
         groups = self.context.call_sync('group.query', [('name', 'in', list(value))])
         diff_groups = set.difference(set([x['name'] for x in groups]), set(value))
         if len(diff_groups):
             raise CommandException(_('Groups {0} do not exist.'.format(diff_groups)))
-        entity['groups'] = [group['gid'] for group in groups]
+        entity['groups'] = [group['id'] for group in groups]
 
 
 @description(_("Manage local groups"))

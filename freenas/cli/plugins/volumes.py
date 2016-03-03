@@ -886,7 +886,7 @@ class SnapshotsNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         self.primary_key_name = 'id'
         self.required_props = ['name', 'dataset']
         self.extra_query_params = [
-            ('pool', '=', self.parent.name)
+            ('volume', '=', self.parent.name)
         ]
 
         self.skeleton_entity = {

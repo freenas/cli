@@ -306,14 +306,15 @@ class ActiveDirectoryNamespace(BaseDirectoryServiceNamespace):
         self.add_property(
             descr='Bind Password',
             name='bindpw',
-            get='bindpw',
+            set='bindpw',
+            get=None,
             usage=_("""\
             Password associated with the Active Directory.
             administrative account This setting is mandatory and
             the specified password must result in a successful
             connection to the domain controller."""),
             type=ValueType.STRING,
-            list=True
+            list=False
         ) 
 
         self.add_property(
@@ -428,11 +429,12 @@ class LDAPDirectoryNamespace(BaseDirectoryServiceNamespace):
         self.add_property(
             descr='Bind Password',
             name='bindpw',
-            get='bindpw',
+            set='bindpw',
+            get=None,
             usage=_("""\
             Password associated with the "binddn"."""),
             type=ValueType.STRING,
-            list=True
+            list=False
         ) 
 
         self.add_property(

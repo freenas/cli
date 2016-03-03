@@ -62,7 +62,7 @@ class ServiceManageCommand(Command):
             'service.manage',
             self.parent.entity['id'],
             self.action,
-            callback=lambda s: post_save(self.parent, s)
+            callback=lambda s, t: post_save(self.parent, s, t)
         )
 
 

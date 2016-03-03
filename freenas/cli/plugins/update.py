@@ -280,7 +280,7 @@ class UpdateNamespace(ConfigNamespace):
         return self.context.submit_task(
             'update.update',
             self.get_diff(),
-            callback=lambda s: post_save(self, s))
+            callback=lambda s, t: post_save(self, s, t))
 
 
 def _init(context):

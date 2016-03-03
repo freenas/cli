@@ -75,13 +75,13 @@ class InterfaceManageCommand(Command):
             context.submit_task(
                 'network.interface.up',
                 self.parent.primary_key,
-                callback=lambda s: post_save(self.parent, s)
+                callback=lambda s, t: post_save(self.parent, s, t)
             )
         else:
             context.submit_task(
                 'network.interface.down',
                 self.parent.primary_key,
-                callback=lambda s: post_save(self.parent, s)
+                callback=lambda s, t: post_save(self.parent, s, t)
             )
 
 
@@ -99,7 +99,7 @@ class InterfaceRenewCommand(Command):
         context.submit_task(
             'network.interface.renew',
             self.parent.primary_key,
-            callback=lambda s: post_save(self.parent, s)
+            callback=lambda s, t: post_save(self.parent, s, t)
         )
 
 
@@ -461,7 +461,7 @@ class AliasesNamespace(EntityNamespace):
         self.parent.entity['aliases'].append(this.entity)
         self.parent.parent.save(
             self.parent,
-            callback=lambda s: self.my_post_save(this, s)
+            callback=lambda s, t: self.my_post_save(this, s)
         )
 
     def delete(self, address, kwargs):
@@ -621,7 +621,7 @@ class GlobalConfigNamespace(ConfigNamespace):
         return self.context.submit_task(
             'network.config.update',
             self.get_diff(),
-            callback=lambda s: post_save(self, s)
+            callback=lambda s, t: post_save(self, s, t)
         )
 
 
@@ -780,7 +780,7 @@ class IPMINamespace(EntityNamespace):
             'ipmi.update',
             this.entity['channel'],
             this.get_diff(),
-            callback=lambda s: post_save(this, s)
+            callback=lambda s, t: post_save(this, s, t)
         )
 
 

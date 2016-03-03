@@ -192,7 +192,7 @@ class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
             self.context.submit_task(
                 'boot.environment.clone',
                 this.entity['id'],
-                callback=lambda s: post_save(this, s),
+                callback=lambda s, t: post_save(this, s, t),
                 )
         else:
             return
@@ -222,7 +222,7 @@ class RenameBootEnvCommand(Command):
             'boot.environment.rename',
             old_be,
             new_be_name,
-            callback=lambda s: post_save(self.parent, s)
+            callback=lambda s, t: post_save(self.parent, s, t)
         )
 
 
@@ -240,7 +240,7 @@ class ActivateBootEnvCommand(Command):
         context.submit_task(
             'boot.environment.activate',
             self.parent.entity['id'],
-            callback=lambda s: post_save(self.parent, s))
+            callback=lambda s, t: post_save(self.parent, s, t))
 
 
 @description("Manage devices in boot pool")
@@ -258,6 +258,15 @@ class BootPoolNamespace(Namespace):
             'attach_disk': BootPoolAttachDiskCommand(),
             'detach_disk': BootPoolDetachDiskCommand(),
         }
+
+
+@description("Shows boot pool summary")
+class BootPoolShowCommand(Command):
+    """
+    Usage: show
+    """
+    def run(self, context, args, kwargs, opargs):
+        pass
 
 
 @description("List the devices in the boot pool")

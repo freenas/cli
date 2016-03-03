@@ -258,7 +258,7 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             'disk.update',
             this.entity['id'],
             this.get_diff(),
-            callback=lambda s: post_save(this, s))
+            callback=lambda s, t: post_save(this, s, t))
 
 
 @description("Formats given disk")

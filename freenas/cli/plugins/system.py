@@ -375,7 +375,7 @@ class TimeNamespace(ConfigNamespace):
         self.context.submit_task(
             'system.time.update',
             self.get_diff(),
-            callback=lambda s: post_save(self, s)
+            callback=lambda s, t: post_save(self, s, t)
         )
 
 
@@ -469,7 +469,7 @@ class MailNamespace(ConfigNamespace):
         self.context.submit_task(
             'mail.update',
             self.get_diff(),
-            callback=lambda s: post_save(self, s)
+            callback=lambda s, t: post_save(self, s, t)
         )
 
 
@@ -608,7 +608,7 @@ class AdvancedNamespace(ConfigNamespace):
         self.context.submit_task(
             'system.advanced.update',
             self.get_diff(),
-            callback=lambda s: post_save(self, s)
+            callback=lambda s, t: post_save(self, s, t)
         )
 
 
@@ -646,7 +646,7 @@ class SystemDatasetNamespace(ConfigNamespace):
         self.context.submit_task(
             'system_dataset.migrate',
             self.entity['pool'],
-            callback=lambda s: post_save(self, s)
+            callback=lambda s, t: post_save(self, s, t)
         )
 
 
@@ -731,7 +731,7 @@ class SystemNamespace(ConfigNamespace):
         return self.context.submit_task(
             'system.general.update',
             self.entity,
-            callback=lambda s: post_save(self, s)
+            callback=lambda s, t: post_save(self, s, t)
         )
 
     def namespaces(self):

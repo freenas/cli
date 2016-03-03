@@ -252,7 +252,7 @@ class OfflineVdevCommand(Command):
             'zfs.pool.offline_disk',
             self.parent.entity['id'],
             guid,
-            callback=lambda s: post_save(self.parent, s)
+            callback=lambda s, t: post_save(self.parent, s, t)
         )
 
 
@@ -289,7 +289,7 @@ class OnlineVdevCommand(Command):
             'zfs.pool.online_disk',
             self.parent.entity['id'],
             guid,
-            callback=lambda s: post_save(self.parent, s)
+            callback=lambda s, t: post_save(self.parent, s, t)
         )
 
 
@@ -437,7 +437,7 @@ class UnlockVolumeCommand(Command):
             raise CommandException('Volume is already fully unlocked')
         password = self.parent.password
         name = self.parent.entity['id']
-        context.submit_task('volume.unlock', name, password, callback=lambda s: post_save(self.parent, s))
+        context.submit_task('volume.unlock', name, password, callback=lambda s, t: post_save(self.parent, s, t))
 
 
 @description("Locks encrypted volume")
@@ -456,7 +456,7 @@ class LockVolumeCommand(Command):
         if self.parent.entity.get('providers_presence', 'NONE') == 'NONE':
             raise CommandException('Volume is already fully locked')
         name = self.parent.entity['id']
-        context.submit_task('volume.lock', name, callback=lambda s: post_save(self.parent, s))
+        context.submit_task('volume.lock', name, callback=lambda s, t: post_save(self.parent, s, t))
 
 
 @description("Generates new user key for encrypted volume")
@@ -865,7 +865,7 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
             self.context.submit_task(
                 'volume.dataset.create',
                 extend(this.entity, {'volume': self.parent.entity['id']}),
-                callback=lambda s: post_save(this, s)
+                callback=lambda s, t: post_save(this, s, t)
             )
             return
 
@@ -873,7 +873,7 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
             'volume.dataset.update',
             this.orig_entity['id'],
             this.get_diff(),
-            callback=lambda s: post_save(this, s)
+            callback=lambda s, t: post_save(this, s, t)
         )
 
 
@@ -947,7 +947,7 @@ class SnapshotsNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             this.entity['dataset'],
             this.entity['id'],
             this.entity['recursive'],
-            callback=lambda s: post_save(this, s)
+            callback=lambda s, t: post_save(this, s, t)
         )
 
     def delete(self, name, kwargs):
@@ -1147,7 +1147,7 @@ class CreateVolumeCommand(Command):
                 self.parent.create_task,
                 ns.entity,
                 password,
-                callback=lambda s: post_save(ns, s))
+                callback=lambda s, t: post_save(ns, s, t))
 
     def complete(self, context):
         return [
@@ -1321,7 +1321,7 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
                 self.create_task,
                 this.entity,
                 this.password,
-                callback=lambda s: post_save(this, s))
+                callback=lambda s, t: post_save(this, s, t))
             return
 
         self.context.submit_task(
@@ -1329,7 +1329,7 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
             this.orig_entity[self.save_key_name],
             this.get_diff(),
             this.password,
-            callback=lambda s: post_save(this, s))
+            callback=lambda s, t: post_save(this, s, t))
 
 
 def _init(context):

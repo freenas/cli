@@ -439,14 +439,14 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
             self.context.submit_task(
                 self.create_task,
                 this.entity,
-                callback=lambda s: post_save(this, s))
+                callback=lambda s, t: post_save(this, s, t))
             return
 
         self.context.submit_task(
             self.update_task,
             this.orig_entity[self.save_key_name],
             this.get_diff(),
-            callback=lambda s: post_save(this, s))
+            callback=lambda s, t: post_save(this, s, t))
 
     def conditional_required_props(self, kwargs):
 

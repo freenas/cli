@@ -81,7 +81,7 @@ class DirectoryServiceEnableCommand(DirectoryServiceCommandBase):
     def run(self, context, args, kwargs, opargs):
         ds_id = self.parent.entity['id']
         context.submit_task('directoryservice.enable', ds_id,
-            callback=lambda s: post_save(self.parent, s))
+            callback=lambda s, t: post_save(self.parent, s, t))
 
 
 @description("Disables a directory service")
@@ -92,7 +92,7 @@ class DirectoryServiceDisableCommand(DirectoryServiceCommandBase):
     def run(self, context, args, kwargs, opargs):
         ds_id = self.parent.entity['id']
         context.submit_task('directoryservice.disable', ds_id,
-            callback=lambda s: post_save(self.parent, s))
+            callback=lambda s, t: post_save(self.parent, s, t))
 
 
 @description("Displays cached domain controllers")
@@ -132,7 +132,7 @@ class DirectoryServiceConfigureHostnameCommand(DirectoryServiceCommandBase):
         args = [ ds_id, 'hostname', self.enable ]
 
         context.submit_task('directoryservice.update', args,
-            callback=lambda s: post_save(self.parent, s))
+            callback=lambda s, t: post_save(self.parent, s, t))
 
 
 @description("Configures hosts file for directory service")
@@ -142,7 +142,7 @@ class DirectoryServiceConfigureHostsCommand(DirectoryServiceCommandBase):
         args = [ ds_id, 'hosts', self.enable ]
 
         context.submit_task('directoryservice.update', args,
-            callback=lambda s: post_save(self.parent, s))
+            callback=lambda s, t: post_save(self.parent, s, t))
 
 
 @description("Configures Kerberos for directory service")
@@ -152,7 +152,7 @@ class DirectoryServiceConfigureKerberosCommand(DirectoryServiceCommandBase):
         args = [ ds_id, 'kerberos', self.enable ]
 
         context.submit_task('directoryservice.update', args,
-            callback=lambda s: post_save(self.parent, s))
+            callback=lambda s, t: post_save(self.parent, s, t))
 
 
 @description("Configures nsswitch for directory service")
@@ -162,7 +162,7 @@ class DirectoryServiceConfigureNSSWitchCommand(DirectoryServiceCommandBase):
         args = [ ds_id, 'nsswitch', self.enable ]
 
         context.submit_task('directoryservice.update', args,
-            callback=lambda s: post_save(self.parent, s))
+            callback=lambda s, t: post_save(self.parent, s, t))
 
 
 @description("Configures openldap for directory service")
@@ -172,7 +172,7 @@ class DirectoryServiceConfigureOpenLDAPCommand(DirectoryServiceCommandBase):
         args = [ ds_id, 'openldap', self.enable ]
 
         context.submit_task('directoryservice.update', args,
-            callback=lambda s: post_save(self.parent, s))
+            callback=lambda s, t: post_save(self.parent, s, t))
 
 
 @description("Configures nssldap for directory service")
@@ -182,7 +182,7 @@ class DirectoryServiceConfigureNSSLDAPCommand(DirectoryServiceCommandBase):
         args = [ ds_id, 'nssldap', self.enable ]
 
         context.submit_task('directoryservice.update', args,
-            callback=lambda s: post_save(self.parent, s))
+            callback=lambda s, t: post_save(self.parent, s, t))
 
 
 @description("Configures sssd for directory service")
@@ -192,7 +192,7 @@ class DirectoryServiceConfigureSSSDCommand(DirectoryServiceCommandBase):
         args = [ ds_id, 'sssd', self.enable ]
 
         context.submit_task('directoryservice.update', args,
-            callback=lambda s: post_save(self.parent, s))
+            callback=lambda s, t: post_save(self.parent, s, t))
 
 
 @description("Configures samba for directory service")
@@ -202,7 +202,7 @@ class DirectoryServiceConfigureSambaCommand(DirectoryServiceCommandBase):
         args = [ ds_id, 'samba', self.enable ]
 
         context.submit_task('directoryservice.update', args,
-            callback=lambda s: post_save(self.parent, s))
+            callback=lambda s, t: post_save(self.parent, s, t))
 
 
 @description("Configures pam for directory service")
@@ -212,7 +212,7 @@ class DirectoryServiceConfigurePAMCommand(DirectoryServiceCommandBase):
         args = [ ds_id, 'pam', self.enable ]
 
         context.submit_task('directoryservice.update', args,
-            callback=lambda s: post_save(self.parent, s))
+            callback=lambda s, t: post_save(self.parent, s, t))
 
 
 @description("Configures the system for Active Directory")
@@ -222,7 +222,7 @@ class DirectoryServiceConfigureActiveDirectoryCommand(DirectoryServiceCommandBas
         args = [ ds_id, 'activedirectory', self.enable ]
 
         context.submit_task('directoryservice.update', args,
-            callback=lambda s: post_save(self.parent, s))
+            callback=lambda s, t: post_save(self.parent, s, t))
 
 
 @description("Obtains a Kerberos ticket")
@@ -230,7 +230,7 @@ class DirectoryServiceGetKerberosTicketCommand(DirectoryServiceCommandBase):
     def run(self, context, args, kwargs, opargs):
         ds_id = self.parent.entity['id']
         context.submit_task('directoryservice.kerberosticket', ds_id,
-            callback=lambda s: post_save(self.parent, s))
+            callback=lambda s, t: post_save(self.parent, s, t))
 
 
 @description("Joins an Active Directory domain")
@@ -238,7 +238,7 @@ class DirectoryServiceJoinActiveDirectoryCommand(DirectoryServiceCommandBase):
     def run(self, context, args, kwargs, opargs):
         ds_id = self.parent.entity['id']
         context.submit_task('directoryservice.join', ds_id,
-            callback=lambda s: post_save(self.parent, s))
+            callback=lambda s, t: post_save(self.parent, s, t))
 
 
 class BaseDirectoryServiceNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):

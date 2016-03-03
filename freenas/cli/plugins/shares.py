@@ -79,7 +79,7 @@ class ImportShareCommand(Command):
             path,
             name,
             self.parent.type_name.lower(),
-            callback=lambda s: post_save(self.parent, s)
+            callback=lambda s, t: post_save(self.parent, s, t)
         )
 
 
@@ -306,14 +306,14 @@ class BaseSharesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, En
             self.context.submit_task(
                 self.create_task,
                 this.entity,
-                callback=lambda s: self.post_save(this, s, new))
+                callback=lambda s, t: self.post_save(this, s, new))
             return
 
         self.context.submit_task(
             self.update_task,
             this.orig_entity[self.save_key_name],
             this.get_diff(),
-            callback=lambda s: self.post_save(this, s, new))
+            callback=lambda s, t: self.post_save(this, s, new))
 
     def post_save(self, this, status, new):
         if status == 'FINISHED':

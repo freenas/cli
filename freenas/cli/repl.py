@@ -1325,7 +1325,7 @@ class MainLoop(object):
                         result = cmd.run(self.context, args, kwargs, opargs)
 
                     result = PrintableNone.coerce(result)
-                    if result is None:
+                    if result is not None:
                         ret = self.eval(token.right, input_data=result)
                         resultset.append(ret)
                     else:

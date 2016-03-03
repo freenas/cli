@@ -507,6 +507,9 @@ class ItemNamespace(Namespace):
     def get_mapping(self, prop):
         return list([x for x in self.property_mappings if x.name == prop])[0]
 
+    def get_mapping_by_field(self, field):
+        return first_or_default(lambda p: p.get == field, self.property_mappings)
+
     def add_property(self, **kwargs):
         self.property_mappings.append(PropertyMapping(index=len(self.property_mappings), **kwargs))
 
@@ -1054,7 +1057,8 @@ class TaskBasedSaveMixin(object):
 
     def save(self, this, new=False, callback=None):
         if callback is None:
-            callback = lambda s: post_save(this, s)
+            callback = lambda s, t: post_save(this, s, t)
+
         if new:
             self.context.submit_task(
                 self.create_task,

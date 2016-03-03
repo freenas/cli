@@ -105,6 +105,10 @@ def sum_(array):
     return sum(array)
 
 
+def avg_(array):
+    return sum(array) / len(array)
+
+
 def range_(start, stop=None, step=None):
     return list(range(start, stop, step))
 
@@ -224,6 +228,7 @@ functions = {
     'mapf': mapf,
     'apply': apply,
     'sum': sum_,
+    'avg': avg_,
     'readkey': readkey,
     'readline': readline,
     'unparse': unparse_,

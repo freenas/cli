@@ -1039,6 +1039,9 @@ class SortPipeCommand(PipeCommand):
     def serialize_filter(self, context, args, kwargs, opargs):
         return {"params": {"sort": args}}
 
+    def run(self, context, args, kwargs, opargs, input=None):
+        return input
+
 
 @description("Limit output to specified number of items")
 class LimitPipeCommand(PipeCommand):
@@ -1058,6 +1061,9 @@ class LimitPipeCommand(PipeCommand):
                 inspect.getdoc(self)
             ))
         return {"params": {"limit": args[0]}}
+
+    def run(self, context, args, kwargs, opargs, input=None):
+        return input
 
 
 @description("Display output of the specific field")

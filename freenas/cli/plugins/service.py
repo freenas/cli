@@ -709,6 +709,8 @@ svc_cli_config = {
         {
             'descr': 'Log level',
             'name': 'log_level',
+            'usage': _("""
+            Can be set to NONE, MINIMUM, NORMAL, FULL, or DEBUG."""),
             'get': 'log_level',
             'enum': [ 'NONE', 'MINIMUM', 'NORMAL', 'FULL', 'DEBUG' ]
         },

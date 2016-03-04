@@ -36,7 +36,7 @@ _ = t.gettext
 
 
 TASK_TYPES = {
-    'scrub': 'zfs.pool.scrub',
+    'scrub': 'volume.scrub',
     'smart': 'disk.parallel_test',
     'snapshot': 'volume.snapshot_dataset',
     'replication': 'replication.replicate_dataset',
@@ -49,7 +49,7 @@ TASK_TYPES_REVERSE = {v: k for k, v in list(TASK_TYPES.items())}
 
 
 TASK_ARG_MAPPING = {
-    'zfs.pool.scrub': ['volume'],
+    'volume.scrub': ['volume'],
     'disk.parallel_test': ['disks','test_type'],
     'update.checkfetch' : ['send_email'],
     'calendar_task.command' : ['username', 'command'],

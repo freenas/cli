@@ -605,7 +605,7 @@ class ScrubCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        context.submit_task('zfs.pool.scrub', self.parent.entity['id'])
+        context.submit_task('volume.scrub', self.parent.entity['id'])
 
 
 @description("Replicates dataset to another system")

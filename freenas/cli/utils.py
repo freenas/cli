@@ -145,6 +145,7 @@ def post_save(this, status, task):
         this.saved = True
 
     if status == 'FAILED':
+        this.entity = copy.deepcopy(this.orig_entity)
         if task['error']['type'] == 'ValidationException':
             print_validation_errors(this, task)
 

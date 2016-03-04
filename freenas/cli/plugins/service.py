@@ -710,6 +710,7 @@ svc_cli_config = {
             'descr': 'Log level',
             'name': 'log_level',
             'get': 'log_level',
+            'enum': [ 'NONE', 'MINIMUM', 'NORMAL', 'FULL', 'DEBUG' ]
         },
         {
             'descr': 'Log in syslog',

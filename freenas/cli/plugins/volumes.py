@@ -249,7 +249,7 @@ class OfflineVdevCommand(Command):
         if guid is None:
             raise CommandException(_("Disk {0} is not part of the volume.".format(disk)))
         context.submit_task(
-            'zfs.pool.offline_disk',
+            'volume.vdev.offline',
             self.parent.entity['id'],
             guid,
             callback=lambda s, t: post_save(self.parent, s, t)
@@ -286,7 +286,7 @@ class OnlineVdevCommand(Command):
         if guid is None:
             raise CommandException(_("Disk {0} is not part of the volume.".format(disk)))
         context.submit_task(
-            'zfs.pool.online_disk',
+            'volume.vdev.online',
             self.parent.entity['id'],
             guid,
             callback=lambda s, t: post_save(self.parent, s, t)

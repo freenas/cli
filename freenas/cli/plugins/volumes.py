@@ -878,11 +878,14 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
 
 
 @description("Snapshots")
-class SnapshotsNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
+class SnapshotsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
     def __init__(self, name, context, parent):
         super(SnapshotsNamespace, self).__init__(name, context)
         self.parent = parent
         self.entity_subscriber_name = 'volume.snapshot'
+        self.create_task = 'volume.snapshot.create'
+        self.update_task = None
+        self.delete_task = 'volume.snapshot.delete'
         self.primary_key_name = 'id'
         self.required_props = ['name', 'dataset']
         self.extra_query_params = [
@@ -890,14 +893,15 @@ class SnapshotsNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         ]
 
         self.skeleton_entity = {
+            'volume': self.parent.name,
             'recursive': False
         }
 
         self.add_property(
             descr='Snapshot name',
             name='name',
-            get='id',
-            set='id',
+            get='name',
+            set='name',
             list=True)
 
         self.add_property(
@@ -936,28 +940,6 @@ class SnapshotsNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             list=True)
 
         self.primary_key = self.get_mapping('name')
-
-    def save(self, this, new=False):
-        if not new:
-            raise CommandException('wut?')
-
-        self.context.submit_task(
-            'volume.snapshot.create',
-            self.parent.name,
-            this.entity['dataset'],
-            this.entity['id'],
-            this.entity['recursive'],
-            callback=lambda s, t: post_save(this, s, t)
-        )
-
-    def delete(self, name, kwargs):
-        entity = self.get_one(name)
-        self.context.submit_task(
-            'volume.snapshot.delete',
-            self.parent.name,
-            entity['dataset'],
-            entity['name']
-        )
 
 
 @description("Filesystem contents")

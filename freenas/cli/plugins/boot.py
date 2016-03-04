@@ -83,11 +83,6 @@ class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
                 show | search active == no
                 show | search name~="FreeNAS" | sort name""")
 
-        self.skeleton_entity = {
-            'name': None,
-            'realname': None
-        }
-
         self.add_property(
             descr='Name',
             name='name',
@@ -195,7 +190,12 @@ class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
                 callback=lambda s, t: post_save(this, s, t),
                 )
         else:
-            return
+            self.context.submit_task(
+                'boot.environment.update',
+                this.orig_entity['id'],
+                this.get_diff(),
+                callback=lambda s, t: post_save(this, s, t)
+                )
 
 
 @description("Rename a boot environment")
@@ -215,15 +215,9 @@ class RenameBootEnvCommand(Command):
             raise CommandException('Please provide a target name for the renaming')
         entity = self.parent.entity
         name_property = self.parent.get_mapping('name')
-        old_be = entity['id']
         name_property.do_set(entity, new_be_name)
         self.parent.modified = True
-        context.submit_task(
-            'boot.environment.rename',
-            old_be,
-            new_be_name,
-            callback=lambda s, t: post_save(self.parent, s, t)
-        )
+        self.parent.save()
 
 
 @description("Activate a boot environment")

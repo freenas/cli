@@ -1073,7 +1073,8 @@ class SelectPipeCommand(PipeCommand):
 
     Example: account user show | select username
 
-    Return only the output of the specific field for a list.
+    Return only the output of the specified field. Use 'help properties' to
+    determine the valid field (Property) names for a namespace.
     """
     def run(self, context, args, kwargs, opargs, input=None):
         ns = context.pipe_cwd

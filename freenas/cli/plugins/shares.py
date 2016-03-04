@@ -306,16 +306,16 @@ class BaseSharesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, En
             self.context.submit_task(
                 self.create_task,
                 this.entity,
-                callback=lambda s, t: self.post_save(this, s, new))
+                callback=lambda s, t: self.post_save(this, s, t, new))
             return
 
         self.context.submit_task(
             self.update_task,
             this.orig_entity[self.save_key_name],
             this.get_diff(),
-            callback=lambda s, t: self.post_save(this, s, new))
+            callback=lambda s, t: self.post_save(this, s, t, new))
 
-    def post_save(self, this, status, new):
+    def post_save(self, this, status, task, new):
         if status == 'FINISHED':
             service = self.context.call_sync('service.query', [('name', '=', self.type_name)], {'single': True})
             if service['state'] != 'RUNNING':
@@ -333,7 +333,7 @@ class BaseSharesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, En
                     )
                 ))
                 
-        post_save(this, status)
+        post_save(this, status, task)
 
 
 @description("NFS shares")

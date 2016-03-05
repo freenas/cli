@@ -453,8 +453,7 @@ class HelpCommand(Command):
                         Table.Column('Property', 'propname', ValueType.STRING),
                         Table.Column('Usage', 'propusage', ValueType.STRING),
                         ])
-
-        if isinstance(obj, Command) and obj.__doc__:
+        if isinstance(obj, Command) or isinstance(obj, FilteringCommand) and obj.__doc__:
             command_name = obj.__class__.__name__
             if (
                 hasattr(obj, 'parent') and

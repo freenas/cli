@@ -1031,7 +1031,7 @@ class SortPipeCommand(PipeCommand):
     """
     Usage: <command> | sort <field> [<-field> ...]
 
-    Example: account user show | sort name
+    Example: account user show | sort username
 
     Sort the elements of a list by the given key.
     """

@@ -884,7 +884,7 @@ class SnapshotsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Ent
         self.parent = parent
         self.entity_subscriber_name = 'volume.snapshot'
         self.create_task = 'volume.snapshot.create'
-        self.update_task = None
+        self.update_task = 'volume.snapshot.update'
         self.delete_task = 'volume.snapshot.delete'
         self.primary_key_name = 'id'
         self.required_props = ['name', 'dataset']
@@ -896,6 +896,13 @@ class SnapshotsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Ent
             'volume': self.parent.name,
             'recursive': False
         }
+
+        self.add_property(
+            descr='Snapshot id',
+            name='id',
+            get='id',
+            set='id',
+            list=True)
 
         self.add_property(
             descr='Snapshot name',
@@ -919,6 +926,21 @@ class SnapshotsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Ent
             type=ValueType.BOOLEAN)
 
         self.add_property(
+            descr='Replicable',
+            name='replicable',
+            get='replicable',
+            list=False
+        )
+
+        self.add_property(
+            descr='Lifetime',
+            name='lifetime',
+            get='lifetime',
+            list=False,
+            type=ValueType.NUMBER
+        )
+
+        self.add_property(
             descr='Compression',
             name='compression',
             get='properties.compression.value',
@@ -939,7 +961,7 @@ class SnapshotsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Ent
             set=None,
             list=True)
 
-        self.primary_key = self.get_mapping('name')
+        self.primary_key = self.get_mapping('id')
 
 
 @description("Filesystem contents")

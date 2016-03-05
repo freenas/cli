@@ -388,6 +388,7 @@ class MailNamespace(ConfigNamespace):
         super(MailNamespace, self).__init__(name, context)
         self.context = context
         self.config_call = 'mail.get_config'
+        self.update_task = 'mail.update'
 
         self.add_property(
             descr='Email address',

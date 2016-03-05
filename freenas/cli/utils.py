@@ -118,10 +118,14 @@ def errors_by_path(errors, path):
 
 
 def print_validation_errors(namespace, task):
-    if task['name'] == namespace.parent.update_task:
+    if hasattr(namespace, 'parent'):
+        ns = namespace.parent
+    else:
+        ns = namespace
+    if task['name'] == ns.update_task:
         # Update tasks have updated_params as second argument
         errors = errors_by_path(task['error']['extra'], [1])
-    elif task['name'] == namespace.parent.create_task:
+    elif task['name'] == ns.create_task:
         # Create tasks have object as first argument
         errors = errors_by_path(task['error']['extra'], [0])
     else:

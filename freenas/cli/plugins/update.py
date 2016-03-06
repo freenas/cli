@@ -172,18 +172,17 @@ class UpdateNowCommand(Command):
         self.context = None
 
     def task_callback(self, task_state, task_data):
-        if task_state in ('FINISHED'):
-            if task_data["result"]:
-                if self.reboot:
-                    output_msg(_(
-                        "Updates Downloaded and Installed SUccessfully."
-                        " System going for a reboot now."
-                    ))
-                else:
-                    output_msg(_(
-                        "System successfully updated."
-                        " Please reboot now using the '/ system reboot' command"
-                    ))
+        if task_state in ('FINISHED') and task_data["result"]:
+            if self.reboot:
+                output_msg(_(
+                    "Updates Downloaded and Installed SUccessfully."
+                    " System going for a reboot now."
+                ))
+            else:
+                output_msg(_(
+                    "System successfully updated."
+                    " Please reboot now using the '/ system reboot' command"
+                ))
 
     def run(self, context, args, kwargs, opargs):
         self.context = context

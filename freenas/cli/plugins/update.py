@@ -171,9 +171,8 @@ class UpdateNowCommand(Command):
         self.reboot = False
         self.context = None
 
-    def task_callback(self, task_state):
+    def task_callback(self, task_state, task_data):
         if task_state in ('FINISHED'):
-            task_data = self.context.entity_subscribers['task'].get(self.task_id)
             if task_data["result"]:
                 if self.reboot:
                     output_msg(_(

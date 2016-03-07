@@ -122,12 +122,23 @@ def print_validation_errors(namespace, task):
         ns = namespace.parent
     else:
         ns = namespace
-    if task['name'] == ns.update_task:
-        # Update tasks have updated_params as second argument
-        errors = errors_by_path(task['error']['extra'], [1])
-    elif task['name'] == ns.create_task:
-        # Create tasks have object as first argument
-        errors = errors_by_path(task['error']['extra'], [0])
+
+    from freenas.cli.namespace import SingleItemNamespace, ConfigNamespace
+
+    if isinstance(namespace, SingleItemNamespace):
+        if task['name'] == ns.update_task:
+            # Update tasks have updated_params as second argument
+            errors = errors_by_path(task['error']['extra'], [1])
+        elif task['name'] == ns.create_task:
+            # Create tasks have object as first argument
+            errors = errors_by_path(task['error']['extra'], [0])
+        else:
+            return
+    elif isinstance(namespace, ConfigNamespace):
+        if task['name'] == ns.update_task:
+            errors = errors_by_path(task['error']['extra'], [0])
+        else:
+            return
     else:
         return
 

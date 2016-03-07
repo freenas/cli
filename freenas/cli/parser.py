@@ -564,8 +564,8 @@ def p_dict_pair_1(p):
 
 def p_dict_pair_2(p):
     """
-    dict_pair : NEWLINE STRING COLON expr
-    dict_pair : NEWLINE STRING COLON expr NEWLINE
+    dict_pair : NEWLINE expr COLON expr
+    dict_pair : NEWLINE expr COLON expr NEWLINE
     """
     p[0] = (p[2], p[4])
 

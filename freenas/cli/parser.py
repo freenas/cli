@@ -977,6 +977,15 @@ def unparse(token, indent=0, oneliner=False):
             format_block(token.body)
         ))
 
+    if isinstance(token, ReturnStatement):
+        if token.expr:
+            return ind('return {0}'.format(unparse(token.expr)))
+
+        return ind('return')
+
+    if isinstance(token, BreakStatement):
+        return ind('break')
+
     if isinstance(token, FunctionDefinition):
         return ind('function {0}({1}) {{{2}}}'.format(
             token.name,

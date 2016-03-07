@@ -50,6 +50,11 @@ def ASTObject(name, *args):
             self.column = p.lexpos(1)
             self.column_end = p.lexspan(len(p) - 1)[1]
 
+        if name == 'CommandCall':
+            if len(self.args) > 0 and self.args[0].name[0] == '/':
+                self.args[0].name = self.args[0].name[1:]
+                self.args.insert(0, Symbol('/'))
+
     dct = {k: None for k in args}
     dct['__init__'] = init
     dct['__str__'] = str

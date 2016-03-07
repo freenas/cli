@@ -1203,7 +1203,7 @@ class MainLoop(object):
 
                         path.append('..')
                         return self.eval(token, env, path=path, dry_run=dry_run)
-                    elif top == '/':
+                    elif isinstance(top, Symbol) and top.name == '/':
                         if first:
                             self.start_from_root = True
                             return self.eval(token, env, path=path, dry_run=dry_run)

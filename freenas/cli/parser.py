@@ -51,6 +51,9 @@ def ASTObject(name, *args):
             self.column_end = p.lexspan(len(p) - 1)[1]
 
         if name == 'CommandCall':
+            # If args[0] of a CommandCall is a token in form "/<something>",
+            # eg "/account", split "/" from the rest and prepend it to the
+            # args list.
             if len(self.args) > 0 and isinstance(self.args[0], Symbol):
                 if len(self.args[0].name) > 1 and self.args[0].name[0] == '/':
                     self.args[0].name = self.args[0].name[1:]

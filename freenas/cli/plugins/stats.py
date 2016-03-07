@@ -38,9 +38,6 @@ _ = t.gettext
 
 
 class StatisticNamespaceBase(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
-    """
-    The group namespace provides commands for listing and managing local groups.
-    """
     def __init__(self, name, context):
         super(StatisticNamespaceBase, self).__init__(name, context)
 

@@ -355,6 +355,7 @@ class TimeNamespace(ConfigNamespace):
     def __init__(self, name, context):
         super(TimeNamespace, self).__init__(name, context)
         self.config_call = 'system.info.time'
+        self.update_task = 'system.time.update'
 
         self.add_property(
             descr='System time',
@@ -369,13 +370,6 @@ class TimeNamespace(ConfigNamespace):
             get='boot_time',
             set=None,
             list=True
-        )
-
-    def save(self):
-        self.context.submit_task(
-            'system.time.update',
-            self.get_diff(),
-            callback=lambda s, t: post_save(self, s, t)
         )
 
 
@@ -466,13 +460,6 @@ class MailNamespace(ConfigNamespace):
             set='pass',
         )
 
-    def save(self):
-        self.context.submit_task(
-            'mail.update',
-            self.get_diff(),
-            callback=lambda s, t: post_save(self, s, t)
-        )
-
 
 @description("Advanced system configuration")
 class AdvancedNamespace(ConfigNamespace):
@@ -484,6 +471,7 @@ class AdvancedNamespace(ConfigNamespace):
         super(AdvancedNamespace, self).__init__(name, context)
         self.context = context
         self.config_call = 'system.advanced.get_config'
+        self.update_task = 'system.advanced.update'
 
         self.add_property(
             descr='Enable Console CLI',
@@ -605,13 +593,6 @@ class AdvancedNamespace(ConfigNamespace):
             type=ValueType.NUMBER
         )
 
-    def save(self):
-        self.context.submit_task(
-            'system.advanced.update',
-            self.get_diff(),
-            callback=lambda s, t: post_save(self, s, t)
-        )
-
 
 @description("Configuration database operations")
 class ConfigDbNamespace(Namespace):
@@ -625,6 +606,7 @@ class SystemDatasetNamespace(ConfigNamespace):
     def __init__(self, name, context):
         super(SystemDatasetNamespace, self).__init__(name, context)
         self.config_call = 'system_dataset.status'
+        self.update_task = 'system_dataset.migrate'
 
         self.add_property(
             descr='Identifier',
@@ -669,6 +651,7 @@ class SystemNamespace(ConfigNamespace):
         super(SystemNamespace, self).__init__(name, context)
         self.context = context
         self.config_call = 'system.general.get_config'
+        self.update_task = 'system.general.update'
 
         self.add_property(
             descr='Time zone',

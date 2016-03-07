@@ -537,6 +537,7 @@ class GlobalConfigNamespace(ConfigNamespace):
     def __init__(self, name, context):
         super(GlobalConfigNamespace, self).__init__(name, context)
         self.config_call = "network.config.get_config"
+        self.update_task = 'network.config.update'
 
         self.add_property(
             descr='IPv4 gateway',
@@ -616,13 +617,6 @@ class GlobalConfigNamespace(ConfigNamespace):
     # def load(self):
     #    self.entity = self.context.call_sync('')
     #    self.orig_entity = copy.deepcopy(self.entity)
-
-    def save(self):
-        return self.context.submit_task(
-            'network.config.update',
-            self.get_diff(),
-            callback=lambda s, t: post_save(self, s, t)
-        )
 
 
 @description("Manage routing table")

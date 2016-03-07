@@ -204,6 +204,7 @@ class UpdateNamespace(ConfigNamespace):
         super(UpdateNamespace, self).__init__(name, context)
         self.context = context
         self.update_info = None
+        self.update_task = 'update.update'
 
         self.add_property(
             descr='Set Update Train',
@@ -273,12 +274,6 @@ class UpdateNamespace(ConfigNamespace):
             self.entity = copy.deepcopy(self.orig_entity)
             self.update_info = copy.deepcopy(self.orig_update_info)
         self.modified = False
-
-    def save(self):
-        return self.context.submit_task(
-            'update.update',
-            self.get_diff(),
-            callback=lambda s, t: post_save(self, s, t))
 
 
 def _init(context):

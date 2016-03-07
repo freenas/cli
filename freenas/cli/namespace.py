@@ -562,6 +562,7 @@ class ConfigNamespace(ItemNamespace):
         self.context = context
         self.saved = name is not None
         self.config_call = None
+        self.update_task = None
         self.config_extra_params = None
 
     def get_name(self):
@@ -613,6 +614,12 @@ class ConfigNamespace(ItemNamespace):
             self.entity = copy.deepcopy(self.orig_entity)
         self.modified = False
 
+    def save(self):
+        self.context.submit_task(
+            self.update_task,
+            self.get_diff(),
+            callback=lambda s, t: post_save(self, s, t)
+        )
 
 class SingleItemNamespace(ItemNamespace):
     def __init__(self, name, parent, **kwargs):

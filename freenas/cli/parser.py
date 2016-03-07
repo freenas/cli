@@ -111,6 +111,11 @@ tokens = list(reserved.values()) + [
 ]
 
 
+states = (
+    ('script', 'inclusive'),
+)
+
+
 def t_COMMENT(t):
     r'\#.*'
     pass
@@ -195,8 +200,8 @@ def t_STRING(t):
     return t
 
 
-def t_ATOM(t):
-    r'[0-9a-zA-Z_][0-9a-zA-Z_\.\/#@\:]*'
+def t_script_ATOM(t):
+    r'[a-zA-Z_][0-9a-zA-Z_\.\/#@]*'
     t.type = reserved.get(t.value, 'ATOM')
     if t.type == 'TRUE':
         t.value = True
@@ -210,14 +215,17 @@ def t_ATOM(t):
     return t
 
 
+def t_INITIAL_ATOM(t):
+    r'[0-9a-zA-Z_\-\+\*\:#@\/][0-9a-zA-Z_\.\/#@\:\-\+\*\/]*'
+    t.type = reserved.get(t.value, 'ATOM')
+    return t
+
+
 t_ignore = ' \t'
 t_LBRACKET = r'\['
 t_RBRACKET = r'\]'
 t_PIPE = r'\|'
-t_EOPEN = r'\$\('
-t_COPEN = r'\$\{'
-t_LPAREN = r'\('
-t_RPAREN = r'\)'
+t_ANY_EOPEN = r'\$\('
 t_ASSIGN = r'='
 t_INC = r'=\+'
 t_DEC = r'=-'
@@ -227,16 +235,16 @@ t_GT = r'>'
 t_GE = r'>='
 t_LT = r'<'
 t_LE = r'<='
-t_PLUS = r'\+'
-t_MINUS = r'-'
-t_MUL = r'\*'
+t_script_PLUS = r'\+'
+t_script_MINUS = r'-'
+t_script_MUL = r'\*'
 t_DIV = r'\/'
-t_MOD = r'\%'
+t_script_MOD = r'\%'
 t_REGEX = r'~='
 t_COMMA = r'\,'
 t_UP = r'\.\.'
 t_LIST = r'\?'
-t_COLON = r':'
+t_script_COLON = r':'
 t_REDIRECT = r'>>'
 t_SHELL = r'!'
 
@@ -257,17 +265,36 @@ precedence = (
 def t_ESCAPENL(t):
     r'\\\s*[\n\#]'
     t.lexer.lineno += 1
-    pass
+
+
+def t_ANY_LPAREN(t):
+    r'\('
+    t.lexer.push_state('script')
+    return t
+
+
+def t_ANY_RPAREN(t):
+    r'\)'
+    t.lexer.pop_state()
+    return t
+
+
+def t_ANY_COPEN(t):
+    r'\${'
+    t.lexer.push_state('script')
+    return t
 
 
 def t_LBRACE(t):
     r'{'
+    t.lexer.push_state('script')
     t.lexer.parens += 1
     return t
 
 
-def t_RBRACE(t):
+def t_ANY_RBRACE(t):
     r'}'
+    t.lexer.pop_state()
     t.lexer.parens -= 1
     return t
 
@@ -706,7 +733,6 @@ def p_command_item_1(p):
 
 def p_command_item_2(p):
     """
-    command_item : DIV
     command_item : UP
     command_item : symbol
     """
@@ -795,7 +821,6 @@ def p_unary_parameter_1(p):
 def p_unary_parameter_2(p):
     """
     unary_parameter : UP
-    unary_parameter : DIV
     """
     p[0] = p[1]
 

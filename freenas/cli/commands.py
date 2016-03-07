@@ -40,7 +40,7 @@ from freenas.cli.parser import parse, unparse
 from freenas.cli.complete import NullComplete, EnumComplete
 from freenas.cli.namespace import (
     Command, PipeCommand, CommandException, description,
-    SingleItemNamespace, Namespace
+    SingleItemNamespace, Namespace, FilteringCommand
 )
 from freenas.cli.output import (
     Table, ValueType, output_msg, output_lock, output_less, format_value,

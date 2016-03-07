@@ -849,30 +849,9 @@ def p_binary_parameter(p):
 def p_shell(p):
     """
     shell : SHELL
-    shell : SHELL shell_parameter_list
+    shell : SHELL parameter_list
     """
     p[0] = ShellEscape(p[2] if len(p) > 2 else [])
-
-
-def p_shell_parameter_list(p):
-    """
-    shell_parameter_list : shell_parameter
-    shell_parameter_list : shell_parameter shell_parameter_list
-    """
-    if len(p) == 2:
-        p[0] = [p[1]]
-
-    if len(p) > 2:
-        p[0] = [p[1]] + p[2]
-
-
-def p_shell_parameter(p):
-    """
-    shell_parameter : ATOM
-    shell_parameter : STRING
-    shell_parameter : NUMBER
-    """
-    p[0] = str(p[1])
 
 
 def p_error(p):
@@ -1022,5 +1001,8 @@ def unparse(token, indent=0, oneliner=False):
             ', '.join(token.args),
             format_block(token.body)
         ))
+
+    if isinstance(token, ShellEscape):
+        return ind('!{0}'.format(' '.join(unparse(i) for i in token.args)))
 
     return ''

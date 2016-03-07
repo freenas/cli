@@ -109,8 +109,8 @@ def avg_(array):
     return sum(array) / len(array)
 
 
-def range_(start, stop=None, step=None):
-    return list(range(start, stop, step))
+def range_(*args):
+    return list(range(*args))
 
 
 def readline(prompt):

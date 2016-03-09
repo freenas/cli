@@ -27,8 +27,8 @@
 
 import gettext
 from freenas.cli.namespace import (
-    Namespace, EntityNamespace, Command, EntitySubscriberBasedLoadMixin,
-    description, CommandException
+    EntityNamespace, Command, EntitySubscriberBasedLoadMixin,
+    TaskBasedSaveMixin, CommandException, description
 )
 from freenas.cli.output import ValueType, Table
 
@@ -55,6 +55,27 @@ class DismissAlertCommand(Command):
         curr_ns = context.ml.path[-1]
         if curr_ns.get_name() == alert_id and isinstance(curr_ns.parent, AlertNamespace):
             context.ml.cd_up()
+
+
+@description("Set predicates for alert filter")
+class SetPredicateCommand(Command):
+    """
+    Usage: XXX
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        self.parent.entity['predicates'].clear()
+
+        for l, o, r in opargs:
+            self.parent.entity['predicates'].append({
+                'property': l,
+                'operator': o,
+                'value': r
+            })
+
+        self.parent.save()
 
 
 @description("List or dismiss system alerts")
@@ -126,8 +147,63 @@ class AlertNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             'dismiss': DismissAlertCommand(this),
         }
 
+    def namespaces(self):
+        return [
+            AlertFilterNamespace('filter', self.context)
+        ]
+
     def serialize(self):
         raise NotImplementedError()
+
+
+class AlertFilterNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):
+    def __init__(self, name, context):
+        super(AlertFilterNamespace, self).__init__(name, context)
+        self.entity_subscriber_name = 'alert.filter'
+        self.create_task = 'alert.filter.create'
+        self.update_task = 'alert.filter.update'
+        self.delete_task = 'alert.filter.delete'
+        self.skeleton_entity = {
+            'predicates': []
+        }
+
+        self.add_property(
+            descr='Name',
+            name='name',
+            get='id',
+            list=True
+        )
+
+        self.add_property(
+            descr='Emitter',
+            name='emitter',
+            get='emitter',
+            list=True,
+            enum=['EMAIL']
+        )
+
+        self.add_property(
+            descr='Destination e-mail addresses',
+            name='email',
+            get='parameters.addresses',
+            type=ValueType.SET,
+            condition=lambda o: o.get('emitter') == 'EMAIL'
+        )
+
+        self.add_property(
+            descr='Predicates',
+            name='predicates',
+            get=self.get_predicates,
+            type=ValueType.SET
+        )
+
+        self.primary_key = self.get_mapping('name')
+        self.entity_commands = lambda this: {
+            'predicate': SetPredicateCommand(this)
+        }
+
+    def get_predicates(self, obj):
+        return ['{property} {operator} {value}'.format(**v) for v in obj['predicates']]
 
 
 def _init(context):

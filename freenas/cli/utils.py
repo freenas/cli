@@ -143,7 +143,7 @@ def print_validation_errors(namespace, task):
         return
 
     for i in errors:
-        pathname = '.'.join(i['path'])
+        pathname = '.'.join(str(i) for i in i['path'])
         property = namespace.get_mapping_by_field(pathname)
         config.instance.output_queue.put(_("Task #{0} validation error: {1}: {2}".format(
             task['id'],

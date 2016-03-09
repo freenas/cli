@@ -1380,8 +1380,12 @@ class MainLoop(object):
             if not tokens:
                 return
 
-            # Unparse AST to string and add to readline history
-            readline.add_history('; '.join(unparse(t, oneliner=True) for t in tokens))
+            # Unparse AST to string and add to readline history and history file
+            line = '; '.join(unparse(t, oneliner=True) for t in tokens)
+            readline.add_history(line)
+
+            with open(os.path.expanduser('~/.cli_history'), 'a') as history_file:
+                history_file.write('\n'+line)
 
             first = True
             for i in tokens:
@@ -1675,6 +1679,15 @@ def main():
             sys.exit(1)
 
         return
+
+    try:
+        with open(os.path.expanduser('~/.cli_history'), 'r') as history_file:
+            history_list = history_file.read().splitlines()
+            history_list = history_list[-1000:]
+            for line in history_list:
+                readline.add_history(line)
+    except FileNotFoundError:
+        pass
 
     cli_rc_paths = ['/usr/local/etc/clirc', os.path.expanduser('~/.clirc')]
     for path in cli_rc_paths:

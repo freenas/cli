@@ -101,6 +101,7 @@ class SetenvCommand(Command):
             ))
 
         for k, v in list(kwargs.items()):
+            context.variables.verify(k, v)
             context.variables.set(k, v)
 
     def complete(self, context):

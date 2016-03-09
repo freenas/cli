@@ -126,6 +126,7 @@ ENTITY_SUBSCRIBERS = [
     'share',
     'task',
     'alert',
+    'alert.filter',
     'container',
     'syslog'
 ]

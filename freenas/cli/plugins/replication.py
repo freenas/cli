@@ -237,7 +237,7 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             descr='Name',
             name='name',
             get='name',
-            set='name',
+            usersetable=False,
             list=True)
 
         self.add_property(

@@ -227,6 +227,14 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
         self.update_task = 'replication.update'
         self.delete_task = 'replication.delete'
 
+        self.localdoc['DeleteEntityCommand'] = ("""\
+            Usage: delete scrub=<scrub>
+
+            Examples: delete
+                      delete scrub=yes
+
+             Delete current entity. Scrub allows to delete related datasets at slave side.""")
+
         self.skeleton_entity = {
             'bidirectional': False,
             'recursive': False,

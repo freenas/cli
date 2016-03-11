@@ -209,8 +209,7 @@ def t_STRING(t):
     return t
 
 
-def t_script_ATOM(t):
-    r'[a-zA-Z_][0-9a-zA-Z_\.\/#@]*'
+def common_atom_routine(t):
     t.type = reserved.get(t.value, 'ATOM')
     if t.type == 'TRUE':
         t.value = True
@@ -224,10 +223,14 @@ def t_script_ATOM(t):
     return t
 
 
+def t_script_ATOM(t):
+    r'[a-zA-Z_][0-9a-zA-Z_\.\/#@]*'
+    return common_atom_routine(t)
+
+
 def t_INITIAL_ATOM(t):
     r'[0-9a-zA-Z_\-\+\*\:#@\/][0-9a-zA-Z_\.\/#@\:\-\+\*\/]*'
-    t.type = reserved.get(t.value, 'ATOM')
-    return t
+    return common_atom_routine(t)
 
 
 t_ignore = ' \t'

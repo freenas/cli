@@ -164,7 +164,10 @@ class AlertFilterNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
         self.update_task = 'alert.filter.update'
         self.delete_task = 'alert.filter.delete'
         self.skeleton_entity = {
-            'predicates': []
+            'predicates': [],
+            'parameters': {
+                'type': 'alert-emitter-email'
+            }
         }
 
         self.add_property(

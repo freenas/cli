@@ -406,26 +406,22 @@ class HelpCommand(Command):
 
         if len(arg) > 0:
             if "/" in arg:
-                output_msg(textwrap.dedent("""\
+                return textwrap.dedent("""\
                     Usage: /
                     / <namespace>
                     / <namespace> <command>
 
-                    Allows you to navigate or execute commands starting \
-                    from the root namespace"""))
-                return
+                    Allows you to navigate or execute commands starting from the root namespace""")
             elif ".." in arg:
-                output_msg(textwrap.dedent("""\
+                return textwrap.dedent("""\
                     Usage: ..
 
-                    Goes up one level of namespace"""))
-                return
+                    Goes up one level of namespace""")
             elif "-" in arg:
-                output_msg(textwrap.dedent("""\
+                return textwrap.dedent("""\
                     Usage: -
 
-                    Goes back to the previous namespace"""))
-                return
+                    Goes back to the previous namespace""")
             elif "properties" in arg:
                 # If the namespace has properties, display a list of the available properties
                 if hasattr(obj, 'property_mappings'):
@@ -461,9 +457,12 @@ class HelpCommand(Command):
                 hasattr(obj.parent, 'localdoc') and
                 command_name in obj.parent.localdoc.keys()
                ):
-                output_msg(textwrap.dedent(obj.parent.localdoc[command_name]) + "\n")
+                return textwrap.dedent(obj.parent.localdoc[command_name]) + "\n"
             else:
-                output_msg(inspect.getdoc(obj) + "\n")
+                if inspect.getdoc(obj) is not None:
+                    return inspect.getdoc(obj) + "\n"
+                else:
+                    return _("No help exists for '{0}'.\n".format(arg[0]))
 
         if isinstance(obj, Namespace):
             # First listing the Current Namespace's commands

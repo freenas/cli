@@ -171,7 +171,7 @@ class DisksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
             this.get_diff(),
             callback=lambda s, t: self.post_save(this, s, new))
 
-    def post_save(self, this, status, new):
+    def post_save(self, this, status, task, new):
         service_name = 'simulator'
         if status == 'FINISHED':
             service = self.context.call_sync('service.query', [('name', '=', service_name)], {'single': True})
@@ -190,7 +190,7 @@ class DisksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
                     )
                 ))
 
-        post_save(this, status)
+        post_save(this, status, task)
 
 
 @description("NAS simulation tools for testing")

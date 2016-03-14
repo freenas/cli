@@ -287,6 +287,8 @@ class ItemNamespace(Namespace):
             if len(args) != 0:
                 raise CommandException('Wrong arguments count')
 
+            self.parent.load()
+
             values = Object()
             entity = self.parent.entity
 

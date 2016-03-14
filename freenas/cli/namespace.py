@@ -340,6 +340,8 @@ class ItemNamespace(Namespace):
             if not self.parent.has_property(args[0]):
                 raise CommandException(_('Property {0} not found'.format(args[0])))
 
+            self.parent.load()
+
             entity = self.parent.entity
             value = self.parent.get_property(args[0], entity)
             if value is None:

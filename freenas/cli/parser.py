@@ -237,7 +237,6 @@ t_ignore = ' \t'
 t_LBRACKET = r'\['
 t_RBRACKET = r'\]'
 t_PIPE = r'\|'
-t_ANY_EOPEN = r'\$\('
 t_ASSIGN = r'='
 t_INC = r'=\+'
 t_DEC = r'=-'
@@ -277,6 +276,12 @@ precedence = (
 def t_ESCAPENL(t):
     r'\\\s*[\n\#]'
     t.lexer.lineno += 1
+
+
+def t_ANY_EOPEN(t):
+    r'\$\('
+    t.lexer.push_state('INITIAL')
+    return t
 
 
 def t_ANY_LPAREN(t):

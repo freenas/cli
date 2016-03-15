@@ -317,6 +317,12 @@ def t_NEWLINE(t):
     return t
 
 
+def t_ignore_BREAKNL(t):
+    r'\\'
+    t.lexer.breaknl = True
+    pass
+
+
 def t_error(t):
     if parser.recover_errors:
         t.lexer.skip(1)
@@ -326,8 +332,9 @@ def t_error(t):
 
 
 def t_eof(t):
-    if lexer.parens > 0:
-        more = config.instance.ml.input('... ' * lexer.parens)
+    if lexer.parens > 0 or lexer.breaknl:
+        more = config.instance.ml.input('... ' * (1 if lexer.breaknl else lexer.parens))
+        lexer.breaknl = False
         if more:
             lexer.input(more + '\n')
             return lexer.token()
@@ -885,6 +892,7 @@ parser = yacc.yacc(debug=False, optimize=True, write_tables=False)
 def parse(s, filename, recover_errors=False):
     lexer.lineno = 1
     lexer.parens = 0
+    lexer.breaknl = False
     parser.filename = filename
     parser.recover_errors = recover_errors
     return parser.parse(s, lexer=lexer, tracking=True)

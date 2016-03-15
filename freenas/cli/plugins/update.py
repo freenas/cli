@@ -175,7 +175,7 @@ class UpdateNowCommand(Command):
         if task_state in ('FINISHED') and task_data["result"]:
             if self.reboot:
                 output_msg(_(
-                    "Updates Downloaded and Installed SUccessfully."
+                    "Updates Downloaded and Installed Successfully."
                     " System going for a reboot now."
                 ))
             else:

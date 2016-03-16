@@ -447,7 +447,7 @@ class ItemNamespace(Namespace):
             self.parent = parent
 
         def run(self, context, args, kwargs, opargs):
-            entity_id = self.parent.entity['id']
+            entity_id = self.parent.primary_key
             self.parent.parent.delete(self.parent, kwargs)
             curr_ns = context.ml.path[-1]
             if curr_ns.get_name() == entity_id and isinstance(curr_ns.parent, self.parent.parent.__class__):

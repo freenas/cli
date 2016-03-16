@@ -441,12 +441,18 @@ class ItemNamespace(Namespace):
         """
         Usage: delete
 
+        Examples: / account user myuser delete
+                  / network interface lagg0 10.5.100.1 delete
+                  / volume mypool delete
+
         Delete current entity.
         """
         def __init__(self, parent):
             self.parent = parent
 
         def run(self, context, args, kwargs, opargs):
+            if len(args) > 0:
+                raise CommandException(_("Invalid syntax:{0}\n{1}.".format(args, inspect.getdoc(self))))
             entity_id = self.parent.primary_key
             self.parent.parent.delete(self.parent, kwargs)
             curr_ns = context.ml.path[-1]

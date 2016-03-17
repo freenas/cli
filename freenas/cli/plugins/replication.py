@@ -26,6 +26,7 @@
 #####################################################################
 
 import copy
+import six
 import gettext
 from freenas.cli.namespace import (
     SingleItemNamespace, Command, CommandException, EntityNamespace, TaskBasedSaveMixin,
@@ -171,6 +172,8 @@ class CreateReplicationCommand(Command):
             ))
 
         datasets = kwargs.pop('datasets', [])
+        if isinstance(datasets, six.string_types):
+            datasets = [datasets]
         bidirectional = kwargs.pop('bidirectional', False)
         recursive = kwargs.pop('recursive', False)
         replicate_services = kwargs.pop('replicate_services', False)

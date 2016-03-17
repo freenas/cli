@@ -128,7 +128,9 @@ ENTITY_SUBSCRIBERS = [
     'alert',
     'alert.filter',
     'container',
-    'syslog'
+    'syslog',
+    'replication',
+    'replication.link'
 ]
 
 

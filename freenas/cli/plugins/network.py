@@ -468,7 +468,7 @@ class AliasesNamespace(EntityNamespace):
         self.parent.entity['aliases'] = [a for a in self.parent.entity['aliases'] if a['address'] != address]
         self.parent.parent.save(
             self.parent,
-            callback=lambda s: self.my_post_delete(s)
+            callback=lambda s, t: self.my_post_delete(s)
         )
 
 

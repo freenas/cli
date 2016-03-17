@@ -149,7 +149,7 @@ class CreateReplicationCommand(Command):
         split_slave = slave.split('@')
 
         try:
-            partners_ips = [split_master[1], split_slave('@')[1]]
+            partners_ips = [split_master[1], split_slave[1]]
         except IndexError:
             raise CommandException(_('Type link partners in user@host schema'))
 

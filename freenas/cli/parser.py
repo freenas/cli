@@ -55,7 +55,7 @@ def ASTObject(name, *args):
             # eg "/account", split "/" from the rest and prepend it to the
             # args list.
             if len(self.args) > 0 and isinstance(self.args[0], Symbol):
-                if len(self.args[0].name) > 1 and self.args[0].name[0] == '/':
+                if len(str(self.args[0].name)) > 1 and self.args[0].name[0] == '/':
                     self.args[0].name = self.args[0].name[1:]
                     self.args.insert(0, Symbol('/'))
 

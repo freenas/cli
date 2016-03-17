@@ -33,7 +33,7 @@ from freenas.cli import config
 
 
 def ASTObject(name, *args):
-    def str(self):
+    def string(self):
         return "<{0} {1}>".format(
             self.__class__.__name__,
             ' '.join(["{0} '{1}'".format(i, getattr(self, i)) for i in args])
@@ -55,14 +55,15 @@ def ASTObject(name, *args):
             # eg "/account", split "/" from the rest and prepend it to the
             # args list.
             if len(self.args) > 0 and isinstance(self.args[0], Symbol):
-                if len(str(self.args[0].name)) > 1 and self.args[0].name[0] == '/':
-                    self.args[0].name = self.args[0].name[1:]
+                str_name = str(self.args[0].name)
+                if len(str_name) > 1 and str_name[0] == '/':
+                    self.args[0].name = str_name[1:]
                     self.args.insert(0, Symbol('/'))
 
     dct = {k: None for k in args}
     dct['__init__'] = init
-    dct['__str__'] = str
-    dct['__repr__'] = str
+    dct['__str__'] = string
+    dct['__repr__'] = string
     return type(name, (), dct)
 
 

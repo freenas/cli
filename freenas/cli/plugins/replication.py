@@ -170,10 +170,10 @@ class CreateReplicationCommand(Command):
                 )
             ))
 
-        datasets = kwargs.pop('datasets')
-        bidirectional = kwargs.pop('bidirectional')
-        recursive = kwargs.pop('recursive')
-        replicate_services = kwargs.pop('replicate_services')
+        datasets = kwargs.pop('datasets', [])
+        bidirectional = kwargs.pop('bidirectional', False)
+        recursive = kwargs.pop('recursive', False)
+        replicate_services = kwargs.pop('replicate_services', False)
 
         if replicate_services and not bidirectional:
             raise CommandException(_(

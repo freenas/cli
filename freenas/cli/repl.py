@@ -130,7 +130,8 @@ ENTITY_SUBSCRIBERS = [
     'container',
     'syslog',
     'replication',
-    'replication.link'
+    'replication.link',
+    'backup'
 ]
 
 

@@ -650,7 +650,7 @@ class ReplicateCommand(Command):
                     return 'delete remote dataset {remotefs} (because it has been deleted locally)'.format(**row)
 
             result = context.call_task_sync(*args)
-            return [
+            return Sequence(
                 Table(
                     result['result'], [
                         Table.Column('Action type', 'type', ValueType.STRING),
@@ -661,7 +661,7 @@ class ReplicateCommand(Command):
                     sum(a.get('send_size', 0) for a in result['result']),
                     ValueType.SIZE)
                 )
-            ]
+            )
 
         else:
             context.submit_task(*args)

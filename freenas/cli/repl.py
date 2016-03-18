@@ -130,7 +130,8 @@ ENTITY_SUBSCRIBERS = [
     'container',
     'syslog',
     'replication',
-    'replication.link'
+    'replication.link',
+    'backup'
 ]
 
 
@@ -742,8 +743,9 @@ class Function(object):
         self.exp = exp
         self.env = env
 
-    def __call__(self, *args):
-        env = Environment(self.context, self.env, zip(self.param_names, args))
+    def __call__(self, *args, runenv=None):
+        runenv = runenv or {}
+        env = Environment(self.context, self.env, list(zip(self.param_names, args)) + list(runenv.items()))
         try:
             self.context.eval_block(self.exp, env, False)
         except FlowControlInstruction as f:
@@ -1059,7 +1061,6 @@ class MainLoop(object):
                 return self.context.builtin_operators[token.op](left, right)
 
             if isinstance(token, Literal):
-
                 if token.type in six.string_types:
                     return token.value.replace('\\\"', '"')
 
@@ -1089,6 +1090,7 @@ class MainLoop(object):
                     return self.context.variables.variables[token.name]
                 except KeyError:
                     pass
+
                 raise SyntaxError(_('{0} not found'.format(token.name)))
 
             if isinstance(token, AssignmentStatement):
@@ -1286,13 +1288,16 @@ class MainLoop(object):
                 args = list(map(lambda a: self.eval(a, env), token.args))
                 func = env.find(token.name)
                 if func:
+                    kwargs = {}
                     if isinstance(func, Environment.Variable):
                         func = func.value
+                        kwargs = {'runenv': env}
 
                     self.context.call_stack.append(
                         CallStackEntry(func.name, args, token.file, token.line, token.column)
                     )
-                    result = func(*args)
+                    result = func(*args, **kwargs)
+
                     self.context.call_stack.pop()
                     return result
 

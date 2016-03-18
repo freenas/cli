@@ -892,7 +892,7 @@ def p_error(p):
 
 
 lexer = lex.lex()
-parser = yacc.yacc(debug=False, optimize=True, write_tables=False)
+parser = yacc.yacc(debug=True)
 
 
 def parse(s, filename, recover_errors=False):

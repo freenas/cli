@@ -30,9 +30,9 @@ import gettext
 from freenas.cli.namespace import (
     EntityNamespace, Command, RpcBasedLoadMixin,
     EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, description,
-    CommandException, ListCommand, NestedObjectLoadMixin, NestedObjectSaveMixin
+    CommandException, ListCommand
 )
-from freenas.cli.output import ValueType, Table
+from freenas.cli.output import ValueType, Table, output_msg_locked
 from freenas.cli.utils import post_save
 from freenas.utils import first_or_default
 
@@ -555,27 +555,6 @@ class AFPSharesNamespace(BaseSharesNamespace):
         )
 
 
-class SMBSharePropertiesNamespace(NestedObjectSaveMixin, NestedObjectLoadMixin, EntityNamespace):
-    def __init__(self, name, parent, context):
-        super(SMBSharePropertiesNamespace, self).__init__(name, context)
-        self.parent = parent
-        self.parent_path = 'extra_parameters'
-
-        self.add_property(
-            descr='Property name',
-            name='name',
-            get='0',
-            type=ValueType.STRING
-        )
-
-        self.add_property(
-            descr='Property value',
-            name='value',
-            get='1',
-            type=ValueType.STRING
-        )
-
-
 @description("SMB shares")
 class SMBSharesNamespace(BaseSharesNamespace):
     def __init__(self, name, context):
@@ -685,10 +664,6 @@ class SMBSharesNamespace(BaseSharesNamespace):
             list=False,
             type=ValueType.BOOLEAN
         )
-
-        self.entity_namespaces = lambda this: [
-
-        ]
 
 
 @description("WebDAV shares")

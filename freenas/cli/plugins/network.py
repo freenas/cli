@@ -704,8 +704,8 @@ class IPMINamespace(EntityNamespace):
 
         self.add_property(
             descr='Channel',
-            name='channel',
-            get='channel',
+            name='id',
+            get='id',
             set=None,
             list=True
         )
@@ -758,11 +758,7 @@ class IPMINamespace(EntityNamespace):
         self.primary_key = self.get_mapping('channel')
 
     def query(self, params, options):
-        result = []
-        for chan in self.context.call_sync('ipmi.channels'):
-            result.append(self.context.call_sync('ipmi.get_config', chan))
-
-        return result
+        return self.context.call_sync('ipmi.query')
 
     def get_one(self, chan):
         return self.context.call_sync('ipmi.get_config', chan)

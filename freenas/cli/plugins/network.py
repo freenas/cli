@@ -186,7 +186,6 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
             Indicates whether or not the interface is
             active or disabled. Can be set to yes or no."""),
             type=ValueType.BOOLEAN,
-            createsetable=False,
             list=True
         )
 
@@ -200,7 +199,6 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
             set to yes or no, however, only ONE interface
             on the system can be set to yes."""),
             type=ValueType.BOOLEAN,
-            createsetable=False,
             list=True
         )
 
@@ -213,7 +211,6 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
             rtsold to obtain its IPv6 configuration. Can be
             set to yes or no."""),
             type=ValueType.BOOLEAN,
-            createsetable=False,
             list=False
         )
 
@@ -226,7 +223,6 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
             accept an IPv6 configuration. Can be set to yes
             or no."""),
             type=ValueType.BOOLEAN,
-            createsetable=False,
             list=False
         )
 
@@ -289,7 +285,6 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
             It should be set to the physical interface that
             is attached to the VLAN switch port."""),
             list=False,
-            createsetable=False,
             type=ValueType.STRING,
             condition=lambda e: e['type'] == 'VLAN'
         )
@@ -303,7 +298,6 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
             is mandatory when setting the vlan_parent.
             Must be a valid tag number between 1 and 4095."""),
             list=False,
-            createsetable=False,
             type=ValueType.NUMBER,
             condition=lambda e: e['type'] == 'VLAN'
         )
@@ -318,7 +312,6 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
             use. Allowable values are NONE, ROUNDROBIN,
             FAILOVER, LOADBALANCE, LACP, or ETHERCHANNEL."""),
             list=False,
-            createsetable=False,
             type=ValueType.STRING,
             condition=lambda e: e['type'] == 'LAGG',
             enum=['NONE', 'ROUNDROBIN', 'FAILOVER', 'LOADBALANCE', 'LACP', 'ETHERCHANNEL']
@@ -336,7 +329,6 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
             and a comma with space between each interface
             name."""),
             list=False,
-            createsetable=False,
             type=ValueType.SET,
             condition=lambda e: e['type'] == 'LAGG'
         )
@@ -352,7 +344,6 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
             each interface name within double quotes and a comma
             with space between each interface name."""),
             list=False,
-            createsetable=False,
             type=ValueType.SET,
             condition=lambda e: e['type'] == 'BRIDGE'
         )

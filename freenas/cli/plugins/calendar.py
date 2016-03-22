@@ -61,12 +61,14 @@ REQUIRED_PROP_TABLE = {
     'scrub': ['volume'],
     'smart': ['disks', 'test_type'],
     'check_updates': ['send_email'],
-    'command': ['username','command'],
+    'command': ['username', 'command'],
     'snapshot': ['volume', 'dataset', 'recursive', 'lifetime']
 }
 
 
-SKELETON_TASK = {'volume.snapshot_dataset':[ None, None, None, None, "auto", False]}
+SKELETON_TASK = {
+    'volume.snapshot_dataset': [None, None, None, None, "auto", False]
+}
 
 
 @description("Runs calendar task right now")
@@ -390,7 +392,8 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
             get=lambda e: self.get_args(e, 'lifetime'),
             list=False,
             set=lambda obj, value: self.set_args(obj, value, 'lifetime'),
-            condition=lambda e: self.meets_condition(e, 'lifetime')
+            condition=lambda e: self.meets_condition(e, 'lifetime'),
+            type=ValueType.NUMBER
         )
 
         self.add_property(

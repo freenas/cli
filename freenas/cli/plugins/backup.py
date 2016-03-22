@@ -27,10 +27,12 @@
 
 import copy
 import gettext
+from freenas.cli.output import Sequence, Table, Object, format_value
 from freenas.cli.namespace import (
     ItemNamespace, EntityNamespace, Command, EntitySubscriberBasedLoadMixin,
-    NestedObjectLoadMixin, NestedObjectSaveMixin, TaskBasedSaveMixin, CommandException, description
+    TaskBasedSaveMixin, CommandException, description
 )
+from freenas.cli.complete import EnumComplete
 from freenas.cli.output import ValueType, Table
 
 
@@ -101,6 +103,11 @@ class BackupNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
 
         self.primary_key = self.get_mapping('name')
         self.entity_namespaces = get_entity_namespaces
+        self.entity_commands = lambda this: {
+            'sync': BackupSyncCommand(this),
+            'query': BackupQueryCommand(this),
+            'restore': BackupRestoreCommand(this)
+        }
 
 
 class BackupBasePropertiesNamespace(ItemNamespace):
@@ -150,6 +157,115 @@ class BackupSSHPropertiesNamespace(BackupBasePropertiesNamespace):
 class BackupS3PropertiesNamespace(BackupBasePropertiesNamespace):
     def __init__(self, name, context, parent):
         super(BackupS3PropertiesNamespace, self).__init__(name, context, parent)
+
+        self.add_property(
+            descr='Access key',
+            name='access_key',
+            get='access_key'
+        )
+
+        self.add_property(
+            descr='Secret key',
+            name='secret_key',
+            get='secret_key'
+        )
+
+        self.add_property(
+            descr='Bucket',
+            name='bucket',
+            get='bucket'
+        )
+
+        self.add_property(
+            descr='Folder',
+            name='folder',
+            get='folder'
+        )
+
+        self.add_property(
+            descr='Region',
+            name='region',
+            get='region'
+        )
+
+
+class BackupSyncCommand(Command):
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        incremental = kwargs.pop('incremental', False)
+        snapshot = kwargs.pop('snapshot', False)
+        dry_run = kwargs.pop('dry_run', False)
+
+        if dry_run:
+            def describe(row):
+                if row['type'] == 'SEND_STREAM':
+                    return '{localfs}@{snapshot} -> {remotefs}@{snapshot} ({incr})'.format(
+                        incr='incremental' if row.get('incremental') else 'full',
+                        **row
+                    )
+
+                if row['type'] == 'DELETE_SNAPSHOTS':
+                    return 'reinitialize remote dataset {remotefs}'.format(**row)
+
+                if row['type'] == 'DELETE_DATASET':
+                    return 'delete remote dataset {remotefs} (because it has been deleted locally)'.format(**row)
+
+            result = context.call_task_sync('backup.sync', self.parent.entity['id'], snapshot, incremental, True)
+            return Sequence(
+                Table(
+                    result['result'], [
+                        Table.Column('Action type', 'type', ValueType.STRING),
+                        Table.Column('Description', describe, ValueType.STRING)
+                    ]
+                ),
+                "Estimated backup stream size: {0}".format(format_value(
+                    sum(a.get('send_size', 0) for a in result['result']),
+                    ValueType.SIZE)
+                )
+            )
+        else:
+            context.submit_task('backup.sync', self.parent.entity['id'], incremental, snapshot)
+
+    def complete(self, context):
+        return [
+            EnumComplete('snapshot=', ['yes', 'no']),
+            EnumComplete('dry_run=', ['yes', 'no'])
+        ]
+
+
+class BackupQueryCommand(Command):
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        result = context.call_task_sync('backup.query', self.parent.entity['id'])
+        manifest = result['result']
+        return Sequence(
+            Object(
+                Object.Item('Hostname', 'hostname', manifest['hostname']),
+                Object.Item('Dataset', 'dataset', manifest['dataset']),
+            ),
+            Table(
+                manifest['snapshots'], [
+                    Table.Column('Snapshot name', 'name', ValueType.STRING),
+                    Table.Column('Incremental', 'incremental', ValueType.BOOLEAN),
+                    Table.Column('Created at', 'created_at', ValueType.TIME)
+                ]
+            )
+        )
+
+
+class BackupRestoreCommand(Command):
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        dataset = kwargs.pop('dataset', None)
+        snapshot = kwargs.pop('snapshot', None)
+
+        context.submit_task('backup.restore', self.parent.entity['id'], dataset, snapshot)
 
 
 def _init(context):

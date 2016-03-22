@@ -41,7 +41,7 @@ TASK_TYPES = {
     'snapshot': 'volume.snapshot_dataset',
     'replication': 'replication.replicate_dataset',
     'check_updates': 'update.checkfetch',
-    'command': 'calendar_task.command',
+    'command': 'calendar_task.command'
 }
 
 
@@ -50,21 +50,23 @@ TASK_TYPES_REVERSE = {v: k for k, v in list(TASK_TYPES.items())}
 
 TASK_ARG_MAPPING = {
     'volume.scrub': ['volume'],
-    'disk.parallel_test': ['disks','test_type'],
-    'update.checkfetch' : ['send_email'],
-    'calendar_task.command' : ['username', 'command'],
-    'volume.snapshot_dataset' : ['volume', 'dataset', 'recursive', 'lifetime', 'prefix', 'replicable'],
+    'disk.parallel_test': ['disks', 'test_type'],
+    'update.checkfetch': ['send_email'],
+    'calendar_task.command': ['username', 'command'],
+    'volume.snapshot_dataset': ['volume', 'dataset', 'recursive', 'lifetime', 'prefix', 'replicable']
 }
 
 
-REQUIRED_PROP_TABLE = {'scrub':['volume'],
-                       'smart':['disks', 'test_type'],
-                       'check_updates':['send_email'],
-                       'command':['username','command'],
-                       'snapshot':['volume', 'dataset', 'recursive', 'lifetime']}
+REQUIRED_PROP_TABLE = {
+    'scrub': ['volume'],
+    'smart': ['disks', 'test_type'],
+    'check_updates': ['send_email'],
+    'command': ['username','command'],
+    'snapshot': ['volume', 'dataset', 'recursive', 'lifetime']
+}
 
 
-SKELETON_TASK = {'volume.snapshot_dataset':[ None, None, None, None, "auto", False ]}
+SKELETON_TASK = {'volume.snapshot_dataset':[ None, None, None, None, "auto", False]}
 
 
 @description("Runs calendar task right now")
@@ -192,7 +194,6 @@ class ScheduleNamespace(ConfigNamespace):
             get='day_of_week',
             list=True
         )
-
 
     def load(self):
         self.entity = self.parent.entity['schedule']

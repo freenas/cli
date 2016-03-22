@@ -166,6 +166,27 @@ def t_SIZE(t):
     return t
 
 
+def t_DATEDELTA(t):
+    r'(\d+)([yKwWdDhH])'
+    t.type = 'NUMBER'
+    m = re.match(t_DATEDELTA.__doc__, t.value)
+    suffix = m.group(2).lower()
+    value = int(m.group(1))
+    value *= 60 * 60
+
+    if suffix == 'y':
+        value *= 24 * 7 * 365
+
+    if suffix == 'w':
+        value *= 24 * 7
+
+    if suffix == 'd':
+        value *= 24
+
+    t.value = value
+    return t
+
+
 def t_TIMEDELTA(t):
     r'(\d+:\d+\.?\d*)+'
     t.type = 'STRING'

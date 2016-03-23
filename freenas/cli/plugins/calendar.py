@@ -425,7 +425,6 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
             type=ValueType.BOOLEAN
         )
 
-
         self.primary_key = self.get_mapping('name')
         self.entity_namespaces = lambda this: [
             StatusNamespace('status', self.context, this),

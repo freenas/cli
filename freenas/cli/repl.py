@@ -131,6 +131,7 @@ ENTITY_SUBSCRIBERS = [
     'syslog',
     'replication',
     'replication.link',
+    'replication.host',
     'backup'
 ]
 

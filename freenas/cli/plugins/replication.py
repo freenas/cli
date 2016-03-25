@@ -30,7 +30,7 @@ import six
 import gettext
 from freenas.cli.namespace import (
     SingleItemNamespace, Command, CommandException, EntityNamespace, TaskBasedSaveMixin,
-    EntitySubscriberBasedLoadMixin, description
+    EntitySubscriberBasedLoadMixin, Namespace, description
 )
 from freenas.cli.complete import NullComplete, EnumComplete
 from freenas.cli.output import ValueType
@@ -216,12 +216,13 @@ class CreateReplicationCommand(Command):
         ]
 
 
-class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):
+@description(_("Provides commands for listing and managing replication tasks."))
+class ReplicationTaskNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):
     """
     The replication namespace provides commands for listing and managing replication tasks.
     """
     def __init__(self, name, context):
-        super(ReplicationNamespace, self).__init__(name, context)
+        super(ReplicationTaskNamespace, self).__init__(name, context)
 
         self.primary_key_name = 'name'
         self.save_key_name = 'name'
@@ -303,7 +304,7 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
         self.entity_commands = self.get_entity_commands
 
     def commands(self):
-        cmds = super(ReplicationNamespace, self).commands()
+        cmds = super(ReplicationTaskNamespace, self).commands()
         cmds.update({'create': CreateReplicationCommand(self)})
         return cmds
 
@@ -321,6 +322,128 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
 
     def delete(self, this, kwargs):
         self.context.submit_task(self.delete_task, this.entity[self.save_key_name], kwargs.get('scrub', False))
+
+
+@description(_("Exchange keys with remote host and create known replication host entry at both sides"))
+class CreateHostsPairCommand(Command):
+    """
+    Usage: create <address> username=<username> password=<password>
+
+    Example: create 10.0.0.1 username=my_username password=secret
+             create my_username@10.0.0.1 password=secret
+
+    Exchange keys with remote host and create known replication host entry
+    at both sides.
+
+    User name and password are used only once to authorize key exchange.
+    """
+
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        if not args and not kwargs:
+            raise CommandException(_("Create requires more arguments, see 'help create' for more information"))
+        if len(args) > 1:
+            raise CommandException(_("Wrong syntax for create, see 'help create' for more information"))
+
+        if len(args) == 1:
+            kwargs['address'] = args.pop(0)
+
+        if 'address' not in kwargs:
+            raise CommandException(_('Please specify an address of remote machine'))
+        else:
+            name = kwargs.pop('address')
+
+        split_name = name.split('@')
+        if len(split_name) == 2:
+            kwargs['username'] = split_name[0]
+            name = split_name[1]
+
+        if 'username' not in kwargs:
+            raise CommandException(_('Please specify a valid user name'))
+        else:
+            username = kwargs.pop('username')
+
+        if 'password' not in kwargs:
+            raise CommandException(_('Please specify a valid password'))
+        else:
+            password = kwargs.pop('password')
+
+        context.submit_task(
+            self.parent.create_task,
+            username,
+            name,
+            password
+        )
+
+    def complete(self, context):
+        return [
+            NullComplete('address='),
+            NullComplete('username='),
+            NullComplete('password=')
+        ]
+
+
+@description(_("Manage replication tasks and known replication hosts"))
+class ReplicationHostNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):
+    """
+    The replication namespace provides commands for listing and managing replication tasks.
+    """
+    def __init__(self, name, context):
+        super(ReplicationHostNamespace, self).__init__(name, context)
+
+        self.primary_key_name = 'name'
+        self.save_key_name = 'name'
+        self.entity_subscriber_name = 'replication.host'
+        self.create_task = 'replication.hosts_pair.create'
+        self.allow_edit = False
+        self.delete_task = 'replication.hosts_pair.delete'
+
+        self.add_property(
+            descr='Name',
+            name='name',
+            get='name',
+            usersetable=False,
+            list=True)
+
+        self.add_property(
+            descr='Public key',
+            name='pubkey',
+            get='pubkey',
+            usersetable=False,
+            list=False)
+
+        self.add_property(
+            descr='Host key',
+            name='hostkey',
+            get='hostkey',
+            usersetable=False,
+            list=False)
+
+        self.primary_key = self.get_mapping('name')
+
+    def commands(self):
+        cmds = super(ReplicationHostNamespace, self).commands()
+        cmds.update({'create': CreateHostsPairCommand(self)})
+        return cmds
+
+
+@description(_("Manage replication tasks and known replication hosts"))
+class ReplicationNamespace(Namespace):
+    """
+    The account namespace is used to manage replication tasks and
+    known replication hosts.
+    """
+    def __init__(self, name, context):
+        super(ReplicationNamespace, self).__init__(name)
+        self.context = context
+
+    def namespaces(self):
+        return [
+            ReplicationTaskNamespace('task', self.context),
+            ReplicationHostNamespace('host', self.context)
+        ]
 
 
 def _init(context):

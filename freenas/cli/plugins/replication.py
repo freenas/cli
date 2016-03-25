@@ -41,7 +41,7 @@ t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
 
 
-@description("Triggers replication process")
+@description(_("Triggers replication process"))
 class SyncCommand(Command):
     """
     Usage: sync
@@ -58,7 +58,7 @@ class SyncCommand(Command):
         context.submit_task('replication.sync', name, callback=lambda s, t: post_save(self.parent, s, t))
 
 
-@description("Switch roles of partners in bi-directional replication")
+@description(_("Switch roles of partners in bi-directional replication"))
 class SwitchCommand(Command):
     """
     Usage: switch_roles
@@ -89,7 +89,7 @@ class SwitchCommand(Command):
         )
 
 
-@description("Creates a replication link")
+@description(_("Creates a replication link"))
 class CreateReplicationCommand(Command):
     """
     Usage: create <name> master=<master> slave=<slave> recursive=<recursive>

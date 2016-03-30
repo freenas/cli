@@ -152,7 +152,7 @@ class AsciiOutputFormatter(object):
         for i in hidden_indexes:
             del tab.columns[i]
 
-        table=AsciiOutputFormatter.format_table(tab)
+        table = AsciiOutputFormatter.format_table(tab)
         six.print_(table.draw(), file=file, end=('\n' if kwargs.get('newline', True) else ' '))
 
     @staticmethod

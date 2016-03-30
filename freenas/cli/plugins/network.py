@@ -75,13 +75,13 @@ class InterfaceManageCommand(Command):
             context.submit_task(
                 'network.interface.up',
                 self.parent.primary_key,
-                callback=lambda s: post_save(self.parent, s)
+                callback=lambda s, t: post_save(self.parent, s, t)
             )
         else:
             context.submit_task(
                 'network.interface.down',
                 self.parent.primary_key,
-                callback=lambda s: post_save(self.parent, s)
+                callback=lambda s, t: post_save(self.parent, s, t)
             )
 
 
@@ -99,7 +99,7 @@ class InterfaceRenewCommand(Command):
         context.submit_task(
             'network.interface.renew',
             self.parent.primary_key,
-            callback=lambda s: post_save(self.parent, s)
+            callback=lambda s, t: post_save(self.parent, s, t)
         )
 
 
@@ -111,7 +111,7 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
         self.entity_subscriber_name = 'network.interface'
         self.create_task = 'network.interface.create'
         self.delete_task = 'network.interface.delete'
-        self.update_task = 'network.interface.configure'
+        self.update_task = 'network.interface.update'
         self.required_props = ['type']
         self.localdoc['CreateEntityCommand'] = ("""\
             Usage: create type=<type>
@@ -173,7 +173,7 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
             Can only be specified when using the 'create'
             command. Allowable values are VLAN,
             BRIDGE, or LAGG."""),
-            enum_set=['VLAN', 'BRIDGE', 'LAGG'],
+            enum=['VLAN', 'BRIDGE', 'LAGG'],
             usersetable=False,
             list=True
         )
@@ -186,7 +186,6 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
             Indicates whether or not the interface is
             active or disabled. Can be set to yes or no."""),
             type=ValueType.BOOLEAN,
-            createsetable=False,
             list=True
         )
 
@@ -200,7 +199,6 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
             set to yes or no, however, only ONE interface
             on the system can be set to yes."""),
             type=ValueType.BOOLEAN,
-            createsetable=False,
             list=True
         )
 
@@ -213,7 +211,6 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
             rtsold to obtain its IPv6 configuration. Can be
             set to yes or no."""),
             type=ValueType.BOOLEAN,
-            createsetable=False,
             list=False
         )
 
@@ -226,7 +223,6 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
             accept an IPv6 configuration. Can be set to yes
             or no."""),
             type=ValueType.BOOLEAN,
-            createsetable=False,
             list=False
         )
 
@@ -289,7 +285,6 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
             It should be set to the physical interface that
             is attached to the VLAN switch port."""),
             list=False,
-            createsetable=False,
             type=ValueType.STRING,
             condition=lambda e: e['type'] == 'VLAN'
         )
@@ -303,7 +298,6 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
             is mandatory when setting the vlan_parent.
             Must be a valid tag number between 1 and 4095."""),
             list=False,
-            createsetable=False,
             type=ValueType.NUMBER,
             condition=lambda e: e['type'] == 'VLAN'
         )
@@ -318,7 +312,6 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
             use. Allowable values are NONE, ROUNDROBIN,
             FAILOVER, LOADBALANCE, LACP, or ETHERCHANNEL."""),
             list=False,
-            createsetable=False,
             type=ValueType.STRING,
             condition=lambda e: e['type'] == 'LAGG',
             enum=['NONE', 'ROUNDROBIN', 'FAILOVER', 'LOADBALANCE', 'LACP', 'ETHERCHANNEL']
@@ -336,7 +329,6 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
             and a comma with space between each interface
             name."""),
             list=False,
-            createsetable=False,
             type=ValueType.SET,
             condition=lambda e: e['type'] == 'LAGG'
         )
@@ -352,7 +344,6 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
             each interface name within double quotes and a comma
             with space between each interface name."""),
             list=False,
-            createsetable=False,
             type=ValueType.SET,
             condition=lambda e: e['type'] == 'BRIDGE'
         )
@@ -379,25 +370,6 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
                 continue
 
             yield '{0}/{1}'.format(i['address'], i['netmask'])
-
-    def save(self, this, new=False, callback=None):
-        if callback is None:
-            callback = lambda s: post_save(this, s)
-        if new:
-            self.context.submit_task(
-                'network.interface.create',
-                this.entity['type'],
-                callback=callback
-            )
-            this.modified = False
-            return
-
-        self.context.submit_task(
-            'network.interface.configure',
-            this.entity['id'], this.get_diff(),
-            callback=callback
-        )
-        this.modified = False
 
 
 @description("Interface addresses")
@@ -480,14 +452,14 @@ class AliasesNamespace(EntityNamespace):
         self.parent.entity['aliases'].append(this.entity)
         self.parent.parent.save(
             self.parent,
-            callback=lambda s: self.my_post_save(this, s)
+            callback=lambda s, t: self.my_post_save(this, s)
         )
 
     def delete(self, address, kwargs):
         self.parent.entity['aliases'] = [a for a in self.parent.entity['aliases'] if a['address'] != address]
         self.parent.parent.save(
             self.parent,
-            callback=lambda s: self.my_post_delete(s)
+            callback=lambda s, t: self.my_post_delete(s)
         )
 
 
@@ -555,7 +527,8 @@ class GlobalConfigNamespace(ConfigNamespace):
     """
     def __init__(self, name, context):
         super(GlobalConfigNamespace, self).__init__(name, context)
-        self.config_call = "network.config.get_global_config"
+        self.config_call = "network.config.get_config"
+        self.update_task = 'network.config.update'
 
         self.add_property(
             descr='IPv4 gateway',
@@ -635,13 +608,6 @@ class GlobalConfigNamespace(ConfigNamespace):
     # def load(self):
     #    self.entity = self.context.call_sync('')
     #    self.orig_entity = copy.deepcopy(self.entity)
-
-    def save(self):
-        return self.context.submit_task(
-            'network.configure',
-            self.get_diff(),
-            callback=lambda s: post_save(self, s)
-        )
 
 
 @description("Manage routing table")
@@ -729,8 +695,8 @@ class IPMINamespace(EntityNamespace):
 
         self.add_property(
             descr='Channel',
-            name='channel',
-            get='channel',
+            name='id',
+            get='id',
             set=None,
             list=True
         )
@@ -783,11 +749,7 @@ class IPMINamespace(EntityNamespace):
         self.primary_key = self.get_mapping('channel')
 
     def query(self, params, options):
-        result = []
-        for chan in self.context.call_sync('ipmi.channels'):
-            result.append(self.context.call_sync('ipmi.get_config', chan))
-
-        return result
+        return self.context.call_sync('ipmi.query')
 
     def get_one(self, chan):
         return self.context.call_sync('ipmi.get_config', chan)
@@ -796,14 +758,14 @@ class IPMINamespace(EntityNamespace):
         assert not new
 
         self.context.submit_task(
-            'ipmi.configure',
+            'ipmi.update',
             this.entity['channel'],
             this.get_diff(),
-            callback=lambda s: post_save(this, s)
+            callback=lambda s, t: post_save(this, s, t)
         )
 
 
-@description("Network configuration")
+@description("Configure networking")
 class NetworkNamespace(Namespace):
     """
     The network namespace is used to configure the network interfaces

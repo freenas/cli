@@ -1,0 +1,26 @@
+function user_input_routine(select_boot_env) {
+    print("Do you want to delete ", select_boot_env["id"]);
+    print("Enter show to print detailed info on the boot env.");
+    return readline("Enter yes to delete, no (or any other key) to skip [show/yes/no]: ");
+}
+
+function delete_bootenvs() {
+    bootenvs = $(/ boot environment show | exclude active==True);
+    print("Iterating through boot environments in ascending order w.r.t date created");
+    delete_flag = "no";
+    print("At any point hit q to quit this routine")
+    print()
+    while (delete_flag != "q" and length(bootenvs) != 0) {
+        select_boot_env=shift(bootenvs);
+        delete_flag= user_input_routine(select_boot_env);
+        while (delete_flag == "show") {
+            print(select_boot_env);
+            delete_flag=user_input_routine(select_boot_env)
+        }
+        if (delete_flag == "yes") {
+            / boot environment ${select_boot_env["id"]} delete
+        }
+    }
+}
+
+delete_bootenvs();

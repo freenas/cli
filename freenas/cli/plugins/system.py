@@ -27,7 +27,7 @@
 
 from freenas.cli.namespace import (
     Namespace, ConfigNamespace, Command, CommandException, description,
-    RpcBasedLoadMixin, EntityNamespace, IndexCommand
+    RpcBasedLoadMixin, EntityNamespace
 )
 from freenas.cli.output import Table, Object, Sequence, ValueType, format_value
 from freenas.cli.descriptions import events
@@ -47,7 +47,7 @@ class ShutdownCommand(Command):
     """
     def run(self, context, args, kwargs, opargs):
         context.submit_task('system.shutdown')
-        return _("System going for a shutdown...")
+        return _("The system will now shutdown...")
 
 
 @description("Reboots the system")
@@ -56,7 +56,9 @@ class RebootCommand(Command):
     Usage: reboot delay=<delay>
 
     Examples: reboot
-              reboot delay=2h
+              reboot delay=1:10.10 (1hour 10 minutes 10 seconds)
+              reboot delay=0:10 (10 minutes)
+              reboot delay=0:0.10 (10 seconds)
 
     Reboots the system.
     """
@@ -65,7 +67,7 @@ class RebootCommand(Command):
         if delay:
             delay = parse_timedelta(delay).seconds
         context.submit_task('system.reboot', delay)
-        return _("System going for a reboot...")
+        return _("The system will now reboot...")
 
 
 @description("Provides status information about the server")
@@ -214,14 +216,19 @@ class VersionCommand(Command):
 class FactoryRestoreCommand(Command):
     """
     Usage: factory_restore
+    
+    Resets the configuration database to the default FreeNAS base, deleting
+    all configuration changes. Running this command will reboot the system.
     """
     def run(self, context, args, kwargs, opargs):
-        context.call_task_sync('database.restore_factory')
+        context.call_task_sync('database.factory_restore')
 
 
 class ShowReplicationKeyCommand(Command):
     """
     Usage: show_key
+    
+    Diplays a copy of the public key for the replication user.
     """
     def run(self, context, args, kwargs, opargs):
         return context.call_sync('replication.get_public_key')
@@ -275,14 +282,14 @@ class SessionsNamespace(RpcBasedLoadMixin, EntityNamespace):
         self.add_property(
             descr='Started at',
             name='started',
-            get='started-at',
+            get='started_at',
             type=ValueType.TIME
         )
 
         self.add_property(
             descr='Ended at',
             name='ended',
-            get='ended-at',
+            get='ended_at',
             type=ValueType.TIME
         )
 
@@ -325,13 +332,13 @@ class EventsNamespace(RpcBasedLoadMixin, EntityNamespace):
         self.add_property(
             descr='Created at',
             name='created',
-            get='created-at',
+            get='created_at',
         )
 
         self.add_property(
             descr='Updated at',
             name='updated',
-            get='updated-at',
+            get='updated_at',
         )
 
         self.primary_key = self.get_mapping('id')
@@ -348,6 +355,7 @@ class TimeNamespace(ConfigNamespace):
     def __init__(self, name, context):
         super(TimeNamespace, self).__init__(name, context)
         self.config_call = 'system.info.time'
+        self.update_task = 'system.time.update'
 
         self.add_property(
             descr='System time',
@@ -364,20 +372,6 @@ class TimeNamespace(ConfigNamespace):
             list=True
         )
 
-        self.add_property(
-            descr='Time zone',
-            name='timezone',
-            get='timezone',
-            list=True
-        )
-
-    def save(self):
-        self.context.submit_task(
-            'system.time.configure',
-            self.get_diff(),
-            callback=lambda s: post_save(self, s)
-        )
-
 
 @description("Mail configuration")
 class MailNamespace(ConfigNamespace):
@@ -388,10 +382,15 @@ class MailNamespace(ConfigNamespace):
         super(MailNamespace, self).__init__(name, context)
         self.context = context
         self.config_call = 'mail.get_config'
+        self.update_task = 'mail.update'
 
         self.add_property(
             descr='Email address',
             name='email',
+            usage=_("""
+            Use set or edit to set the from email address to be
+            used when sending email notifications. When using set,
+            enclose the email address between double quotes."""),
             get='from',
             set='from',
         )
@@ -399,12 +398,20 @@ class MailNamespace(ConfigNamespace):
         self.add_property(
             descr='Email server',
             name='server',
+            usage=_("""
+            Use set or edit to set the hostname or IP address of
+            the SMTP server. When using set, enclose the value
+            between double quotes."""),
             get='server',
         )
 
         self.add_property(
             descr='SMTP port',
             name='port',
+            usage=_("""
+            Use set or edit to set the number of the SMTP port.
+            Typically set to 25, 465 (secure SMTP), or 587
+            (submission)."""),
             get='port',
             type=ValueType.NUMBER,
         )
@@ -412,6 +419,10 @@ class MailNamespace(ConfigNamespace):
         self.add_property(
             descr='Authentication required',
             name='auth',
+            usage=_("""
+            Can be set to yes or no. When set to yes,
+            enables SMTP AUTH using PLAIN SASL and requires both
+            'username' and 'password' to be set."""),
             get='auth',
             type=ValueType.BOOLEAN,
         )
@@ -419,6 +430,9 @@ class MailNamespace(ConfigNamespace):
         self.add_property(
             descr='Encryption type',
             name='encryption',
+            usage=_("""
+            Use set or edit to set to PLAIN (no encryption),
+            TLS, or SSL.."""),
             get='encryption',
             enum=['PLAIN', 'TLS', 'SSL']
         )
@@ -426,6 +440,10 @@ class MailNamespace(ConfigNamespace):
         self.add_property(
             descr='Username for Authentication',
             name='username',
+            usage=_("""
+            Use set or edit to set the username used by
+            SMTP authentication. Requires 'auth' to be set
+            to yes."""),
             get='user',
             set='user',
         )
@@ -433,15 +451,13 @@ class MailNamespace(ConfigNamespace):
         self.add_property(
             descr='Password for Authentication',
             name='password',
+            usage=_("""
+            Use set to set the password used by
+            SMTP authentication. Requires 'auth' to be set
+            to yes. For security reasons, the password is
+            not displayed by get or edit."""),
             get=None,
             set='pass',
-        )
-
-    def save(self):
-        self.context.submit_task(
-            'mail.configure',
-            self.get_diff(),
-            callback=lambda s: post_save(self, s)
         )
 
 
@@ -455,10 +471,16 @@ class AdvancedNamespace(ConfigNamespace):
         super(AdvancedNamespace, self).__init__(name, context)
         self.context = context
         self.config_call = 'system.advanced.get_config'
+        self.update_task = 'system.advanced.update'
 
         self.add_property(
             descr='Enable Console CLI',
             name='console_cli',
+            usage=_("""
+            Can be set to yes or no. When set to yes,
+            the system will boot into a login prompt instead
+            of the CLI. You can still start the CLI by
+            typing cli after a successful login."""),
             get='console_cli',
             type=ValueType.BOOLEAN
         )
@@ -466,6 +488,10 @@ class AdvancedNamespace(ConfigNamespace):
         self.add_property(
             descr='Enable Console Screensaver',
             name='console_screensaver',
+            usage=_("""
+            Can be set to yes or no. When set to yes,
+            a screensaver will start after a period of
+            CLI inactivity."""),
             get='console_screensaver',
             type=ValueType.BOOLEAN
         )
@@ -473,6 +499,11 @@ class AdvancedNamespace(ConfigNamespace):
         self.add_property(
             descr='Enable Serial Console',
             name='serial_console',
+            usage=_("""
+            Can be set to yes or no. Only set to yes,
+            if the system has an active serial port and
+            you want to access the system using that serial
+            port."""),
             get='serial_console',
             type=ValueType.BOOLEAN
         )
@@ -480,12 +511,18 @@ class AdvancedNamespace(ConfigNamespace):
         self.add_property(
             descr='Serial Console Port',
             name='serial_port',
+            usage=_("""
+            Use set or edit to specify the serial port
+            to use for console access."""),
             get='serial_port',
         )
 
         self.add_property(
             descr='Serial Port Speed',
             name='serial_speed',
+            sage=_("""
+            Use set to specify the speed of the serial port
+            used for console access."""),
             get='serial_speed',
             type=ValueType.NUMBER
         )
@@ -493,6 +530,10 @@ class AdvancedNamespace(ConfigNamespace):
         self.add_property(
             descr='Enable powerd',
             name='powerd',
+            usage=_("""
+            Can be set to yes or no. When set to yes,
+            enables powerd(8) which monitors the system state and
+            sets the CPU frequency accordingly."""),
             get='powerd',
             type=ValueType.BOOLEAN
         )
@@ -500,6 +541,9 @@ class AdvancedNamespace(ConfigNamespace):
         self.add_property(
             descr='Default swap on drives',
             name='swapondrive',
+            usage=_("""
+            Non-zero number representing the default swap size, for each
+            formatted disk, in GiB."""),
             get='swapondrive',
             type=ValueType.NUMBER
         )
@@ -507,6 +551,10 @@ class AdvancedNamespace(ConfigNamespace):
         self.add_property(
             descr='Enable Debug Kernel',
             name='debugkernel',
+            usage=_("""
+            Can be set to yes or no. When set to yes, the
+            next boot will boot into a debug version of the kernel which
+            can be useful when troubleshooting."""),
             get='debugkernel',
             type=ValueType.BOOLEAN
         )
@@ -514,6 +562,11 @@ class AdvancedNamespace(ConfigNamespace):
         self.add_property(
             descr='Automatically upload crash dumps to iXsystems',
             name='uploadcrash',
+            usage=_("""
+            Can be set to yes or no. When set to yes, kernel
+            crash dumps and telemetry (some system statatistics and syslog
+            messages) are automatically sent to the FreeNAS development
+            team for diagnosis."""),
             get='uploadcrash',
             type=ValueType.BOOLEAN
         )
@@ -521,21 +574,23 @@ class AdvancedNamespace(ConfigNamespace):
         self.add_property(
             descr='Message of the day',
             name='motd',
+            usage=_("""
+            Use set or edit to modify the message to be seen when a user
+            logs in over SSH. When using set, enclose the message between
+            double quotes"""),
             get='motd',
         )
 
         self.add_property(
             descr='Periodic Notify User UID',
             name='periodic_notify_user',
+            usage=_("""
+            Set to the number representing the UID of the user to
+            receive security output emails. This output runs nightly,
+            but only sends an email when the system reboots or
+            encounters an error."""),
             get='periodic_notify_user',
             type=ValueType.NUMBER
-        )
-
-    def save(self):
-        self.context.submit_task(
-            'system.advanced.configure',
-            self.get_diff(),
-            callback=lambda s: post_save(self, s)
         )
 
 
@@ -544,7 +599,6 @@ class ConfigDbNamespace(Namespace):
     def commands(self):
         return {
             'factory_restore': FactoryRestoreCommand(),
-            '?': IndexCommand(self)
         }
 
 
@@ -552,6 +606,7 @@ class SystemDatasetNamespace(ConfigNamespace):
     def __init__(self, name, context):
         super(SystemDatasetNamespace, self).__init__(name, context)
         self.config_call = 'system_dataset.status'
+        self.update_task = 'system_dataset.migrate'
 
         self.add_property(
             descr='Identifier',
@@ -572,58 +627,78 @@ class SystemDatasetNamespace(ConfigNamespace):
 
     def save(self):
         self.context.submit_task(
-            'system_dataset.configure',
+            'system_dataset.migrate',
             self.entity['pool'],
-            callback=lambda s: post_save(self, s)
+            callback=lambda s, t: post_save(self, s, t)
         )
 
 
+@description("Replication info")
 class ReplicationNamespace(Namespace):
     def commands(self):
         return {
             'show_key': ShowReplicationKeyCommand(),
-            '?': IndexCommand(self)
         }
 
 
 @description("System info and configuration")
 class SystemNamespace(ConfigNamespace):
     """
-    System top level command, expands into commands for configuring system
-    settings and getting system information.
+    The system namespace provides commands for configuring system
+    settings and listing system information.
     """
     def __init__(self, name, context):
         super(SystemNamespace, self).__init__(name, context)
         self.context = context
         self.config_call = 'system.general.get_config'
+        self.update_task = 'system.general.update'
 
         self.add_property(
             descr='Time zone',
             name='timezone',
+            usage=_("""
+            Use set or edit to change the timezone. Type
+            timezones to see the list of valid timezones."""),
             get='timezone',
         )
 
         self.add_property(
             descr='Hostname',
             name='hostname',
+            usage=_("""
+            Use set or edit to change the system's hostname. The
+            hostname must include the domain name. If the network does
+            not use a domain name add .local to the end of the
+            hostname.."""),
             get='hostname'
         )
 
         self.add_property(
             descr='Syslog Server',
             name='syslog_server',
+            usage=_("""
+            Use set or edit to set the IP address or
+            hostname:optional_port_number of remote syslog server to
+            send logs to. If set, log entries will be written to both
+            the log namespace and the remote server."""),
             get='syslog_server'
         )
 
         self.add_property(
             descr='Language',
             name='language',
+            usage=_("""
+            Use set or edit to change the localization to the
+            two-letter ISO 3166 country code."""),
             get='language'
         )
 
         self.add_property(
             descr='Console Keymap',
             name='console_keymap',
+            usage=_("""
+            Use set or edit to change the console keyboard
+            layout."""),
             get='console_keymap'
         )
 
@@ -638,9 +713,9 @@ class SystemNamespace(ConfigNamespace):
 
     def save(self):
         return self.context.submit_task(
-            'system.general.configure',
+            'system.general.update',
             self.entity,
-            callback=lambda s: post_save(self, s)
+            callback=lambda s, t: post_save(self, s, t)
         )
 
     def namespaces(self):

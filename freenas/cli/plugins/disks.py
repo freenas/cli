@@ -167,7 +167,7 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             get='apm_mode',
             usage=_("""\
             Integer that indicates the power management mode
-            as described in ataidle\(8\). A value of 0
+            as described in ataidle(8). A value of 0
             disables power management."""),
             type=ValueType.NUMBER,
             list=False
@@ -201,7 +201,7 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             name='smart_options',
             get='smart_options',
             usage=_("""\
-            Additional options from smartctl\(8\). When
+            Additional options from smartctl(8). When
             setting options, place entire options string
             between double quotes and use a space to
             separate multiple options. Can only set options
@@ -255,10 +255,10 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
 
     def save(self, this, new=False):
         self.context.submit_task(
-            'disk.configure',
+            'disk.update',
             this.entity['id'],
             this.get_diff(),
-            callback=lambda s: post_save(this, s))
+            callback=lambda s, t: post_save(this, s, t))
 
 
 @description("Formats given disk")
@@ -273,7 +273,7 @@ class FormatDiskCommand(Command):
 
     def run(self, context, args, kwargs, opargs):
         fstype = kwargs.pop('fstype', 'freebsd-zfs')
-        context.submit_task('disk.format.gpt', self.parent.entity['path'], fstype)
+        context.submit_task('disk.format.gpt', self.parent.entity['id'], fstype)
 
 
 @description("Erases all data on disk safely")
@@ -292,7 +292,7 @@ class EraseDiskCommand(Command):
 
     def run(self, context, args, kwargs, opargs):
         erase_data = str.upper(kwargs.pop('wipe', 'quick'))
-        context.submit_task('disk.erase', self.parent.entity['path'], erase_data)
+        context.submit_task('disk.erase', self.parent.entity['id'], erase_data)
 
 
 def _init(context):

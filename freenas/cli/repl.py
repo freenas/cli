@@ -42,11 +42,11 @@ import time
 import gettext
 import getpass
 import traceback
+import threading
 import six
 import paramiko
 import inspect
 import re
-import itertools
 from six.moves.urllib.parse import urlparse
 from socket import gaierror as socket_error
 from freenas.cli.descriptions import events
@@ -58,13 +58,13 @@ from freenas.cli.namespace import (
     Namespace, RootNamespace, Command, FilteringCommand, PipeCommand, CommandException
 )
 from freenas.cli.parser import (
-    parse, Symbol, Literal, BinaryParameter, UnaryExpr, BinaryExpr, PipeExpr, AssignmentStatement,
+    parse, unparse, Symbol, Literal, BinaryParameter, UnaryExpr, BinaryExpr, PipeExpr, AssignmentStatement,
     IfStatement, ForStatement, WhileStatement, FunctionCall, CommandCall, Subscript,
-    ExpressionExpansion, FunctionDefinition, ReturnStatement, BreakStatement, UndefStatement,
-    Redirection, AnonymousFunction
+    ExpressionExpansion, CommandExpansion, FunctionDefinition, ReturnStatement, BreakStatement,
+    UndefStatement, Redirection, AnonymousFunction, ShellEscape
 )
 from freenas.cli.output import (
-    ValueType, ProgressBar, output_lock, output_msg, read_value, format_value,
+    ValueType, ProgressBar, Sequence, output_lock, output_msg, read_value, format_value,
     format_output, output_msg_locked, refresh_prompt
 )
 from freenas.dispatcher.client import Client, ClientError
@@ -78,7 +78,8 @@ from freenas.cli.commands import (
     SaveenvCommand, EchoCommand, SourceCommand, MorePipeCommand, SearchPipeCommand,
     ExcludePipeCommand, SortPipeCommand, LimitPipeCommand, SelectPipeCommand,
     LoginCommand, DumpCommand, WhoamiCommand, PendingCommand, WaitCommand,
-    OlderThanPipeCommand, NewerThanPipeCommand
+    OlderThanPipeCommand, NewerThanPipeCommand, IndexCommand, AliasCommand,
+    UnaliasCommand, ListVarsCommand
 )
 import collections
 
@@ -117,6 +118,7 @@ ENTITY_SUBSCRIBERS = [
     'group',
     'disk',
     'volume',
+    'volume.dataset',
     'volume.snapshot',
     'network.interface',
     'network.host',
@@ -124,8 +126,13 @@ ENTITY_SUBSCRIBERS = [
     'share',
     'task',
     'alert',
+    'alert.filter',
     'container',
-    'syslog'
+    'syslog',
+    'replication',
+    'replication.link',
+    'replication.host',
+    'backup'
 ]
 
 
@@ -195,6 +202,11 @@ class FlowControlInstructionType(enum.Enum):
     BREAK = 'BREAK'
 
 
+class Alias(object):
+    def __init__(self, context, string):
+        self.ast = parse(string, '<alias>')
+
+
 class VariableStore(object):
     class Variable(object):
         def __init__(self, default, type, choices=None):
@@ -230,17 +242,17 @@ class VariableStore(object):
             'verbosity': self.Variable(1, ValueType.NUMBER)
         }
         self.variable_doc = {
-            'output_format': _('Sets the console output format, valid values are: "ascii", "json" and "table"'),
-            'datetime_format': _('Sets the date/time format'),
-            'language': _('Sets the console language'),
-            'prompt': _('Sets the console prompt'),
-            'timeout': _('Set the console timeout period'),
-            'tasks_blocking': _('Toggle tasks blocking console output'),
-            'show_events': _('Toggle displaying of events'),
-            'debug': _('Toggle displaying of debug messages'),
-            'abort_on_errors': _('Toggle console aborting on errors'),
-            'output': _('Send output to specified file, "none" outputs to console'),
-            'verbosity': _('Verbosity of event messages in range from 1 to 5')
+            'output_format': _('Console output format. Can be set to \'ascii\', \'json\', or \'table\'.'),
+            'datetime_format': _('Date and time format.'),
+            'language': _('Display the console language.'),
+            'prompt': _('Console prompt.'),
+            'timeout': _('Console timeout period in minutes.'),
+            'tasks_blocking': _('Toggle tasks blocking console output. Can be set to yes or no.'),
+            'show_events': _('Toggle displaying of events. Can be set to yes or no.'),
+            'debug': _('Toggle display of debug messages. Can be set to yes or no.'),
+            'abort_on_errors': _('Can be set to yes or no. When set to yes, command execution will abort on syntax or command errors.'),
+            'output': _('Either send all output to specified file or set to \'none\' to display output on the console.'),
+            'verbosity': _('Increasing verbosity of event messages. Can be set from 1 to 5.')
         }
 
     def load(self, filename):
@@ -304,6 +316,11 @@ class VariableStore(object):
 
         self.variables[name].set(value)
 
+    def verify(self, name, value):
+        if name == 'verbosity':
+            if value > 5 or value < 1:
+                raise ValueError(_("Invalid value: {0}, verbosity must a value be between 1 and 5.".format(value)))
+
 
 class Context(object):
     def __init__(self):
@@ -321,6 +338,7 @@ class Context(object):
         self.event_masks = ['*']
         self.event_divert = False
         self.event_queue = six.moves.queue.Queue()
+        self.output_queue = six.moves.queue.Queue()
         self.keepalive_timer = None
         self.argparse_parser = None
         self.entity_subscribers = {}
@@ -328,11 +346,18 @@ class Context(object):
         self.builtin_operators = functions.operators
         self.builtin_functions = functions.functions
         self.global_env = Environment(self)
+        self.global_env['_cli_src_path'] = Environment.Variable(
+            os.path.dirname(os.path.realpath(__file__))
+        )
         self.user = None
         self.pending_tasks = QueryDict()
         self.session_id = None
         self.user_commands = []
         config.instance = self
+
+        self.output_thread = threading.Thread(target=self.output_thread)
+        self.output_thread.daemon = True
+        self.output_thread.start()
 
     @property
     def is_interactive(self):
@@ -361,17 +386,15 @@ class Context(object):
 
         def update_task(task, old_task=None):
             self.pending_tasks[task['id']] = task
-            refresh_prompt()
 
             if task['state'] in ('FINISHED', 'FAILED', 'ABORTED'):
                 del self.pending_tasks[task['id']]
-                refresh_prompt()
 
             if task['id'] in self.task_callbacks:
                 self.handle_task_callback(task)
 
             if self.variables.get('verbosity') > 1 and task['state'] in ('CREATED', 'FINISHED'):
-                output_msg_locked(_(
+                self.output_queue.put(_(
                     "Task #{0}: {1}: {2}".format(
                         task['id'],
                         tasks.translate(self, task['name'], task['args']),
@@ -380,7 +403,7 @@ class Context(object):
                 ))
 
             if self.variables.get('verbosity') > 2 and task['state'] == 'WAITING':
-                output_msg_locked(_(
+                self.output_queue.put(_(
                     "Task #{0}: {1}: {2}".format(
                         task['id'],
                         tasks.translate(self, task['name'], task['args']),
@@ -390,7 +413,7 @@ class Context(object):
 
             if task['state'] == 'FAILED':
                 if not task['parent'] or self.variables.get('verbosity') > 1:
-                    output_msg_locked(_(
+                    self.output_queue.put(_(
                         "Task #{0} error: {1}".format(
                             task['id'],
                             task['error'].get('message', '') if task.get('error') else ''
@@ -398,12 +421,12 @@ class Context(object):
                     ))
 
             if task['state'] == 'ABORTED':
-                output_msg_locked(_("Task #{0} aborted".format(task['id'])))
+                self.output_queue.put(_("Task #{0} aborted".format(task['id'])))
 
             if old_task:
                 if len(task['warnings']) > len(old_task['warnings']):
                     for i in task['warnings'][len(old_task['warnings']):]:
-                        output_msg_locked(_("Task #{0}: {1}: warning: {2}".format(
+                        self.output_queue.put(_("Task #{0}: {1}: warning: {2}".format(
                             task['id'],
                             tasks.translate(self, task['name'], task['args']),
                             i['message']
@@ -411,6 +434,10 @@ class Context(object):
 
         self.entity_subscribers['task'].on_add = update_task
         self.entity_subscribers['task'].on_update = lambda o, n: update_task(n, o)
+
+    def wait_entity_subscribers(self):
+        for i in self.entity_subscribers.values():
+            i.wait_ready()
 
     def connect(self, password=None):
         try:
@@ -472,9 +499,7 @@ class Context(object):
             if hasattr(sys, '_MEIPASS'):
                 plug_dirs = os.path.join(sys._MEIPASS, 'freenas/cli/plugins')
             else:
-                plug_dirs = os.path.join(
-                    os.path.dirname(os.path.realpath(__file__)), 'plugins'
-                )
+                plug_dirs = os.path.join(self.global_env.find('_cli_src_path').value, 'plugins')
             self.plugin_dirs += [plug_dirs]
 
     def discover_plugins(self):
@@ -563,7 +588,7 @@ class Context(object):
 
     def connection_error(self, event, **kwargs):
         if event == ClientError.LOGOUT:
-            output_msg_locked('Logged out from server.')
+            self.output_queue.put('Logged out from server.')
             self.connection.disconnect()
             sys.exit(0)
 
@@ -587,9 +612,14 @@ class Context(object):
 
         self.print_event(event, data)
 
+    def output_thread(self):
+        while True:
+            item = self.output_queue.get()
+            output_msg_locked(item)
+
     def handle_task_callback(self, data):
         if data['state'] in ('FINISHED', 'CANCELLED', 'ABORTED', 'FAILED'):
-            self.task_callbacks[data['id']](data['state'])
+            self.task_callbacks[data['id']](data['state'], data)
 
     def print_event(self, event, data):
         if self.event_divert:
@@ -598,7 +628,7 @@ class Context(object):
 
         translation = events.translate(self, event, data)
         if translation:
-            output_msg_locked(translation)
+            self.output_queue.put(translation)
 
     def call_sync(self, name, *args, **kwargs):
         return wrap(self.connection.call_sync(name, *args, **kwargs))
@@ -628,7 +658,7 @@ class Context(object):
 
         if not self.variables.get('tasks_blocking'):
             tid = self.submit_task_common_routine(name, callback, *args)
-            output_msg_locked(_("Task #{0} submitted".format(tid)))
+            self.output_queue.put(_("Task #{0} submitted".format(tid)))
             return tid
         else:
             # lets set the SIGTSTP (Ctrl+Z) handler
@@ -764,7 +794,7 @@ class Environment(dict):
         if var in self:
             return self[var]
 
-        if self.outer:
+        if self.outer is not None:
             return self.outer.find(var)
 
         if var in self.context.builtin_functions:
@@ -786,6 +816,7 @@ class MainLoop(object):
         'newer_than': NewerThanPipeCommand()
     }
     base_builtin_commands = {
+        '?': IndexCommand(),
         'login': LoginCommand(),
         'exit': ExitCommand(),
         'setenv': SetenvCommand(),
@@ -803,7 +834,10 @@ class MainLoop(object):
         'echo': EchoCommand(),
         'whoami': WhoamiCommand(),
         'pending': PendingCommand(),
-        'wait': WaitCommand()
+        'wait': WaitCommand(),
+        'alias': AliasCommand(),
+        'unalias': UnaliasCommand(),
+        'vars': ListVarsCommand(),
     }
     builtin_commands = base_builtin_commands.copy()
     builtin_commands.update(pipe_commands)
@@ -815,6 +849,7 @@ class MainLoop(object):
         self.prev_path = self.path[:]
         self.start_from_root = False
         self.namespaces = []
+        self.aliases = {}
         self.connection = None
         self.skip_prompt_print = False
         self.saved_state = None
@@ -898,10 +933,21 @@ class MainLoop(object):
     def path_string(self):
         return ' '.join([str(x.get_name()) for x in self.path[1:]])
 
+    def input(self, prompt=None):
+        if not prompt:
+            prompt = self.__get_prompt()
+
+        line = six.moves.input(prompt).strip()
+
+        if line:
+            readline.remove_history_item(readline.get_current_history_length() - 1)
+
+        return line
+
     def repl(self):
         readline.parse_and_bind('tab: complete')
         readline.set_completer(self.complete)
-        readline.set_completer_delims(' \t\n`~!@#$%^&*()-=+[{]}\\|;:\',<>?')
+        readline.set_completer_delims(' \t\n`~!@#$%^&*()=+[{]}\\|;:\',<>?')
 
         self.greet()
         a = ShowUrlsCommand()
@@ -912,7 +958,7 @@ class MainLoop(object):
 
         while True:
             try:
-                line = six.moves.input(self.__get_prompt()).strip()
+                line = self.input()
             except EOFError:
                 six.print_()
                 return
@@ -921,7 +967,9 @@ class MainLoop(object):
                 output_msg(_('User terminated command'))
                 continue
 
+            output_lock.acquire()
             self.process(line)
+            output_lock.release()
 
     def find_in_scope(self, token, cwd=None):
         if not cwd:
@@ -929,6 +977,9 @@ class MainLoop(object):
 
         if token in list(self.builtin_commands.keys()):
             return self.builtin_commands[token]
+
+        if token in list(self.aliases.keys()):
+            return Alias(self.context, self.aliases[token])
 
         cwd_namespaces = cwd.namespaces()
         cwd_commands = list(cwd.commands().items())
@@ -999,6 +1050,9 @@ class MainLoop(object):
 
             if isinstance(token, UnaryExpr):
                 expr = self.eval(token.expr, env)
+                if token.op == '-':
+                    return -expr
+
                 return self.context.builtin_operators[token.op](expr)
 
             if isinstance(token, BinaryExpr):
@@ -1007,11 +1061,15 @@ class MainLoop(object):
                 return self.context.builtin_operators[token.op](left, right)
 
             if isinstance(token, Literal):
+
+                if token.type in six.string_types:
+                    return token.value.replace('\\\"', '"')
+
                 if token.type is list:
                     return [self.eval(i, env) for i in token.value]
 
                 if token.type is dict:
-                    return {k: self.eval(v, env) for k, v in token.value.items()}
+                    return {self.eval(k, env): self.eval(v, env) for k, v in token.value.items()}
 
                 return token.value
 
@@ -1036,7 +1094,7 @@ class MainLoop(object):
                 raise SyntaxError(_('{0} not found'.format(token.name)))
 
             if isinstance(token, AssignmentStatement):
-                expr = self.eval(token.expr, env)
+                expr = self.eval(token.expr, env, first=first)
 
                 try:
                     self.context.variables.variables[token.name]
@@ -1120,8 +1178,8 @@ class MainLoop(object):
                 del env[token.name]
                 return
 
-            if isinstance(token, ExpressionExpansion):
-                expr = self.eval(token.expr, env)
+            if isinstance(token, (ExpressionExpansion, CommandExpansion)):
+                expr = self.eval(token.expr, env, first=first)
                 return expr
 
             if isinstance(token, CommandCall):
@@ -1155,53 +1213,68 @@ class MainLoop(object):
 
                         path.append('..')
                         return self.eval(token, env, path=path, dry_run=dry_run)
-                    elif top == '/':
+                    elif isinstance(top, Symbol) and top.name == '/':
                         if first:
                             self.start_from_root = True
                             return self.eval(token, env, path=path, dry_run=dry_run)
 
+                    if isinstance(top, ExpressionExpansion):
+                        top = Symbol(self.eval(top, env, path=path))
+
                     if isinstance(top, Literal):
-                        top = Symbol(top.value)
-
-                    item = self.eval(top, env, path=path)
-
-                    if isinstance(item, (six.string_types, int, bool)):
-                        item = self.eval(Symbol(item), env, path=path)
-
-                    if isinstance(item, Namespace):
-                        item.on_enter()
-                        return self.eval(token, env, path=path+[item], dry_run=dry_run)
-
-                    if isinstance(item, Command):
-                        completions = item.complete(self.context)
-                        token_args = convert_to_literals(token.args)
-                        args, kwargs, opargs = expand_wildcards(
-                            self.context,
-                            *sort_args([self.eval(i, env) for i in token_args]),
-                            completions=completions
+                        matching = list(map(
+                            lambda ns: Symbol(ns.get_name()),
+                            filter(lambda ns: re.match(str(top.value), str(ns.get_name())), cwd.namespaces()))
                         )
+                    else:
+                        matching = [top]
 
-                        item.exec_path = path if len(path) >= 1 else self.path
-                        if dry_run:
-                            return item, cwd, args, kwargs, opargs
+                    resultset = Sequence()
 
-                        if isinstance(item, PipeCommand):
-                            if first:
-                                raise CommandException(_('Invalid usage.\n{0}'.format(inspect.getdoc(item))))
-                            if serialize_filter:
-                                ret = item.serialize_filter(self.context, args, kwargs, opargs)
-                                if ret is not None:
-                                    if 'filter' in ret:
-                                        serialize_filter['filter'] += ret['filter']
+                    for i in matching:
+                        item = self.eval(i, env, path=path)
 
-                                    if 'params' in ret:
-                                        serialize_filter['params'].update(ret['params'])
+                        if isinstance(item, Namespace):
+                            item.on_enter()
+                            resultset.append_flat(self.eval(token, env, path=path+[item], dry_run=dry_run))
 
-                            result = item.run(self.context, args, kwargs, opargs, input=input_data)
-                            return PrintableNone.coerce(result) if not printable_none else result
+                        if isinstance(item, Alias):
+                            resultset.append_flat(self.eval(item.ast, env, path=path)[0])
 
-                        result = item.run(self.context, args, kwargs, opargs)
-                        return PrintableNone.coerce(result) if not printable_none else result
+                        if isinstance(item, Command):
+                            completions = item.complete(self.context)
+                            token_args = convert_to_literals(token.args)
+                            args, kwargs, opargs = expand_wildcards(
+                                self.context,
+                                *sort_args([self.eval(i, env) for i in token_args]),
+                                completions=completions
+                            )
+
+                            item.exec_path = path if len(path) >= 1 else self.path
+                            item.current_env = env
+                            if dry_run:
+                                resultset.append((item, cwd, args, kwargs, opargs))
+                                continue
+
+                            if isinstance(item, PipeCommand):
+                                if first:
+                                    raise CommandException(_('Invalid usage.\n{0}'.format(inspect.getdoc(item))))
+                                if serialize_filter:
+                                    ret = item.serialize_filter(self.context, args, kwargs, opargs)
+                                    if ret is not None:
+                                        if 'filter' in ret:
+                                            serialize_filter['filter'] += ret['filter']
+
+                                        if 'params' in ret:
+                                            serialize_filter['params'].update(ret['params'])
+
+                                result = item.run(self.context, args, kwargs, opargs, input=input_data)
+                                resultset.append(PrintableNone.coerce(result) if not printable_none else result)
+
+                            result = item.run(self.context, args, kwargs, opargs)
+                            resultset.append(PrintableNone.coerce(result) if not printable_none else result)
+
+                    return resultset.unwind(dry_run)
                 except BaseException as err:
                     success = False
                     raise err
@@ -1218,7 +1291,9 @@ class MainLoop(object):
                     if isinstance(func, Environment.Variable):
                         func = func.value
 
-                    self.context.call_stack.append(CallStackEntry(func.name, args, token.file, token.line, token.column))
+                    self.context.call_stack.append(
+                        CallStackEntry(func.name, args, token.file, token.line, token.column)
+                    )
                     result = func(*args)
                     self.context.call_stack.pop()
                     return result
@@ -1243,26 +1318,39 @@ class MainLoop(object):
                     self.eval(token.right, env, path, serialize_filter=serialize_filter)
                     return
 
-                cmd, cwd, args, kwargs, opargs = self.eval(token.left, env, path, dry_run=True, first=first)
-                cwd.on_enter()
-                self.context.pipe_cwd = cwd
-                if isinstance(cmd, FilteringCommand):
-                    # Do serialize_filter pass
-                    filt = {"filter": [], "params": {}}
-                    self.eval(token.right, env, path, serialize_filter=filt)
-                    result = cmd.run(self.context, args, kwargs, opargs, filtering=filt)
-                elif isinstance(cmd, PipeCommand):
-                    result = cmd.run(self.context, args, kwargs, opargs, input=input_data)
-                else:
-                    result = cmd.run(self.context, args, kwargs, opargs)
+                cmds = self.eval(token.left, env, path, dry_run=True, first=first)
+                resultset = Sequence()
 
-                result = PrintableNone.coerce(result)
-                ret = self.eval(token.right, input_data=result)
-                self.context.pipe_cwd = None
-                if ret is None:
-                    return result
-                else:
-                    return ret
+                for cmd, cwd, args, kwargs, opargs in cmds:
+                    cwd.on_enter()
+                    self.context.pipe_cwd = cwd
+                    if isinstance(cmd, FilteringCommand):
+                        # Do serialize_filter pass
+                        filt = {"filter": [], "params": {}}
+                        self.eval(token.right, env, path, serialize_filter=filt)
+                        result = cmd.run(self.context, args, kwargs, opargs, filtering=filt)
+                    elif isinstance(cmd, PipeCommand):
+                        result = cmd.run(self.context, args, kwargs, opargs, input=input_data)
+                    else:
+                        result = cmd.run(self.context, args, kwargs, opargs)
+
+                    result = PrintableNone.coerce(result)
+                    if result is not None:
+                        ret = self.eval(token.right, input_data=result)
+                        resultset.append(ret)
+                    else:
+                        resultset.append(result)
+
+                    self.context.pipe_cwd = None
+
+                return resultset.unwind()
+
+            if isinstance(token, ShellEscape):
+                return self.builtin_commands['shell'].run(
+                    self.context,
+                    [self.eval(t) for t in convert_to_literals(token.args)],
+                    {}, {}
+                )
 
             if isinstance(token, Redirection):
                 with open(token.path, 'a+') as f:
@@ -1275,15 +1363,10 @@ class MainLoop(object):
         except BaseException as err:
             raise err
 
-        raise SyntaxError("Unknown AST token: {0}".format(token))
+        raise SyntaxError("Invalid syntax: {0}".format(token))
 
     def process(self, line):
         if len(line) == 0:
-            return
-
-        if line[0] == '!':
-            self.builtin_commands['shell'].run(
-                self.context, [line[1:]], {}, {})
             return
 
         if line == '-':
@@ -1293,13 +1376,25 @@ class MainLoop(object):
             return
 
         try:
-            tokens = parse(line, '<stdin>')
+            try:
+                tokens = parse(line, '<stdin>')
+            except KeyboardInterrupt:
+                return
+
             if not tokens:
                 return
+
+            # Unparse AST to string and add to readline history and history file
+            line = '; '.join(unparse(t, oneliner=True) for t in tokens)
+            readline.add_history(line)
+
+            with open(os.path.expanduser('~/.cli_history'), 'a') as history_file:
+                history_file.write('\n'+line)
 
             first = True
             for i in tokens:
                 try:
+                    self.context.call_stack = []
                     ret = self.eval(i, first=first, printable_none=True)
                     first = False
                 except SystemExit as err:
@@ -1425,6 +1520,10 @@ class MainLoop(object):
                     choices = [str(i.get_name()) for i in obj.namespaces()]
                     choices += obj.commands().keys()
                     choices += builtin_command_set + ['..', '/', '-']
+
+                    if text.startswith('/') and isinstance(obj, RootNamespace):
+                        choices = ['/' + i for i in choices]
+
                     append_space = True
                 elif issubclass(type(obj), Command):
                     completions = obj.complete(self.context)
@@ -1451,7 +1550,9 @@ class MainLoop(object):
                 if options:
                     return options[0]
             except BaseException as err:
-                output_msg_locked(str(err))
+                output_msg(str(err))
+                if self.context.variables.get('debug'):
+                    output_msg(traceback.format_exc())
         else:
             if self.saved_state:
                 if state < len(self.saved_state):
@@ -1493,7 +1594,10 @@ def main():
             # not there no probs or cannot make this symlink move on
             pass
 
-    parser = argparse.ArgumentParser()
+    if os.environ.get('FREENAS_SYSTEM'):
+        parser = argparse.ArgumentParser(prog="cli")
+    else:
+        parser = argparse.ArgumentParser()
     parser.add_argument('uri', metavar='URI', nargs='?',
                         default='unix:')
     parser.add_argument('-m', metavar='MIDDLEWARECONFIG',
@@ -1567,6 +1671,7 @@ def main():
         return
 
     if args.f:
+        context.wait_entity_subscribers()
         try:
             f = sys.stdin if args.f == '-' else open(args.f)
             for line in f:
@@ -1578,6 +1683,15 @@ def main():
             sys.exit(1)
 
         return
+
+    try:
+        with open(os.path.expanduser('~/.cli_history'), 'r') as history_file:
+            history_list = history_file.read().splitlines()
+            history_list = history_list[-1000:]
+            for line in history_list:
+                readline.add_history(line)
+    except FileNotFoundError:
+        pass
 
     cli_rc_paths = ['/usr/local/etc/clirc', os.path.expanduser('~/.clirc')]
     for path in cli_rc_paths:

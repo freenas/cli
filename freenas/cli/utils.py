@@ -27,14 +27,16 @@
 
 import os
 import re
+import copy
 import tempfile
 import platform
 import ipaddress
 import gettext
 import signal
-from datetime import timedelta
-from freenas.cli import output
-from freenas.utils import to_timedelta
+import dateutil.tz
+from freenas.cli import config
+from datetime import timedelta, datetime
+
 
 t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
@@ -107,18 +109,65 @@ def iterate_vdevs(topology):
                     yield subvdev
 
 
-def post_save(this, status):
+def errors_by_path(errors, path):
+    for i in errors:
+        if i['path'][:len(path)] == path:
+            ret = copy.deepcopy(i)
+            del ret['path'][:len(path)]
+            yield ret
+
+
+def print_validation_errors(namespace, task):
+    if hasattr(namespace, 'parent'):
+        ns = namespace.parent
+    else:
+        ns = namespace
+
+    from freenas.cli.namespace import SingleItemNamespace, ConfigNamespace
+
+    if isinstance(namespace, SingleItemNamespace):
+        if task['name'] == ns.update_task:
+            # Update tasks have updated_params as second argument
+            errors = errors_by_path(task['error']['extra'], [1])
+        elif task['name'] == ns.create_task:
+            # Create tasks have object as first argument
+            errors = errors_by_path(task['error']['extra'], [0])
+        else:
+            return
+    elif isinstance(namespace, ConfigNamespace):
+        if task['name'] == ns.update_task:
+            errors = errors_by_path(task['error']['extra'], [0])
+        else:
+            return
+    else:
+        return
+
+    for i in errors:
+        pathname = '.'.join(str(i) for i in i['path'])
+        property = namespace.get_mapping_by_field(pathname)
+        config.instance.output_queue.put(_("Task #{0} validation error: {1}: {2}".format(
+            task['id'],
+            property.name if property else pathname,
+            i['message']
+        )))
+
+
+def post_save(this, status, task):
     """
     Generic post-save callback for EntityNamespaces
     """
     if status == 'FINISHED':
         this.saved = True
 
+    if status == 'FAILED':
+        this.entity = copy.deepcopy(this.orig_entity)
+        if task['error']['type'] == 'ValidationException':
+            print_validation_errors(this, task)
+
     if status in ['FINISHED', 'FAILED', 'ABORTED', 'CANCELLED']:
         this.modified = False
         this.load()
         this.update_commands()
-        output.refresh_prompt()
 
 
 def to_list(item):
@@ -170,7 +219,7 @@ def netmask_to_cidr(entity, netmask):
     elif netmask.isdigit():
         cidr = int(netmask)
 
-    if not (0 <= cidr <= 32):
+    if not (0 <= cidr <= 128):
         raise ValueError(_("Invalid netmask: {0}".format(netmask)))
 
     entity['netmask'] = cidr
@@ -178,10 +227,25 @@ def netmask_to_cidr(entity, netmask):
 
 def parse_timedelta(s):
     delta = timedelta()
-    for i in re.findall(r'(\d+[smhd])', s):
-        delta += to_timedelta(i)
+    time = re.split('[:.]+', s)
+
+    if len(time) == 2:
+        hr, min = time
+        sec = 0
+    else:
+        hr, min, sec = time
+
+    sec_delta = int(hr) * 60 * 60 + int(min) * 60 + int(sec)
+    sec_delta += get_localtime_offset()
+    delta += timedelta(seconds=sec_delta)
 
     return delta
+
+
+def get_localtime_offset():
+    localtz = dateutil.tz.tzlocal()
+    localoffset = localtz.utcoffset(datetime.now(localtz))
+    return localoffset.total_seconds()
 
 
 class PrintableNone(object):

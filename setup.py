@@ -27,7 +27,6 @@ import platform
 import sys
 from setuptools import setup, find_packages
 
-
 dependency_links = []
 install_requires = [
     'freenas.utils',
@@ -59,13 +58,6 @@ elif platform.system() == 'Windows':
     install_requires.append('pyreadline')
 
 
-# Generate parser
-try:
-    from freenas.cli import parser
-except ImportError as err:
-    raise err
-
-
 setup(
     name='freenas.cli',
     url='http://github.com/freenas/middleware',
@@ -84,11 +76,18 @@ setup(
     ],
     install_requires=install_requires,
     dependency_links=dependency_links,
-    entry_points = {
+    entry_points={
         'console_scripts': [
             'freenas-cli = freenas.cli.repl:main',
         ],
     },
     setup_requires=['freenas.utils', 'six', 'ply'],
+    include_package_data=True,
     use_freenas=True,
 )
+
+# Generate parser
+try:
+    from freenas.cli import parser
+except ImportError as err:
+    raise err

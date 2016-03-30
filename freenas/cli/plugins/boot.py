@@ -29,7 +29,7 @@
 import gettext
 from freenas.cli.namespace import (
     Namespace, EntityNamespace, Command, RpcBasedLoadMixin,
-    IndexCommand, description, CommandException
+    description, CommandException
 )
 from freenas.cli.utils import iterate_vdevs, post_save, correct_disk_path
 from freenas.cli.output import ValueType, Table, output_msg
@@ -53,39 +53,35 @@ class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
         self.required_props = ['name']
 
         self.localdoc['CreateEntityCommand'] = ("""\
-            Usage: create name=<bootenv name>
+            Usage: create <bootenv name>
 
             Example: create mybootenv
 
-            Creates a boot environment""")
+            Create a boot environment.""")
 
         self.entity_localdoc['SetEntityCommand'] = ("""\
             Usage: set name=<newname>
 
             Example: set name=mybootenv
 
-            Set the name of the current boot environment""")
+            Edit the name of the specified boot environment.""")
         self.localdoc['DeleteEntityCommand'] = ("""\
             Usage: delete <bootenv name>
 
             Example: delete mybootenv
 
-            Deletes a boot environment.""")
+            Delete the specified boot environment. This command will
+            fail if the boot environment is active.""")
         self.localdoc['ListCommand'] = ("""\
             Usage: show
 
-            Lists boot environments, optionally doing filtering and sorting.
+            Lists boot environments.
 
             Examples:
                 show
                 show | search name == default
                 show | search active == no
                 show | search name~="FreeNAS" | sort name""")
-
-        self.skeleton_entity = {
-            'name': None,
-            'realname': None
-        }
 
         self.add_property(
             descr='Name',
@@ -135,18 +131,24 @@ class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
             set=None,
             )
 
-        self.add_property(
-            descr='Mount point',
-            name='mountpoint',
-            get='mountpoint',
-            list=False,
-            set=None,
-            )
+#        self.add_property(
+#            descr='Mount point',
+#            name='mountpoint',
+#            get='mountpoint',
+#            usage=_("""
+#            Read-only value indicating the amount of space used
+#            by the boot environment."""),
+#            list=False,
+#            set=None,
+#            )
 
         self.add_property(
             descr='Space used',
             name='space',
             get='space',
+            usage=_("""
+            Read-only value indicating how much space the boot
+            environment occupies."""),
             list=True,
             set=None,
             )
@@ -155,6 +157,9 @@ class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
             descr='Date created',
             name='created',
             get='created',
+            usage=_("""
+            Read-only timestamp indicating when the boot
+            environment was created."""),
             list=True,
             set=None,
             )
@@ -174,26 +179,31 @@ class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
             self.query_call, [('id', '=', name)], {'single': True}
         )
 
-    def delete(self, name, kwargs):
-        self.context.submit_task('boot.environment.delete', [name])
+    def delete(self, this, kwargs):
+        self.context.submit_task('boot.environment.delete', this.entity['id'])
 
     def save(self, this, new=False):
         if new:
             self.context.submit_task(
-                'boot.environment.create',
+                'boot.environment.clone',
                 this.entity['id'],
-                callback=lambda s: post_save(this, s),
+                callback=lambda s, t: post_save(this, s, t),
                 )
         else:
-            return
+            self.context.submit_task(
+                'boot.environment.update',
+                this.orig_entity['id'],
+                this.get_diff(),
+                callback=lambda s, t: post_save(this, s, t)
+                )
 
 
 @description("Rename a boot environment")
 class RenameBootEnvCommand(Command):
     """
-    Usage: rename
+    Usage: rename <newname>
 
-    Renames the current boot environment.
+    Rename the boot environment.
     """
     def __init__(self, parent):
         self.parent = parent
@@ -205,15 +215,9 @@ class RenameBootEnvCommand(Command):
             raise CommandException('Please provide a target name for the renaming')
         entity = self.parent.entity
         name_property = self.parent.get_mapping('name')
-        old_be = entity['id']
         name_property.do_set(entity, new_be_name)
         self.parent.modified = True
-        context.submit_task(
-            'boot.environment.rename',
-            old_be,
-            new_be_name,
-            callback=lambda s: post_save(self.parent, s)
-        )
+        self.parent.save()
 
 
 @description("Activate a boot environment")
@@ -221,7 +225,7 @@ class ActivateBootEnvCommand(Command):
     """
     Usage: activate
 
-    Activates the current boot environment
+    Activate the specified boot environment.
     """
     def __init__(self, parent):
         self.parent = parent
@@ -230,7 +234,7 @@ class ActivateBootEnvCommand(Command):
         context.submit_task(
             'boot.environment.activate',
             self.parent.entity['id'],
-            callback=lambda s: post_save(self.parent, s))
+            callback=lambda s, t: post_save(self.parent, s, t))
 
 
 @description("Manage devices in boot pool")
@@ -244,11 +248,19 @@ class BootPoolNamespace(Namespace):
 
     def commands(self):
         return {
-            '?': IndexCommand(self),
             'show_disks': BootPoolShowDisksCommand(),
             'attach_disk': BootPoolAttachDiskCommand(),
             'detach_disk': BootPoolDetachDiskCommand(),
         }
+
+
+@description("Shows boot pool summary")
+class BootPoolShowCommand(Command):
+    """
+    Usage: show
+    """
+    def run(self, context, args, kwargs, opargs):
+        pass
 
 
 @description("List the devices in the boot pool")
@@ -256,7 +268,7 @@ class BootPoolShowDisksCommand(Command):
     """
     Usage: show_disks
 
-    List the device\(s\) in the boot pool and display
+    List the device(s) in the boot pool and display
     the status of the boot pool.
     """
 
@@ -276,7 +288,7 @@ class BootPoolAttachDiskCommand(Command):
 
     Example: attach_disk ada1
 
-    Attaches the specified device\(s\) to the boot pool,
+    Attach the specified device(s) to the boot pool,
     creating an N-way mirror where N is the total number
     of devices in the pool. The command will fail if a
     device is smaller than the smallest device already in
@@ -310,19 +322,21 @@ class BootPoolDetachDiskCommand(Command):
 
     Example: detach_disk ada1
 
-    Detaches the specified device\(s\) from the boot pool,
+    Detach the specified device(s) from the boot pool,
     reducing the number of devices in the N-way mirror. If
     only one device remains, it has no redundancy. At least
     one device must remain in the pool.
     """
     def run(self, context, args, kwargs, opargs):
+        if not args:
+            raise CommandException("detach_disk requires more arguments.\n{0}".format(inspect.getdoc(self)))
         disk = args.pop(0)
         disk = correct_disk_path(disk)
         context.submit_task('boot.detach_disk', disk)
         return
 
 
-@description("Boot management")
+@description("Manage boot environments and the boot pool")
 class BootNamespace(Namespace):
     """
     The boot namespace provides commands for listing and managing
@@ -331,11 +345,6 @@ class BootNamespace(Namespace):
     def __init__(self, name, context):
         super(BootNamespace, self).__init__(name)
         self.context = context
-
-    def commands(self):
-        return {
-            '?': IndexCommand(self)
-        }
 
     def namespaces(self):
         return [

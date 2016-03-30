@@ -1,0 +1,164 @@
+#
+# poorly made snake game clone
+#
+# keys:
+# - w, s, a, d  - changing snake direction
+# - ^C          - exit
+#
+
+function wonsz()
+{
+    width = 40
+    height = 20
+    worm_initial_length = 5
+    worm_position = []
+    apple_position = none
+    score = 0
+    direction = "right"
+    exiting = false
+
+    function clear()
+    {
+        printf("\033[2J\033[0;0H")
+    }
+
+    function draw_scene()
+    {
+        clear()
+        printf("\n")
+        printf("Score: %d\n", score)
+        printf("\n")
+        printf(".%s.\n", "-" * width)
+        for (i in range(0, height)) {
+            printf("|%s|\n", " " * width)
+        }
+        printf("'%s'\n", "-" * width);
+    }
+
+    function draw_block(x, y, ch)
+    {
+        printf("\033[%d;%dH%s", y + 4, x + 1, ch)
+    }
+
+    function draw_worm()
+    {
+        map(worm_position, function(i) {
+            draw_block(i["x"], i["y"], "#")
+        });
+    }
+
+    function draw_apple()
+    {
+        draw_block(apple_position["x"], apple_position["y"], "@")
+    }
+
+    function draw()
+    {
+        if (exiting) {
+            clear()
+            printf("Game over! Your score: %d", score)
+            return
+        }
+
+        advance_worm(direction)
+        draw_scene()
+        draw_worm()
+        draw_apple()
+        setinterval(100, draw)
+    }
+
+    function seed_worm()
+    {
+        startx = rand(0, width - 1 - worm_initial_length)
+        starty = rand(0, height - 1)
+
+        resize(worm_position, worm_initial_length)
+
+        for (i in range(0, worm_initial_length)) {
+            worm_position[i] = {"x": startx + i, "y": starty}
+        }
+    }
+
+    function seed_apple()
+    {
+        apple_position = {
+            "x": rand(1, width - 1),
+            "y": rand(1, height - 1)
+        }
+    }
+
+    function advance_worm(direction)
+    {
+        last = worm_position[length(worm_position) - 1]
+        x = last["x"]
+        y = last["y"]
+
+        if (direction == "right") {
+            x = x + 1
+        }
+
+        if (direction == "left") {
+            x = x - 1
+        }
+
+        if (direction == "up") {
+            y = y - 1
+        }
+
+        if (direction == "down") {
+            y = y + 1
+        }
+
+        if (x <= 0 or y <= 0 or x > width or y > height) {
+            exiting = true
+            return
+        }
+
+        if (check_collision(x, y, worm_position)) {
+            exiting = true
+            return
+        }
+
+        ax = apple_position["x"]
+        ay = apple_position["y"]
+
+        if (x == ax and y == ay) {
+            score = score + 1
+            seed_apple()
+        } else {
+            shift(worm_position)
+        }
+
+        append(worm_position, {"x": x, "y": y})
+    }
+
+    function check_collision(x, y, array)
+    {
+        for (i in array) {
+            if ((i["x"] == x) and (i["y"] == y)) {
+                return true
+            }
+        }
+
+        return false
+    }
+
+    function mainloop()
+    {
+        while (not exiting) {
+            c = readkey()
+            if (c == none) { exiting = true; return; }
+            if (c == "w" and direction != "down") { direction = "up" }
+            if (c == "s" and direction != "up") { direction = "down" }
+            if (c == "d" and direction != "left") { direction = "right" }
+            if (c == "a" and direction != "right") { direction = "left" }
+        }
+    }
+
+    seed_worm()
+    seed_apple()
+    setinterval(100, draw)
+    mainloop()
+}
+
+wonsz()

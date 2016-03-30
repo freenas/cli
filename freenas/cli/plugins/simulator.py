@@ -57,7 +57,8 @@ class DisksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
                 create mydisk mediasize=1T rpm=7200 vendor=Quantum model=Fireball
                 create mydisk mediasize=150G rpm=SSD
 
-            Creates a simulated disk for testing. For a list of properties, see 'help properties'.""")
+            Creates a simulated disk for testing. For a list of
+            properties, see 'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] =  ("""\
             Usage: set <property>=<value> ...
 
@@ -66,7 +67,8 @@ class DisksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
                       set mediasize=30G
                       set rpm=15000
 
-            Sets a simulated disk property. For a list of properties, see 'help properties'.""")
+            Sets a simulated disk property. For a list of
+            properties, see 'help properties'.""")
         self.localdoc['DeleteEntityCommand'] = ("""\
             Usage: delete <name>
 
@@ -78,6 +80,8 @@ class DisksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
         self.add_property(
             descr='Disk name',
             name='name',
+            usage=_("""
+            Mandatory. Name of simulated disk."""),
             get='id',
             list=True
         )
@@ -92,6 +96,9 @@ class DisksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
         self.add_property(
             descr='Online',
             name='online',
+            usage=_("""
+            Can be set to yes or no. When set to yes,
+            simulates a disk that is online."""),
             get='online',
             list=True,
             type=ValueType.BOOLEAN
@@ -100,6 +107,9 @@ class DisksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
         self.add_property(
             descr='Size',
             name='mediasize',
+            usage=_("""
+            Mandatory. specify a number and the alphabetic
+            value. For example, 20G sets a size of 20GiB."""),
             get='mediasize',
             list=True,
             type=ValueType.SIZE
@@ -108,6 +118,8 @@ class DisksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
         self.add_property(
             descr='Serial number',
             name='serial',
+            usage=_("""
+            Optional alphanumeric value."""),
             get='serial',
             list=False
         )
@@ -115,6 +127,9 @@ class DisksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
         self.add_property(
             descr='Vendor name',
             name='vendor',
+            usage=_("""
+            Optional name. It it contains a space, place it
+            within double quotes."""),
             get='vendor',
             list=True
         )
@@ -122,6 +137,9 @@ class DisksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
         self.add_property(
             descr='Model name',
             name='model',
+            usage=_("""
+            Optional model name. It it contains a space, place
+            it within double quotes."""),
             get='model',
             list=True
         )
@@ -129,6 +147,9 @@ class DisksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
         self.add_property(
             descr='RPM',
             name='rpm',
+            usage=_("""
+            Optional. Can be set to UNKNOWN, SSD, 7200, 10000,
+            or 15000."""),
             get='rpm',
             list=False,
             enum=['UNKNOWN', 'SSD', '5400', '7200', '10000', '15000']
@@ -141,16 +162,16 @@ class DisksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
             self.context.submit_task(
                 self.create_task,
                 this.entity,
-                callback=lambda s: self.post_save(this, s, new))
+                callback=lambda s, t: self.post_save(this, s, t, new))
             return
 
         self.context.submit_task(
             self.update_task,
             this.orig_entity[self.save_key_name],
             this.get_diff(),
-            callback=lambda s: self.post_save(this, s, new))
+            callback=lambda s, t: self.post_save(this, s, t, new))
 
-    def post_save(self, this, status, new):
+    def post_save(self, this, status, task, new):
         service_name = 'simulator'
         if status == 'FINISHED':
             service = self.context.call_sync('service.query', [('name', '=', service_name)], {'single': True})
@@ -159,11 +180,20 @@ class DisksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
                     action = "created"
                 else:
                     action = "updated"
-                output_msg_locked(_("Disk '{0}' has been {1} but the service '{2}' is not currently running, please enable the service with '/ service {2} config set enable=yes'".format(this.entity['id'], action, service_name)))
-        post_save(this, status)
+
+                self.context.output_queue.put(_(
+                    "Disk '{0}' has been {1} but the service '{2}' is not currently running, "
+                    "please enable the service with '/ service {2} config set enable=yes'".format(
+                        this.entity['id'],
+                        action,
+                        service_name
+                    )
+                ))
+
+        post_save(this, status, task)
 
 
-@description("Tools for simulating aspects of a NAS")
+@description("NAS simulation tools for testing")
 class SimulatorNamespace(Namespace):
     """
     The simulator namespace provides tools for simulating aspects of a NAS for testing.

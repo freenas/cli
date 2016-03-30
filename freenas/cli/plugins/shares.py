@@ -28,7 +28,7 @@
 import os
 import gettext
 from freenas.cli.namespace import (
-    EntityNamespace, Command, IndexCommand, RpcBasedLoadMixin,
+    EntityNamespace, Command, RpcBasedLoadMixin,
     EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, description,
     CommandException, ListCommand
 )
@@ -79,12 +79,17 @@ class ImportShareCommand(Command):
             path,
             name,
             self.parent.type_name.lower(),
-            callback=lambda s: post_save(self.parent, s)
+            callback=lambda s, t: post_save(self.parent, s, t)
         )
 
 
 @description("Configure and manage shares")
 class SharesNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
+    """
+    The share namespace contains the namespaces
+    for managing afp, iscsi, nfs, smb, and webdav
+    shares.
+    """
     def __init__(self, name, context):
         super(SharesNamespace, self).__init__(name, context)
         self.context = context
@@ -153,7 +158,6 @@ class SharesNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
 
     def commands(self):
         return {
-            '?': IndexCommand(self),
             'show': ListCommand(self),
         }
 
@@ -197,7 +201,10 @@ class BaseSharesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, En
 
         self.skeleton_entity = {
             'type': type_name,
-            'properties': {}
+            'enabled': True,
+            'properties': {
+                'type': 'share-{0}'.format(type_name)
+            }
         }
 
         self.add_property(
@@ -300,16 +307,16 @@ class BaseSharesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, En
             self.context.submit_task(
                 self.create_task,
                 this.entity,
-                callback=lambda s: self.post_save(this, s, new))
+                callback=lambda s, t: self.post_save(this, s, t, new))
             return
 
         self.context.submit_task(
             self.update_task,
             this.orig_entity[self.save_key_name],
             this.get_diff(),
-            callback=lambda s: self.post_save(this, s, new))
+            callback=lambda s, t: self.post_save(this, s, t, new))
 
-    def post_save(self, this, status, new):
+    def post_save(self, this, status, task, new):
         if status == 'FINISHED':
             service = self.context.call_sync('service.query', [('name', '=', self.type_name)], {'single': True})
             if service['state'] != 'RUNNING':
@@ -317,8 +324,17 @@ class BaseSharesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, En
                     action = "created"
                 else:
                     action = "updated"
-                output_msg_locked(_("Share '{0}' has been {1} but the service '{2}' is not currently running, please enable the service with '/ service {2} config set enable=yes'".format(this.entity[self.primary_key_name], action, self.type_name)))
-        post_save(this, status)
+
+                self.context.output_queue.put(_(
+                    "Share '{0}' has been {1} but the service '{2}' is not currently "
+                    "running, please enable the service with '/ service {2} config set enable=yes'".format(
+                        this.entity[self.primary_key_name],
+                        action,
+                        self.type_name
+                    )
+                ))
+                
+        post_save(this, status, task)
 
 
 @description("NFS shares")
@@ -336,7 +352,8 @@ class NFSSharesNamespace(BaseSharesNamespace):
                 create myshare target=mypool/somedataset
                 create myshare path="/mnt/mypool/some/directory/"
 
-            Creates an NFS share. For a list of properties, see 'help properties'.""")
+            Creates an NFS share. For a list of properties, see 'help
+            properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
             Usage: set <property>=<value> ...
 
@@ -345,11 +362,15 @@ class NFSSharesNamespace(BaseSharesNamespace):
                       set root_user=myuser
                       set hosts=192.168.1.1, somehost.local
 
-            Sets an NFS share property. For a list of properties, see 'help properties'.""")
+            Sets an NFS share property. For a list of properties, see
+            'help properties'.""")
 
         self.add_property(
             descr='All directories',
             name='alldirs',
+            usage=_("""
+            Can be set to yes or no. When set to yes, the NFS client
+            can mount any subdirectory within the 'path'."""),
             get='properties.alldirs',
             list=True,
             type=ValueType.BOOLEAN
@@ -358,6 +379,9 @@ class NFSSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Read only',
             name='read_only',
+            usage=_("""
+            Can be set to yes or no. When set to yes, NFS clients are
+            prohibited from writing to the share."""),
             get='properties.read_only',
             list=True,
             type=ValueType.BOOLEAN
@@ -366,6 +390,10 @@ class NFSSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Root user',
             name='root_user',
+            usage=_("""
+            If set, the root user is limited to the specified user’s
+            permissions. This setting prevents 'all_user' from being
+            set."""),
             get='properties.maproot_user',
             list=False
         )
@@ -373,6 +401,10 @@ class NFSSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Root group',
             name='root_group',
+            usage=_("""
+            If set, the root user is limited to the specified group’s
+            permissions. This setting prevents 'all_group' from being
+            set."""),
             get='properties.maproot_group',
             list=False
         )
@@ -380,6 +412,10 @@ class NFSSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='All user',
             name='all_user',
+            usage=_("""
+            If set, the specified user’s permissions are used by all
+            NFS clients. This setting prevents 'root_user' from being
+            set."""),
             get='properties.mapall_user',
             list=False
         )
@@ -387,6 +423,10 @@ class NFSSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='All group',
             name='all_group',
+            usage=_("""
+            If set, the specified group’s permissions are used by all
+            NFS clients. This setting prevents root_group' from being
+            set."""),
             get='properties.mapall_group',
             list=False
         )
@@ -394,6 +434,9 @@ class NFSSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Allowed hosts/networks',
             name='hosts',
+            usage=_("""
+            Space delimited list of allowed IP addresses or hostnames,
+            enclosed between double quotes."""),
             get='properties.hosts',
             list=False,
             type=ValueType.SET
@@ -402,6 +445,11 @@ class NFSSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Security',
             name='security',
+            usage=_("""
+            Allowed values are sys, krb5 (Kerberos authentication only),
+            krb5i (Kerberos authentication and integrity), and krb5p
+            (Kerberos authentication and privacy). Requires 'v4' to be
+            set in services/nfs."""),
             get='properties.security',
             list=True,
             type=ValueType.SET
@@ -423,7 +471,8 @@ class AFPSharesNamespace(BaseSharesNamespace):
                 create myshare target=mypool/somedataset
                 create myshare path="/mnt/mypool/some/directory/"
 
-            Creates an AFP share. For a list of properties, see 'help properties'.""")
+            Creates an AFP share. For a list of properties, see 'help
+            properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
             Usage: set <property>=<value> ...
 
@@ -432,11 +481,16 @@ class AFPSharesNamespace(BaseSharesNamespace):
                       set users_allow=myuser, anotheruser
                       set hosts_allow=192.168.1.1, somehost.local
 
-            Sets an AFP share property. For a list of properties, see 'help properties'.""")
+            Sets an AFP share property. For a list of properties, see
+            'help properties'.""")
 
         self.add_property(
             descr='Allowed hosts/networks',
             name='hosts_allow',
+            usage=_("""
+            Space delimited list, enclosed within double quotes, of
+            allowed hostnames or IP addresses. Note that setting this
+            property will deny any host/IP that is not specified."""),
             get='properties.hosts_allow',
             list=False,
             type=ValueType.SET
@@ -445,6 +499,10 @@ class AFPSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Denied hosts/networks',
             name='hosts_deny',
+            usage=_("""
+            Space delimited list, enclosed within double quotes, of
+            denied hostnames or IP addresses. Note that setting this
+            property will allow any host/IP that is not specified."""),
             get='properties.hosts_deny',
             list=False,
             type=ValueType.SET
@@ -453,6 +511,11 @@ class AFPSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Allowed users/groups',
             name='users_allow',
+            usage=_("""
+            Space delimited list, enclosed within double quotes, of
+            allowed users and/or groups, where groupname begins with a
+            @. Note that setting this property will deny any user/group
+            that is not specified."""),
             get='properties.users_allow',
             list=False,
             type=ValueType.SET
@@ -461,6 +524,11 @@ class AFPSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Denied users/groups',
             name='users_deny',
+            usage=_("""
+            Space delimited list, enclosed within double quotes, of
+            denied users and/or groups, where groupname begins with a
+            @. Note that setting this property will allow any user/group
+            that is not specified."""),
             get='properties.users_deny',
             list=False,
             type=ValueType.SET
@@ -477,6 +545,10 @@ class AFPSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Time machine',
             name='time_machine',
+            usage=_("""
+            Can be set to yes or no. When set to yes, FreeNAS will
+            advertise itself as a Time Machine disk so it can be
+            found by Macs."""),
             get='properties.time_machine',
             list=True,
             type=ValueType.BOOLEAN
@@ -498,7 +570,8 @@ class SMBSharesNamespace(BaseSharesNamespace):
                 create myshare target=mypool/somedataset
                 create myshare path="/mnt/mypool/some/directory/"
 
-            Creates a SMB share. For a list of properties, see 'help properties'.""")
+            Creates a SMB share. For a list of properties, see 'help
+            properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
             Usage: set <property>=<value> ...
 
@@ -507,11 +580,16 @@ class SMBSharesNamespace(BaseSharesNamespace):
                       set browseable=true
                       set hosts_allow=192.168.1.1, somehost.local
 
-            Sets a SMB share property. For a list of properties, see 'help properties'.""")
+            Sets a SMB share property. For a list of properties, see
+            'help properties'.""")
 
         self.add_property(
             descr='Allowed hosts',
             name='hosts_allow',
+            usage=_("""
+            Space delimited list, enclosed within double quotes, of
+            allowed hostnames or IP addresses. Note that setting this
+            property will deny any host/IP that is not specified."""),
             get='properties.hosts_allow',
             list=False,
             type=ValueType.SET
@@ -520,6 +598,10 @@ class SMBSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Denied hosts',
             name='hosts_deny',
+            usage=_("""
+            Space delimited list, enclosed within double quotes, of
+            denied hostnames or IP addresses. Note that setting this
+            property will allow any host/IP that is not specified."""),
             get='properties.hosts_deny',
             list=False,
             type=ValueType.SET
@@ -528,6 +610,9 @@ class SMBSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Read only',
             name='read_only',
+            usage=_("""
+            Can be set to yes or no. When set to yes, write access to
+            the share is not allowed."""),
             get='properties.read_only',
             list=True,
             type=ValueType.BOOLEAN
@@ -536,6 +621,11 @@ class SMBSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Guest OK',
             name='guest_ok',
+            usage=_("""
+            Can be set to yes or no. When set to yes, no password is
+            required to connect to the share and all users share the
+            permissions of the guest user set by 'guest_user' in
+            service/smb."""),
             get='properties.guest_ok',
             list=True,
             type=ValueType.BOOLEAN
@@ -544,6 +634,9 @@ class SMBSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Guest only',
             name='guest_only',
+            usage=_("""
+            Can be set to yes or no. When set to yes, guest access is
+            forced for all connections."""),
             get='properties.guest_only',
             list=False,
             type=ValueType.BOOLEAN
@@ -552,6 +645,10 @@ class SMBSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Browseable',
             name='browseable',
+            usage=_("""
+            Can be set to yes or no. When set to yes, users see the
+            contents of other users’ home directories. When set to no,
+            users see only their own home directory."""),
             get='properties.browseable',
             list=False,
             type=ValueType.BOOLEAN
@@ -560,6 +657,9 @@ class SMBSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Show hidden files',
             name='show_hidden_files',
+            usage=_("""
+            Can be set to yes or no. When set to yes, filenames that
+            begin with a dot will be listed."""),
             get='properties.show_hidden_files',
             list=False,
             type=ValueType.BOOLEAN
@@ -581,18 +681,23 @@ class WebDAVSharesNamespace(BaseSharesNamespace):
                 create myshare target=mypool/somedataset
                 create myshare path="/mnt/mypool/some/directory/"
 
-            Creates WebDAV share. For a list of properties, see 'help properties'.""")
+            Creates WebDAV share. For a list of properties, see 'help
+            properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
             Usage: set <property>=<value> ...
 
             Examples: set permission=true
                       set read_only=true
 
-            Sets a WebDAV share property. For a list of properties, see 'help properties'.""")
+            Sets a WebDAV share property. For a list of properties, see
+            'help properties'.""")
 
         self.add_property(
             descr='Read only',
             name='read_only',
+            usage=_("""
+            Can be set to yes or no. When set to yes, users cannot write
+            to the share."""),
             get='properties.read_only',
             list=True,
             type=ValueType.BOOLEAN
@@ -601,6 +706,9 @@ class WebDAVSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Webdav user permission',
             name='permission',
+            usage=_("""
+            Can be set to yes or no. When set to yes, it automatically sets
+            the share’s permissions to the webdav user and group."""),
             get='properties.permission',
             list=True,
             type=ValueType.BOOLEAN
@@ -623,24 +731,30 @@ class ISCSIPortalsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespa
                 create myiscsi listen=192.168.1.10
                 create someiscsi listen=127.0.0.1,somehost.local:8888
 
-            Creates an iSCSI portal. For a list of properties, see 'help properties'.""")
+            Creates an iSCSI portal. For a list of properties, see
+            'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
             Usage: set <property>=<value> ...
 
             Examples: set discovery_auth_group=somegroup
                       set listen=hostname,127.0.0.1,192.168.1.10:8888
 
-            Sets a iSCSI portal property. For a list of properties, see 'help properties'.""")
+            Sets a iSCSI portal property. For a list of properties, see
+            'help properties'.""")
 
         self.add_property(
             descr='Portal name',
             name='name',
+            usage=_("""
+            Mandatory setting. Name of the portal."""),
             get='id'
         )
 
         self.add_property(
             descr='Discovery auth group',
             name='discovery_auth_group',
+            usage=_("""
+            Only set when using CHAP or Mutual CHAP."""),
             get='discovery_auth_group',
             type=ValueType.STRING,
         )
@@ -648,6 +762,11 @@ class ISCSIPortalsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespa
         self.add_property(
             descr='Listen addresses and ports',
             name='listen',
+            usage=_("""
+            Mandatory setting. IP address or wildcard of 0.0.0.0.
+            Separate multiple listen addresses with a space and enclose
+            between double quotes. To change the default listen port of
+            3260, add a colon and the port number after the IP address."""),
             get=self.get_portals,
             set=self.set_portals,
             type=ValueType.SET
@@ -687,14 +806,16 @@ class ISCSIAuthGroupsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityName
                 create myiscsi policy=NONE
                 create someiscsi policy=DENY
 
-            Creates an iSCSI auth group. For a list of properties, see 'help properties'.""")
+            Creates an iSCSI auth group. For a list of properties, see
+            'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
             Usage: set <property>=<value> ...
 
             Examples: set name=newname
                       set policy=CHAP
 
-            Sets a iSCSI auth group property. For a list of properties, see 'help properties'.""")
+            Sets a iSCSI auth group property. For a list of properties, see
+            'help properties'.""")
 
         self.add_property(
             descr='Portal name',
@@ -731,7 +852,8 @@ class ISCSIUsersNamespace(EntityNamespace):
                 create myiscsi secret=abcdefghijkl
                 create myiscsi secret=abcdefghijkl peer_name=peeriscsi peer_secret=mnopqrstuvwx
 
-            Creates an iSCSI auth user. For a list of properties, see 'help properties'.""")
+            Creates an iSCSI auth user. For a list of properties, see
+            'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
             Usage: set <property>=<value> ...
 
@@ -740,7 +862,8 @@ class ISCSIUsersNamespace(EntityNamespace):
                       set peer_name=newpeer
                       set peer_secret=klmnopqrstuv
 
-            Sets a iSCSI auth user property. For a list of properties, see 'help properties'.""")
+            Sets a iSCSI auth user property. For a list of properties, see
+            'help properties'.""")
 
         self.add_property(
             descr='User name',
@@ -806,7 +929,8 @@ class ISCSITargetsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespa
                 create myiscsi
                 create myiscsi description="some share" auth_group=somegroup
 
-            Creates an iSCSI target. For a list of properties, see 'help properties'.""")
+            Creates an iSCSI target. For a list of properties, see
+            'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
             Usage: set <property>=<value> ...
 
@@ -814,7 +938,8 @@ class ISCSITargetsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespa
                       set description="describe me"
                       set auth_group=group
 
-            Sets a iSCSI target property. For a list of properties, see 'help properties'.""")
+            Sets a iSCSI target property. For a list of properties, see
+            'help properties'.""")
 
         self.add_property(
             descr='Target name',
@@ -852,14 +977,16 @@ class ISCSITargetMapingNamespace(EntityNamespace):
             Examples:
                 create 12 name=myiscsi
 
-            Creates an iSCSI lun. For a list of properties, see 'help properties'.""")
+            Creates an iSCSI lun. For a list of properties, see
+            'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
             Usage: set <property>=<value> ...
 
             Examples: set name=newname
                       set number=13
 
-            Sets a iSCSI lun property. For a list of properties, see 'help properties'.""")
+            Sets a iSCSI lun property. For a list of properties, see
+            'help properties'.""")
 
         self.add_property(
             descr='LUN number',
@@ -912,7 +1039,8 @@ class ISCSISharesNamespace(BaseSharesNamespace):
                 create myiscsi target=mypool/somedataset size=3G
                 create myiscsi path="/mnt/mypool/some/directory/" size=3G
 
-            Creates an iSCSI share. For a list of properties, see 'help properties'.""")
+            Creates an iSCSI share. For a list of properties, see
+            'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
             Usage: set <property>=<value> ...
 
@@ -920,7 +1048,8 @@ class ISCSISharesNamespace(BaseSharesNamespace):
                       set block_size=256
                       set compression=gzip
 
-            Sets a iSCSI share property. For a list of properties, see 'help properties'.""")
+            Sets a iSCSI share property. For a list of properties, see
+            'help properties'.""")
 
         self.add_property(
             descr='Serial number',

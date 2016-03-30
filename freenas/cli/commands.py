@@ -40,7 +40,7 @@ from freenas.cli.parser import parse, unparse
 from freenas.cli.complete import NullComplete, EnumComplete
 from freenas.cli.namespace import (
     Command, PipeCommand, CommandException, description,
-    SingleItemNamespace, Namespace
+    SingleItemNamespace, Namespace, FilteringCommand
 )
 from freenas.cli.output import (
     Table, ValueType, output_msg, output_lock, output_less, format_value,
@@ -74,20 +74,20 @@ def create_variable_completer(name, var):
     return NullComplete(name + '=')
 
 
-@description("Sets variable value")
+@description("Set environment variable value")
 class SetenvCommand(Command):
 
     """
-    Set value of environment variable. Use printenv to display
-    available variables and their current values.
-
-    If the value contains any non-alphanumeric characters,
-    enclose it between double quotes.
-
     Usage: setenv <variable>=<value>
 
     Example: setenv debug=yes
              setenv prompt="{path}>"
+
+    Set value of environment variable. Use 'printenv' to display
+    available variables and their current values.
+
+    If the value contains any non-alphanumeric characters,
+    enclose it between double quotes.
     """
 
     def run(self, context, args, kwargs, opargs):
@@ -101,23 +101,25 @@ class SetenvCommand(Command):
             ))
 
         for k, v in list(kwargs.items()):
+            context.variables.verify(k, v)
             context.variables.set(k, v)
 
     def complete(self, context):
         return [create_variable_completer(k, v) for k, v in context.variables.get_all()]
 
 
-@description("Prints variable value")
+@description("Print environment variable values")
 class PrintenvCommand(Command):
 
     """
-    Either print a list of all environment variables and their values
-    or the value of the specified environment variable.
 
     Usage: printenv <variable>
 
     Example: printenv
              printenv timeout
+
+    Print a list of all environment variables and their values
+    or the value of the specified environment variable.
     """
 
     def run(self, context, args, kwargs, opargs):
@@ -128,10 +130,10 @@ class PrintenvCommand(Command):
             var_dict_list = []
             for k, v in context.variables.get_all_printable():
                 var_dict = {
-                        'varname': k,
-                        'vardescr': context.variables.variable_doc[k],
-                        'varvalue': v,
-                        }
+                    'varname': k,
+                    'vardescr': context.variables.variable_doc[k],
+                    'varvalue': v,
+                }
                 var_dict_list.append(var_dict)
             return Table(var_dict_list, [
                 Table.Column('Variable', 'varname', ValueType.STRING),
@@ -150,20 +152,20 @@ class PrintenvCommand(Command):
         return [create_variable_completer(k, v) for k, v in context.variables.get_all()]
 
 
-@description("Saves the Environment Variables to cli config file")
+@description("Save environment variables to CLI configuration file")
 class SaveenvCommand(Command):
 
     """
-    Save the current set of environment variables to either the specified filename
-    or, when not specified, to "/.freenascli.conf". To start the CLI with the saved
-    variables, type "cli -c filename" from either shell or an SSH session.
-    
     Usage: saveenv
            saveenv <filename>
 
     Examples:
            saveenv
-           saveenv /root/myclisave.conf
+           saveenv "/root/myclisave.conf"
+
+    Save the current set of environment variables to either the specified filename
+    or, when not specified, to "~/.freenascli.conf". To start the CLI with the saved
+    variables, type "cli -c filename" from the shell or an SSH session.
     """
 
     def run(self, context, args, kwargs, opargs):
@@ -181,19 +183,67 @@ class SaveenvCommand(Command):
             ))
 
 
-@description("Spawns shell, enter \"!shell\" (example: \"!sh\")")
+@description("Create aliases for commonly used commands")
+class AliasCommand(Command):
+
+    """
+    Usage: alias name="CLI command"
+           alias
+
+    Example:
+           alias us="account user show"
+
+    Map a shortcut to the specified CLI command. You can create an alias for
+    anything you can type within the CLI. Once the alias is created, type
+    its name to run its associated command. When run without any arguments,
+    displays any defined aliases.
+    """
+
+    def run(self, context, args, kwargs, opargs):
+        if not kwargs:
+            data = [{'label': k, 'value': v} for k, v in context.ml.aliases.items()]
+            return Table(data, [
+                Table.Column('Alias name', 'label'),
+                Table.Column('Alias value', 'value')
+            ])
+
+        for name, value in kwargs.items():
+            context.ml.aliases[name] = value
+
+
+@description("Remove previously defined alias")
+class UnaliasCommand(Command):
+
+    """
+    Usage: unalias <name>
+
+    Example:
+           unalias us
+
+    Remove the specified, previously defined alias. Use 'alias' to
+    list the defined aliases.
+    """
+
+    def run(self, context, args, kwargs, opargs):
+        for name in args:
+            if name in context.ml.aliases:
+                del context.ml.aliases[name]
+
+
+@description("Launch shell or shell command")
 class ShellCommand(Command):
 
     """
-    Launch current logged in user's login shell. Type "exit" to return to the CLI.
-    If a command is specified, run the specified command then return to the CLI.
-    If the full path to an installed shell is specifed, launch the specified shell.
-
     Usage: shell <command>
 
     Examples:
-           shell /usr/local/bin/bash
+           shell "/usr/local/bin/bash"
            shell "tail /var/log/messages"
+
+    Launch current logged in user's login shell. Type 'exit' to return
+    to the CLI. If a command is specified, run the specified command
+    then return to the CLI. If the full path to an installed shell is
+    specifed, launch the specified shell.
     """
 
     def __init__(self):
@@ -209,7 +259,7 @@ class ShellCommand(Command):
             self.closed = True
 
         self.closed = False
-        name = args[0] if len(args) > 0 and len(args[0]) > 0 else '/bin/sh'
+        name = ' '.join(args) if len(args) > 0 else '/bin/sh'
         token = context.call_sync('shell.spawn', name)
         shell = ShellClient(context.hostname, token)
         shell.on_data(read)
@@ -232,13 +282,14 @@ class ShellCommand(Command):
             termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
 
 
-@description("Displays the active IP addresses from all configured network interface")
+@description("Display active IP addresses from all configured network interfaces")
 class ShowIpsCommand(Command):
 
     """
-    Display the IP addresses from all configured and active network interfaces.
-
     Usage: showips
+
+    Display the IP addresses from all configured and active network
+    interfaces.
     """
 
     def run(self, context, args, kwargs, opargs):
@@ -251,13 +302,13 @@ class ShowIpsCommand(Command):
         )
 
 
-@description("Displays the URLs to access the web GUI from")
+@description("Display the URLs for accessing the web GUI")
 class ShowUrlsCommand(Command):
 
     """
-    Display the URL\(s\) for accessing the web GUI.
-
     Usage: showurls
+
+    Display the URLs for accessing the web GUI.
     """
 
     def run(self, context, args, kwargs, opargs):
@@ -279,13 +330,13 @@ class ShowUrlsCommand(Command):
         )
 
 
-@description("Logs in to the server")
+@description("Login to the CLI as the specified user")
 class LoginCommand(Command):
 
     """
-    Login to the CLI as the specified user.
-
     Usage: login <username> <password>
+
+    Login to the CLI as the specified user.
     """
 
     def run(self, context, args, kwargs, opargs):
@@ -298,44 +349,38 @@ class LoginCommand(Command):
         context.login_plugins()
 
 
-@description("Exits the CLI, enter \"^D\" (ctrl+D)")
+@description("Exit the CLI")
 class ExitCommand(Command):
 
     """
-    Exit the CLI. Note that the CLI will restart if this command is run from the
-    local console. The keyboard shortcut for this command is (ctrl+d).
-
     Usage: exit
+
+    Exit the CLI. Note that the CLI will restart if this command
+    is run from the local console. The keyboard shortcut for this
+    command is (ctrl+d).
     """
 
     def run(self, context, args, kwargs, opargs):
         sys.exit(0)
 
 
-@description("Specifies the current cli session's user")
+@description("Display the current CLI user")
 class WhoamiCommand(Command):
 
     """
-    Display the current CLI user.
-
     Usage: whoami
+
+    Display the current CLI user.
     """
 
     def run(self, context, args, kwargs, opargs):
         return context.user
 
 
-@description("Provides help on commands")
+@description("Display help")
 class HelpCommand(Command):
 
     """
-    Provide general usage information for current namespace. Alternately,
-    provide usage information for specified command or for specified
-    namespace.
-
-    To see the available properties for the current or specified namespace,
-    use 'help properties'.
-
     Usage: help
            help <command>
            help <namespace>
@@ -344,8 +389,15 @@ class HelpCommand(Command):
     Examples:
         help
         help printenv
-        help account user show
+        help account user create
         account group help properties
+
+    Provide general usage information for current namespace.
+    Alternately, provide usage information for specified
+    command or for specified namespace.
+
+    To see the available properties for the current or
+    specified namespace, use 'help properties'.
     """
 
     def run(self, context, args, kwargs, opargs):
@@ -354,31 +406,29 @@ class HelpCommand(Command):
 
         if len(arg) > 0:
             if "/" in arg:
-                output_msg(textwrap.dedent("""\
+                return textwrap.dedent("""\
                     Usage: /
                     / <namespace>
                     / <namespace> <command>
 
-                    Allows you to navigate or execute commands starting \
-                    from the root namespace"""))
-                return
+                    Allows you to navigate or execute commands starting from the root namespace""")
             elif ".." in arg:
-                output_msg(textwrap.dedent("""\
+                return textwrap.dedent("""\
                     Usage: ..
 
-                    Goes up one level of namespace"""))
-                return
+                    Goes up one level of namespace""")
             elif "-" in arg:
-                output_msg(textwrap.dedent("""\
+                return textwrap.dedent("""\
                     Usage: -
 
-                    Goes back to the previous namespace"""))
-                return
+                    Goes back to the previous namespace""")
             elif "properties" in arg:
                 # If the namespace has properties, display a list of the available properties
                 if hasattr(obj, 'property_mappings'):
                     prop_dict_list = []
                     for prop in obj.property_mappings:
+                        if prop.condition and hasattr(obj, 'entity') and not prop.condition(obj.entity):
+                            continue
                         if prop.usage:
                             prop_usage = prop.usage
                         else:
@@ -392,7 +442,7 @@ class HelpCommand(Command):
                                 prop_usage = "{0}, accepts {1} values".format(prop.descr, prop_type)
                         prop_dict = {
                                 'propname': prop.name,
-                                'propusage': prop_usage
+                                'propusage': ' '.join(prop_usage.split())
                         }
                         prop_dict_list.append(prop_dict)
                 if len(prop_dict_list) > 0:
@@ -400,25 +450,23 @@ class HelpCommand(Command):
                         Table.Column('Property', 'propname', ValueType.STRING),
                         Table.Column('Usage', 'propusage', ValueType.STRING),
                         ])
-
-        if isinstance(obj, Command) and obj.__doc__:
+        if isinstance(obj, Command) or isinstance(obj, FilteringCommand) and obj.__doc__:
             command_name = obj.__class__.__name__
             if (
                 hasattr(obj, 'parent') and
                 hasattr(obj.parent, 'localdoc') and
                 command_name in obj.parent.localdoc.keys()
                ):
-                output_msg(textwrap.dedent(obj.parent.localdoc[command_name]))
+                return textwrap.dedent(obj.parent.localdoc[command_name]) + "\n"
             else:
-                output_msg(inspect.getdoc(obj))
+                if inspect.getdoc(obj) is not None:
+                    return inspect.getdoc(obj) + "\n"
+                else:
+                    return _("No help exists for '{0}'.\n".format(arg[0]))
 
         if isinstance(obj, Namespace):
             # First listing the Current Namespace's commands
-            cmd_dict_list = [
-                {"cmd": "/", "description": "Go to the root namespace"},
-                {"cmd": "..", "description": "Go up one namespace"},
-                {"cmd": "-", "description": "Go back to previous namespace"}
-            ]
+            cmd_dict_list = []
             ns_cmds = obj.commands()
             for key, value in ns_cmds.items():
                 if hasattr(value,'description') and value.description is not None:
@@ -426,7 +474,7 @@ class HelpCommand(Command):
                 else:
                     description = obj.get_name()
                 value_description = re.sub('<entity>',
-                                           obj.get_name(), 
+                                           obj.get_name(),
                                            description)
                 cmd_dict = {
                     'cmd': key,
@@ -438,17 +486,24 @@ class HelpCommand(Command):
             for nss in obj.namespaces():
                 if not isinstance(nss, SingleItemNamespace):
                     if hasattr(nss,'description') and nss.description is not None:
-                        description = value.description
+                        description = nss.description
                     else:
                         description = nss.name
                     namespace_dict = {
                         'cmd': nss.name,
-                        'description': nss.description,
+                        'description': description,
                     }
                     cmd_dict_list.append(namespace_dict)
 
+            cmd_dict_list = sorted(cmd_dict_list, key=lambda k: k['cmd'])
+
             # Finally listing the builtin cmds
-            builtin_cmd_dict_list = []
+            builtin_cmd_dict_list = [
+                {"cmd": "/", "description": "Go to the root namespace"},
+                {"cmd": "..", "description": "Go up one namespace"},
+                {"cmd": "-", "description": "Go back to previous namespace"}
+            ]
+            filtering_cmd_dict_list = []
             for key, value in context.ml.builtin_commands.items():
                 if hasattr(value,'description') and value.description is not None:
                     description = value.description
@@ -458,7 +513,13 @@ class HelpCommand(Command):
                     'cmd': key,
                     'description': description,
                 }
-                builtin_cmd_dict_list.append(builtin_cmd_dict)
+                if key in context.ml.pipe_commands:
+                    filtering_cmd_dict_list.append(builtin_cmd_dict)
+                else:
+                    builtin_cmd_dict_list.append(builtin_cmd_dict)
+
+            builtin_cmd_dict_list = sorted(builtin_cmd_dict_list, key=lambda k: k['cmd'])
+            filtering_cmd_dict_list = sorted(filtering_cmd_dict_list, key=lambda k: k['cmd'])
 
             # Finally printing all this out in unix `LESS(1)` pager style
             output_seq = Sequence()
@@ -474,55 +535,112 @@ class HelpCommand(Command):
                         Table.Column('Global Command', 'cmd', ValueType.STRING),
                         Table.Column('Description', 'description', ValueType.STRING)
                     ]))
+                output_seq.append(
+                    Table(filtering_cmd_dict_list, [
+                        Table.Column('Filter Command', 'cmd', ValueType.STRING),
+                        Table.Column('Description', 'description', ValueType.STRING)
+                    ]))
             help_message = ""
             if obj.__doc__:
                 help_message = inspect.getdoc(obj)
             elif isinstance(obj, SingleItemNamespace):
                 help_message = obj.entity_doc()
-            output_seq.append(help_message)
+            if help_message != "":
+                output_seq.append("")
+                output_seq.append(help_message)
+            output_seq.append("")
             return output_seq
 
 
-@description("Sends the user to the top level")
+@description("List available commands or items in this namespace")
+class IndexCommand(Command):
+    """
+    Usage: ?
+
+    Example:
+    ?
+    volume ?
+
+    Lists the commands and namespaces accessible from the current
+    or specified namespace.
+    """
+
+    def run(self, context, args, kwargs, opargs):
+        obj = context.ml.get_relative_object(self.exec_path[-1], args)
+        nss = obj.namespaces()
+        cmds = obj.commands()
+
+        # Only display builtin items if in the RootNamespace
+        obj = context.ml.get_relative_object(self.exec_path[-1], args)
+        outseq = None
+        if obj.__class__.__name__ == 'RootNamespace':
+            outseq = Sequence(_("Global commands:"), sorted(['/','..','-'] + list(context.ml.base_builtin_commands.keys())))
+            outseq += Sequence(_("Filtering commands:"), sorted(list(context.ml.pipe_commands.keys())))
+
+        ns_seq = Sequence(
+            _("Current namespace items:"),
+            sorted(list(cmds.keys())) +
+            [ns.get_name() for ns in sorted(nss, key=lambda i: i.get_name())]
+        )
+        if outseq is not None:
+            outseq += ns_seq
+        else:
+            outseq = ns_seq
+
+        return outseq
+
+@description("List command variables")
+class ListVarsCommand(Command):
+    """
+    Usage: vars
+
+    List the command variables for the current scope.
+    """
+
+    def run(self, context, args, kwargs, opargs):
+        return Table(
+            [{'var': k, 'val': v.value} for k, v in self.current_env.items()],
+            [Table.Column(_("Variable (var)"), 'var'), Table.Column(_("Value (val)"), 'val')]
+        )
+
+
+@description("Return to the root of the CLI")
 class TopCommand(Command):
 
     """
-    Go back to the root of the command tree.
-
     Usage: top
+
+    Return to the root of the command tree.
     """
 
     def run(self, context, args, kwargs, opargs):
         context.ml.path = [context.root_ns]
 
 
-@description("Clears the cli stdout")
+@description("Clear the screen")
 class ClearCommand(Command):
 
     """
-    Clear the screen.
-
     Usage: clear
+
+    Clear the screen.
     """
 
     def run(self, context, args, kwargs, opargs):
-        output_lock.acquire()
-        os.system('cls' if os.name == 'nt' else 'clear')
-        output_lock.release()
+        sys.stderr.write('\x1b[2J\x1b[H')
 
 
-@description("Shows the CLI command history")
+@description("Show the CLI command history")
 class HistoryCommand(Command):
     """
-    List the commands previously executed in this CLI instance.
-    Optionally, provide a number to specify the number of lines,
-    from the last line of history, to display.
-
     Usage: history <number>
 
     Example: history
              history 10
 
+    List the commands previously executed in this CLI instance.
+    Optionally, provide a number to specify the number of lines,
+    from the last line of history, to display.
     """
 
     def run(self, context, args, kwargs, opargs):
@@ -545,18 +663,18 @@ class HistoryCommand(Command):
         )
 
 
-@description("Imports a script for parsing")
+@description("Run specified script")
 class SourceCommand(Command):
     """
-    Run specified file\(s\), where each file contains a list
+    Usage: source </path/filename>
+           source </path/filename1> </path/filename2> </path/filename3>
+
+    Run specified file or files, where each file contains a list
     of CLI commands. When creating the source file, separate
-    each CLI command with a semicolon \";\" or place each
+    each CLI command with a semicolon or place each
     CLI command on its own line. If multiple files are
     specified, they are run in the order given. If a CLI
     command fails, the source operation aborts.
-
-    Usage: source </path/filename>
-           source </path/filename1> </path/filename2> </path/filename3>
     """
 
     def run(self, context, args, kwargs, opargs):
@@ -565,6 +683,7 @@ class SourceCommand(Command):
                                    inspect.getdoc(self))
         else:
             for arg in args:
+                arg = os.path.expanduser(arg)
                 if os.path.isfile(arg):
                     try:
                         with open(arg, 'r') as f:
@@ -578,20 +697,21 @@ class SourceCommand(Command):
                     raise CommandException(_("File {0} does not exist.".format(arg)))
 
 
-@description("Dumps namespace configuration to a series of CLI commands")
+@description("Dump namespace configuration to a series of CLI commands")
 class DumpCommand(Command):
     """
-    Diplay configuration of specified namespace or, when not specified,
-    the current namespace. Optionally, specify the name of the file to
-    send the output to.
-    
     Usage: <namespace> dump
            <namespace> dump <filename>
-    
+
     Examples:
     update dump
+    account user root dump
     dump | less
-    dump /root/mydumpfile.cli
+    dump "/root/mydumpfile.cli"
+
+    Display configuration of specified namespace or, when not specified,
+    the current namespace. Optionally, specify the name of the file to
+    send the output to.
     """
 
     def run(self, context, args, kwargs, opargs):
@@ -619,26 +739,26 @@ class DumpCommand(Command):
             return contents
 
 
-@description("Prints the provided message to the output")
+@description("Display the specified message")
 class EchoCommand(Command):
 
     """
-    Write any specified operands, separated by single blank
-    (' ') characters and followed by a newline ('\\n') character, to the
-    standard output. It also has the ability to expand and substitute
-    variables in place using the '${variable_name}' syntax.
-  
     Usage: echo <string_to_display>
 
     Examples:
-    echo Have a nice Day!
+    echo "Have a nice Day!"
     output: Have a nice Day!
 
-    echo Hello the current cli session timeout is $timeout seconds
+    echo Hello the current cli session timeout is ${timeout} seconds
     output: Hello the current cli session timeout is 10 seconds
 
-    echo Hi there, you are using ${language}lang
-    output Hi there, you are using Clang
+    echo Hi there, you are using the ${language} lang
+    output: Hi there, you are using the C lang
+
+    Displays the specified text. If the text contains a symbol, enclose it
+    between double quotes. This command can expand and substitute
+    variables using the '${variable_name}' syntax, as long as they are not
+    enclosed between double quotes.
     """
 
     def run(sef, context, args, kwargs, opargs):
@@ -653,17 +773,19 @@ class EchoCommand(Command):
                     isinstance(args[i-1], (Table, output_obj, dict, Sequence, list))
                 ):
                     echo_seq[-1] = ' '.join([echo_seq[-1], str(item)])
+                elif isinstance(item, list):
+                    echo_seq.append(', '.join(item))
                 else:
                     echo_seq.append(item)
             return Sequence(*echo_seq)
 
 
-@description("Shows pending tasks")
+@description("Display list of pending tasks")
 class PendingCommand(Command):
     """
     Usage: pending
 
-    Shows a list of currently pending tasks.
+    Display the list of currently pending tasks.
     """
     def run(self, context, args, kwargs, opargs):
         pending = list(filter(
@@ -678,12 +800,14 @@ class PendingCommand(Command):
         ])
 
 
-@description("Waits for a task to complete and shows task progress")
+@description("Wait for a task to complete and show its progress")
 class WaitCommand(Command):
     """
     Usage: wait
-           wait <task id>
+           wait <task ID>
 
+    Show task progress of either all waiting tasks or the
+    specified task. Use 'task show' to determine the task ID.
     """
     def run(self, context, args, kwargs, opargs):
         if args:
@@ -708,7 +832,8 @@ class WaitCommand(Command):
             progress.update(percentage=percentage, message=message)
 
         try:
-            task = context.entity_subscribers['task'].query(('id', '=', tid), single=True)
+            generator = None
+            task = context.entity_subscribers['task'].get(tid, timeout=1)
             if task['state'] in ('FINISHED', 'FAILED', 'ABORTED'):
                 return _("The task with id: {0} ended in {1} state".format(tid, task['state']))
 
@@ -716,11 +841,11 @@ class WaitCommand(Command):
             SIGTSTP_setter(set_flag=True)
             output_msg(_("Hit Ctrl+C to terminate task if needed"))
             output_msg(_("To background running task press 'Ctrl+Z'"))
-            context.ml.skip_prompt_print = True
 
             progress = ProgressBar()
             update(progress, task)
-            for op, old, new in context.entity_subscribers['task'].listen(tid):
+            generator = context.entity_subscribers['task'].listen(tid)
+            for op, old, new in generator:
                 update(progress, new)
 
                 if new['state'] == 'FINISHED':
@@ -736,7 +861,7 @@ class WaitCommand(Command):
                     break
         except KeyboardInterrupt:
             six.print_()
-            output_msg(_("User requested task termination. Sending abort signal sent"))
+            output_msg(_("User requested task termination. Abort signal sent"))
             context.call_sync('task.abort', tid)
         except SIGTSTPException:
                 # The User backgrounded the task by sending SIGTSTP (Ctrl+Z)
@@ -745,26 +870,26 @@ class WaitCommand(Command):
                 output_msg(_("To bring it back to the foreground execute 'wait {0}'".format(tid)))
                 output_msg(_("Use the 'pending' command to see pending tasks (of this session)"))
         finally:
-            context.ml.skip_prompt_print = False
             # Now that we are done with the task unset the Ctrl+Z handler
             # lets set the SIGTSTP (Ctrl+Z) handler
+            del generator
             SIGTSTP_setter(set_flag=False)
 
 
-
-@description("Allows the user to scroll through output")
+@description("Scroll through long output")
 class MorePipeCommand(PipeCommand):
 
     """
-    Allow paging and scrolling through long outputs of text.
-    It has an alias of 'less' i.e. 'more' and 'less' do the same thing.
-
     Usage: <command> | more
            <command> | less
 
     Examples: task show | more
               account user show | more
               system advanced show | less
+
+    Allow paging and scrolling through long outputs of text, where
+    'more' and 'less' are interchangeable. Press 'q' to return to
+    the prompt.
     """
 
     def __init__(self):
@@ -792,15 +917,15 @@ def map_opargs(opargs, context):
     return mapped_opargs
 
 
-@description("Filters result set basing on specified conditions")
+@description("Filter results based on specified conditions")
 class SearchPipeCommand(PipeCommand):
 
     """
-    Return an element in a list that matches the given key value.
-
     Usage: <command> | search <key> <op> <value> ...
 
     Example: account user show | search username==root
+
+    Return an element in a list that matches the given key value.
     """
 
     def run(self, context, args, kwargs, opargs, input=None):
@@ -824,7 +949,17 @@ class SearchPipeCommand(PipeCommand):
         return {"filter": mapped_opargs}
 
 
+@description("Select tasks started before or at the specified time")
 class OlderThanPipeCommand(PipeCommand):
+    """
+    Usage: <command> | older_than <hh>:<mm>
+           <command> | older_than <hh>:<mm>:<ss>
+
+    Example: task show all | older_than 2:00
+
+    Return all elements of a list that contains time values that are
+    older than the given time delta.
+    """
     def run(self, context, args, kwargs, opargs, input=None):
         return input
 
@@ -835,26 +970,36 @@ class OlderThanPipeCommand(PipeCommand):
         ]}
 
 
+@description("Select tasks started at or since specified time")
 class NewerThanPipeCommand(PipeCommand):
+    """
+    Usage: <command> | newer_than <hh>:<mm>
+           <command> | newer_than <hh>:<mm>:<ss>
+
+    Example: task show all | newer_than 2:00
+
+    Return all elements of a list that contains time values that are newer than
+    the given time delta.
+    """
     def run(self, context, args, kwargs, opargs, input=None):
         return input
 
     def serialize_filter(self, context, args, kwargs, opargs):
-        print(args)
         return {"filter": [
             ('started_at', '!=', None),
             ('started_at', '>=', datetime.now() - parse_timedelta(args[0]))
         ]}
 
 
-@description("Excludes certain results from result set basing on specified conditions")
+@description("Exclude results which match specified condition")
 class ExcludePipeCommand(PipeCommand):
     """
-    Return all the elements of a list that do not match the given key value.
-
     Usage: <command> | exclude <key> <op> <value> ...
 
     Example: account user show | exclude username==root
+
+    Return all the elements of a list that do not match the given key
+    value.
     """
     def run(self, context, args, kwargs, opargs, input=None):
         return input
@@ -881,27 +1026,30 @@ class ExcludePipeCommand(PipeCommand):
         return {"filter": result}
 
 
-@description("Sorts result set")
+@description("Sort results")
 class SortPipeCommand(PipeCommand):
     """
-    Sort the elements of a list by the given key.
-
     Usage: <command> | sort <field> [<-field> ...]
 
-    Example: account user show | sort name
+    Example: account user show | sort username
+
+    Sort the elements of a list by the given key.
     """
     def serialize_filter(self, context, args, kwargs, opargs):
         return {"params": {"sort": args}}
 
+    def run(self, context, args, kwargs, opargs, input=None):
+        return input
 
-@description("Limits output to <n> items")
+
+@description("Limit output to specified number of items")
 class LimitPipeCommand(PipeCommand):
     """
-    Return only the n elements of a list.
-
     Usage: <command> | limit <n>
 
     Example: account user show | limit 10
+
+    Return only the specified number of elements in a list.
     """
     def serialize_filter(self, context, args, kwargs, opargs):
         if len(args) == 0:
@@ -913,15 +1061,19 @@ class LimitPipeCommand(PipeCommand):
             ))
         return {"params": {"limit": args[0]}}
 
+    def run(self, context, args, kwargs, opargs, input=None):
+        return input
 
-@description("Displays the output for a specific field")
+
+@description("Display output of the specific field")
 class SelectPipeCommand(PipeCommand):
     """
-    Return only the output of the specific field for a list.
-
     Usage: <command> | select <field>
 
     Example: account user show | select username
+
+    Return only the output of the specified field. Use 'help properties' to
+    determine the valid field (Property) names for a namespace.
     """
     def run(self, context, args, kwargs, opargs, input=None):
         ns = context.pipe_cwd

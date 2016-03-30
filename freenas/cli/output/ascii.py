@@ -29,7 +29,6 @@ import io
 import six
 import sys
 import datetime
-import dateutil.tz
 import time
 import gettext
 import natural.date
@@ -37,7 +36,8 @@ from dateutil.parser import parse
 from texttable import Texttable
 from columnize import columnize
 from freenas.cli import config
-from freenas.cli.output import ValueType, get_terminal_size, resolve_cell, get_humanized_size
+from freenas.cli.output import ValueType, get_terminal_size, resolve_cell, get_humanized_size, Table
+from freenas.cli.utils import get_localtime_offset
 
 
 t = gettext.translation('freenas-cli', fallback=True)
@@ -91,6 +91,12 @@ class AsciiOutputFormatter(object):
 
             return '\n'.join(value)
 
+        if vt == ValueType.DICT:
+            if not bool(value):
+                return _("empty")
+
+            return AsciiOutputFormatter.format_dict_value(value)
+
         if vt == ValueType.STRING:
             return value
 
@@ -105,20 +111,29 @@ class AsciiOutputFormatter(object):
 
         if vt == ValueType.TIME:
             fmt = config.instance.variables.get('datetime_format')
-            localtz = dateutil.tz.tzlocal()
-            localoffset = localtz.utcoffset(datetime.datetime.now(localtz))
-            offset = localoffset.total_seconds()
 
+            delta = datetime.timedelta(seconds=get_localtime_offset())
             if isinstance(value, str):
-                offset = localoffset
                 value = parse(value)
+            if isinstance(value, float):
+                delta = delta.total_seconds()
             if fmt == 'natural':
-                return natural.date.duration(value + datetime.timedelta(seconds=offset))
+                return natural.date.duration(value + delta)
 
             return time.strftime(fmt, time.localtime(value))
 
+    def format_dict_value(value):
+        output = ""
+        for k,v in value.items():
+            if isinstance(v, dict):
+                output+=str(k) + '={' + format_dict_value(v) + '}'
+            else:
+                output+="{0}={1} ".format(k, format_literal(v))
+
+        return output
+
     @staticmethod
-    def output_list(data, label, vt=ValueType.STRING):
+    def output_list(data, label, vt=ValueType.STRING, **kwargs):
         sys.stdout.write(columnize(data))
         sys.stdout.flush()
 
@@ -137,6 +152,83 @@ class AsciiOutputFormatter(object):
         for i in hidden_indexes:
             del tab.columns[i]
 
+        table=AsciiOutputFormatter.format_table(tab)
+        six.print_(table.draw(), file=file, end=('\n' if kwargs.get('newline', True) else ' '))
+
+    @staticmethod
+    def output_table_list(tables):
+        terminal_size = get_terminal_size()[1]
+        widths = []
+        for tab in tables:
+            for i in range(0, len(tab.columns)):
+                current_width = len(tab.columns[i].label)
+                if len(widths) < i + 1:
+                    widths.insert(i, current_width)
+                elif widths[i] < current_width:
+                    widths[i] = current_width
+                for row in tab.data:
+                    current_width = len(resolve_cell(row, tab.columns[i].accessor))
+                    if current_width > widths[i]:
+                        widths[i] = current_width
+
+        if sum(widths) != terminal_size:
+            widths[-1] = terminal_size - sum(widths[:-1]) - len(widths) * 3
+
+        for tab in tables:
+            table = Texttable(max_width=terminal_size)
+            table.set_cols_width(widths)
+            table.set_deco(0)
+            table.header([i.label for i in tab.columns])
+            table.add_rows([[AsciiOutputFormatter.format_value(resolve_cell(row, i.accessor), i.vt) for i in tab.columns] for row in tab.data], False)
+            six.print_(table.draw() + "\n")
+
+    @staticmethod
+    def output_object(obj, file=sys.stdout, **kwargs):
+
+        values = []
+        editable_column = False
+        for item in obj:
+            value ={'name': item.name,
+                    'descr': item.descr,
+                    'value': AsciiOutputFormatter.format_value(item.value, item.vt)}
+
+            if item.editable is not None:
+                value['editable'] = AsciiOutputFormatter.format_value(item.editable, ValueType.BOOLEAN)
+                editable_column = True
+
+            values.append(value)
+
+        cols = []
+        cols.append(Table.Column("Property", 'name'))
+        cols.append(Table.Column("Description", 'descr'))
+        cols.append(Table.Column("Value", 'value'))
+        if editable_column: 
+            cols.append(Table.Column("Editable", 'editable'))
+
+        table = AsciiOutputFormatter.format_table(Table(values, cols))
+        six.print_(table.draw(), file=file, end=('\n' if kwargs.get('newline', True) else ' '))
+
+    @staticmethod
+    def output_tree(tree, children, label, label_vt=ValueType.STRING, file=sys.stdout):
+        def branch(obj, indent):
+            for idx, i in enumerate(obj):
+                subtree = resolve_cell(i, children)
+                char = '+' if subtree else ('`' if idx == len(obj) - 1 else '|')
+                six.print_('{0} {1}-- {2}'.format('    ' * indent, char, resolve_cell(i, label)), file=file)
+                if subtree:
+                    branch(subtree, indent + 1)
+
+        branch(tree, 0)
+
+    @staticmethod
+    def output_msg(message, **kwargs):
+        six.print_(
+            format_literal(message, **kwargs),
+            end=('\n' if kwargs.get('newline', True) else ' '),
+            file=kwargs.pop('file', sys.stdout)
+        )
+
+    def format_table(tab):
         max_width = get_terminal_size()[1]
         table = Texttable(max_width=max_width)
         table.set_deco(0)
@@ -181,64 +273,7 @@ class AsciiOutputFormatter(object):
         table.set_cols_width(widths)
         table.set_cols_dtype(['t'] * len(tab.columns))
         table.add_rows([[AsciiOutputFormatter.format_value(resolve_cell(row, i.accessor), i.vt) for i in tab.columns] for row in tab.data], False)
-        six.print_(table.draw(), file=file, end=('\n' if kwargs.get('newline', True) else ' '))
-
-    @staticmethod
-    def output_table_list(tables):
-        terminal_size = get_terminal_size()[1]
-        widths = []
-        for tab in tables:
-            for i in range(0, len(tab.columns)):
-                current_width = len(tab.columns[i].label)
-                if len(widths) < i + 1:
-                    widths.insert(i, current_width)
-                elif widths[i] < current_width:
-                    widths[i] = current_width
-                for row in tab.data:
-                    current_width = len(resolve_cell(row, tab.columns[i].accessor))
-                    if current_width > widths[i]:
-                        widths[i] = current_width
-
-        if sum(widths) != terminal_size:
-            widths[-1] = terminal_size - sum(widths[:-1]) - len(widths) * 3
-
-        for tab in tables:
-            table = Texttable(max_width=terminal_size)
-            table.set_cols_width(widths)
-            table.set_deco(0)
-            table.header([i.label for i in tab.columns])
-            table.add_rows([[AsciiOutputFormatter.format_value(resolve_cell(row, i.accessor), i.vt) for i in tab.columns] for row in tab.data], False)
-            six.print_(table.draw() + "\n")
-
-    @staticmethod
-    def output_object(obj, file=sys.stdout):
-        table = Texttable(max_width=get_terminal_size()[1])
-        table.set_cols_dtype(['t', 't'])
-        table.set_deco(0)
-        for item in obj:
-            table.add_row(['{0} ({1})'.format(item.descr, item.name), AsciiOutputFormatter.format_value(item.value, item.vt)])
-
-        six.print_(table.draw(), file=file)
-
-    @staticmethod
-    def output_tree(tree, children, label, label_vt=ValueType.STRING, file=sys.stdout):
-        def branch(obj, indent):
-            for idx, i in enumerate(obj):
-                subtree = resolve_cell(i, children)
-                char = '+' if subtree else ('`' if idx == len(obj) - 1 else '|')
-                six.print_('{0} {1}-- {2}'.format('    ' * indent, char, resolve_cell(i, label)), file=file)
-                if subtree:
-                    branch(subtree, indent + 1)
-
-        branch(tree, 0)
-
-    @staticmethod
-    def output_msg(message, **kwargs):
-        six.print_(
-            format_literal(message, **kwargs),
-            end=('\n' if kwargs.get('newline', True) else ' '),
-            file=kwargs.pop('file', sys.stdout)
-        )
+        return table
 
 
 def _formatter():

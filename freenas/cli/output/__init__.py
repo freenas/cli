@@ -30,14 +30,12 @@ import importlib
 import sys
 import gettext
 import enum
-import string
 from threading import Lock
 import contextlib
 import io
 import six
 import pydoc
 import collections
-import re
 
 from freenas.cli import config
 from freenas.utils import first_or_default
@@ -56,15 +54,17 @@ class ValueType(enum.Enum):
     SIZE = 5
     TIME = 6
     SET = 7
+    DICT = 8
 
 
 class Object(list):
     class Item(object):
-        def __init__(self, descr, name, value, vt=ValueType.STRING):
+        def __init__(self, descr, name, value, vt=ValueType.STRING, editable=None):
             self.descr = descr
             self.name = name
             self.value = value
             self.vt = vt
+            self.editable = editable
 
     def append(self, p_object):
         if not isinstance(p_object, self.Item):
@@ -107,10 +107,23 @@ class Table(object):
     def __getitem__(self, item):
         return self.data[item]
 
+    def pop(self, pop_index):
+        return self.data.pop(pop_index)
+
 
 class Sequence(list):
     def __init__(self, *items):
         super(Sequence, self).__init__(items)
+
+    def unwind(self, force=False):
+        return self if len(self) > 1 or force else self[0]
+
+    def append_flat(self, item):
+        if isinstance(item, Sequence):
+            self.extend(item)
+            return
+
+        self.append(item)
 
 
 class ProgressBar(object):
@@ -184,6 +197,9 @@ def read_value(value, tv=ValueType.STRING):
         if tv == ValueType.SET:
             return []
 
+        if tv == ValueType.DICT:
+            return {}
+
         return value
 
     if tv == ValueType.STRING:
@@ -207,6 +223,10 @@ def read_value(value, tv=ValueType.STRING):
             return value
         else:
             return [value]
+
+    if tv == ValueType.DICT:
+        if type(value) is dict:
+            return value
 
     raise ValueError(_("Invalid value '{0}', expected {1} value".format(value, str(tv).split('ValueType.')[-1].lower())))
 
@@ -327,7 +347,8 @@ def format_output(object, **kwargs):
     elif isinstance(object, Sequence):
         for i in object:
             format_output(i, **kwargs)
-
+    elif isinstance(object, list):
+        output_list(object, **kwargs)
     else:
         output_msg(object, **kwargs)
 

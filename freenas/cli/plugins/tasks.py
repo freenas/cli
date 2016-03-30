@@ -28,7 +28,7 @@
 import gettext
 from freenas.cli.output import ValueType
 from freenas.cli.descriptions import tasks
-from freenas.cli.namespace import EntityNamespace, EntitySubscriberBasedLoadMixin, Command, ListCommand, description
+from freenas.cli.namespace import EntityNamespace, EntitySubscriberBasedLoadMixin, Command, BaseListCommand, description
 from freenas.cli.complete import NullComplete
 from freenas.cli.utils import describe_task_state
 
@@ -69,7 +69,7 @@ class AbortCommand(Command):
         context.call_sync('task.abort', self.parent.entity['id'])
 
 
-class TaskListCommand(ListCommand):
+class TaskListCommand(BaseListCommand):
     RUNNING_STATES = ['CREATED', 'WAITING', 'EXECUTING', 'ROLLBACK']
 
     def run(self, context, args, kwargs, opargs, filtering=None):
@@ -108,8 +108,12 @@ class TaskListCommand(ListCommand):
         ]
 
 
-@description("Manage tasks")
+@description("Browse and abort running tasks")
 class TasksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
+    """
+    The task namespace provides commands for browsing task history
+    and for aborting running tasks.
+    """
     def __init__(self, name, context):
         super(TasksNamespace, self).__init__(name, context)
 
@@ -120,6 +124,9 @@ class TasksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         self.add_property(
             descr='ID',
             name='id',
+            usage=_("""
+            Task ID. Read-only value assigned by the operating
+            system."""),
             get='id',
             list=True,
         )
@@ -127,12 +134,18 @@ class TasksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         self.add_property(
             descr='Description',
             name='description',
+            usage=_("""
+            Task description. Read-only value assigned by the operating
+            system."""),
             get=self.describe_task,
         )
 
         self.add_property(
             descr='Started at',
             name='started_at',
+            usage=_("""
+            When the task started. Read-only value assigned by the
+            operating system."""),
             get='started_at',
             list=True,
             type=ValueType.TIME
@@ -141,6 +154,9 @@ class TasksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         self.add_property(
             descr='Finished at',
             name='finished_at',
+            usage=_("""
+            When the task finished. Read-only value assigned by the
+            operating system."""),
             get='finished_at',
             list=True,
             type=ValueType.TIME
@@ -149,6 +165,9 @@ class TasksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         self.add_property(
             descr='State',
             name='state',
+            usage=_("""
+            Current state of the task. Read-only value assigned by the
+            operating system."""),
             get='state',
             set=None
         )
@@ -156,6 +175,9 @@ class TasksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         self.add_property(
             descr='Status',
             name='status',
+            usage=_("""
+            Current task status. Read-only value assigned by the
+            operating system."""),
             get=describe_task_state,
             set=None
         )

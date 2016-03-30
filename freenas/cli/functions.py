@@ -26,13 +26,20 @@
 #
 #####################################################################
 
+import sys
+import termios
 import copy
 import operator
+import time
+import random
+import json
+from threading import Timer
 from builtins import input
 from freenas.cli.namespace import Command
 from freenas.cli.output import format_output, output_msg, Table
-from freenas.cli.parser import unparse, FunctionDefinition
+from freenas.cli.parser import parse, unparse, FunctionDefinition
 from freenas.cli import config
+from freenas.utils import decode_escapes
 
 operators = {
     '+': operator.add,
@@ -45,6 +52,7 @@ operators = {
     '<': operator.lt,
     '>=': operator.ge,
     '<=': operator.le,
+    '%': operator.mod,
     'and': operator.and_,
     'or': operator.or_,
     'not': operator.not_
@@ -66,18 +74,22 @@ def print_(*items):
 
 
 def printf(fmt, *args):
-    output_msg(fmt % args)
+    print(decode_escapes(fmt) % args, end='', flush=True)
 
 
 def sprintf(fmt, *args):
-    return fmt % args
+    return decode_escapes(fmt) % args
 
 
-def map_(fn, array):
+def map_(data, fn):
+    if isinstance(data, dict):
+        array = [{"key": k, "value": v} for k, v in data.items()]
+    else:
+        array = data
     return list(map(fn, array))
 
 
-def mapf(fmt, array):
+def mapf(array, fmt):
     return list(map(lambda s: fmt % s, array))
 
 
@@ -85,12 +97,53 @@ def apply(fn, *args):
     return fn(*args)
 
 
+def strjoin(array, sep=' '):
+    return sep.join(array)
+
+
 def sum_(array):
     return sum(array)
 
 
+def avg_(array):
+    return sum(array) / len(array)
+
+
+def range_(*args):
+    return list(range(*args))
+
+
 def readline(prompt):
     return input(prompt)
+
+
+def rand(a, b):
+    return random.randint(a, b)
+
+
+def setinterval(interval, fn):
+    Timer(interval / 1000, fn).start()
+
+
+def readkey():
+    fd = sys.stdin.fileno()
+    oldterm = termios.tcgetattr(fd)
+    newattr = termios.tcgetattr(fd)
+    newattr[3] = newattr[3] & ~termios.ICANON & ~termios.ECHO
+    termios.tcsetattr(fd, termios.TCSANOW, newattr)
+
+    try:
+        c = sys.stdin.read(1)
+        if not c:
+            return None
+
+        return c
+    except IOError:
+        raise
+    except KeyboardInterrupt:
+        return None
+    finally:
+        termios.tcsetattr(fd, termios.TCSAFLUSH, oldterm)
 
 
 def unparse_(fn):
@@ -138,12 +191,33 @@ def freadline(fhandle):
 
 
 def fprintf(fhandle, fmt, *args):
-    fhandle.write(fmt % args)
+    fhandle.write(decode_escapes(fmt) % args)
     fhandle.flush()
 
 
 def table(data, columns):
     return Table(data, [Table.Column(l, a) for l, a in columns])
+
+
+def eval_(line):
+    return config.instance.eval(parse(line, '<stdin>'))
+
+
+# Reads a json object from a file or a str and returns a parsed dict of it
+def json_load(data):
+    if hasattr(data, 'read'):
+        return json.load(data)
+    return json.loads(data)
+
+
+# Accepts obj and serializes it to json, which it then returns.
+# If the optional file handler is provided, it writes the serialized
+# json to that file and returns nothing
+def json_dump(obj, file=None):
+    if file is not None:
+        json.dump(obj, file)
+    else:
+        return json.dumps(obj)
 
 
 functions = {
@@ -154,23 +228,33 @@ functions = {
     'mapf': mapf,
     'apply': apply,
     'sum': sum_,
+    'avg': avg_,
+    'readkey': readkey,
     'readline': readline,
     'unparse': unparse_,
+    'sleep': time.sleep,
     'rpc': rpc,
     'call_task': call_task,
     'cwd': cwd,
     'register_command': register_command,
     'unregister_command': unregister_command,
-    'range': range,
+    'range': range_,
     'str': str,
     'length': len,
+    'rand': rand,
+    'setinterval': setinterval,
     'append': lambda a, i: a.append(i),
     'remove': lambda a, i: a.remove(i),
     'resize': array_resize,
+    'shift': lambda a: a.pop(0),
     'copy': copy.deepcopy,
     'fopen': fopen,
     'freadline': freadline,
     'fprintf': fprintf,
     'fclose': fclose,
-    'table': table
+    'table': table,
+    'json_load': json_load,
+    'json_dump': json_dump,
+    'eval': eval_,
+    'join': strjoin,
 }

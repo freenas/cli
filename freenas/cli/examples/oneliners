@@ -1,0 +1,7 @@
+function factorial(n) { if ( n <= 1) { return 1 }; return n*factorial(n-1) };
+
+function fibonacci(n) { if ( n == 0 ) { return 0 }; if ( n == 1 ) { return 1 }; return (fibonacci( n - 1 ) + fibonacci ( n - 2 )) };
+
+function fibonacci_seq(n) { fib=[]; for (i in range(0,n,1)) { fib = fib + [fibonacci(i)]}; return fib };
+
+function dict2args(dict) { return join(map(dict, function(pair_dict) { return pair_dict["key"]+"="+pair_dict["value"] })) };

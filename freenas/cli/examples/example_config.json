@@ -1,0 +1,11 @@
+{
+    "pool": {
+        "name": "jhols",
+        "disks": "auto",
+        "encryption": false,
+        "password": null,
+        "cache": [],
+        "log": [],
+        "layout": "auto"
+    }
+}

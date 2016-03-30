@@ -180,6 +180,7 @@ class ConsoleCommand(Command):
         console.start()
 
 
+@description("Import virtual machine from volume")
 class ImportVMCommand(Command):
     """
     Usage: import <name> volume=<volume>
@@ -197,11 +198,15 @@ class ImportVMCommand(Command):
         volume = kwargs.get('volume', None)
         if not volume:
             raise CommandException(_("Please specify which volume is containing a VM being imported."))
-        context.submit_task('container.import', name, volume, callback=lambda s: post_save(self.parent, s))
+        context.submit_task('container.import', name, volume, callback=lambda s, t: post_save(self.parent, t))
 
 
 @description("Configure and manage virtual machines")
 class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):
+    """
+    The vm namespace provides commands for listing, importing,
+    creating, and managing virtual machines.
+    """
     def __init__(self, name, context):
         super(VMNamespace, self).__init__(name, context)
         self.entity_subscriber_name = 'container'
@@ -300,7 +305,8 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
         self.primary_key = self.get_mapping('name')
         self.entity_namespaces = lambda this: [
             VMDisksNamespace('disks', self.context, this),
-            VMNicsNamespace('nic', self.context, this)
+            VMNicsNamespace('nic', self.context, this),
+            VMVolumesNamespace('volume', self.context, this)
         ]
 
         self.entity_commands = lambda this: {
@@ -403,6 +409,45 @@ class VMNicsNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNamesp
         self.primary_key = self.get_mapping('name')
 
 
+class VMVolumesNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNamespace):
+    def __init__(self, name, context, parent):
+        super(VMVolumesNamespace, self).__init__(name, context)
+        self.parent = parent
+        self.primary_key_name = 'name'
+        self.extra_query_params = [('type', '=', 'VOLUME')]
+        self.parent_path = 'devices'
+        self.skeleton_entity = {
+            'type': 'VOLUME',
+            'properties': {}
+        }
+
+        self.add_property(
+            descr='Volume name',
+            name='name',
+            get='name'
+        )
+
+        self.add_property(
+            descr='Volume type',
+            name='type',
+            get='properties.type'
+        )
+
+        self.add_property(
+            descr='Destination path',
+            name='destination',
+            get='properties.destination'
+        )
+
+        self.add_property(
+            descr='Automatically create storage',
+            name='auto',
+            get='properties.auto'
+        )
+
+        self.primary_key = self.get_mapping('name')
+
+
 @description("VM templates operations")
 class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
     def __init__(self, name, context):
@@ -471,7 +516,7 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
 
         self.primary_key = self.get_mapping('name')
         self.extra_commands = {
-            'show': FetchShowCommand()
+            'show': FetchShowCommand(self)
         }
 
 
@@ -484,6 +529,9 @@ class FetchShowCommand(Command):
 
     Refreshes local cache of VM templates and then shows them.
     """
+    def __init__(self, parent):
+        self.parent = parent
+
     def run(self, context, args, kwargs, opargs, filtering=None):
         context.call_task_sync('vm_template.fetch')
         show = ListCommand(self.parent)

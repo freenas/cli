@@ -29,7 +29,7 @@
 
 import gettext
 from freenas.cli.namespace import (
-    Command, Namespace, EntityNamespace, IndexCommand, TaskBasedSaveMixin,
+    Command, Namespace, EntityNamespace, TaskBasedSaveMixin,
     EntitySubscriberBasedLoadMixin, description, CommandException
 )
 from freenas.cli.output import ValueType, Sequence
@@ -116,7 +116,7 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
         self.add_property(
             descr='User ID',
             name='uid',
-            get='id',
+            get='uid',
             list=True,
             usage=_("An unused number greater than 1000 and less than 65535."),
             type=ValueType.NUMBER)
@@ -129,8 +129,8 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             Maximum 16 characters, though a maximum of 8 is recommended for
             interoperability. Can not begin with a hyphen or contain a space,
             a tab, a double quote, or any of these characters:
-            r" , : + & # % ^ & ( ) ! @ ~ * ? < > =
-            If a \$ is used, it can only be the last character."""),
+            , : + & # % ^ & ( ) ! @ ~ * ? < > =
+            If a $ is used, it can only be the last character."""),
             list=True)
 
         self.add_property(
@@ -158,9 +158,9 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             get=self.display_aux_groups,
             get_name='groups',
             usage=_("""
-            List of additional groups the user is a member of.
-            To add the user to other groups, specify a comma delimited
-            list and ensure the groups already exist."""),
+            List of additional groups the user is a member of. To add
+            the user to other groups, enclose a space delimited list
+            between double quotes and ensure the groups already exist."""),
             set=self.set_aux_groups,
             type=ValueType.SET,
             list=False
@@ -171,8 +171,9 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             name='shell',
             get='shell',
             usage=_("""
-            r" Default is /bin/sh. Otherwise,
-            specify full path to an existing shell."""),
+            Default is "/bin/sh". Can be set to full path of an
+            existing shell. Type 'shells' to see the list of
+            available shells."""),
             list=False,
             enum=UsersNamespace.shells
         )
@@ -183,8 +184,8 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             get='home',
             usage=_("""\
             By default when a user is created, their home
-            directory is not created. To create one, specify
-            the full path to an existing dataset."""),
+            directory is not created. To create one, specify the
+            full path to an existing dataset between double quotes."""),
             list=False
         )
 
@@ -194,7 +195,7 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             get=None,
             set='password',
             usage=_("""\
-            r" Mandatory unless password_disabled=true is
+            Mandatory unless "password_disabled=true" is
             specified when creating the user. Passwords
             cannot contain a question mark."""),
             list=False
@@ -229,8 +230,8 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             name='email',
             get='email',
             usage=_("""
-            Specify email address to send that user's
-            notifications to."""),
+            Specify email address, enclosed between double quotes,
+            to send that user's notifications to."""),
             list=False
         )
 
@@ -238,6 +239,10 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             descr='Sudo allowed',
             name='sudo',
             get='sudo',
+            usage=_("""
+            Can be set to true or false. When set to true, the
+            user is allowed to use sudo to run commands
+            with administrative permissions."""),
             list=False,
             type=ValueType.BOOLEAN
         )
@@ -246,6 +251,9 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             descr='SSH public key',
             name='pubkey',
             get='sshpubkey',
+            usage=_("""
+            To configure key-based authentication, use the 'set' command
+            to paste the user's SSH public key."""),
             type=ValueType.STRING,
             list=False
         )
@@ -260,7 +268,7 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             ('id', '=', entity['group']),
             single=True
         )
-        return group['name'] if group else 'GID:{0}'.format(entity['group'])
+        return group['name'] if group else '<unknown group>'
 
     def set_group(self, entity, value):
         group = self.context.call_sync('group.query', [('name', '=', value)], {'single': True})
@@ -274,7 +282,7 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             ('id', 'in', entity['groups'])
         )
         for group in groups:
-            yield group['name'] if group else 'GID:{0}'.format(group['id'])
+            yield group['name'] if group else '<unknown group>'
 
     def set_aux_groups(self, entity, value):
         groups = self.context.call_sync('group.query', [('name', 'in', list(value))])
@@ -309,7 +317,8 @@ class GroupsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
 
             Examples: set name=mygroup
 
-            Allows renaming a group.""")
+            Sets the "name" property in order to rename the group. This
+            will fail for builtin groups.""")
         self.localdoc['DeleteEntityCommand'] = ("""\
             Usage: delete <groupname>
 
@@ -336,15 +345,22 @@ class GroupsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
             descr='Group name',
             name='name',
             get='name',
+            usersetable = lambda entity: not entity['builtin'],
+            usage=_("""\
+            Group name. Editable, unless the group was
+            installed by the operating system."""),
             list=True)
 
         self.add_property(
             descr='Group ID',
             name='gid',
-            get='id',
-            set='id',
+            get='gid',
+            set='gid',
             usersetable=False,            
             type=ValueType.NUMBER,
+            usage=_("""\
+            Group ID. Read-only value assigned by operating
+            system."""),
             list=True)
 
         self.add_property(
@@ -353,6 +369,9 @@ class GroupsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
             get='builtin',
             set=None,
             list=True,
+            usage=_("""\
+            Read-only value that indicates whether or not
+            the group was created by the operating system."""),
             type=ValueType.BOOLEAN)
 
         self.primary_key = self.get_mapping('name')
@@ -366,11 +385,6 @@ class AccountNamespace(Namespace):
     def __init__(self, name, context):
         super(AccountNamespace, self).__init__(name)
         self.context = context
-
-    def commands(self):
-        return {
-            '?': IndexCommand(self)
-        }
 
     def namespaces(self):
         return [

@@ -25,9 +25,9 @@
 #
 #####################################################################
 
+import gettext
 from freenas.cli.namespace import (
     Command,
-    IndexCommand,
     Namespace,
     ConfigNamespace,
     EntityNamespace,
@@ -43,11 +43,16 @@ from freenas.cli.output import (
 
 from freenas.cli.utils import post_save
 
-@description("Configure and manage directory service")
+t = gettext.translation('freenas-cli', fallback=True)
+_ = t.gettext
+
+
+@description("Configure and manage directory services")
 class DirectoryServiceNamespace(Namespace):
     """
     The directoryservice namespace contains the
-    activedirectory and ldap namespaces.
+    namespaces for managing activedirectory and ldap
+    settings.
     """
     def __init__(self, name, context):
         super(DirectoryServiceNamespace, self).__init__(name)
@@ -76,7 +81,7 @@ class DirectoryServiceEnableCommand(DirectoryServiceCommandBase):
     def run(self, context, args, kwargs, opargs):
         ds_id = self.parent.entity['id']
         context.submit_task('directoryservice.enable', ds_id,
-            callback=lambda s: post_save(self.parent, s))
+            callback=lambda s, t: post_save(self.parent, s, t))
 
 
 @description("Disables a directory service")
@@ -87,7 +92,7 @@ class DirectoryServiceDisableCommand(DirectoryServiceCommandBase):
     def run(self, context, args, kwargs, opargs):
         ds_id = self.parent.entity['id']
         context.submit_task('directoryservice.disable', ds_id,
-            callback=lambda s: post_save(self.parent, s))
+            callback=lambda s, t: post_save(self.parent, s, t))
 
 
 @description("Displays cached domain controllers")
@@ -126,8 +131,8 @@ class DirectoryServiceConfigureHostnameCommand(DirectoryServiceCommandBase):
         ds_id = self.parent.entity['id']
         args = [ ds_id, 'hostname', self.enable ]
 
-        context.submit_task('directoryservice.configure', args,
-            callback=lambda s: post_save(self.parent, s))
+        context.submit_task('directoryservice.update', args,
+            callback=lambda s, t: post_save(self.parent, s, t))
 
 
 @description("Configures hosts file for directory service")
@@ -136,8 +141,8 @@ class DirectoryServiceConfigureHostsCommand(DirectoryServiceCommandBase):
         ds_id = self.parent.entity['id']
         args = [ ds_id, 'hosts', self.enable ]
 
-        context.submit_task('directoryservice.configure', args,
-            callback=lambda s: post_save(self.parent, s))
+        context.submit_task('directoryservice.update', args,
+            callback=lambda s, t: post_save(self.parent, s, t))
 
 
 @description("Configures Kerberos for directory service")
@@ -146,8 +151,8 @@ class DirectoryServiceConfigureKerberosCommand(DirectoryServiceCommandBase):
         ds_id = self.parent.entity['id']
         args = [ ds_id, 'kerberos', self.enable ]
 
-        context.submit_task('directoryservice.configure', args,
-            callback=lambda s: post_save(self.parent, s))
+        context.submit_task('directoryservice.update', args,
+            callback=lambda s, t: post_save(self.parent, s, t))
 
 
 @description("Configures nsswitch for directory service")
@@ -156,8 +161,8 @@ class DirectoryServiceConfigureNSSWitchCommand(DirectoryServiceCommandBase):
         ds_id = self.parent.entity['id']
         args = [ ds_id, 'nsswitch', self.enable ]
 
-        context.submit_task('directoryservice.configure', args,
-            callback=lambda s: post_save(self.parent, s))
+        context.submit_task('directoryservice.update', args,
+            callback=lambda s, t: post_save(self.parent, s, t))
 
 
 @description("Configures openldap for directory service")
@@ -166,8 +171,8 @@ class DirectoryServiceConfigureOpenLDAPCommand(DirectoryServiceCommandBase):
         ds_id = self.parent.entity['id']
         args = [ ds_id, 'openldap', self.enable ]
 
-        context.submit_task('directoryservice.configure', args,
-            callback=lambda s: post_save(self.parent, s))
+        context.submit_task('directoryservice.update', args,
+            callback=lambda s, t: post_save(self.parent, s, t))
 
 
 @description("Configures nssldap for directory service")
@@ -176,8 +181,8 @@ class DirectoryServiceConfigureNSSLDAPCommand(DirectoryServiceCommandBase):
         ds_id = self.parent.entity['id']
         args = [ ds_id, 'nssldap', self.enable ]
 
-        context.submit_task('directoryservice.configure', args,
-            callback=lambda s: post_save(self.parent, s))
+        context.submit_task('directoryservice.update', args,
+            callback=lambda s, t: post_save(self.parent, s, t))
 
 
 @description("Configures sssd for directory service")
@@ -186,8 +191,8 @@ class DirectoryServiceConfigureSSSDCommand(DirectoryServiceCommandBase):
         ds_id = self.parent.entity['id']
         args = [ ds_id, 'sssd', self.enable ]
 
-        context.submit_task('directoryservice.configure', args,
-            callback=lambda s: post_save(self.parent, s))
+        context.submit_task('directoryservice.update', args,
+            callback=lambda s, t: post_save(self.parent, s, t))
 
 
 @description("Configures samba for directory service")
@@ -196,8 +201,8 @@ class DirectoryServiceConfigureSambaCommand(DirectoryServiceCommandBase):
         ds_id = self.parent.entity['id']
         args = [ ds_id, 'samba', self.enable ]
 
-        context.submit_task('directoryservice.configure', args,
-            callback=lambda s: post_save(self.parent, s))
+        context.submit_task('directoryservice.update', args,
+            callback=lambda s, t: post_save(self.parent, s, t))
 
 
 @description("Configures pam for directory service")
@@ -206,8 +211,8 @@ class DirectoryServiceConfigurePAMCommand(DirectoryServiceCommandBase):
         ds_id = self.parent.entity['id']
         args = [ ds_id, 'pam', self.enable ]
 
-        context.submit_task('directoryservice.configure', args,
-            callback=lambda s: post_save(self.parent, s))
+        context.submit_task('directoryservice.update', args,
+            callback=lambda s, t: post_save(self.parent, s, t))
 
 
 @description("Configures the system for Active Directory")
@@ -216,8 +221,8 @@ class DirectoryServiceConfigureActiveDirectoryCommand(DirectoryServiceCommandBas
         ds_id = self.parent.entity['id']
         args = [ ds_id, 'activedirectory', self.enable ]
 
-        context.submit_task('directoryservice.configure', args,
-            callback=lambda s: post_save(self.parent, s))
+        context.submit_task('directoryservice.update', args,
+            callback=lambda s, t: post_save(self.parent, s, t))
 
 
 @description("Obtains a Kerberos ticket")
@@ -225,7 +230,7 @@ class DirectoryServiceGetKerberosTicketCommand(DirectoryServiceCommandBase):
     def run(self, context, args, kwargs, opargs):
         ds_id = self.parent.entity['id']
         context.submit_task('directoryservice.kerberosticket', ds_id,
-            callback=lambda s: post_save(self.parent, s))
+            callback=lambda s, t: post_save(self.parent, s, t))
 
 
 @description("Joins an Active Directory domain")
@@ -233,7 +238,7 @@ class DirectoryServiceJoinActiveDirectoryCommand(DirectoryServiceCommandBase):
     def run(self, context, args, kwargs, opargs):
         ds_id = self.parent.entity['id']
         context.submit_task('directoryservice.join', ds_id,
-            callback=lambda s: post_save(self.parent, s))
+            callback=lambda s, t: post_save(self.parent, s, t))
 
 
 class BaseDirectoryServiceNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
@@ -278,6 +283,10 @@ class ActiveDirectoryNamespace(BaseDirectoryServiceNamespace):
             descr='Domain',
             name='domain',
             get='domain',
+            usage=_("""\
+            Name of Active Directory domain or child domain.
+            This setting is mandatory and the domain controller
+            for the specified domain must be reachable."""),
             type=ValueType.STRING,
             list=True
         ) 
@@ -286,6 +295,10 @@ class ActiveDirectoryNamespace(BaseDirectoryServiceNamespace):
             descr='Bind Name',
             name='binddn',
             get='binddn',
+            usage=_("""\
+            Name of the Active Directory administrator account.
+            This setting is mandatory and the specified name must
+            be able to connect to the domain controller."""),
             type=ValueType.STRING,
             list=True
         ) 
@@ -293,15 +306,24 @@ class ActiveDirectoryNamespace(BaseDirectoryServiceNamespace):
         self.add_property(
             descr='Bind Password',
             name='bindpw',
-            get='bindpw',
+            set='bindpw',
+            get=None,
+            usage=_("""\
+            Password associated with the Active Directory.
+            administrative account This setting is mandatory and
+            the specified password must result in a successful
+            connection to the domain controller."""),
             type=ValueType.STRING,
-            list=True
+            list=False
         ) 
 
         self.add_property(
             descr='Domain Controller',
             name='dchost',
             get='dchost',
+            usage=_("""\
+            Hostname of the domain controller. If specified, it must
+            be resolvable."""),
             type=ValueType.STRING,
             list=False
         )
@@ -310,6 +332,9 @@ class ActiveDirectoryNamespace(BaseDirectoryServiceNamespace):
             descr='Global Catalog',
             name='gchost',
             get='gchost',
+            usage=_("""\
+            Hostname of the global catalog server. If specified, it
+            must be resolvable."""),
             type=ValueType.STRING,
             list=False
         )
@@ -318,6 +343,9 @@ class ActiveDirectoryNamespace(BaseDirectoryServiceNamespace):
             descr='Kerberos KDC',
             name='kdchost',
             get='kdchost',
+            usage=_("""\
+            Hostname of the Key Distribution Center. If specified, it
+            must be resolvable."""),
             type=ValueType.STRING,
             list=False
         )
@@ -326,6 +354,9 @@ class ActiveDirectoryNamespace(BaseDirectoryServiceNamespace):
             descr='Site Name',
             name='site',
             get='site',
+            usage=_("""\
+            Relative distinguished name of the site object in Active
+            Directory."""),
             type=ValueType.STRING,
             list=False
         )
@@ -389,6 +420,8 @@ class LDAPDirectoryNamespace(BaseDirectoryServiceNamespace):
             descr='Bind Name',
             name='binddn',
             get='binddn',
+            usage=_("""\
+            Name of the administrative account on LDAP server."""),
             type=ValueType.STRING,
             list=True
         ) 
@@ -396,15 +429,20 @@ class LDAPDirectoryNamespace(BaseDirectoryServiceNamespace):
         self.add_property(
             descr='Bind Password',
             name='bindpw',
-            get='bindpw',
+            set='bindpw',
+            get=None,
+            usage=_("""\
+            Password associated with the "binddn"."""),
             type=ValueType.STRING,
-            list=True
+            list=False
         ) 
 
         self.add_property(
             descr='Host Name',
             name='host',
             get='host',
+            usage=_("""\
+            Hostname or IP address of LDAP server."""),
             type=ValueType.STRING,
             list=False
         )
@@ -413,6 +451,9 @@ class LDAPDirectoryNamespace(BaseDirectoryServiceNamespace):
             descr='Base DN',
             name='baseDN',
             get='baseDN',
+            usage=_("""\
+            Top level of the LDAP directory tree to be used when searching
+            for resources."""),
             type=ValueType.STRING,
             list=False
         )
@@ -421,6 +462,9 @@ class LDAPDirectoryNamespace(BaseDirectoryServiceNamespace):
             descr='Kerberos KDC',
             name='kdchost',
             get='kdchost',
+            usage=_("""\
+            Hostname of the Key Distribution Center. If specified, it
+            must be resolvable."""),
             type=ValueType.STRING,
             list=False
         )

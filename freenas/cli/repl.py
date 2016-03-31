@@ -462,6 +462,7 @@ class Context(object):
             self.connection.subscribe_events(*EVENT_MASKS)
             self.connection.on_event(self.handle_event)
             self.connection.on_error(self.connection_error)
+            self.connection.call_sync('management.enable_features', ['streaming_responses'])
             self.session_id = self.call_sync('session.get_my_session_id')
         except RpcException as e:
             if e.code == errno.EACCES:

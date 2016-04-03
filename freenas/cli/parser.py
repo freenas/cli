@@ -942,7 +942,7 @@ def unparse(token, indent=0, oneliner=False):
         return token
 
     if isinstance(token, list):
-        return '\n'.join(ind(unparse(i)) for i in token)
+        return ','.join(ind(unparse(i)) for i in token)
 
     if isinstance(token, Comment):
         if oneliner:

@@ -651,6 +651,8 @@ class RoutesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Entity
             descr='Name',
             name='name',
             get='id',
+            usage=_("""\
+            Alphanumeric name for the route."""),
             list=True
         )
 
@@ -658,6 +660,9 @@ class RoutesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Entity
             descr='Address family',
             name='type',
             get='type',
+            usage=_("""\
+            Indicates the type of route. Can be set to "INET" or
+            "INET6"."""),
             list=True,
             enum=['INET', 'INET6']
         )
@@ -665,6 +670,9 @@ class RoutesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Entity
         self.add_property(
             descr='Gateway',
             name='gateway',
+            usage=_("""\
+            The address to add to the routing table, enclosed within
+            double quotes."""),
             get='gateway',
             list=True
         )
@@ -672,6 +680,9 @@ class RoutesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Entity
         self.add_property(
             descr='Network',
             name='network',
+            usage=_("""\
+            The network address to associate with this route, enclosed
+            within double quotes."""),
             get='network',
             list=True
         )
@@ -680,6 +691,9 @@ class RoutesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Entity
             descr='Subnet prefix',
             name='netmask',
             get='netmask',
+            usage=_("""\
+            The subnet mask for the route, in CIDR or dotted quad
+            notation, enclosed within double quotes."""),
             set=set_netmask,
         )
 

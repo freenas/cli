@@ -145,18 +145,26 @@ class BackupSSHPropertiesNamespace(BackupBasePropertiesNamespace):
         self.add_property(
             descr='Hostname',
             name='hostname',
+            usage=_("""\
+            Hostname or IP address of SSH server or Amazon S3 instance.
+            To also specify the port, append with ":port_number"."""),
             get='hostport'
         )
 
         self.add_property(
             descr='Username',
             name='username',
+            usage=_("""\
+            Case sensitive username to login as. The user must already exist
+            on the SSH server or S3 instance."""),
             get='username'
         )
 
         self.add_property(
             descr='Password',
             name='password',
+            usage=_("""\
+            Case sensitive password associated with the username."""),
             get=None,
             set='password'
         )
@@ -164,6 +172,8 @@ class BackupSSHPropertiesNamespace(BackupBasePropertiesNamespace):
         self.add_property(
             descr='Directory',
             name='directory',
+            usage=_("""\
+            Name of existing directory to save the backups to."""),
             get='directory'
         )
 

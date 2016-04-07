@@ -432,7 +432,7 @@ class ReplicationHostNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixi
 @description(_("Manage replication tasks and known replication hosts"))
 class ReplicationNamespace(Namespace):
     """
-    The account namespace is used to manage replication tasks and
+    The replication namespace is used to manage replication tasks and
     known replication hosts.
     """
     def __init__(self, name, context):

@@ -216,7 +216,7 @@ class CreateReplicationCommand(Command):
         ]
 
 
-@description(_("Provides commands for listing and managing replication tasks."))
+@description(_("List and manage replication tasks"))
 class ReplicationTaskNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):
     """
     The replication namespace provides commands for listing and managing replication tasks.
@@ -385,7 +385,7 @@ class CreateHostsPairCommand(Command):
         ]
 
 
-@description(_("Manage replication tasks and known replication hosts"))
+@description(_("Manage replication hosts"))
 class ReplicationHostNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):
     """
     The replication namespace provides commands for listing and managing replication tasks.

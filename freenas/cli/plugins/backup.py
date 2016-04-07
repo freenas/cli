@@ -146,8 +146,8 @@ class BackupSSHPropertiesNamespace(BackupBasePropertiesNamespace):
             descr='Hostname',
             name='hostname',
             usage=_("""\
-            Hostname or IP address of SSH server or Amazon S3 instance.
-            To also specify the port, append with ":port_number"."""),
+            Hostname or IP address of SSH server. To also specify an
+            alternative port, append with ":port_number"."""),
             get='hostport'
         )
 
@@ -156,7 +156,7 @@ class BackupSSHPropertiesNamespace(BackupBasePropertiesNamespace):
             name='username',
             usage=_("""\
             Case sensitive username to login as. The user must already exist
-            on the SSH server or S3 instance."""),
+            on the SSH server."""),
             get='username'
         )
 

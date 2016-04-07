@@ -96,7 +96,7 @@ class BackupNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
             descr='Compression',
             name='compression',
             get='compression',
-            sage=_("""\
+            usage=_("""\
             Indicates whether or not to compress the backup. Can be set to NONE
             or GZIP."""),
             list=True,

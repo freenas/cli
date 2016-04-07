@@ -40,9 +40,11 @@ t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
 
 
-@description("List or dismiss system alerts")
+@description("Backup Snapshots")
 class BackupNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):
     """
+    The backup namespace provides commands for configuring backups to an SSH
+    server or Amazon S3.
     """
     def __init__(self, name, context):
         super(BackupNamespace, self).__init__(name, context)
@@ -56,6 +58,8 @@ class BackupNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
             descr='Name',
             name='name',
             get='name',
+            usage=_("""\
+            Mandatory, alphanumeric name for the backup task."""),
             list=True
         )
 
@@ -63,6 +67,8 @@ class BackupNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
             descr='Provider',
             name='provider',
             get='provider',
+            usage=_("""\
+            Mandatory. Supported values are "ssh" or "s3"."""),
             list=True
         )
 
@@ -70,6 +76,8 @@ class BackupNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
             descr='Name',
             name='dataset',
             get='dataset',
+            usage=_("""\
+            Mandatory. Name of dataset to backup."""),
             list=True
         )
 
@@ -77,6 +85,9 @@ class BackupNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
             descr='Recursive',
             name='recursive',
             get='recursive',
+            usage=_("""\
+            Can be set to true or false, where the default is true.
+            Indicates whether or not child datasets are also backed up."""),
             list=True,
             type=ValueType.BOOLEAN
         )
@@ -85,6 +96,9 @@ class BackupNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
             descr='Compression',
             name='compression',
             get='compression',
+            sage=_("""\
+            Indicates whether or not to compress the backup. Can be set to NONE
+            or GZIP."""),
             list=True,
             enum=['NONE', 'GZIP']
         )

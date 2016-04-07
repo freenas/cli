@@ -185,30 +185,43 @@ class BackupS3PropertiesNamespace(BackupBasePropertiesNamespace):
         self.add_property(
             descr='Access key',
             name='access_key',
+            usage=_("""\
+            Enclose the access ID for the Amazon AWS account between double
+            quotes."""),
             get='access_key'
         )
 
         self.add_property(
             descr='Secret key',
             name='secret_key',
+            usage=_("""\
+            Enclose the secret key for the Amazon AWS account between double
+            quotes."""),
             get='secret_key'
         )
 
         self.add_property(
             descr='Bucket',
             name='bucket',
+            usage=_("""\
+            Enclose the valid hostname label between double quotes.
+            This assumes you have already created a bucket."""),
             get='bucket'
         )
 
         self.add_property(
             descr='Folder',
             name='folder',
+            usage=_("""\
+            The name of the folder within the bucket to backup to."""),
             get='folder'
         )
 
         self.add_property(
             descr='Region',
             name='region',
+            usage=_("""\
+            Optional region associated with the bucket."""),
             get='region'
         )
 

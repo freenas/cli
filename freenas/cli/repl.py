@@ -978,7 +978,7 @@ class MainLoop(object):
         cwd_namespaces = cwd.namespaces()
         cwd_commands = list(cwd.commands().items())
 
-        if token.startswith('@'):
+        if isinstance(token, six.string_types) and token.startswith('@'):
             token = token[1:]
         else:
             for ns in cwd_namespaces:

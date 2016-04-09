@@ -1522,7 +1522,10 @@ class MainLoop(object):
                 if issubclass(type(obj), Namespace):
                     choices = [str(i.get_name()) for i in obj.namespaces()]
                     choices += obj.commands().keys()
-                    choices += builtin_command_set + ['..', '/', '-']
+                    choices += ['..', '/', '-']
+
+                    if len(self.path) == 1:
+                        choices += builtin_command_set
 
                     if text.startswith('/') and isinstance(obj, RootNamespace):
                         choices = ['/' + i for i in choices]

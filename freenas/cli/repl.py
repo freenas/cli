@@ -978,9 +978,12 @@ class MainLoop(object):
         cwd_namespaces = cwd.namespaces()
         cwd_commands = list(cwd.commands().items())
 
-        for ns in cwd_namespaces:
-            if token == ns.get_name():
-                return ns
+        if token.startswith('@'):
+            token = token[1:]
+        else:
+            for ns in cwd_namespaces:
+                if token == ns.get_name():
+                    return ns
 
         for name, cmd in cwd_commands:
             if token == name:

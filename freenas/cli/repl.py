@@ -1524,7 +1524,7 @@ class MainLoop(object):
                     choices += obj.commands().keys()
                     choices += ['..', '/', '-']
 
-                    if len(self.path) == 1:
+                    if type(obj) is RootNamespace:
                         choices += builtin_command_set
 
                     if text.startswith('/') and isinstance(obj, RootNamespace):

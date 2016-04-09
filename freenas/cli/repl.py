@@ -975,12 +975,6 @@ class MainLoop(object):
         if not cwd:
             cwd = self.cwd
 
-        if token in list(self.builtin_commands.keys()):
-            return self.builtin_commands[token]
-
-        if token in list(self.aliases.keys()):
-            return Alias(self.context, self.aliases[token])
-
         cwd_namespaces = cwd.namespaces()
         cwd_commands = list(cwd.commands().items())
 
@@ -991,6 +985,12 @@ class MainLoop(object):
         for name, cmd in cwd_commands:
             if token == name:
                 return cmd
+
+        if token in list(self.builtin_commands.keys()):
+            return self.builtin_commands[token]
+
+        if token in list(self.aliases.keys()):
+            return Alias(self.context, self.aliases[token])
 
         for ns, name, fn in self.context.user_commands:
             if fnmatch.fnmatch(self.path_string, ns) and name == token:
@@ -1061,7 +1061,6 @@ class MainLoop(object):
                 return self.context.builtin_operators[token.op](left, right)
 
             if isinstance(token, Literal):
-
                 if token.type in six.string_types:
                     return token.value.replace('\\\"', '"')
 
@@ -1091,6 +1090,7 @@ class MainLoop(object):
                     return self.context.variables.variables[token.name]
                 except KeyError:
                     pass
+
                 raise SyntaxError(_('{0} not found'.format(token.name)))
 
             if isinstance(token, AssignmentStatement):

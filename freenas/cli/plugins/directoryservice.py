@@ -31,6 +31,7 @@ from freenas.cli.namespace import (
     Namespace,
     ConfigNamespace,
     EntityNamespace,
+    EntitySubscriberBasedLoadMixin,
     RpcBasedLoadMixin,
     TaskBasedSaveMixin,
     description
@@ -61,7 +62,8 @@ class DirectoryServiceNamespace(Namespace):
     def namespaces(self):
         return [
             ActiveDirectoryNamespace('activedirectory', self.context),
-            LDAPDirectoryNamespace('ldap', self.context)
+            LDAPDirectoryNamespace('ldap', self.context),
+            KerberosNamespace('kerberos', self.context)
         ]
 
 class DirectoryServiceCommandBase(Command):
@@ -477,6 +479,58 @@ class LDAPDirectoryNamespace(BaseDirectoryServiceNamespace):
             'enable': DirectoryServiceEnableCommand(this),
             'disable': DirectoryServiceDisableCommand(this)
         }
+
+
+class KerberosNamespace(Namespace):
+    def __init__(self, name, context):
+        super(KerberosNamespace, self).__init__(name)
+        self.context = context
+
+    def namespaces(self):
+        return [
+            KerberosRealmsNamespace('realm', self.context)
+        ]
+
+
+class KerberosRealmsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):
+    def __init__(self, name, context):
+        super(KerberosRealmsNamespace, self).__init__(name, context)
+
+        self.primary_key_name = 'realm'
+        self.entity_subscriber_name = 'kerberos.realm'
+        self.create_task = 'kerberos.realm.create'
+        self.update_task = 'kerberos.realm.update'
+        self.delete_task = 'kerberos.realm.delete'
+
+        self.add_property(
+            descr='Realm name',
+            name='realm',
+            get='realm',
+            list=True
+        )
+
+        self.add_property(
+            descr='KDC',
+            name='kdc',
+            get='kdc_address',
+            list=True
+        )
+
+        self.add_property(
+            descr='Admin server',
+            name='admin_server',
+            get='admin_server_address',
+            list=True
+        )
+
+        self.add_property(
+            descr='Password server',
+            name='password_server',
+            get='password_server_address',
+            list=True
+        )
+
+        self.primary_key = self.get_mapping('realm')
 
 
 def _init(context):

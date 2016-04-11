@@ -66,7 +66,7 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
         self.update_task = 'user.update'
         self.delete_task = 'user.delete'
         self.save_key_name = 'id'
-        self.required_props = ['username', ['password','password_disabled']]
+        self.required_props = ['username', ['password', 'password_disabled']]
 
         if not UsersNamespace.shells:
             UsersNamespace.shells = context.call_sync('shell.get_shells')
@@ -356,7 +356,7 @@ class GroupsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
             name='gid',
             get='gid',
             set='gid',
-            usersetable=False,            
+            usersetable=False,
             type=ValueType.NUMBER,
             usage=_("""\
             Group ID. Read-only value assigned by operating
@@ -395,3 +395,5 @@ class AccountNamespace(Namespace):
 
 def _init(context):
     context.attach_namespace('/', AccountNamespace('account', context))
+    context.map_tasks('user.*', UsersNamespace)
+    context.map_tasks('group.*', GroupsNamespace)

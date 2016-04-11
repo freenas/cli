@@ -117,41 +117,6 @@ def errors_by_path(errors, path):
             yield ret
 
 
-def print_validation_errors(namespace, task):
-    if hasattr(namespace, 'parent'):
-        ns = namespace.parent
-    else:
-        ns = namespace
-
-    from freenas.cli.namespace import SingleItemNamespace, ConfigNamespace
-
-    if isinstance(namespace, SingleItemNamespace):
-        if task['name'] == ns.update_task:
-            # Update tasks have updated_params as second argument
-            errors = errors_by_path(task['error']['extra'], [1])
-        elif task['name'] == ns.create_task:
-            # Create tasks have object as first argument
-            errors = errors_by_path(task['error']['extra'], [0])
-        else:
-            return
-    elif isinstance(namespace, ConfigNamespace):
-        if task['name'] == ns.update_task:
-            errors = errors_by_path(task['error']['extra'], [0])
-        else:
-            return
-    else:
-        return
-
-    for i in errors:
-        pathname = '.'.join(str(i) for i in i['path'])
-        property = namespace.get_mapping_by_field(pathname)
-        config.instance.output_queue.put(_("Task #{0} validation error: {1}: {2}".format(
-            task['id'],
-            property.name if property else pathname,
-            i['message']
-        )))
-
-
 def post_save(this, status, task):
     """
     Generic post-save callback for EntityNamespaces
@@ -161,8 +126,6 @@ def post_save(this, status, task):
 
     if status == 'FAILED':
         this.entity = copy.deepcopy(this.orig_entity)
-        if task['error']['type'] == 'ValidationException':
-            print_validation_errors(this, task)
 
     if status in ['FINISHED', 'FAILED', 'ABORTED', 'CANCELLED']:
         this.modified = False
@@ -190,6 +153,9 @@ def describe_task_state(task):
 
         return '{0:2.0f}% ({1})'.format(
             task['progress.percentage'], task['progress.message'])
+
+    if task['state'] == 'FAILED':
+        return 'Failed: {0}'.format(task['error']['message'])
 
     return task['state']
 

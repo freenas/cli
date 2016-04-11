@@ -180,7 +180,7 @@ svc_cli_config = {
             'usage': _("""
             Can be set to yes. If set to yes, properly
             configured key-based authentication for all users
-            is required."""),
+            is possible."""),
             'get': 'allow_pubkey_auth',
             'type': ValueType.BOOLEAN
         },

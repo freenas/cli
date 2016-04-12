@@ -488,7 +488,8 @@ class KerberosNamespace(Namespace):
 
     def namespaces(self):
         return [
-            KerberosRealmsNamespace('realm', self.context)
+            KerberosRealmsNamespace('realm', self.context),
+            KerberosKeytabsNamespace('keytab', self.context)
         ]
 
 
@@ -531,6 +532,50 @@ class KerberosRealmsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin
         )
 
         self.primary_key = self.get_mapping('realm')
+
+
+class KerberosKeytabsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):
+    def __init__(self, name, context):
+        super(KerberosKeytabsNamespace, self).__init__(name, context)
+
+        self.primary_key_name = 'name'
+        self.entity_subscriber_name = 'kerberos.keytab'
+        self.create_task = 'kerberos.keytab.create'
+        self.update_task = 'kerberos.keytab.update'
+        self.delete_task = 'kerberos.keytab.delete'
+
+        self.add_property(
+            descr='Keytab name',
+            name='name',
+            get='name',
+            list=True
+        )
+
+        self.add_property(
+            descr='Keytab file',
+            name='keytab',
+            get=None,
+            set=self.set_keytab_file,
+            list=False
+        )
+
+        self.add_property(
+            descr='Keytab entries',
+            name='entries',
+            get=self.get_keytab_entries,
+            set=None,
+            type=ValueType.SET,
+            list=False
+        )
+
+        self.primary_key = self.get_mapping('name')
+
+    def set_keytab_file(self, obj, path):
+        with open(path, 'rb') as f:
+            obj['keytab'] = f.read()
+
+    def get_keytab_entries(self, obj):
+        return ['{principal} ({enctype}, vno {vno})'.format(**i) for i in obj['entries']]
 
 
 def _init(context):

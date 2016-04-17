@@ -51,8 +51,43 @@ class DirectoryServiceNamespace(Namespace):
 
     def namespaces(self):
         return [
+            DirectoriesNamespace('directories', self.context),
             KerberosNamespace('kerberos', self.context)
         ]
+
+
+class DirectoriesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
+    def __init__(self, name, context):
+        super(DirectoriesNamespace, self).__init__(name, context)
+
+        self.entity_subscriber_name = 'directory'
+        self.update_task = 'directory.update'
+
+        self.add_property(
+            descr='Directory name',
+            name='id',
+            get='id',
+            set=None,
+            list=True
+        )
+
+        self.add_property(
+            descr='Type',
+            name='type',
+            get='plugin',
+            set=None,
+            list=True
+        )
+
+        self.add_property(
+            descr='Enabled',
+            name='enabled',
+            get='enabled',
+            list=True,
+            type=ValueType.BOOLEAN
+        )
+
+        self.primary_key = self.get_mapping('id')
 
 
 class KerberosNamespace(Namespace):

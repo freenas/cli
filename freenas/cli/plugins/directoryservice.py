@@ -25,12 +25,13 @@
 #
 #####################################################################
 
+import copy
 import gettext
 from freenas.cli.output import ValueType
 from freenas.cli.namespace import (
     Command,
     Namespace,
-    ConfigNamespace,
+    ItemNamespace,
     EntityNamespace,
     EntitySubscriberBasedLoadMixin,
     RpcBasedLoadMixin,
@@ -87,7 +88,59 @@ class DirectoriesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, E
             type=ValueType.BOOLEAN
         )
 
+        def get_entity_namespaces(this):
+            PROVIDERS = {
+                'winbind': ActiveDirectoryPropertiesNamespace,
+            }
+
+            this.load()
+            if this.entity and this.entity.get('plugin'):
+                provider = PROVIDERS.get(this.entity['plugin'])
+                if provider:
+                    return [provider('properties', self.context, this)]
+
+            return []
+
+        self.entity_namespaces = get_entity_namespaces
         self.primary_key = self.get_mapping('id')
+
+
+class BaseDirectoryPropertiesNamespace(ItemNamespace):
+    def __init__(self, name, context, parent):
+        super(BaseDirectoryPropertiesNamespace, self).__init__(name)
+        self.context = context
+        self.parent = parent
+
+    def load(self):
+        self.entity = self.parent.entity['parameters']
+        self.orig_entity = copy.deepcopy(self.entity)
+
+    def save(self):
+        return self.parent.save()
+
+
+class ActiveDirectoryPropertiesNamespace(BaseDirectoryPropertiesNamespace):
+    def __init__(self, name, context, parent):
+        super(ActiveDirectoryPropertiesNamespace, self).__init__(name, context, parent)
+
+        self.add_property(
+            descr='Realm',
+            name='realm',
+            get='realm'
+        )
+
+        self.add_property(
+            descr='Username',
+            name='username',
+            get='username'
+        )
+
+        self.add_property(
+            descr='Password',
+            name='password',
+            get=None,
+            set='password'
+        )
 
 
 class KerberosNamespace(Namespace):

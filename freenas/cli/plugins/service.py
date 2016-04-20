@@ -207,7 +207,7 @@ svc_cli_config = {
             'name': 'allow_port_forwarding',
             'usage': _("""
             Can be set to yes or no. If set to yes, users can
-            bypass firewall restrictions using SSH’s port forwarding
+            bypass firewall restrictions using SSH's port forwarding
             feature."""),
             'get': 'allow_port_forwarding',
             'type': ValueType.BOOLEAN
@@ -1123,7 +1123,7 @@ svc_cli_config = {
             'name': 'isns_servers',
             'usage': _("""
             Space delimited list of hostnames or IP addresses of ISNS server(s)
-            to register the system’s iSCSI targets and portals with. Enclose
+            to register the system's iSCSI targets and portals with. Enclose
             the list between double quotes."""),
             'get': 'isns_servers',
             'type': ValueType.SET

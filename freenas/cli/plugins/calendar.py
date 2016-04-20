@@ -227,7 +227,7 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
                       create myupdate type=check_updates send_email=false
                       create mysmart type=smart disks=ada0,ada1,ada2 test_type=short
                       create mycommand type=command username=myuser command="some useful unix command"
-                      create mysnapshot type=snapshot volume=mypool dataset=mypool/mydataset recursive=true lifetime="1h"
+                      create mysnapshot type=snapshot volume=mypool dataset=mypool/mydataset recursive=true lifetime=1h
 
             Create a calendar task.  
     

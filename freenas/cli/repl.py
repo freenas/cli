@@ -131,7 +131,10 @@ ENTITY_SUBSCRIBERS = [
     'syslog',
     'replication.link',
     'replication.host',
-    'backup'
+    'backup',
+    'kerberos.realm',
+    'kerberos.keytab',
+    'directory'
 ]
 
 

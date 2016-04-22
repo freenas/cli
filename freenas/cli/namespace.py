@@ -631,6 +631,7 @@ class ConfigNamespace(ItemNamespace):
             callback=lambda s, t: post_save(self, s, t)
         )
 
+
 class SingleItemNamespace(ItemNamespace):
     def __init__(self, name, parent, **kwargs):
         super(SingleItemNamespace, self).__init__(name)
@@ -1043,11 +1044,18 @@ class EntitySubscriberBasedLoadMixin(object):
     def on_enter(self, *args, **kwargs):
         super(EntitySubscriberBasedLoadMixin, self).on_enter(*args, **kwargs)
         self.context.entity_subscribers[self.entity_subscriber_name].on_delete = self.on_delete
+        self.context.entity_subscribers[self.entity_subscriber_name].on_update = self.on_update
 
     def on_delete(self, entity):
         cwd = self.context.ml.cwd
         if isinstance(cwd, SingleItemNamespace) and cwd.parent == self and cwd.name == entity[self.primary_key_name]:
             self.context.ml.cd_up()
+
+    def on_update(self, old_entity, new_entity):
+        cwd = self.context.ml.cwd
+        if isinstance(cwd, SingleItemNamespace) and cwd.parent == self:
+            cwd.entity[self.primary_key_name] = new_entity['id']
+            cwd.load()
 
     def query(self, params, options):
         if not params and not options:

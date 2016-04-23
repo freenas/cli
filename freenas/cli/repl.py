@@ -632,6 +632,9 @@ class Context(object):
         if callable(nsclass) and not inspect.isclass(nsclass):
             nsclass = nsclass(self, task)
 
+        if not nsclass:
+            return
+
         entityns = nsclass('<temp>', self)
         namespace = SingleItemNamespace('<temp>', entityns)
 

@@ -71,7 +71,7 @@ from freenas.cli.output import (
 from freenas.dispatcher.client import Client, ClientError
 from freenas.dispatcher.entity import EntitySubscriber
 from freenas.dispatcher.rpc import RpcException
-from freenas.utils import first_or_default, include
+from freenas.utils import first_or_default, include, best_match
 from freenas.utils.query import QueryDict, wrap
 from freenas.cli.commands import (
     ExitCommand, PrintenvCommand, SetenvCommand, ShellCommand, HelpCommand,
@@ -620,10 +620,11 @@ class Context(object):
         self.print_event(event, data)
 
     def get_validation_errors(self, task):
-        __, nsclass = first_or_default(
-            lambda f: fnmatch.fnmatch(task['name'], f[0]),
+        __, nsclass = best_match(
             self.reverse_task_mappings.items(),
-            (None, None)
+            task['name'],
+            key=lambda f: f[0],
+            default=(None, None)
         )
 
         if not nsclass:

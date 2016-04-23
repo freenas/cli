@@ -1117,6 +1117,12 @@ def find_share_namespace(context, task):
     if share_type == 'afp':
         return AFPSharesNamespace
 
+    if share_type == 'webdav':
+        return WebDAVSharesNamespace
+
+    if share_type == 'iscsi':
+        return ISCSISharesNamespace
+
 
 def _init(context):
     context.attach_namespace('/', SharesNamespace('share', context))

@@ -828,3 +828,6 @@ class NetworkNamespace(Namespace):
 
 def _init(context):
     context.attach_namespace('/', NetworkNamespace('network', context))
+    context.map_tasks('network.interface.*', InterfacesNamespace)
+    context.map_tasks('network.route.*', RoutesNamespace)
+    context.map_tasks('network.host.*', HostsNamespace)

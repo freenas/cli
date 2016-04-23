@@ -56,7 +56,7 @@ from freenas.cli import functions
 from freenas.cli import config
 from freenas.cli.namespace import (
     Namespace, EntityNamespace, RootNamespace, SingleItemNamespace, ConfigNamespace, Command,
-    FilteringCommand, PipeCommand, CommandException
+    FilteringCommand, PipeCommand, CommandException, EntitySubscriberBasedLoadMixin
 )
 from freenas.cli.parser import (
     parse, unparse, Symbol, Literal, BinaryParameter, UnaryExpr, BinaryExpr, PipeExpr, AssignmentStatement,
@@ -644,9 +644,11 @@ class Context(object):
             if task['name'] == entityns.update_task:
                 # Update tasks have updated_params as second argument
                 errors = errors_by_path(task['error']['extra'], [1])
+                obj_id = task.get('args.0')
             elif task['name'] == entityns.create_task:
                 # Create tasks have object as first argument
                 errors = errors_by_path(task['error']['extra'], [0])
+                obj_id = task.get('args.0.id')
             else:
                 return
         elif isinstance(entityns, ConfigNamespace):
@@ -657,6 +659,14 @@ class Context(object):
                 return
         else:
             return
+
+        if isinstance(entityns, EntityNamespace):
+            entity_subscriber_name, __ = task['name'].rsplit('.', 1)
+            if entity_subscriber_name in self.entity_subscribers:
+                obj = self.entity_subscribers[entity_subscriber_name].query(('id', '=', obj_id), single=True)
+                if obj:
+                    namespace.name = obj[entityns.primary_key_name]
+                    namespace.load()
 
         for i in errors:
             pathname = '.'.join(str(p) for p in i['path'])

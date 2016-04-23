@@ -95,7 +95,7 @@ class ServicesNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
             descr='State',
             name='state',
             get='state',
-            usage= _("""
+            usage=_("""
             Indicates whether the service is RUNNING or STOPPED.
             Read-only value assigned by the operating system."""),
             set=None,
@@ -113,12 +113,17 @@ class ServicesNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
             list=True
         )
 
+        self.add_property(
+            descr='Service configuration',
+            name='config',
+            get='config',
+            list=False,
+            ns=lambda this: ServiceConfigNamespace('config', context, this)
+        )
+
         self.primary_key = self.get_mapping('name')
         self.allow_edit = False
         self.allow_create = False
-        self.entity_namespaces = lambda this: [
-            ServiceConfigNamespace('config', context, this)
-        ]
         self.entity_serialize = self.child_serialize
         self.entity_commands = lambda this: {
             'start': ServiceManageCommand(this, 'start'),

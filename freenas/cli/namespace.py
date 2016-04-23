@@ -201,9 +201,10 @@ class PropertyMapping(object):
         self.createsetable = kwargs.pop('createsetable', True)
         self.regex = kwargs.pop('regex', None)
         self.condition = kwargs.pop('condition', None)
+        self.ns = kwargs.pop('ns', None)
 
     def is_usersetable(self, obj):
-        if hasattr(self.usersetable, '__call__'):
+        if callable(self.usersetable):
             return self.usersetable(obj)
         else:
             return self.usersetable
@@ -294,6 +295,9 @@ class ItemNamespace(Namespace):
 
             for mapping in self.parent.property_mappings:
                 if not mapping.get:
+                    continue
+
+                if mapping.ns:
                     continue
 
                 if mapping.condition is not None:
@@ -518,19 +522,19 @@ class ItemNamespace(Namespace):
         return list([x for x in self.property_mappings if x.name == prop])[0]
 
     def get_mapping_by_field(self, field):
-        # Try on subnamespace first
-        first, *rest = field.split('.')
-        ns = first_or_default(lambda ns: getattr(ns, 'field_mapping', None) == first, self.namespaces())
-        if ns:
-            return ns.get_mapping_by_field('.'.join(rest))
+        rest = None
 
-        while '.' in field:
+        while True:
             ret = first_or_default(lambda p: p.get == field, self.property_mappings)
             if ret:
+                if ret.ns:
+                    return ret.ns(self).get_mapping_by_field(rest)
                 return ret
 
-            field, _ = field.rsplit('.', 1)
+            if '.' not in field:
+                break
 
+            field, rest = field.rsplit('.', 1)
 
     def add_property(self, **kwargs):
         self.property_mappings.append(PropertyMapping(index=len(self.property_mappings), **kwargs))
@@ -573,6 +577,14 @@ class ItemNamespace(Namespace):
             base.update(self.subcommands)
 
         return base
+
+    def namespaces(self):
+        for i in self.nslist:
+            yield i
+
+        for i in self.property_mappings:
+            if i.ns:
+                yield i.ns(self)
 
     def update_commands(self):
         pass

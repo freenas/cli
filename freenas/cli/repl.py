@@ -55,8 +55,8 @@ from freenas.cli.utils import PrintableNone, SIGTSTPException, SIGTSTP_setter, e
 from freenas.cli import functions
 from freenas.cli import config
 from freenas.cli.namespace import (
-    Namespace, RootNamespace, SingleItemNamespace, ConfigNamespace, Command, FilteringCommand,
-    PipeCommand, CommandException
+    Namespace, EntityNamespace, RootNamespace, SingleItemNamespace, ConfigNamespace, Command,
+    FilteringCommand, PipeCommand, CommandException
 )
 from freenas.cli.parser import (
     parse, unparse, Symbol, Literal, BinaryParameter, UnaryExpr, BinaryExpr, PipeExpr, AssignmentStatement,
@@ -637,9 +637,9 @@ class Context(object):
             return
 
         entityns = nsclass('<temp>', self)
-        namespace = SingleItemNamespace('<temp>', entityns)
 
-        if isinstance(namespace, SingleItemNamespace):
+        if isinstance(entityns, EntityNamespace):
+            namespace = SingleItemNamespace('<temp>', entityns)
             if task['name'] == entityns.update_task:
                 # Update tasks have updated_params as second argument
                 errors = errors_by_path(task['error']['extra'], [1])
@@ -648,7 +648,8 @@ class Context(object):
                 errors = errors_by_path(task['error']['extra'], [0])
             else:
                 return
-        elif isinstance(namespace, ConfigNamespace):
+        elif isinstance(entityns, ConfigNamespace):
+            namespace = entityns
             if task['name'] == entityns.update_task:
                 errors = errors_by_path(task['error']['extra'], [0])
             else:

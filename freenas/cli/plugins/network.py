@@ -831,3 +831,4 @@ def _init(context):
     context.map_tasks('network.interface.*', InterfacesNamespace)
     context.map_tasks('network.route.*', RoutesNamespace)
     context.map_tasks('network.host.*', HostsNamespace)
+    context.map_tasks('network.config.*', GlobalConfigNamespace)

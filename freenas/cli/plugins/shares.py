@@ -1099,10 +1099,10 @@ class ISCSISharesNamespace(BaseSharesNamespace):
 
 def find_share_namespace(context, task):
     if task['name'] == 'share.create':
-        share_type = task['args'][0]['type']
+        share_type = task.get('args.0.type')
 
     elif task['name'] == 'share.update':
-        share_id = task['args'][0]
+        share_id = task.get('args.0')
         share_type = context.entity_subscribers['share'].query(('id', '=', share_id), single=True)
 
     else:

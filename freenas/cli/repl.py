@@ -124,6 +124,7 @@ ENTITY_SUBSCRIBERS = [
     'network.interface',
     'network.host',
     'network.route',
+    'service',
     'share',
     'task',
     'alert',
@@ -636,7 +637,7 @@ class Context(object):
         if not nsclass:
             return
 
-        entityns = nsclass('<temp>', self)
+        entityns = nsclass('<temp>', self) if inspect.isclass(nsclass) else nsclass
 
         if isinstance(entityns, EntityNamespace):
             namespace = SingleItemNamespace('<temp>', entityns)

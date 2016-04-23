@@ -106,7 +106,7 @@ class ServicesNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
             descr='Process ID',
             name='pid',
             get='pid',
-            usage= _("""
+            usage=_("""
             Process ID of the RUNNING service. Read-only value assigned
             by the operating system."""),
             set=None,
@@ -136,6 +136,7 @@ class ServiceConfigNamespace(ItemNamespace):
         super(ServiceConfigNamespace, self).__init__(name)
         self.context = context
         self.parent = parent
+        self.field_link = 'config'
 
         self.add_property(
             descr='Enabled',
@@ -163,6 +164,7 @@ class ServiceConfigNamespace(ItemNamespace):
 
 def _init(context):
     context.attach_namespace('/', ServicesNamespace('service', context))
+    context.map_tasks('service.*', ServicesNamespace)
 
 
 # This is not ideal (but better than an if-else ladder)

@@ -518,12 +518,19 @@ class ItemNamespace(Namespace):
         return list([x for x in self.property_mappings if x.name == prop])[0]
 
     def get_mapping_by_field(self, field):
+        # Try on subnamespace first
+        first, *rest = field.split('.')
+        ns = first_or_default(lambda ns: getattr(ns, 'field_mapping', None) == first, self.namespaces())
+        if ns:
+            return ns.get_mapping_by_field('.'.join(rest))
+
         while '.' in field:
             ret = first_or_default(lambda p: p.get == field, self.property_mappings)
             if ret:
                 return ret
 
             field, _ = field.rsplit('.', 1)
+
 
     def add_property(self, **kwargs):
         self.property_mappings.append(PropertyMapping(index=len(self.property_mappings), **kwargs))

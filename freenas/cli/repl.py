@@ -421,7 +421,7 @@ class Context(object):
                         )
                     ))
 
-                    self.print_validation_errors(task)
+                    self.print_validation_errors(wrap(task))
 
             if task['state'] == 'ABORTED':
                 self.output_queue.put(_("Task #{0} aborted".format(task['id'])))
@@ -628,6 +628,9 @@ class Context(object):
 
         if not nsclass:
             return
+
+        if callable(nsclass) and not inspect.isclass(nsclass):
+            nsclass = nsclass(self, task)
 
         entityns = nsclass('<temp>', self)
         namespace = SingleItemNamespace('<temp>', entityns)

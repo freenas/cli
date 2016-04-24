@@ -28,7 +28,7 @@
 import gettext
 import os
 from freenas.cli.namespace import (
-    EntityNamespace, Command, EntitySubscriberBasedLoadMixin, description
+    EntityNamespace, Command, EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, description
 )
 from freenas.cli.output import ValueType
 from freenas.cli.utils import post_save
@@ -40,7 +40,7 @@ _ = t.gettext
 
 
 @description("Provides information about installed disks")
-class DisksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
+class DisksNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
     """
     The disk namespace lists the disks recognized by the system.
     Type 'show' for more details about the disks.
@@ -51,6 +51,8 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         super(DisksNamespace, self).__init__(name, context)
 
         self.entity_subscriber_name = 'disk'
+        self.primary_key_name = 'name'
+        self.update_task = 'disk.update'
         self.extra_query_params = [
             ('online', '=', True)
         ]
@@ -228,7 +230,7 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
 
     def get_one(self, name):
         ret = self.context.entity_subscribers[self.entity_subscriber_name].query(
-            ('path', '=', os.path.join('/dev', name)), *self.extra_query_params,
+            ('name', '=', name), *self.extra_query_params,
             single=True
         )
 
@@ -252,13 +254,6 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             return 'part of volume {0}'.format(disp['name'])
 
         return 'unknown'
-
-    def save(self, this, new=False):
-        self.context.submit_task(
-            'disk.update',
-            this.entity['id'],
-            this.get_diff(),
-            callback=lambda s, t: post_save(this, s, t))
 
 
 @description("Formats given disk")
@@ -297,3 +292,4 @@ class EraseDiskCommand(Command):
 
 def _init(context):
     context.attach_namespace('/', DisksNamespace('disk', context))
+    context.map_tasks('disk.*', DisksNamespace)

@@ -98,7 +98,7 @@ class AsciiOutputFormatter(object):
             return value
 
         if vt == ValueType.STRING:
-            return value
+            return format_literal(value)
 
         if vt == ValueType.NUMBER:
             return str(value)

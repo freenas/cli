@@ -91,6 +91,7 @@ class DirectoriesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, E
         def get_entity_namespaces(this):
             PROVIDERS = {
                 'winbind': ActiveDirectoryPropertiesNamespace,
+                'ldap': LDAPPropertiesNamespace
             }
 
             this.load()
@@ -140,6 +141,48 @@ class ActiveDirectoryPropertiesNamespace(BaseDirectoryPropertiesNamespace):
             name='password',
             get=None,
             set='password'
+        )
+
+
+class LDAPPropertiesNamespace(BaseDirectoryPropertiesNamespace):
+    def __init__(self, name, context, parent):
+        super(LDAPPropertiesNamespace, self).__init__(name, context, parent)
+
+        self.add_property(
+            descr='Server address',
+            name='server',
+            get='server'
+        )
+
+        self.add_property(
+            descr='Base DN',
+            name='base_dn',
+            get='base_dn'
+        )
+
+        self.add_property(
+            descr='Bind DN',
+            name='bind_dn',
+            get='bind_dn'
+        )
+
+        self.add_property(
+            descr='Bind password',
+            name='password',
+            get=None,
+            set='password'
+        )
+
+        self.add_property(
+            descr='User suffix',
+            name='user_suffix',
+            get='user_suffix',
+        )
+
+        self.add_property(
+            descr='Group suffix',
+            name='group_suffix',
+            get='group_suffix',
         )
 
 

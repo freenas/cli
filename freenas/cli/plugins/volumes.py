@@ -669,15 +669,17 @@ class ReplicateCommand(Command):
 
 @description("Datasets")
 class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
-    def __init__(self, name, context, parent):
+    def __init__(self, name, context, parent=None):
         super(DatasetsNamespace, self).__init__(name, context)
         self.parent = parent
         self.path = name
         self.entity_subscriber_name = 'volume.dataset'
         self.required_props = ['name']
 
-        if self.parent.entity:
-            self.extra_query_params = [('volume', '=', self.parent.entity['id'])]
+        if self.parent and self.parent.entity:
+            self.extra_query_params = [
+                ('volume', '=', self.parent.entity['id'])
+            ]
 
         self.localdoc['CreateEntityCommand'] = ("""\
             Usage: create <volume>/<dataset>
@@ -879,7 +881,7 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
 
 @description("Snapshots")
 class SnapshotsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
-    def __init__(self, name, context, parent):
+    def __init__(self, name, context, parent=None):
         super(SnapshotsNamespace, self).__init__(name, context)
         self.parent = parent
         self.entity_subscriber_name = 'volume.snapshot'
@@ -888,12 +890,14 @@ class SnapshotsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Ent
         self.delete_task = 'volume.snapshot.delete'
         self.primary_key_name = 'id'
         self.required_props = ['name', 'dataset']
-        self.extra_query_params = [
-            ('volume', '=', self.parent.name)
-        ]
+
+        if parent:
+            self.extra_query_params = [
+                ('volume', '=', self.parent.name)
+            ]
 
         self.skeleton_entity = {
-            'volume': self.parent.name,
+            'volume': self.parent.name if parent else None,
             'recursive': False
         }
 
@@ -1339,3 +1343,6 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
 
 def _init(context):
     context.attach_namespace('/', VolumesNamespace('volume', context))
+    context.map_tasks('volume.dataset.*', DatasetsNamespace)
+    context.map_tasks('volume.snapshot.*', SnapshotsNamespace)
+    context.map_tasks('volume.*', VolumesNamespace)

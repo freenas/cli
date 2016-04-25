@@ -391,7 +391,7 @@ class NFSSharesNamespace(BaseSharesNamespace):
             descr='Root user',
             name='root_user',
             usage=_("""
-            If set, the root user is limited to the specified user’s
+            If set, the root user is limited to the specified user's
             permissions. This setting prevents 'all_user' from being
             set."""),
             get='properties.maproot_user',
@@ -402,7 +402,7 @@ class NFSSharesNamespace(BaseSharesNamespace):
             descr='Root group',
             name='root_group',
             usage=_("""
-            If set, the root user is limited to the specified group’s
+            If set, the root user is limited to the specified group's
             permissions. This setting prevents 'all_group' from being
             set."""),
             get='properties.maproot_group',
@@ -413,7 +413,7 @@ class NFSSharesNamespace(BaseSharesNamespace):
             descr='All user',
             name='all_user',
             usage=_("""
-            If set, the specified user’s permissions are used by all
+            If set, the specified user's permissions are used by all
             NFS clients. This setting prevents 'root_user' from being
             set."""),
             get='properties.mapall_user',
@@ -424,7 +424,7 @@ class NFSSharesNamespace(BaseSharesNamespace):
             descr='All group',
             name='all_group',
             usage=_("""
-            If set, the specified group’s permissions are used by all
+            If set, the specified group's permissions are used by all
             NFS clients. This setting prevents root_group' from being
             set."""),
             get='properties.mapall_group',
@@ -647,7 +647,7 @@ class SMBSharesNamespace(BaseSharesNamespace):
             name='browseable',
             usage=_("""
             Can be set to yes or no. When set to yes, users see the
-            contents of other users’ home directories. When set to no,
+            contents of other users' home directories. When set to no,
             users see only their own home directory."""),
             get='properties.browseable',
             list=False,
@@ -708,7 +708,7 @@ class WebDAVSharesNamespace(BaseSharesNamespace):
             name='permission',
             usage=_("""
             Can be set to yes or no. When set to yes, it automatically sets
-            the share’s permissions to the webdav user and group."""),
+            the share's permissions to the webdav user and group."""),
             get='properties.permission',
             list=True,
             type=ValueType.BOOLEAN
@@ -1097,5 +1097,33 @@ class ISCSISharesNamespace(BaseSharesNamespace):
         ]
 
 
+def find_share_namespace(context, task):
+    if task['name'] == 'share.create':
+        share_type = task.get('args.0.type')
+
+    elif task['name'] == 'share.update':
+        share_id = task.get('args.0')
+        share_type = context.entity_subscribers['share'].query(('id', '=', share_id), single=True)
+
+    else:
+        return
+
+    if share_type == 'smb':
+        return SMBSharesNamespace
+
+    if share_type == 'nfs':
+        return NFSSharesNamespace
+
+    if share_type == 'afp':
+        return AFPSharesNamespace
+
+    if share_type == 'webdav':
+        return WebDAVSharesNamespace
+
+    if share_type == 'iscsi':
+        return ISCSISharesNamespace
+
+
 def _init(context):
     context.attach_namespace('/', SharesNamespace('share', context))
+    context.map_tasks('share.*', find_share_namespace)

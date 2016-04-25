@@ -27,10 +27,10 @@
 
 import copy
 import gettext
-from freenas.cli.output import Sequence, Table, Object, format_value
+from freenas.cli.output import Sequence, Object, format_value
 from freenas.cli.namespace import (
     ItemNamespace, EntityNamespace, Command, EntitySubscriberBasedLoadMixin,
-    TaskBasedSaveMixin, CommandException, description
+    TaskBasedSaveMixin, NestedEntityMixin, description
 )
 from freenas.cli.complete import EnumComplete
 from freenas.cli.output import ValueType, Table
@@ -40,9 +40,11 @@ t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
 
 
-@description("List or dismiss system alerts")
+@description("Backup Snapshots")
 class BackupNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):
     """
+    The backup namespace provides commands for configuring backups to an SSH
+    server or Amazon S3.
     """
     def __init__(self, name, context):
         super(BackupNamespace, self).__init__(name, context)
@@ -56,6 +58,8 @@ class BackupNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
             descr='Name',
             name='name',
             get='name',
+            usage=_("""\
+            Mandatory, alphanumeric name for the backup task."""),
             list=True
         )
 
@@ -63,6 +67,8 @@ class BackupNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
             descr='Provider',
             name='provider',
             get='provider',
+            usage=_("""\
+            Mandatory. Supported values are "ssh" or "s3"."""),
             list=True
         )
 
@@ -70,6 +76,8 @@ class BackupNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
             descr='Name',
             name='dataset',
             get='dataset',
+            usage=_("""\
+            Mandatory. Name of dataset to backup."""),
             list=True
         )
 
@@ -77,6 +85,9 @@ class BackupNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
             descr='Recursive',
             name='recursive',
             get='recursive',
+            usage=_("""\
+            Can be set to true or false, where the default is true.
+            Indicates whether or not child datasets are also backed up."""),
             list=True,
             type=ValueType.BOOLEAN
         )
@@ -85,6 +96,9 @@ class BackupNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
             descr='Compression',
             name='compression',
             get='compression',
+            usage=_("""\
+            Indicates whether or not to compress the backup. Can be set to NONE
+            or GZIP."""),
             list=True,
             enum=['NONE', 'GZIP']
         )
@@ -110,18 +124,12 @@ class BackupNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
         }
 
 
-class BackupBasePropertiesNamespace(ItemNamespace):
+class BackupBasePropertiesNamespace(NestedEntityMixin, ItemNamespace):
     def __init__(self, name, context, parent):
         super(BackupBasePropertiesNamespace, self).__init__(name)
         self.context = context
         self.parent = parent
-
-    def load(self):
-        self.entity = self.parent.entity['properties']
-        self.orig_entity = copy.deepcopy(self.entity)
-
-    def save(self):
-        return self.parent.save()
+        self.parent_entity_path = 'properties'
 
 
 class BackupSSHPropertiesNamespace(BackupBasePropertiesNamespace):
@@ -131,18 +139,26 @@ class BackupSSHPropertiesNamespace(BackupBasePropertiesNamespace):
         self.add_property(
             descr='Hostname',
             name='hostname',
+            usage=_("""\
+            Hostname or IP address of SSH server. To also specify an
+            alternative port, append with ":port_number"."""),
             get='hostport'
         )
 
         self.add_property(
             descr='Username',
             name='username',
+            usage=_("""\
+            Case sensitive username to login as. The user must already exist
+            on the SSH server."""),
             get='username'
         )
 
         self.add_property(
             descr='Password',
             name='password',
+            usage=_("""\
+            Case sensitive password associated with the username."""),
             get=None,
             set='password'
         )
@@ -150,6 +166,8 @@ class BackupSSHPropertiesNamespace(BackupBasePropertiesNamespace):
         self.add_property(
             descr='Directory',
             name='directory',
+            usage=_("""\
+            Name of existing directory to save the backups to."""),
             get='directory'
         )
 
@@ -161,30 +179,43 @@ class BackupS3PropertiesNamespace(BackupBasePropertiesNamespace):
         self.add_property(
             descr='Access key',
             name='access_key',
+            usage=_("""\
+            Enclose the access ID for the Amazon AWS account between double
+            quotes."""),
             get='access_key'
         )
 
         self.add_property(
             descr='Secret key',
             name='secret_key',
+            usage=_("""\
+            Enclose the secret key for the Amazon AWS account between double
+            quotes."""),
             get='secret_key'
         )
 
         self.add_property(
             descr='Bucket',
             name='bucket',
+            usage=_("""\
+            Enclose the valid hostname label between double quotes.
+            This assumes you have already created a bucket."""),
             get='bucket'
         )
 
         self.add_property(
             descr='Folder',
             name='folder',
+            usage=_("""\
+            The name of the folder within the bucket to backup to."""),
             get='folder'
         )
 
         self.add_property(
             descr='Region',
             name='region',
+            usage=_("""\
+            Optional region associated with the bucket."""),
             get='region'
         )
 

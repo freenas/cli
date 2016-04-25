@@ -652,6 +652,8 @@ class RoutesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Entity
             descr='Name',
             name='name',
             get='id',
+            usage=_("""\
+            Alphanumeric name for the route."""),
             list=True
         )
 
@@ -659,6 +661,9 @@ class RoutesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Entity
             descr='Address family',
             name='type',
             get='type',
+            usage=_("""\
+            Indicates the type of route. Can be set to "INET" or
+            "INET6"."""),
             list=True,
             enum=['INET', 'INET6']
         )
@@ -666,6 +671,9 @@ class RoutesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Entity
         self.add_property(
             descr='Gateway',
             name='gateway',
+            usage=_("""\
+            The address to add to the routing table, enclosed within
+            double quotes."""),
             get='gateway',
             list=True
         )
@@ -673,6 +681,9 @@ class RoutesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Entity
         self.add_property(
             descr='Network',
             name='network',
+            usage=_("""\
+            The network address to associate with this route, enclosed
+            within double quotes."""),
             get='network',
             list=True
         )
@@ -681,6 +692,9 @@ class RoutesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Entity
             descr='Subnet prefix',
             name='netmask',
             get='netmask',
+            usage=_("""\
+            The subnet mask for the route, in CIDR or dotted quad
+            notation, enclosed within double quotes."""),
             set=set_netmask,
         )
 
@@ -698,6 +712,8 @@ class IPMINamespace(EntityNamespace):
             descr='Channel',
             name='id',
             get='id',
+            usage=_("""\
+            Number representing the channel to use."""),
             set=None,
             list=True
         )
@@ -706,6 +722,10 @@ class IPMINamespace(EntityNamespace):
             descr='DHCP',
             name='dhcp',
             get='dhcp',
+            usage=_("""\
+            Indicates whether or not to receive addressing information
+            from a DHCP server. Can be set to true or false, with a default
+            of true."""),
             list=True,
             type=ValueType.BOOLEAN
         )
@@ -713,6 +733,9 @@ class IPMINamespace(EntityNamespace):
         self.add_property(
             descr='IP Address',
             name='address',
+            usage=_("""\
+            When using a static IP address instead of DHCP, specify it between
+            double quotes."""),
             get='address',
             list=True
         )
@@ -721,6 +744,9 @@ class IPMINamespace(EntityNamespace):
             descr='Netmask',
             name='netmask',
             get='netmask',
+            usage=_("""\
+            When using a static address instead of DHCP, specify the subnet mask, in
+            either CIDR or dotted quad notation, between double quotes."""),
             set=set_netmask,
             list=True
         )
@@ -728,6 +754,9 @@ class IPMINamespace(EntityNamespace):
         self.add_property(
             descr='Gateway',
             name='gateway',
+            usage=_("""\
+            When using a static address instead of DHCP, specify the IP address of
+            the default gateway between double quotes."""),
             get='gateway',
             list=False
         )
@@ -735,6 +764,9 @@ class IPMINamespace(EntityNamespace):
         self.add_property(
             descr='VLAN ID',
             name='vlan_id',
+            usage=_("""\
+            When the IPMI out-of-band management interface is not on the same VLAN as
+            management networking, specify the VLAN number."""),
             get='vlan_id',
             list=False
         )
@@ -742,6 +774,9 @@ class IPMINamespace(EntityNamespace):
         self.add_property(
             descr='Password',
             name='password',
+            usage=_("""\
+            Specify the password used to connect to the IPMI interface between double
+            quotes."""), 
             get=None,
             set='password',
             list=False
@@ -794,3 +829,7 @@ class NetworkNamespace(Namespace):
 
 def _init(context):
     context.attach_namespace('/', NetworkNamespace('network', context))
+    context.map_tasks('network.interface.*', InterfacesNamespace)
+    context.map_tasks('network.route.*', RoutesNamespace)
+    context.map_tasks('network.host.*', HostsNamespace)
+    context.map_tasks('network.config.*', GlobalConfigNamespace)

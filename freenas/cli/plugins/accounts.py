@@ -360,7 +360,7 @@ class GroupsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
             name='gid',
             get='gid',
             set='gid',
-            usersetable=False,            
+            usersetable=False,
             type=ValueType.NUMBER,
             usage=_("""\
             Group ID. Read-only value assigned by operating
@@ -399,3 +399,5 @@ class AccountNamespace(Namespace):
 
 def _init(context):
     context.attach_namespace('/', AccountNamespace('account', context))
+    context.map_tasks('user.*', UsersNamespace)
+    context.map_tasks('group.*', GroupsNamespace)

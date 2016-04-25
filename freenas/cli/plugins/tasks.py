@@ -182,6 +182,16 @@ class TasksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             set=None
         )
 
+        self.add_property(
+            descr='Validation errors',
+            name='validation',
+            get=self.describe_validation_errors,
+            type=ValueType.SET,
+            set=None,
+            list=False,
+            condition=lambda t: t.get('error.type') == 'ValidationException'
+        )
+
         self.primary_key = self.get_mapping('id')
         self.entity_commands = lambda this: {
             'abort': AbortCommand(this)
@@ -194,6 +204,9 @@ class TasksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
 
     def serialize(self):
         raise NotImplementedError()
+
+    def describe_validation_errors(self, task):
+        return ('{0}: {1}'.format(p, m) for p, __, m in self.context.get_validation_errors(task))
 
     def describe_task(self, task):
         return tasks.translate(self.context, task['name'], task['args'])

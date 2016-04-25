@@ -51,11 +51,12 @@ from six.moves.urllib.parse import urlparse
 from socket import gaierror as socket_error
 from freenas.cli.descriptions import events
 from freenas.cli.descriptions import tasks
-from freenas.cli.utils import PrintableNone, SIGTSTPException, SIGTSTP_setter
+from freenas.cli.utils import PrintableNone, SIGTSTPException, SIGTSTP_setter, errors_by_path
 from freenas.cli import functions
 from freenas.cli import config
 from freenas.cli.namespace import (
-    Namespace, RootNamespace, Command, FilteringCommand, PipeCommand, CommandException
+    Namespace, EntityNamespace, RootNamespace, SingleItemNamespace, ConfigNamespace, Command,
+    FilteringCommand, PipeCommand, CommandException, EntitySubscriberBasedLoadMixin
 )
 from freenas.cli.parser import (
     parse, unparse, Symbol, Literal, BinaryParameter, UnaryExpr, BinaryExpr, PipeExpr, AssignmentStatement,
@@ -65,12 +66,12 @@ from freenas.cli.parser import (
 )
 from freenas.cli.output import (
     ValueType, ProgressBar, Sequence, output_lock, output_msg, read_value, format_value,
-    format_output, output_msg_locked, refresh_prompt
+    format_output, output_msg_locked
 )
 from freenas.dispatcher.client import Client, ClientError
 from freenas.dispatcher.entity import EntitySubscriber
 from freenas.dispatcher.rpc import RpcException
-from freenas.utils import first_or_default, include
+from freenas.utils import first_or_default, include, best_match
 from freenas.utils.query import QueryDict, wrap
 from freenas.cli.commands import (
     ExitCommand, PrintenvCommand, SetenvCommand, ShellCommand, HelpCommand,
@@ -123,6 +124,7 @@ ENTITY_SUBSCRIBERS = [
     'network.interface',
     'network.host',
     'network.route',
+    'service',
     'share',
     'task',
     'alert',
@@ -335,6 +337,7 @@ class Context(object):
         self.plugin_dirs = []
         self.task_callbacks = {}
         self.plugins = {}
+        self.reverse_task_mappings = {}
         self.variables = VariableStore()
         self.root_ns = RootNamespace('')
         self.event_masks = ['*']
@@ -421,6 +424,8 @@ class Context(object):
                             task['error'].get('message', '') if task.get('error') else ''
                         )
                     ))
+
+                    self.print_validation_errors(wrap(task))
 
             if task['state'] == 'ABORTED':
                 self.output_queue.put(_("Task #{0} aborted".format(task['id'])))
@@ -589,6 +594,9 @@ class Context(object):
 
         ptr.register_namespace(ns)
 
+    def map_tasks(self, task_wildcard, cls):
+        self.reverse_task_mappings[task_wildcard] = cls
+
     def connection_error(self, event, **kwargs):
         if event == ClientError.LOGOUT:
             self.output_queue.put('Logged out from server.')
@@ -615,6 +623,65 @@ class Context(object):
 
         self.print_event(event, data)
 
+    def get_validation_errors(self, task):
+        __, nsclass = best_match(
+            self.reverse_task_mappings.items(),
+            task['name'],
+            key=lambda f: f[0],
+            default=(None, None)
+        )
+
+        if not nsclass:
+            return
+
+        if callable(nsclass) and not inspect.isclass(nsclass):
+            nsclass = nsclass(self, task)
+
+        if not nsclass:
+            return
+
+        entityns = nsclass('<temp>', self) if inspect.isclass(nsclass) else nsclass
+
+        if isinstance(entityns, EntityNamespace):
+            namespace = SingleItemNamespace('<temp>', entityns)
+            if task['name'] == entityns.update_task:
+                # Update tasks have updated_params as second argument
+                errors = errors_by_path(task['error']['extra'], [1])
+                obj_id = task.get('args.0')
+            elif task['name'] == entityns.create_task:
+                # Create tasks have object as first argument
+                errors = errors_by_path(task['error']['extra'], [0])
+                obj_id = task.get('args.0.id')
+            else:
+                return
+        elif isinstance(entityns, ConfigNamespace):
+            namespace = entityns
+            if task['name'] == entityns.update_task:
+                errors = errors_by_path(task['error']['extra'], [0])
+            else:
+                return
+        else:
+            return
+
+        if isinstance(entityns, EntityNamespace):
+            entity_subscriber_name, __ = task['name'].rsplit('.', 1)
+            if entity_subscriber_name in self.entity_subscribers:
+                obj = self.entity_subscribers[entity_subscriber_name].query(('id', '=', obj_id), single=True)
+                if obj:
+                    namespace.name = obj[entityns.primary_key_name]
+                    namespace.load()
+
+        for i in errors:
+            pathname = '.'.join(str(p) for p in i['path'])
+            property = namespace.get_mapping_by_field(pathname)
+            yield property.name if property else pathname, i['code'], i['message']
+
+    def print_validation_errors(self, task):
+        if task.get('error.type') == 'ValidationException':
+            errors = self.get_validation_errors(task)
+            for prop, __, msg in errors:
+                self.output_queue.put(_("Task #{0} validation error: {1}: {2}".format(task['id'], prop, msg)))
+
     def output_thread(self):
         while True:
             item = self.output_queue.get()
@@ -637,9 +704,7 @@ class Context(object):
         return wrap(self.connection.call_sync(name, *args, **kwargs))
 
     def call_task_sync(self, name, *args, **kwargs):
-        self.ml.skip_prompt_print = True
         wrapped_result = wrap(self.connection.call_task_sync(name, *args))
-        self.ml.skip_prompt_print = False
         return wrapped_result
 
     def submit_task_common_routine(self, name, callback, *args):
@@ -854,7 +919,6 @@ class MainLoop(object):
         self.namespaces = []
         self.aliases = {}
         self.connection = None
-        self.skip_prompt_print = False
         self.saved_state = None
         self.cached_values = {
             'rel_cwd': None,
@@ -1580,9 +1644,8 @@ class MainLoop(object):
         sys.stdout.write('\x1b[0G')
 
     def restore_readline(self):
-        if not self.skip_prompt_print:
-            sys.stdout.write(self.__get_prompt() + readline.get_line_buffer().rstrip())
-            sys.stdout.flush()
+        sys.stdout.write(self.__get_prompt() + readline.get_line_buffer().rstrip())
+        sys.stdout.flush()
 
 
 def main():

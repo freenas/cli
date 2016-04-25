@@ -29,7 +29,7 @@ import copy
 import gettext
 from freenas.cli.namespace import (
     Namespace, ItemNamespace, EntityNamespace, RpcBasedLoadMixin, TaskBasedSaveMixin,
-    Command, description
+    Command, NestedEntityMixin, description
 )
 from freenas.cli.output import ValueType
 from freenas.cli.utils import post_save
@@ -95,7 +95,7 @@ class ServicesNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
             descr='State',
             name='state',
             get='state',
-            usage= _("""
+            usage=_("""
             Indicates whether the service is RUNNING or STOPPED.
             Read-only value assigned by the operating system."""),
             set=None,
@@ -106,19 +106,24 @@ class ServicesNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
             descr='Process ID',
             name='pid',
             get='pid',
-            usage= _("""
+            usage=_("""
             Process ID of the RUNNING service. Read-only value assigned
             by the operating system."""),
             set=None,
             list=True
         )
 
+        self.add_property(
+            descr='Service configuration',
+            name='config',
+            get='config',
+            list=False,
+            ns=lambda this: ServiceConfigNamespace('config', context, this)
+        )
+
         self.primary_key = self.get_mapping('name')
         self.allow_edit = False
         self.allow_create = False
-        self.entity_namespaces = lambda this: [
-            ServiceConfigNamespace('config', context, this)
-        ]
         self.entity_serialize = self.child_serialize
         self.entity_commands = lambda this: {
             'start': ServiceManageCommand(this, 'start'),
@@ -131,11 +136,12 @@ class ServicesNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
         return Namespace.serialize(this)
 
 
-class ServiceConfigNamespace(ItemNamespace):
+class ServiceConfigNamespace(NestedEntityMixin, ItemNamespace):
     def __init__(self, name, context, parent):
         super(ServiceConfigNamespace, self).__init__(name)
         self.context = context
         self.parent = parent
+        self.parent_entity_path = 'config'
 
         self.add_property(
             descr='Enabled',
@@ -147,13 +153,6 @@ class ServiceConfigNamespace(ItemNamespace):
 
         self.get_properties(parent.name)
 
-    def load(self):
-        self.entity = self.parent.entity['config']
-        self.orig_entity = copy.deepcopy(self.entity)
-
-    def save(self):
-        return self.parent.save()
-
     def get_properties(self, name):
         svc_props = svc_cli_config.get(name)
         if svc_props:
@@ -163,6 +162,7 @@ class ServiceConfigNamespace(ItemNamespace):
 
 def _init(context):
     context.attach_namespace('/', ServicesNamespace('service', context))
+    context.map_tasks('service.*', ServicesNamespace)
 
 
 # This is not ideal (but better than an if-else ladder)
@@ -180,7 +180,7 @@ svc_cli_config = {
             'usage': _("""
             Can be set to yes. If set to yes, properly
             configured key-based authentication for all users
-            is required."""),
+            is possible."""),
             'get': 'allow_pubkey_auth',
             'type': ValueType.BOOLEAN
         },
@@ -214,7 +214,7 @@ svc_cli_config = {
             'name': 'allow_port_forwarding',
             'usage': _("""
             Can be set to yes or no. If set to yes, users can
-            bypass firewall restrictions using SSH’s port forwarding
+            bypass firewall restrictions using SSH's port forwarding
             feature."""),
             'get': 'allow_port_forwarding',
             'type': ValueType.BOOLEAN
@@ -1053,58 +1053,6 @@ svc_cli_config = {
             'type': ValueType.STRING
         },
     ],
-    "haproxy": [
-        {
-            'descr': 'Global maximum connections',
-            'name': 'global_maxconn',
-            'get': 'global_maxconn',
-            'type': ValueType.NUMBER
-        },
-        {
-            'descr': 'Default maximum connections',
-            'name': 'default_maxconn',
-            'get': 'defaults_maxconn',
-            'type': ValueType.NUMBER
-        },
-        {
-            'descr': 'HTTP IP address',
-            'name': 'http_ip',
-            'get': 'http_ip',
-            'type': ValueType.STRING
-        },
-        {
-            'descr': 'HTTP port',
-            'name': 'http_port',
-            'get': 'http_port',
-            'type': ValueType.NUMBER
-        },
-        {
-            'descr': 'HTTPS IP address',
-            'name': 'https_ip',
-            'get': 'https_ip',
-            'type': ValueType.STRING
-        },
-        {
-            'descr': 'HTTPS port',
-            'name': 'https_port',
-            'get': 'https_port',
-            'type': ValueType.NUMBER
-        },
-        {
-            'descr': 'Frontend mode',
-            'name': 'frontend_mode',
-            'get': 'frontend_mode',
-            'enum': ['HTTP', 'TCP'],
-            'type': ValueType.STRING
-        },
-        {
-            'descr': 'Backend mode',
-            'name': 'backend_mode',
-            'get': 'backend_mode',
-            'enum': ['HTTP', 'TCP'],
-            'type': ValueType.STRING
-        },
-    ],
     "iscsi": [
         {
             'descr': 'Base name',
@@ -1130,7 +1078,7 @@ svc_cli_config = {
             'name': 'isns_servers',
             'usage': _("""
             Space delimited list of hostnames or IP addresses of ISNS server(s)
-            to register the system’s iSCSI targets and portals with. Enclose
+            to register the system's iSCSI targets and portals with. Enclose
             the list between double quotes."""),
             'get': 'isns_servers',
             'type': ValueType.SET
@@ -1600,228 +1548,5 @@ svc_cli_config = {
             'get': 'auxiliary',
             'type': ValueType.STRING,
         },
-    ],
-    'stanchion': [
-        {
-            'descr': 'Listener IP',
-            'name': 'listener_ip',
-            'usage': _(""" """),
-            'get': 'listener_ip',
-            'type': ValueType.STRING,
-        },
-        {
-            'descr': 'Listener Port',
-            'name': 'listener_port',
-            'usage': _(""" """),
-            'get': 'listener_port',
-            'type': ValueType.NUMBER,
-        },
-        {
-            'descr': 'Riak Host IP',
-            'name': 'riak_host_ip',
-            'usage': _(""" """),
-            'get': 'riak_host_ip',
-            'type': ValueType.STRING,
-        },
-        {
-            'descr': 'Riak Host Port',
-            'name': 'riak_host_port',
-            'usage': _(""" """),
-            'get': 'riak_host_port',
-            'type': ValueType.NUMBER,
-        },
-        {
-            'descr': 'Node name',
-            'name': 'nodename',
-            'usage': _(""" """),
-            'get': 'nodename',
-            'type': ValueType.STRING,
-        },
-        {
-            'descr': 'Node IP',
-            'name': 'node_ip',
-            'usage': _(""" """),
-            'get': 'node_ip',
-            'type': ValueType.STRING,
-        },
-        {
-            'descr': 'Log console level',
-            'name': 'log_console_level',
-            'usage': _(""" """),
-            'get': 'log_console_level',
-            'type': ValueType.STRING,
-            'enum': ['NONE', 'DEBUG', 'INFO', 'WARNING', 'CRITICAL', 'ALERT', 'EMERGENCY', 'ERROR'],
-        },
-        {
-            'descr': 'Admin Key',
-            'name': 'admin_key',
-            'usage': _(""" """),
-            'get': 'admin_key',
-            'type': ValueType.STRING,
-        },       {
-            'descr': 'Admin Secret',
-            'name': 'admin_secret',
-            'usage': _(""" """),
-            'get': 'admin_secret',
-            'type': ValueType.STRING,
-        },
-    ],
-    'riak': [
-        {
-            'descr': 'Save Description',
-            'name': 'save_description',
-            'usage': _(""" """),
-            'get': 'save_description',
-            'type': ValueType.BOOLEAN,
-        },
-        {
-            'descr': 'Node name',
-            'name': 'nodename',
-            'usage': _(""" """),
-            'get': 'nodename',
-            'type': ValueType.STRING,
-        },
-        {
-            'descr': 'Node IP',
-            'name': 'node_ip',
-            'usage': _(""" """),
-            'get': 'node_ip',
-            'type': ValueType.STRING,
-        },
-        {
-            'descr': 'Log Console Level',
-            'name': 'log_console_level',
-            'usage': _(""" """),
-            'get': 'log_console_level',
-            'type': ValueType.STRING,
-            'enum': ['NONE', 'DEBUG', 'INFO', 'WARNING', 'CRITICAL', 'ALERT',  'EMERGENCY', 'ERROR']
-        },
-        {
-            'descr': 'Storage Backend',
-            'name': 'storage_backend',
-            'usage': _(""" """),
-            'get': 'storage_backend',
-            'type': ValueType.STRING,
-            'enum': ['BITCASK', 'LEVELDB', 'MEMORY', 'MULTI', 'PREFIX_MULTI']
-        },
-        {
-            'descr': 'Buckets Default Allow Multi',
-            'name': 'buckets_default_allow_multi',
-            'usage': _(""" """),
-            'get': 'buckets_default_allow_multi',
-            'type': ValueType.BOOLEAN,
-        },
-        {
-            'descr': 'Riak control',
-            'name': 'riak_control',
-            'usage': _(""" """),
-            'get': 'riak_control',
-            'type': ValueType.BOOLEAN,
-        },
-        {
-            'descr': 'Listener HTTP Internal',
-            'name': 'listener_http_internal',
-            'usage': _(""" """),
-            'get': 'listener_http_internal',
-            'type': ValueType.STRING,
-        },
-        {
-            'descr': 'Listener HTTP Internal Port',
-            'name': 'listener_http_internal_port',
-            'usage': _(""" """),
-            'get': 'listener_http_internal_port',
-            'type': ValueType.NUMBER,
-        },
-        {
-            'descr': 'Listener Protobuf Internal',
-            'name': 'listener_protobuf_internal',
-            'usage': _(""" """),
-            'get': 'listener_protobuf_internal',
-            'type': ValueType.STRING,
-        },
-        {
-            'descr': 'Listener Protobuf Internal Port',
-            'name': 'listener_protobuf_internal_port',
-            'usage': _(""" """),
-            'get': 'listener_protobuf_internal_port',
-            'type': ValueType.NUMBER,
-        },
-        {
-            'descr': 'Listener HTTPS Internal',
-            'name': 'listener_https_internal',
-            'usage': _(""" """),
-            'get': 'listener_https_internal',
-            'type': ValueType.STRING,
-        },
-        {
-            'descr': 'Listener HTTPS Internal Port',
-            'name': 'listener_https_internal_port',
-            'usage': _(""" """),
-            'get': 'listener_https_internal_port',
-            'type': ValueType.NUMBER,
-        },
-        {
-            'descr': 'Object Size Warning Threshold',
-            'name': 'object_size_warning_threshold',
-            'usage': _(""" """),
-            'get': 'object_size_warning_threshold',
-            'type': ValueType.STRING,
-        },
-        {
-            'descr': 'Object Size Maximum',
-            'name': 'object_size_maximum',
-            'usage': _(""" """),
-            'get': 'object_size_maximum',
-            'type': ValueType.STRING,
-        },
-    ],
-    "swift": [
-        {
-            'descr': 'Hash Path Prefix',
-            'name': 'hash_path_prefix',
-            'usage': _("""String to be prefixed to Swift Hash Path"""),
-            'get': 'swift_hash_path_prefix',
-            'type': ValueType.STRING,
-        },
-        {
-            'descr': 'Hash Path Suffix',
-            'name': 'hash_path_suffix',
-            'usage': _("""String to be suffixed to Swift Hash Path"""),
-            'get': 'swift_hash_path_suffix',
-            'type': ValueType.STRING,
-        },
-    ],
+    ]
 }
-
-# A lot of riack_cs properties are stanchion repeats thus doing it in the following way:
-svc_cli_config['riak_cs'] = svc_cli_config['stanchion'].copy()
-svc_cli_config['riak_cs'].extend([
-    {
-        'descr': 'Stanchion Host IP',
-        'name': 'stanchion_host_ip',
-        'usage': _("""Stanchion Host IP"""),
-        'get': 'stanchion_host_ip',
-        'type': ValueType.STRING,
-    },
-    {
-        'descr': 'Stanchion Host Port',
-        'name': 'stanchion_host_port',
-        'usage': _("""Stanchion Host Port"""),
-        'get': 'stanchion_host_port',
-        'type': ValueType.NUMBER,
-    },
-    {
-        'descr': 'Anonymous User Creation',
-        'name': 'anonymous_user_creation',
-        'usage': _("""Boolean flag to allow/disallow anonymous user creation"""),
-        'get': 'anonymous_user_creation',
-        'type': ValueType.BOOLEAN,
-    },
-    {
-        'descr': 'Max buckets per User',
-        'name': 'max_buckets_per_user',
-        'usage': _("""Specify the maximum number of buckets per user"""),
-        'get': 'max_buckets_per_user',
-        'type': ValueType.NUMBER,
-    },
-])

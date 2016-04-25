@@ -201,9 +201,10 @@ class PropertyMapping(object):
         self.createsetable = kwargs.pop('createsetable', True)
         self.regex = kwargs.pop('regex', None)
         self.condition = kwargs.pop('condition', None)
+        self.ns = kwargs.pop('ns', None)
 
     def is_usersetable(self, obj):
-        if hasattr(self.usersetable, '__call__'):
+        if callable(self.usersetable):
             return self.usersetable(obj)
         else:
             return self.usersetable
@@ -294,6 +295,9 @@ class ItemNamespace(Namespace):
 
             for mapping in self.parent.property_mappings:
                 if not mapping.get:
+                    continue
+
+                if mapping.ns:
                     continue
 
                 if mapping.condition is not None:
@@ -482,14 +486,6 @@ class ItemNamespace(Namespace):
             value = {Literal(k, type(k)): Literal(v, type(v)) for k, v in value.items()}
         return Literal(value, type(value))
 
-    def on_leave(self):
-        # if self.modified:
-        #     output_msg('Object was modified. '
-        #                'Type either "save" or "discard" to leave')
-        #     return False
-
-        return True
-
     def get_name(self):
         return self.name
 
@@ -518,7 +514,19 @@ class ItemNamespace(Namespace):
         return list([x for x in self.property_mappings if x.name == prop])[0]
 
     def get_mapping_by_field(self, field):
-        return first_or_default(lambda p: p.get == field, self.property_mappings)
+        rest = None
+
+        while True:
+            ret = first_or_default(lambda p: p.get == field, self.property_mappings)
+            if ret:
+                if ret.ns:
+                    return ret.ns(self).get_mapping_by_field(rest)
+                return ret
+
+            if '.' not in field:
+                break
+
+            field, rest = field.rsplit('.', 1)
 
     def add_property(self, **kwargs):
         self.property_mappings.append(PropertyMapping(index=len(self.property_mappings), **kwargs))
@@ -561,6 +569,14 @@ class ItemNamespace(Namespace):
             base.update(self.subcommands)
 
         return base
+
+    def namespaces(self):
+        for i in self.nslist:
+            yield i
+
+        for i in self.property_mappings:
+            if i.ns:
+                yield i.ns(self)
 
     def update_commands(self):
         pass
@@ -630,6 +646,7 @@ class ConfigNamespace(ItemNamespace):
             self.get_diff(),
             callback=lambda s, t: post_save(self, s, t)
         )
+
 
 class SingleItemNamespace(ItemNamespace):
     def __init__(self, name, parent, **kwargs):
@@ -1043,11 +1060,18 @@ class EntitySubscriberBasedLoadMixin(object):
     def on_enter(self, *args, **kwargs):
         super(EntitySubscriberBasedLoadMixin, self).on_enter(*args, **kwargs)
         self.context.entity_subscribers[self.entity_subscriber_name].on_delete = self.on_delete
+        self.context.entity_subscribers[self.entity_subscriber_name].on_update = self.on_update
 
     def on_delete(self, entity):
         cwd = self.context.ml.cwd
         if isinstance(cwd, SingleItemNamespace) and cwd.parent == self and cwd.name == entity[self.primary_key_name]:
             self.context.ml.cd_up()
+
+    def on_update(self, old_entity, new_entity):
+        cwd = self.context.ml.cwd
+        if isinstance(cwd, SingleItemNamespace) and cwd.parent == self:
+            cwd.entity[self.primary_key_name] = new_entity['id']
+            cwd.load()
 
     def query(self, params, options):
         if not params and not options:
@@ -1132,3 +1156,19 @@ class NestedObjectSaveMixin(object):
         ))
 
         self.parent.save()
+
+
+class NestedEntityMixin(object):
+    @property
+    def entity(self):
+        return self.parent.entity[self.parent_entity_path]
+
+    @entity.setter
+    def entity(self, value):
+        pass
+
+    def load(self):
+        pass
+
+    def save(self):
+        return self.parent.save()

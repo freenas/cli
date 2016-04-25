@@ -933,7 +933,8 @@ class SnapshotsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Ent
             descr='Replicable',
             name='replicable',
             get='replicable',
-            list=False
+            list=False,
+            type=ValueType.BOOLEAN
         )
 
         self.add_property(

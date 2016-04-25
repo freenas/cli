@@ -95,7 +95,7 @@ class AsciiOutputFormatter(object):
             if not bool(value):
                 return _("empty")
 
-            return AsciiOutputFormatter.format_dict_value(value)
+            return value
 
         if vt == ValueType.STRING:
             return value
@@ -121,16 +121,6 @@ class AsciiOutputFormatter(object):
                 return natural.date.duration(value + delta)
 
             return time.strftime(fmt, time.localtime(value))
-
-    def format_dict_value(value):
-        output = ""
-        for k,v in value.items():
-            if isinstance(v, dict):
-                output+=str(k) + '={' + format_dict_value(v) + '}'
-            else:
-                output+="{0}={1} ".format(k, format_literal(v))
-
-        return output
 
     @staticmethod
     def output_list(data, label, vt=ValueType.STRING, **kwargs):

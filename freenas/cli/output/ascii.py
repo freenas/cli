@@ -146,33 +146,6 @@ class AsciiOutputFormatter(object):
         six.print_(table.draw(), file=file, end=('\n' if kwargs.get('newline', True) else ' '))
 
     @staticmethod
-    def output_table_list(tables):
-        terminal_size = get_terminal_size()[1]
-        widths = []
-        for tab in tables:
-            for i in range(0, len(tab.columns)):
-                current_width = len(tab.columns[i].label)
-                if len(widths) < i + 1:
-                    widths.insert(i, current_width)
-                elif widths[i] < current_width:
-                    widths[i] = current_width
-                for row in tab.data:
-                    current_width = len(resolve_cell(row, tab.columns[i].accessor))
-                    if current_width > widths[i]:
-                        widths[i] = current_width
-
-        if sum(widths) != terminal_size:
-            widths[-1] = terminal_size - sum(widths[:-1]) - len(widths) * 3
-
-        for tab in tables:
-            table = Texttable(max_width=terminal_size)
-            table.set_cols_width(widths)
-            table.set_deco(0)
-            table.header([i.label for i in tab.columns])
-            table.add_rows([[AsciiOutputFormatter.format_value(resolve_cell(row, i.accessor), i.vt) for i in tab.columns] for row in tab.data], False)
-            six.print_(table.draw() + "\n")
-
-    @staticmethod
     def output_object(obj, file=sys.stdout, **kwargs):
 
         values = []
@@ -223,6 +196,7 @@ class AsciiOutputFormatter(object):
         table = Texttable(max_width=max_width)
         table.set_deco(0)
         table.header([i.label for i in tab.columns])
+
         widths = []
         ideal_widths = []
         number_columns = len(tab.columns)
@@ -261,6 +235,7 @@ class AsciiOutputFormatter(object):
                         widths[i] = widths[i] + remaining_space
                         remaining_space = 0
         table.set_cols_width(widths)
+
         table.set_cols_dtype(['t'] * len(tab.columns))
         table.add_rows([[AsciiOutputFormatter.format_value(resolve_cell(row, i.accessor), i.vt) for i in tab.columns] for row in tab.data], False)
         return table

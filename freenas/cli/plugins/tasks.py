@@ -26,7 +26,7 @@
 #####################################################################
 
 import gettext
-from freenas.cli.output import ValueType
+from freenas.cli.output import ValueType, Object
 from freenas.cli.descriptions import tasks
 from freenas.cli.namespace import EntityNamespace, EntitySubscriberBasedLoadMixin, Command, BaseListCommand, description
 from freenas.cli.complete import NullComplete
@@ -67,6 +67,32 @@ class AbortCommand(Command):
 
     def run(self, context, args, kwargs, opargs):
         context.call_sync('task.abort', self.parent.entity['id'])
+
+
+@description("Shows detailed informations about a task")
+class QueryCommand(Command):
+    """
+    Usage: query
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        t = self.parent.entity
+        return Object(
+            Object.Item('ID', 'id', t['id']),
+            Object.Item('Name', 'name', t['name']),
+            Object.Item('State', 'state', t['state']),
+            Object.Item('Started at', 'started_at', t['started_at']),
+            Object.Item('Started by', 'started_by', t['user']),
+            Object.Item('Resources assigned', 'resources', t['resources']),
+            Object.Item('Warnings', 'warnings', t['warnings']),
+            Object.Item('Error', 'error', t['error']),
+            Object.Item('Arguments', 'arguments', t['args']),
+            Object.Item('Result', 'result', t['result']),
+            Object.Item('Output', 'output', t['output']),
+            Object.Item('Resource usage', 'rusage', t['rusage'])
+        )
 
 
 class TaskListCommand(BaseListCommand):
@@ -194,7 +220,8 @@ class TasksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
 
         self.primary_key = self.get_mapping('id')
         self.entity_commands = lambda this: {
-            'abort': AbortCommand(this)
+            'abort': AbortCommand(this),
+            'query': QueryCommand(this)
         }
 
         self.extra_commands = {

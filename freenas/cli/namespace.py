@@ -486,14 +486,6 @@ class ItemNamespace(Namespace):
             value = {Literal(k, type(k)): Literal(v, type(v)) for k, v in value.items()}
         return Literal(value, type(value))
 
-    def on_leave(self):
-        # if self.modified:
-        #     output_msg('Object was modified. '
-        #                'Type either "save" or "discard" to leave')
-        #     return False
-
-        return True
-
     def get_name(self):
         return self.name
 
@@ -1164,3 +1156,19 @@ class NestedObjectSaveMixin(object):
         ))
 
         self.parent.save()
+
+
+class NestedEntityMixin(object):
+    @property
+    def entity(self):
+        return self.parent.entity[self.parent_entity_path]
+
+    @entity.setter
+    def entity(self, value):
+        pass
+
+    def load(self):
+        pass
+
+    def save(self):
+        return self.parent.save()

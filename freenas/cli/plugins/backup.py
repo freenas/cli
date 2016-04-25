@@ -27,10 +27,10 @@
 
 import copy
 import gettext
-from freenas.cli.output import Sequence, Table, Object, format_value
+from freenas.cli.output import Sequence, Object, format_value
 from freenas.cli.namespace import (
     ItemNamespace, EntityNamespace, Command, EntitySubscriberBasedLoadMixin,
-    TaskBasedSaveMixin, CommandException, description
+    TaskBasedSaveMixin, NestedEntityMixin, description
 )
 from freenas.cli.complete import EnumComplete
 from freenas.cli.output import ValueType, Table
@@ -124,18 +124,12 @@ class BackupNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
         }
 
 
-class BackupBasePropertiesNamespace(ItemNamespace):
+class BackupBasePropertiesNamespace(NestedEntityMixin, ItemNamespace):
     def __init__(self, name, context, parent):
         super(BackupBasePropertiesNamespace, self).__init__(name)
         self.context = context
         self.parent = parent
-
-    def load(self):
-        self.entity = self.parent.entity['properties']
-        self.orig_entity = copy.deepcopy(self.entity)
-
-    def save(self):
-        return self.parent.save()
+        self.parent_entity_path = 'properties'
 
 
 class BackupSSHPropertiesNamespace(BackupBasePropertiesNamespace):

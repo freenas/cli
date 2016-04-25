@@ -29,7 +29,7 @@ import copy
 import gettext
 from freenas.cli.namespace import (
     Namespace, ItemNamespace, EntityNamespace, RpcBasedLoadMixin, TaskBasedSaveMixin,
-    Command, description
+    Command, NestedEntityMixin, description
 )
 from freenas.cli.output import ValueType
 from freenas.cli.utils import post_save
@@ -136,12 +136,12 @@ class ServicesNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
         return Namespace.serialize(this)
 
 
-class ServiceConfigNamespace(ItemNamespace):
+class ServiceConfigNamespace(NestedEntityMixin, ItemNamespace):
     def __init__(self, name, context, parent):
         super(ServiceConfigNamespace, self).__init__(name)
         self.context = context
         self.parent = parent
-        self.field_link = 'config'
+        self.parent_entity_path = 'config'
 
         self.add_property(
             descr='Enabled',
@@ -152,13 +152,6 @@ class ServiceConfigNamespace(ItemNamespace):
         )
 
         self.get_properties(parent.name)
-
-    def load(self):
-        self.entity = self.parent.entity['config']
-        self.orig_entity = copy.deepcopy(self.entity)
-
-    def save(self):
-        return self.parent.save()
 
     def get_properties(self, name):
         svc_props = svc_cli_config.get(name)

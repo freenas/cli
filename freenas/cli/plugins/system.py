@@ -224,16 +224,6 @@ class FactoryRestoreCommand(Command):
         context.call_task_sync('database.factory_restore')
 
 
-class ShowReplicationKeyCommand(Command):
-    """
-    Usage: show_key
-    
-    Diplays a copy of the public key for the replication user.
-    """
-    def run(self, context, args, kwargs, opargs):
-        return context.call_sync('replication.get_public_key')
-
-
 class SystemDatasetImportCommand(Command):
     """
     Usage: import volume=<volume>
@@ -633,14 +623,6 @@ class SystemDatasetNamespace(ConfigNamespace):
         )
 
 
-@description("Replication info")
-class ReplicationNamespace(Namespace):
-    def commands(self):
-        return {
-            'show_key': ShowReplicationKeyCommand(),
-        }
-
-
 @description("System info and configuration")
 class SystemNamespace(ConfigNamespace):
     """
@@ -727,7 +709,6 @@ class SystemNamespace(ConfigNamespace):
             EventsNamespace('event', self.context),
             SystemDatasetNamespace('system_dataset', self.context),
             ConfigDbNamespace('config'),
-            ReplicationNamespace('replication')
         ]
 
 

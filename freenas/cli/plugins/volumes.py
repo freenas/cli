@@ -623,7 +623,6 @@ class ReplicateCommand(Command):
 
         args = (
             'replication.replicate_dataset',
-            self.parent.parent.parent.entity['id'],
             self.parent.entity['name'],
             {
                 'remote': remote,

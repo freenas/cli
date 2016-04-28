@@ -312,11 +312,13 @@ class CreateHostsPairCommand(Command):
 
     Example: create 10.0.0.1 username=my_username password=secret
              create my_username@10.0.0.1 password=secret
+             create my_username@10.0.0.1 password=secret port=1234
 
     Exchange keys with remote host and create known replication host entry
     at both sides.
 
     User name and password are used only once to authorize key exchange.
+    Default SSH port is 22.
     """
 
     def __init__(self, parent):
@@ -351,18 +353,22 @@ class CreateHostsPairCommand(Command):
         else:
             password = kwargs.pop('password')
 
+        port = kwargs.pop('port', 22)
+
         context.submit_task(
             self.parent.create_task,
             username,
             name,
-            password
+            password,
+            port
         )
 
     def complete(self, context):
         return [
             NullComplete('address='),
             NullComplete('username='),
-            NullComplete('password=')
+            NullComplete('password='),
+            NullComplete('port=')
         ]
 
 

@@ -80,7 +80,7 @@ from freenas.cli.commands import (
     ExcludePipeCommand, SortPipeCommand, LimitPipeCommand, SelectPipeCommand,
     LoginCommand, DumpCommand, WhoamiCommand, PendingCommand, WaitCommand,
     OlderThanPipeCommand, NewerThanPipeCommand, IndexCommand, AliasCommand,
-    UnaliasCommand, ListVarsCommand
+    UnaliasCommand, ListVarsCommand, AttachDebuggerCommand
 )
 import collections
 
@@ -903,6 +903,7 @@ class MainLoop(object):
         'alias': AliasCommand(),
         'unalias': UnaliasCommand(),
         'vars': ListVarsCommand(),
+        'attach_debugger': AttachDebuggerCommand()
     }
     builtin_commands = base_builtin_commands.copy()
     builtin_commands.update(pipe_commands)

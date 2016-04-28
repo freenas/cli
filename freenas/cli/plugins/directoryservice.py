@@ -44,6 +44,15 @@ t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
 
 
+class DirectoryStatusCommand(Command):
+    def __init__(self, parent):
+        super(DirectoryStatusCommand, self).__init__()
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        pass
+
+
 @description("Configure and manage directory services")
 class DirectoryServiceNamespace(Namespace):
     def __init__(self, name, context):
@@ -61,14 +70,16 @@ class DirectoriesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, E
     def __init__(self, name, context):
         super(DirectoriesNamespace, self).__init__(name, context)
 
+        self.primary_key_name = 'name'
         self.entity_subscriber_name = 'directory'
+        self.create_task = 'directory.create'
         self.update_task = 'directory.update'
+        self.delete_task = 'directory.delete'
 
         self.add_property(
             descr='Directory name',
-            name='id',
-            get='id',
-            set=None,
+            name='name',
+            get='name',
             list=True
         )
 
@@ -76,7 +87,6 @@ class DirectoriesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, E
             descr='Type',
             name='type',
             get='plugin',
-            set=None,
             list=True
         )
 
@@ -88,9 +98,38 @@ class DirectoriesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, E
             type=ValueType.BOOLEAN
         )
 
+        self.add_property(
+            descr='Minimum UID',
+            name='uid_min',
+            get='uid_range.0',
+            list=False
+        )
+
+        self.add_property(
+            descr='Maximum UID',
+            name='uid_max',
+            get='uid_range.1',
+            list=False
+        )
+
+        self.add_property(
+            descr='Minimum GID',
+            name='gid_min',
+            get='gid_range.0',
+            list=False
+        )
+
+        self.add_property(
+            descr='Maximum GID',
+            name='gid_max',
+            get='gid_range.1',
+            list=False
+        )
+
         def get_entity_namespaces(this):
             PROVIDERS = {
                 'winbind': ActiveDirectoryPropertiesNamespace,
+                'freeipa': FreeIPAPropertiesNamespace,
                 'ldap': LDAPPropertiesNamespace
             }
 
@@ -103,7 +142,7 @@ class DirectoriesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, E
             return []
 
         self.entity_namespaces = get_entity_namespaces
-        self.primary_key = self.get_mapping('id')
+        self.primary_key = self.get_mapping('name')
 
 
 class BaseDirectoryPropertiesNamespace(ItemNamespace):
@@ -141,6 +180,36 @@ class ActiveDirectoryPropertiesNamespace(BaseDirectoryPropertiesNamespace):
             name='password',
             get=None,
             set='password'
+        )
+
+
+class FreeIPAPropertiesNamespace(BaseDirectoryPropertiesNamespace):
+    def __init__(self, name, context, parent):
+        super(FreeIPAPropertiesNamespace, self).__init__(name, context, parent)
+
+        self.add_property(
+            descr='Realm',
+            name='realm',
+            get='realm'
+        )
+
+        self.add_property(
+            descr='Username',
+            name='username',
+            get='username'
+        )
+
+        self.add_property(
+            descr='Password',
+            name='password',
+            get=None,
+            set='password'
+        )
+
+        self.add_property(
+            descr='Server address',
+            name='server',
+            get='server'
         )
 
 

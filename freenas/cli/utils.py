@@ -214,11 +214,6 @@ def get_localtime_offset():
     return localoffset.total_seconds()
 
 
-def strip_dev(path):
-    if path.startswith('/dev/'):
-        return path[len('/dev/'):]
-
-
 class PrintableNone(object):
     def __bool__(self):
         return False

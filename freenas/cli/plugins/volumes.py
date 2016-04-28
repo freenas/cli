@@ -35,7 +35,7 @@ from freenas.cli.namespace import (
 )
 from freenas.cli.complete import NullComplete, EnumComplete, EntitySubscriberComplete
 from freenas.cli.output import Table, ValueType, output_tree, format_value, read_value, Sequence
-from freenas.cli.utils import post_save, iterate_vdevs, to_list, correct_disk_path, strip_dev
+from freenas.cli.utils import post_save, iterate_vdevs, to_list, correct_disk_path
 from freenas.utils import first_or_default, extend, query
 
 
@@ -1164,9 +1164,9 @@ class CreateVolumeCommand(Command):
             EnumComplete('type=', VOLUME_LAYOUTS.keys()),
             EnumComplete('encryption=', ['yes', 'no']),
             NullComplete('password='),
-            EntitySubscriberComplete('disks=', 'disk', lambda d: strip_dev(d['path']), ['auto'], list=True),
-            EntitySubscriberComplete('cache=', 'disk', lambda d: strip_dev(d['path']), ['auto'], list=True),
-            EntitySubscriberComplete('log=', 'disk', lambda d: strip_dev(d['path']), ['auto'], list=True),
+            EntitySubscriberComplete('disks=', 'disk', lambda d: d['name'], ['auto'], list=True),
+            EntitySubscriberComplete('cache=', 'disk', lambda d: d['name'], ['auto'], list=True),
+            EntitySubscriberComplete('log=', 'disk', lambda d: d['name'], ['auto'], list=True),
         ]
 
 

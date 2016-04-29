@@ -224,8 +224,8 @@ class BaseSharesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, En
         self.add_property(
             descr='Target',
             name='target',
-            get='target_path',
-            set=self.set_share_target,
+            get=self.get_share_target,
+            set=None,
             list=True
         )
 
@@ -240,13 +240,19 @@ class BaseSharesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, En
         )
 
         self.add_property(
+            descr='Dataset',
+            name='dataset',
+            get=None,
+            set=self.set_share_dataset,
+            list=False
+        )
+
+        self.add_property(
             descr='Path',
             name='path',
             get=None,
             set=self.set_share_path,
-            list=False,
-            createsetable=True,
-            usersetable=False
+            list=False
         )
 
         self.add_property(
@@ -284,7 +290,10 @@ class BaseSharesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, En
             'import': ImportShareCommand(self)
         }
 
-    def set_share_target(self, obj, value):
+    def get_share_target(self, obj):
+        return '{0} ({1})'.format(obj['target_path'], obj['target_type'].lower())
+
+    def set_share_dataset(self, obj, value):
         obj.update({
             'target_path': value,
             'target_type': 'ZVOL' if type(self) is ISCSISharesNamespace else 'DATASET'

@@ -329,11 +329,7 @@ class BaseSharesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, En
         if status == 'FINISHED':
             service = self.context.call_sync('service.query', [('name', '=', self.type_name)], {'single': True})
             if service['state'] != 'RUNNING':
-                if new:
-                    action = "created"
-                else:
-                    action = "updated"
-
+                action = 'created' if new else 'updated'
                 self.context.output_queue.put(_(
                     "Share '{0}' has been {1} but the service '{2}' is not currently "
                     "running, please enable the service with '/ service {2} config set enable=yes'".format(

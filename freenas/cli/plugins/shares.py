@@ -326,7 +326,7 @@ class BaseSharesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, En
             callback=lambda s, t: self.post_save(this, s, t, new))
 
     def post_save(self, this, status, task, new):
-        if status == 'FINISHED':
+        if status == 'FINISHED' and this.entity:
             service = self.context.call_sync('service.query', [('name', '=', self.type_name)], {'single': True})
             if service['state'] != 'RUNNING':
                 action = 'created' if new else 'updated'

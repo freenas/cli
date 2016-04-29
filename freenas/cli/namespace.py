@@ -1073,6 +1073,9 @@ class EntitySubscriberBasedLoadMixin(object):
             cwd.entity[self.primary_key_name] = new_entity[self.primary_key_name]
             cwd.load()
 
+            if not cwd.entity:
+                self.context.ml.cd_up()
+
     def query(self, params, options):
         if not params and not options:
             return self.context.entity_subscribers[self.entity_subscriber_name].viewport(

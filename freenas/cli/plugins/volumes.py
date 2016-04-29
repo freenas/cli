@@ -666,6 +666,19 @@ class ReplicateCommand(Command):
             context.submit_task(*args)
 
 
+class OpenFilesCommand(Command):
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        files = context.call_sync('filesystem.get_open_files', self.parent.entity['mountpoint'])
+        return Table(files, [
+            Table.Column('Process name', 'process_name'),
+            Table.Column('PID', 'pid', ValueType.NUMBER),
+            Table.Column('File path', 'path')
+        ])
+
+
 @description("Datasets")
 class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
     def __init__(self, name, context, parent=None):
@@ -848,7 +861,8 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
 
         self.primary_key = self.get_mapping('name')
         self.entity_commands = lambda this: {
-            'replicate': ReplicateCommand(this)
+            'replicate': ReplicateCommand(this),
+            'open_files': OpenFilesCommand(this)
         }
 
     def delete(self, this, kwargs):

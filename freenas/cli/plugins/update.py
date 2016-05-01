@@ -31,7 +31,6 @@ import copy
 from datetime import datetime
 from freenas.cli.namespace import ConfigNamespace, Command, description
 from freenas.cli.output import output_msg, ValueType, Table, read_value
-from freenas.cli.utils import post_save
 
 
 t = gettext.translation('freenas-cli', fallback=True)

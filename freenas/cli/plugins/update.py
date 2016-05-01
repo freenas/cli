@@ -134,29 +134,6 @@ class CheckNowCommand(Command):
             output_msg(_("No new updates available."))
 
 
-def download_message_formatter(msg):
-    """
-    A small function to be passed to submit_task
-    to format progress message for when `tasks_blocking
-    is set to True for Downloading Updates.
-    """
-    msg = msg.split('Rate', 1)[0].split('Size', 1)[0]
-    msg = msg.split('Progress:')
-    progress = None
-    if len(msg) != 1:
-        try:
-            progress = int(msg[1])
-        except:
-            progress = None
-        msg = msg[0]
-    else:
-        msg = msg[0]
-    if progress:
-        filled_width = int(float(progress/100.0) * 10)
-        msg += ' [{0}{1}] :{2}%'.format('#'*filled_width, '_'*(10 - filled_width), progress)
-    return msg
-
-
 @description("Updates the system and reboots it (can be specified)")
 class UpdateNowCommand(Command):
     """

@@ -706,8 +706,7 @@ class Context(object):
         return wrap(self.connection.call_sync(name, *args, **kwargs))
 
     def call_task_sync(self, name, *args, **kwargs):
-        wrapped_result = wrap(self.connection.call_task_sync(name, *args))
-        return wrapped_result
+        return wrap(self.connection.call_task_sync(name, *args))
 
     def submit_task_common_routine(self, name, callback, *args):
         """

@@ -73,7 +73,7 @@ def update_check_utility(context):
             Table.Column('Operation', 'operation'),
             Table.Column('Current Version', 'previous_version'),
             Table.Column('New Version', 'new_version')
-            ])
+        ])
     else:
         return None
 
@@ -85,6 +85,7 @@ class CurrentTrainCommand(Command):
 
     Displays the current update train.
     """
+
     def run(self, context, args, kwargs, opargs):
         return context.call_sync('update.get_current_train')
 
@@ -96,20 +97,21 @@ class ShowTrainsCommand(Command):
 
     Displays the available update trains from the update server.
     """
+
     def run(self, context, args, kwargs, opargs):
         trains = context.call_sync('update.trains')
         if trains is None:
             output_msg(_(
                 "Could not fetch Available Trains from the Update Server. "
                 "Please Check internet connectivity and try again."
-                ))
+            ))
         else:
             return Table(trains, [
                 Table.Column('Name', 'name'),
                 Table.Column('Description', 'description'),
                 Table.Column('Sequence', 'sequence'),
                 Table.Column('Current', 'current', vt=ValueType.BOOLEAN)
-                ])
+            ])
 
 
 @description("Checks for New Updates")
@@ -119,6 +121,7 @@ class CheckNowCommand(Command):
 
     Checks for updates.
     """
+
     def __init__(self, parent):
         self.parent = parent
 
@@ -200,6 +203,7 @@ class UpdateNamespace(ConfigNamespace):
     The update namespace provides commands for updating and for
     configuring system updates.
     """
+
     def __init__(self, name, context):
         super(UpdateNamespace, self).__init__(name, context)
         self.context = context

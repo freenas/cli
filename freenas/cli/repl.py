@@ -1712,7 +1712,11 @@ def main():
         else:
             username = context.parsed_uri.username
         if args.p is None:
-            args.p = getpass.getpass('Please provide a password: ')
+            try:
+                args.p = getpass.getpass('Please provide a password: ')
+            except KeyboardInterrupt:
+                six.print_()
+                return
         else:
             args.p = args.p
 

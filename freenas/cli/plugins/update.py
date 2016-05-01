@@ -101,10 +101,10 @@ class ShowTrainsCommand(Command):
     def run(self, context, args, kwargs, opargs):
         trains = context.call_sync('update.trains')
         if trains is None:
-            output_msg(_(
+            return _(
                 "Could not fetch Available Trains from the Update Server. "
                 "Please Check internet connectivity and try again."
-            ))
+            )
         else:
             return Table(trains, [
                 Table.Column('Name', 'name'),
@@ -131,7 +131,7 @@ class CheckNowCommand(Command):
         if update_ops:
             return update_ops
         else:
-            output_msg(_("No new updates available."))
+            return _("No new updates available.")
 
 
 @description("Updates the system and reboots it (can be specified)")

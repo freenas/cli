@@ -677,7 +677,12 @@ class Context(object):
         if task.get('error.type') == 'ValidationException':
             errors = self.get_validation_errors(task)
             for prop, __, msg in errors:
-                self.output_queue.put(_("Task #{0} validation error: {1}: {2}".format(task['id'], prop, msg)))
+                self.output_queue.put(_("Task #{0} validation error: {1}{2}{3}".format(
+                    task['id'],
+                    prop,
+                    ': ' if prop else '',
+                    msg
+                )))
 
     def output_thread(self):
         while True:

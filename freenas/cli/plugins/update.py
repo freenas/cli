@@ -116,7 +116,7 @@ class ShowTrainsCommand(Command):
 @description("Checks for New Updates")
 class CheckNowCommand(Command):
     """
-    Usge: check_now
+    Usage: check_now
 
     Checks for updates.
     """
@@ -131,6 +131,18 @@ class CheckNowCommand(Command):
             return update_ops
         else:
             return _("No new updates available.")
+
+
+@description("Downloads New Updates and saves them for apllying later")
+class DownloadNowCommand(Command):
+    """
+    Usage: download
+
+    Downloads and Saves Updates.
+    """
+
+    def run(self, context, args, kwargs, opargs):
+        return context.submit_task('update.download')
 
 
 @description("Updates the system and reboots it (can be specified)")
@@ -239,6 +251,7 @@ class UpdateNamespace(ConfigNamespace):
         }
         self.extra_commands = {
             'current_train': CurrentTrainCommand(),
+            'download': DownloadNowCommand(),
             'update_now': UpdateNowCommand(),
             'show_trains': ShowTrainsCommand()
         }

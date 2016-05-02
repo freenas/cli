@@ -44,9 +44,13 @@ _ = t.gettext
 @description(_("Triggers replication process"))
 class SyncCommand(Command):
     """
-    Usage: sync
+    Usage: sync encrypt=<encrypt> compress=<fast/default/best> throttle=<throttle>
 
     Example: sync
+             sync encrypt=AES128
+             sync compress=best
+             sync throttle=10MiB
+             sync encrypt=AES128 compress=best throttle=10MiB
 
     Triggers replication process.
     """
@@ -55,7 +59,41 @@ class SyncCommand(Command):
 
     def run(self, context, args, kwargs, opargs):
         name = self.parent.entity['name']
-        context.submit_task('replication.sync', name, callback=lambda s, t: post_save(self.parent, s, t))
+        compress = kwargs.pop('compress', None)
+        encrypt = kwargs.pop('encrypt', None)
+        throttle = kwargs.pop('throttle', None)
+        transport_plugins = []
+
+        if compress:
+            if compress not in ['fast', 'default', 'best']:
+                raise CommandException('Compression level must be selected as one of: fast, default, best')
+            transport_plugins.append({
+                'name': 'compress',
+                'level': compress.upper()
+            })
+
+        if throttle:
+            if not isinstance(throttle, int):
+                raise CommandException('Throttle must be a number representing maximum transfer per second')
+            transport_plugins.append({
+                'name': 'throttle',
+                'buffer_size': throttle
+            })
+
+        if encrypt:
+            if encrypt not in ['AES128', 'AES192', 'AES256']:
+                raise CommandException('Encryption type must be selected as one of: AES128, AES192, AES256')
+            transport_plugins.append({
+                'name': 'encrypt',
+                'type': encrypt
+            })
+
+        context.submit_task(
+            'replication.sync',
+            name,
+            transport_plugins,
+            callback=lambda s, t: post_save(self.parent, s, t)
+        )
 
 
 @description(_("Switch roles of partners in bi-directional replication"))

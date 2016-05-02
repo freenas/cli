@@ -610,16 +610,55 @@ class ScrubCommand(Command):
 
 @description("Replicates dataset to another system")
 class ReplicateCommand(Command):
+    """
+    Usage: replicate remote=<remote> remote_dataset=<remote_dataset>
+           dry_run=<yes/no> recursive=<yes/no> follow_delete=<yes/no>
+           encrypt=<encrypt> compress=<fast/default/best> throttle=<throttle>
+
+    Example: replicate remote=10.20.0.2 remote_dataset=mypool
+             replicate remote=10.20.0.2 remote_dataset=mypool encrypt=AES128
+             replicate remote=10.20.0.2 remote_dataset=mypool throttle=10MiB
+
+    Replicate a dataset to a remote dataset.
+    Currently available encryption methods are AES128, AES192 and AES256.
+    """
     def __init__(self, parent):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
         remote = kwargs.pop('remote')
         remote_dataset = kwargs.pop('remote_dataset')
-        bandwidth = kwargs.pop('bandwidth_limit', None)
         dry_run = kwargs.pop('dry_run', False)
         recursive = kwargs.pop('recursive', False)
         follow_delete = kwargs.pop('follow_delete', False)
+        compress = kwargs.pop('compress', None)
+        encrypt = kwargs.pop('encrypt', None)
+        throttle = kwargs.pop('throttle', None)
+        transport_plugins = []
+
+        if compress:
+            if compress not in ['fast', 'default', 'best']:
+                raise CommandException('Compression level must be selected as one of: fast, default, best')
+            transport_plugins.append({
+                'name': 'compress',
+                'level': compress.upper()
+            })
+
+        if throttle:
+            if not isinstance(throttle, int):
+                raise CommandException('Throttle must be a number representing maximum transfer per second')
+            transport_plugins.append({
+                'name': 'throttle',
+                'buffer_size': throttle
+            })
+
+        if encrypt:
+            if encrypt not in ['AES128', 'AES192', 'AES256']:
+                raise CommandException('Encryption type must be selected as one of: AES128, AES192, AES256')
+            transport_plugins.append({
+                'name': 'encrypt',
+                'type': encrypt
+            })
 
         args = (
             'replication.replicate_dataset',
@@ -627,10 +666,10 @@ class ReplicateCommand(Command):
             {
                 'remote': remote,
                 'remote_dataset': remote_dataset,
-                'bandwidth_limit': bandwidth,
                 'recursive': recursive,
                 'followdelete': follow_delete
             },
+            transport_plugins,
             dry_run
         )
 

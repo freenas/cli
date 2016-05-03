@@ -696,7 +696,7 @@ class ReplicateCommand(Command):
                     ]
                 ),
                 "Estimated replication stream size: {0}".format(format_value(
-                    sum(a.get('send_size', 0) for a in result['result']),
+                    result[1],
                     ValueType.SIZE)
                 )
             )

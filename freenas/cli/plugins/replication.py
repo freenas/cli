@@ -319,6 +319,38 @@ class ReplicationTaskNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixi
             list=False,
             type=ValueType.BOOLEAN)
 
+        self.add_property(
+            descr='Last result',
+            name='result',
+            get='status.status',
+            usersetable=False,
+            list=False,
+            type=ValueType.STRING)
+
+        self.add_property(
+            descr='Last output message',
+            name='message',
+            get='status.message',
+            usersetable=False,
+            list=False,
+            type=ValueType.STRING)
+
+        self.add_property(
+            descr='Last transfer size',
+            name='size',
+            get='status.size',
+            usersetable=False,
+            list=False,
+            type=ValueType.SIZE)
+
+        self.add_property(
+            descr='Last transfer speed per second',
+            name='speed',
+            get='status.speed',
+            usersetable=False,
+            list=False,
+            type=ValueType.SIZE)
+
         self.primary_key = self.get_mapping('name')
 
         self.entity_commands = self.get_entity_commands

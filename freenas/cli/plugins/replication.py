@@ -118,6 +118,7 @@ class SwitchCommand(Command):
         for partner in partners:
             if partner != master:
                 master = partner
+                break
 
         context.submit_task(
             'replication.update',

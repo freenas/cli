@@ -33,7 +33,7 @@ from freenas.cli.namespace import (
     EntitySubscriberBasedLoadMixin, Namespace, description
 )
 from freenas.cli.complete import NullComplete, EnumComplete
-from freenas.cli.output import ValueType
+from freenas.cli.output import ValueType, read_value
 from freenas.cli.utils import post_save
 from freenas.utils import query
 
@@ -196,9 +196,9 @@ class CreateReplicationCommand(Command):
         datasets = kwargs.pop('datasets', [])
         if isinstance(datasets, six.string_types):
             datasets = [datasets]
-        bidirectional = kwargs.pop('bidirectional', False)
-        recursive = kwargs.pop('recursive', False)
-        replicate_services = kwargs.pop('replicate_services', False)
+        bidirectional = read_value(kwargs.pop('bidirectional', False), ValueType.BOOLEAN)
+        recursive = read_value(kwargs.pop('recursive', False), ValueType.BOOLEAN)
+        replicate_services = read_value(kwargs.pop('replicate_services', False), ValueType.BOOLEAN)
 
         if replicate_services and not bidirectional:
             raise CommandException(_(

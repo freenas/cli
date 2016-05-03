@@ -889,7 +889,6 @@ class AttachDebuggerCommand(Command):
         pydevd.settrace(args[1], port=args[2])
 
 
-
 @description("Scroll through long output")
 class MorePipeCommand(PipeCommand):
     """

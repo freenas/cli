@@ -67,4 +67,7 @@ def translate(context, name, args=None):
     if args is None:
         return first
 
-    return second(context, args)
+    try:
+        return second(context, args)
+    except:
+        return first

@@ -446,6 +446,13 @@ class ReplicationHostNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixi
             usersetable=False,
             list=False)
 
+        self.add_property(
+            descr='Port',
+            name='port',
+            get='port',
+            usersetable=False,
+            list=False)
+
         self.primary_key = self.get_mapping('name')
 
     def commands(self):

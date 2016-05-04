@@ -99,6 +99,14 @@ class DirectoriesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, E
         )
 
         self.add_property(
+            descr='Enumerate users and groups',
+            name='enumerate',
+            get='enumerate',
+            list=True,
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
             descr='Minimum UID',
             name='uid_min',
             get='uid_range.0',

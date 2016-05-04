@@ -70,13 +70,6 @@ class JsonOutputFormatter(object):
         six.print_(json.dumps(output, indent=4))
 
     @staticmethod
-    def output_table_list(tables):
-        output = []
-        for table in tables:
-            output.append(JsonOutputFormatter.output_table(table))
-        six.print_(output)
-
-    @staticmethod
     def output_tree(data, children, label):
         six.print_(json.dumps(list(data), indent=4))
 

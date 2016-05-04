@@ -53,7 +53,7 @@ TASK_ARG_MAPPING = {
     'disk.parallel_test': ['disks', 'test_type'],
     'update.checkfetch': ['send_email'],
     'calendar_task.command': ['username', 'command'],
-    'volume.snapshot_dataset': ['volume', 'dataset', 'recursive', 'lifetime', 'prefix', 'replicable']
+    'volume.snapshot_dataset': ['dataset', 'recursive', 'lifetime', 'prefix', 'replicable']
 }
 
 
@@ -67,7 +67,7 @@ REQUIRED_PROP_TABLE = {
 
 
 SKELETON_TASK = {
-    'volume.snapshot_dataset': [None, None, None, None, "auto", False]
+    'volume.snapshot_dataset': [None, None, None, "auto", False]
 }
 
 

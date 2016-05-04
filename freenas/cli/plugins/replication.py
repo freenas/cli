@@ -95,16 +95,16 @@ class CreateReplicationCommand(Command):
     Usage: create <name> master=<master> slave=<slave> recursive=<recursive>
             bidirectional=<bidirectional> replicate_services=<replicate_services>
 
-    Example: create my_replication master=user@10.0.0.2 slave=user2@10.0.0.3
+    Example: create my_replication master=10.0.0.2 slave=10.0.0.3
                                    datasets=mypool,mypool/dataset
-             create my_replication master=user@10.0.0.2 slave=user2@10.0.0.3
+             create my_replication master=10.0.0.2 slave=10.0.0.3
                                    datasets=mypool recursive=yes
              create my_replication master=10.0.0.2 slave=10.0.0.3 datasets=mypool
                                    bidirectional=yes
-             create my_replication master=user@10.0.0.2 slave=user2@10.0.0.3
+             create my_replication master=10.0.0.2 slave=10.0.0.3
                                    datasets=mypool,mypool2 bidirectional=yes
                                    recursive=yes
-             create my_replication master=user@10.0.0.2 slave=user2@10.0.0.3
+             create my_replication master=10.0.0.2 slave=10.0.0.3
                                    datasets=mypool,mypool2 bidirectional=yes
                                    recursive=yes replicate_services=yes
 
@@ -146,29 +146,13 @@ class CreateReplicationCommand(Command):
         master = kwargs.pop('master')
         slave = kwargs.pop('slave')
         partners = [master, slave]
-        split_master = master.split('@')
-        split_slave = slave.split('@')
-
-        try:
-            partners_ips = [split_master[1], split_slave[1]]
-        except IndexError:
-            raise CommandException(_('Type link partners in user@host schema'))
 
         for ip in context.call_sync('network.config.get_my_ips'):
-            if ip in partners_ips:
+            if ip in partners:
                 break
         else:
             raise CommandException(_(
                 'None of provided replication link partners {0}, {1} match any of machine\'s IPs'.format(master, slave)
-            ))
-
-        if context.call_sync('user.query', [('username', '=', split_master[0])], {'single': True}):
-            pass
-        elif not context.call_sync('user.query', [('username', '=', split_slave[0])], {'single': True}):
-            raise CommandException(_(
-                'None of provided replication link partners {0}, {1} match any of current machine user names'.format(
-                    master, slave
-                )
             ))
 
         datasets = kwargs.pop('datasets', [])
@@ -191,12 +175,9 @@ class CreateReplicationCommand(Command):
         ns.entity['master'] = master
         ns.entity['partners'] = partners
         ns.entity['datasets'] = datasets
-        if bidirectional:
-            ns.entity['bidirectional'] = True
-        if recursive:
-            ns.entity['recursive'] = True
-        if replicate_services:
-            ns.entity['replicate_services'] = True
+        ns.entity['bidirectional'] = bidirectional
+        ns.entity['recursive'] = recursive
+        ns.entity['replicate_services'] = replicate_services
 
         context.submit_task(
             self.parent.create_task,
@@ -331,11 +312,13 @@ class CreateHostsPairCommand(Command):
 
     Example: create 10.0.0.1 username=my_username password=secret
              create my_username@10.0.0.1 password=secret
+             create my_username@10.0.0.1 password=secret port=1234
 
     Exchange keys with remote host and create known replication host entry
     at both sides.
 
     User name and password are used only once to authorize key exchange.
+    Default SSH port is 22.
     """
 
     def __init__(self, parent):
@@ -370,18 +353,22 @@ class CreateHostsPairCommand(Command):
         else:
             password = kwargs.pop('password')
 
+        port = kwargs.pop('port', 22)
+
         context.submit_task(
             self.parent.create_task,
             username,
             name,
-            password
+            password,
+            port
         )
 
     def complete(self, context):
         return [
             NullComplete('address='),
             NullComplete('username='),
-            NullComplete('password=')
+            NullComplete('password='),
+            NullComplete('port=')
         ]
 
 

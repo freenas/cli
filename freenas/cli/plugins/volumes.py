@@ -35,7 +35,7 @@ from freenas.cli.namespace import (
 )
 from freenas.cli.complete import NullComplete, EnumComplete, EntitySubscriberComplete
 from freenas.cli.output import Table, ValueType, output_tree, format_value, read_value, Sequence
-from freenas.cli.utils import post_save, iterate_vdevs, to_list, correct_disk_path, strip_dev
+from freenas.cli.utils import post_save, iterate_vdevs, to_list, correct_disk_path
 from freenas.utils import first_or_default, extend, query
 
 
@@ -623,7 +623,6 @@ class ReplicateCommand(Command):
 
         args = (
             'replication.replicate_dataset',
-            self.parent.parent.parent.entity['id'],
             self.parent.entity['name'],
             {
                 'remote': remote,
@@ -665,6 +664,19 @@ class ReplicateCommand(Command):
 
         else:
             context.submit_task(*args)
+
+
+class OpenFilesCommand(Command):
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        files = context.call_sync('filesystem.get_open_files', self.parent.entity['mountpoint'])
+        return Table(files, [
+            Table.Column('Process name', 'process_name'),
+            Table.Column('PID', 'pid', ValueType.NUMBER),
+            Table.Column('File path', 'path')
+        ])
 
 
 @description("Datasets")
@@ -849,7 +861,8 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
 
         self.primary_key = self.get_mapping('name')
         self.entity_commands = lambda this: {
-            'replicate': ReplicateCommand(this)
+            'replicate': ReplicateCommand(this),
+            'open_files': OpenFilesCommand(this)
         }
 
     def delete(self, this, kwargs):
@@ -1165,9 +1178,9 @@ class CreateVolumeCommand(Command):
             EnumComplete('type=', VOLUME_LAYOUTS.keys()),
             EnumComplete('encryption=', ['yes', 'no']),
             NullComplete('password='),
-            EntitySubscriberComplete('disks=', 'disk', lambda d: strip_dev(d['path']), ['auto'], list=True),
-            EntitySubscriberComplete('cache=', 'disk', lambda d: strip_dev(d['path']), ['auto'], list=True),
-            EntitySubscriberComplete('log=', 'disk', lambda d: strip_dev(d['path']), ['auto'], list=True),
+            EntitySubscriberComplete('disks=', 'disk', lambda d: d['name'], ['auto'], list=True),
+            EntitySubscriberComplete('cache=', 'disk', lambda d: d['name'], ['auto'], list=True),
+            EntitySubscriberComplete('log=', 'disk', lambda d: d['name'], ['auto'], list=True),
         ]
 
 

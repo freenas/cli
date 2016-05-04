@@ -31,7 +31,6 @@ import copy
 from datetime import datetime
 from freenas.cli.namespace import ConfigNamespace, Command, description
 from freenas.cli.output import output_msg, ValueType, Table, read_value
-from freenas.cli.utils import post_save
 
 
 t = gettext.translation('freenas-cli', fallback=True)
@@ -73,7 +72,7 @@ def update_check_utility(context):
             Table.Column('Operation', 'operation'),
             Table.Column('Current Version', 'previous_version'),
             Table.Column('New Version', 'new_version')
-            ])
+        ])
     else:
         return None
 
@@ -85,6 +84,7 @@ class CurrentTrainCommand(Command):
 
     Displays the current update train.
     """
+
     def run(self, context, args, kwargs, opargs):
         return context.call_sync('update.get_current_train')
 
@@ -96,29 +96,31 @@ class ShowTrainsCommand(Command):
 
     Displays the available update trains from the update server.
     """
+
     def run(self, context, args, kwargs, opargs):
         trains = context.call_sync('update.trains')
         if trains is None:
-            output_msg(_(
+            return _(
                 "Could not fetch Available Trains from the Update Server. "
                 "Please Check internet connectivity and try again."
-                ))
+            )
         else:
             return Table(trains, [
                 Table.Column('Name', 'name'),
                 Table.Column('Description', 'description'),
                 Table.Column('Sequence', 'sequence'),
                 Table.Column('Current', 'current', vt=ValueType.BOOLEAN)
-                ])
+            ])
 
 
 @description("Checks for New Updates")
 class CheckNowCommand(Command):
     """
-    Usge: check_now
+    Usage: check_now
 
     Checks for updates.
     """
+
     def __init__(self, parent):
         self.parent = parent
 
@@ -128,30 +130,19 @@ class CheckNowCommand(Command):
         if update_ops:
             return update_ops
         else:
-            output_msg(_("No new updates available."))
+            return _("No new updates available.")
 
 
-def download_message_formatter(msg):
+@description("Downloads New Updates and saves them for apllying later")
+class DownloadNowCommand(Command):
     """
-    A small function to be passed to submit_task
-    to format progress message for when `tasks_blocking
-    is set to True for Downloading Updates.
+    Usage: download
+
+    Downloads and Saves Updates.
     """
-    msg = msg.split('Rate', 1)[0].split('Size', 1)[0]
-    msg = msg.split('Progress:')
-    progress = None
-    if len(msg) != 1:
-        try:
-            progress = int(msg[1])
-        except:
-            progress = None
-        msg = msg[0]
-    else:
-        msg = msg[0]
-    if progress:
-        filled_width = int(float(progress/100.0) * 10)
-        msg += ' [{0}{1}] :{2}%'.format('#'*filled_width, '_'*(10 - filled_width), progress)
-    return msg
+
+    def run(self, context, args, kwargs, opargs):
+        return context.submit_task('update.download')
 
 
 @description("Updates the system and reboots it (can be specified)")
@@ -200,6 +191,7 @@ class UpdateNamespace(ConfigNamespace):
     The update namespace provides commands for updating and for
     configuring system updates.
     """
+
     def __init__(self, name, context):
         super(UpdateNamespace, self).__init__(name, context)
         self.context = context
@@ -259,6 +251,7 @@ class UpdateNamespace(ConfigNamespace):
         }
         self.extra_commands = {
             'current_train': CurrentTrainCommand(),
+            'download': DownloadNowCommand(),
             'update_now': UpdateNowCommand(),
             'show_trains': ShowTrainsCommand()
         }

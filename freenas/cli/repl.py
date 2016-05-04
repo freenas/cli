@@ -80,7 +80,7 @@ from freenas.cli.commands import (
     ExcludePipeCommand, SortPipeCommand, LimitPipeCommand, SelectPipeCommand,
     LoginCommand, DumpCommand, WhoamiCommand, PendingCommand, WaitCommand,
     OlderThanPipeCommand, NewerThanPipeCommand, IndexCommand, AliasCommand,
-    UnaliasCommand, ListVarsCommand
+    UnaliasCommand, ListVarsCommand, AttachDebuggerCommand
 )
 import collections
 
@@ -680,7 +680,12 @@ class Context(object):
         if task.get('error.type') == 'ValidationException':
             errors = self.get_validation_errors(task)
             for prop, __, msg in errors:
-                self.output_queue.put(_("Task #{0} validation error: {1}: {2}".format(task['id'], prop, msg)))
+                self.output_queue.put(_("Task #{0} validation error: {1}{2}{3}".format(
+                    task['id'],
+                    prop,
+                    ': ' if prop else '',
+                    msg
+                )))
 
     def output_thread(self):
         while True:
@@ -704,8 +709,7 @@ class Context(object):
         return wrap(self.connection.call_sync(name, *args, **kwargs))
 
     def call_task_sync(self, name, *args, **kwargs):
-        wrapped_result = wrap(self.connection.call_task_sync(name, *args))
-        return wrapped_result
+        return wrap(self.connection.call_task_sync(name, *args))
 
     def submit_task_common_routine(self, name, callback, *args):
         """
@@ -906,6 +910,7 @@ class MainLoop(object):
         'alias': AliasCommand(),
         'unalias': UnaliasCommand(),
         'vars': ListVarsCommand(),
+        'attach_debugger': AttachDebuggerCommand()
     }
     builtin_commands = base_builtin_commands.copy()
     builtin_commands.update(pipe_commands)
@@ -1714,7 +1719,11 @@ def main():
         else:
             username = context.parsed_uri.username
         if args.p is None:
-            args.p = getpass.getpass('Please provide a password: ')
+            try:
+                args.p = getpass.getpass('Please provide a password: ')
+            except KeyboardInterrupt:
+                six.print_()
+                return
         else:
             args.p = args.p
 

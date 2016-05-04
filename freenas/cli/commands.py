@@ -589,6 +589,7 @@ class IndexCommand(Command):
 
         return outseq
 
+
 @description("List command variables")
 class ListVarsCommand(Command):
     """
@@ -876,9 +877,21 @@ class WaitCommand(Command):
             SIGTSTP_setter(set_flag=False)
 
 
+class AttachDebuggerCommand(Command):
+    """
+    Usage: attach_debugger <path to pydevd egg> <host> <port>
+    """
+    def run(self, context, args, kwargs, opargs):
+        import sys
+        sys.path.append(args[0])
+
+        import pydevd
+        pydevd.settrace(args[1], port=args[2])
+
+
+
 @description("Scroll through long output")
 class MorePipeCommand(PipeCommand):
-
     """
     Usage: <command> | more
            <command> | less

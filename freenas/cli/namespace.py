@@ -1070,8 +1070,11 @@ class EntitySubscriberBasedLoadMixin(object):
     def on_update(self, old_entity, new_entity):
         cwd = self.context.ml.cwd
         if isinstance(cwd, SingleItemNamespace) and cwd.parent == self:
-            cwd.entity[self.primary_key_name] = new_entity['id']
+            cwd.entity[self.primary_key_name] = new_entity[self.primary_key_name]
             cwd.load()
+
+            if not cwd.entity:
+                self.context.ml.cd_up()
 
     def query(self, params, options):
         if not params and not options:

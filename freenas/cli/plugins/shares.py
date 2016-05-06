@@ -264,6 +264,15 @@ class BaseSharesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, En
         )
 
         self.add_property(
+            descr='Immutable',
+            name='immutable',
+            get='immutable',
+            list=False,
+            usersetable=False,
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
             descr='Owner',
             name='owner',
             get='permissions.user',

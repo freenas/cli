@@ -302,6 +302,23 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             list=False,
         )
 
+        self.add_property(
+            descr='Enabled',
+            name='enabled',
+            get='enabled',
+            list=True,
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
+            descr='Immutable',
+            name='immutable',
+            get='immutable',
+            list=False,
+            usersetable=False,
+            type=ValueType.BOOLEAN
+        )
+
         self.primary_key = self.get_mapping('name')
         self.entity_namespaces = lambda this: [
             VMDisksNamespace('disks', self.context, this),

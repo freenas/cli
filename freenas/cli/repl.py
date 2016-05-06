@@ -74,12 +74,12 @@ from freenas.dispatcher.rpc import RpcException
 from freenas.utils import first_or_default, include, best_match
 from freenas.utils.query import QueryDict, wrap
 from freenas.cli.commands import (
-    ExitCommand, PrintenvCommand, SetenvCommand, ShellCommand, HelpCommand,
-    ShowUrlsCommand, ShowIpsCommand, TopCommand, ClearCommand, HistoryCommand,
-    SaveenvCommand, EchoCommand, SourceCommand, MorePipeCommand, SearchPipeCommand,
-    ExcludePipeCommand, SortPipeCommand, LimitPipeCommand, SelectPipeCommand,
-    LoginCommand, DumpCommand, WhoamiCommand, PendingCommand, WaitCommand,
-    OlderThanPipeCommand, NewerThanPipeCommand, IndexCommand, AliasCommand,
+    ExitCommand, PrintoptCommand, SetoptCommand, SetenvCommand, PrintenvCommand,
+    ShellCommand, HelpCommand, ShowUrlsCommand, ShowIpsCommand, TopCommand, ClearCommand,
+    HistoryCommand, SaveoptCommand, EchoCommand, SourceCommand, MorePipeCommand,
+    SearchPipeCommand, ExcludePipeCommand, SortPipeCommand, LimitPipeCommand,
+    SelectPipeCommand, LoginCommand, DumpCommand, WhoamiCommand, PendingCommand,
+    WaitCommand, OlderThanPipeCommand, NewerThanPipeCommand, IndexCommand, AliasCommand,
     UnaliasCommand, ListVarsCommand, AttachDebuggerCommand
 )
 import collections
@@ -888,9 +888,11 @@ class MainLoop(object):
         '?': IndexCommand(),
         'login': LoginCommand(),
         'exit': ExitCommand(),
+        'setopt': SetoptCommand(),
+        'printopt': PrintoptCommand(),
+        'saveopt': SaveoptCommand(),
         'setenv': SetenvCommand(),
         'printenv': PrintenvCommand(),
-        'saveenv': SaveenvCommand(),
         'shell': ShellCommand(),
         'help': HelpCommand(),
         'top': TopCommand(),

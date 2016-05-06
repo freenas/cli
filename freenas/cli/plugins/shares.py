@@ -571,6 +571,38 @@ class AFPSharesNamespace(BaseSharesNamespace):
         )
 
         self.add_property(
+            descr='Read only users',
+            name='ro_users',
+            get='properties.ro_users',
+            list=False,
+            type=ValueType.SET
+        )
+
+        self.add_property(
+            descr='Read only groups',
+            name='ro_groups',
+            get='properties.ro_groups',
+            list=False,
+            type=ValueType.SET
+        )
+
+        self.add_property(
+            descr='Read/write users',
+            name='rw_users',
+            get='properties.rw_users',
+            list=False,
+            type=ValueType.SET
+        )
+
+        self.add_property(
+            descr='Read/write groups',
+            name='rw_groups',
+            get='properties.rw_groups',
+            list=False,
+            type=ValueType.SET
+        )
+
+        self.add_property(
             descr='Read only',
             name='read_only',
             get='properties.read_only',

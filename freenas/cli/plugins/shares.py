@@ -51,7 +51,7 @@ class ConnectedUsersCommand(Command):
         return Table(result, [
             Table.Column(_("IP address"), 'host', ValueType.STRING),
             Table.Column(_("User"), 'user', ValueType.STRING),
-            Table.Column(_("Connected at"), 'connected_at', ValueType.STRING)
+            Table.Column(_("Connected at"), 'connected_at', ValueType.TIME)
         ])
 
 

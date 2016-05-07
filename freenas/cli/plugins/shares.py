@@ -55,6 +55,14 @@ class ConnectedUsersCommand(Command):
         ])
 
 
+class KillConnectionCommand(Command):
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        context.submit_task('share.terminate_connection', self.parent.type_name, args[0])
+
+
 class ImportShareCommand(Command):
     """
     Usage: import name path=<path>
@@ -296,7 +304,8 @@ class BaseSharesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, En
         }
 
         self.extra_commands = {
-            'import': ImportShareCommand(self)
+            'import': ImportShareCommand(self),
+            'kill': KillConnectionCommand(self)
         }
 
     def get_share_target(self, obj):

@@ -37,6 +37,7 @@ import six
 import pydoc
 import collections
 
+from freenas.utils.permissions import get_unix_permissions
 from freenas.cli import config
 from freenas.utils import first_or_default
 
@@ -50,11 +51,13 @@ class ValueType(enum.Enum):
     STRING = 1
     NUMBER = 2
     HEXNUMBER = 3
-    BOOLEAN = 4
-    SIZE = 5
-    TIME = 6
-    SET = 7
-    DICT = 8
+    OCTNUMBER = 4
+    BOOLEAN = 5
+    SIZE = 6
+    TIME = 7
+    SET = 8
+    DICT = 9
+    PERMISSIONS = 10
 
 
 class Object(list):
@@ -227,6 +230,12 @@ def read_value(value, tv=ValueType.STRING):
     if tv == ValueType.DICT:
         if type(value) is dict:
             return value
+
+    if tv == ValueType.OCTNUMBER:
+        return int(value)
+
+    if tv == ValueType.PERMISSIONS:
+        return get_unix_permissions(int(value))
 
     raise ValueError(_("Invalid value '{0}', expected {1} value".format(value, str(tv).split('ValueType.')[-1].lower())))
 

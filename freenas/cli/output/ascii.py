@@ -38,6 +38,7 @@ from columnize import columnize
 from freenas.cli import config
 from freenas.cli.output import ValueType, get_terminal_size, resolve_cell, get_humanized_size, Table
 from freenas.cli.utils import get_localtime_offset
+from freenas.utils.permissions import int_to_string
 
 
 t = gettext.translation('freenas-cli', fallback=True)
@@ -105,6 +106,12 @@ class AsciiOutputFormatter(object):
 
         if vt == ValueType.HEXNUMBER:
             return hex(value)
+
+        if vt == ValueType.OCTNUMBER:
+            return oct(value)
+
+        if vt == ValueType.PERMISSIONS:
+            return '{0} ({1})'.format(oct(value['value']).zfill(3), int_to_string(value['value']))
 
         if vt == ValueType.SIZE:
             return get_humanized_size(value)

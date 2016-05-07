@@ -968,7 +968,6 @@ svc_cli_config = {
             When setting this number, do not exceed the number
             of CPUS shown from running shell "sysctl -n
             kern.smp.cpus"."""),
-            'get': 'update_period',
             'get': 'servers',
             'type': ValueType.NUMBER
         },
@@ -978,7 +977,6 @@ svc_cli_config = {
             'usage': _("""
             Can be set to yes or no. When set to yes,
             older NFS clients that require UDP are supported."""),
-            'get': 'update_period',
             'get': 'udp',
             'type': ValueType.BOOLEAN
         },
@@ -1008,7 +1006,6 @@ svc_cli_config = {
             Space delimited list of IP addresses to listen for NFS
             requests, placed between double quotes. Unless specified,
             NFS will listen on all available addresses."""),
-            'get': 'update_period',
             'get': 'bind_addresses',
             'type': ValueType.SET
         },
@@ -1017,7 +1014,6 @@ svc_cli_config = {
             'name': 'mountd_port',
             'usage': _("""
             Number representing the port for mountd(8) to bind to."""),
-            'get': 'update_period',
             'get': 'mountd_port',
             'type': ValueType.NUMBER
         },

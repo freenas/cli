@@ -37,7 +37,7 @@ import six
 import pydoc
 import collections
 
-from freenas.utils.permissions import get_unix_permissions
+from freenas.utils.permissions import get_unix_permissions, string_to_int
 from freenas.cli import config
 from freenas.utils import first_or_default
 
@@ -235,7 +235,9 @@ def read_value(value, tv=ValueType.STRING):
         return int(value)
 
     if tv == ValueType.PERMISSIONS:
-        return get_unix_permissions(int(value))
+        if isinstance(value, str):
+            value = string_to_int(value)
+        return get_unix_permissions(value)
 
     raise ValueError(_("Invalid value '{0}', expected {1} value".format(value, str(tv).split('ValueType.')[-1].lower())))
 

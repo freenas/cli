@@ -118,7 +118,7 @@ tokens = list(reserved.values()) + [
     'ASSIGN', 'LPAREN', 'RPAREN', 'EQ', 'NE', 'GT', 'GE', 'LT', 'LE',
     'REGEX', 'UP', 'PIPE', 'LIST', 'COMMA', 'INC', 'DEC', 'PLUS', 'MINUS',
     'MUL', 'DIV', 'EOPEN', 'COPEN', 'LBRACE', 'RBRACE', 'LBRACKET', 'RBRACKET',
-    'NEWLINE', 'COLON', 'REDIRECT', 'MOD', 'SHELL', 'PERMISSIONS'
+    'NEWLINE', 'COLON', 'REDIRECT', 'MOD', 'SHELL'
 ]
 
 
@@ -203,12 +203,6 @@ def t_HEXNUMBER(t):
 def t_OCTNUMBER(t):
     r'0o[0-7]+'
     t.value = int(t.value, 8)
-    return t
-
-
-def t_PERMISSIONS(t):
-    r'[r-][w-][x-][r-][w-][x-][r-][w-][x-]'
-    t.value = string_to_int(t.value)
     return t
 
 
@@ -656,7 +650,6 @@ def p_literal(p):
     literal : HEXNUMBER
     literal : BINNUMBER
     literal : OCTNUMBER
-    literal : PERMISSIONS
     literal : STRING
     literal : TRUE
     literal : FALSE

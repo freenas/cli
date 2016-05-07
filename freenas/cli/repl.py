@@ -1646,6 +1646,7 @@ class MainLoop(object):
         sys.stdout.write('\x1b[2K')
         sys.stdout.write('\x1b[1A\x1b[2K' * int(text_len / (cols or 80)))
         sys.stdout.write('\x1b[0G')
+        sys.stdout.flush()
 
     def restore_readline(self):
         sys.stdout.write(self.__get_prompt() + readline.get_line_buffer().rstrip())

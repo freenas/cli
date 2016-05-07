@@ -369,15 +369,13 @@ svc_cli_config = {
             'descr': 'File creation mask',
             'name': 'filemask',
             'get': 'filemask',
-            'regex': '^\d{0,4}$',
-            'type': ValueType.NUMBER
+            'type': ValueType.PERMISSIONS
         },
         {
             'descr': 'Directory creation mask',
             'name': 'dirmask',
             'get': 'dirmask',
-            'regex': '^\d{0,4}$',
-            'type': ValueType.NUMBER
+            'type': ValueType.PERMISSIONS
         },
         {
             'descr': 'Enable FXP protocol',
@@ -769,11 +767,13 @@ svc_cli_config = {
             'descr': 'File mask',
             'name': 'filemask',
             'get': 'filemask',
+            'type': ValueType.PERMISSIONS
         },
         {
             'descr': 'Directory mask',
             'name': 'dirmask',
             'get': 'dirmask',
+            'type': ValueType.PERMISSIONS
         },
         {
             'descr': 'Empty password logons',
@@ -1364,7 +1364,7 @@ svc_cli_config = {
             is 022 (everyone can read, nobody can write). Some devices
             require a less strict umask."""),
             'get': 'umask',
-            'type': ValueType.STRING
+            'type': ValueType.PERMISSIONS
         },
         {
             'descr': 'Auxiliary',

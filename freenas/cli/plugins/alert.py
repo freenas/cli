@@ -57,6 +57,15 @@ class DismissAlertCommand(Command):
             context.ml.cd_up()
 
 
+@description("Sends user-defined alert")
+class SendAlertCommand(Command):
+    """
+    Usage: send <message> [priority=INFO|WARNING|CRITICAL]
+    """
+    def run(self, context, args, kwargs, opargs):
+        context.submit_task('alert.send', args[0], kwargs.get('priority'))
+
+
 @description("Set predicates for alert filter")
 class SetPredicateCommand(Command):
     """
@@ -145,6 +154,10 @@ class AlertNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
 
         self.entity_commands = lambda this: {
             'dismiss': DismissAlertCommand(this),
+        }
+
+        self.extra_commands = {
+            'send': SendAlertCommand()
         }
 
     def namespaces(self):

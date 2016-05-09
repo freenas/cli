@@ -436,8 +436,8 @@ class Context(object):
                             i['message']
                         )))
 
-        self.entity_subscribers['task'].on_add = update_task
-        self.entity_subscribers['task'].on_update = lambda o, n: update_task(n, o)
+        self.entity_subscribers['task'].on_add.add(update_task)
+        self.entity_subscribers['task'].on_update.add(lambda o, n: update_task(n, o))
 
     def wait_entity_subscribers(self):
         for i in self.entity_subscribers.values():

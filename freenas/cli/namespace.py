@@ -1059,8 +1059,8 @@ class EntitySubscriberBasedLoadMixin(object):
 
     def on_enter(self, *args, **kwargs):
         super(EntitySubscriberBasedLoadMixin, self).on_enter(*args, **kwargs)
-        self.context.entity_subscribers[self.entity_subscriber_name].on_delete = self.on_delete
-        self.context.entity_subscribers[self.entity_subscriber_name].on_update = self.on_update
+        self.context.entity_subscribers[self.entity_subscriber_name].on_delete.add(self.on_delete)
+        self.context.entity_subscribers[self.entity_subscriber_name].on_update.add(self.on_update)
 
     def on_delete(self, entity):
         cwd = self.context.ml.cwd

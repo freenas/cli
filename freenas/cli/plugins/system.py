@@ -714,3 +714,6 @@ class SystemNamespace(ConfigNamespace):
 
 def _init(context):
     context.attach_namespace('/', SystemNamespace('system', context))
+    context.map_tasks('system.general.*', SystemNamespace)
+    context.map_tasks('system.advanced.*', AdvancedNamespace)
+    context.map_tasks('mail.*', MailNamespace)

@@ -161,9 +161,9 @@ class AlertNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         }
 
     def namespaces(self):
-        return [
-            AlertFilterNamespace('filter', self.context)
-        ]
+        yield AlertFilterNamespace('filter', self.context)
+        for ns in super(AlertNamespace, self).namespaces():
+            yield ns
 
     def serialize(self):
         raise NotImplementedError()

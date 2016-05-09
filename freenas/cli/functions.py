@@ -113,6 +113,10 @@ def range_(*args):
     return list(range(*args))
 
 
+def typeof(val):
+    return type(val).__name__
+
+
 def readline(prompt):
     return input(prompt)
 
@@ -241,6 +245,7 @@ functions = {
     'range': range_,
     'str': str,
     'length': len,
+    'typeof': typeof,
     'rand': rand,
     'setinterval': setinterval,
     'append': lambda a, i: a.append(i),

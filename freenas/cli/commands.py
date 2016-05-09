@@ -612,8 +612,8 @@ class IndexCommand(Command):
 
         ns_seq = Sequence(
             _("Current namespace items:"),
-            sorted(list(cmds.keys())) +
-            [ns.get_name() for ns in sorted(nss, key=lambda i: i.get_name())]
+            sorted(list(cmds)) +
+            [ns.get_name() for ns in sorted(nss, key=lambda i: str(i.get_name()))]
         )
         if outseq is not None:
             outseq += ns_seq

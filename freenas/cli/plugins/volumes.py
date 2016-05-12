@@ -915,7 +915,7 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
         if new:
             newname = this.entity['id']
             if len(newname.split('/')) < 2:
-                raise CommandException(_("The 'name' parameter should include full path to the dataset. Example : create name=mypool/mydataset/mysubdataset"))
+                raise CommandException(_("Please specify name as a relative path starting from the dataset's parent volume."))
 
             self.context.submit_task(
                 'volume.dataset.create',

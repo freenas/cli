@@ -734,6 +734,7 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
 
         self.localdoc['CreateEntityCommand'] = ("""\
             Usage: create <volume>/<dataset>
+                   create name=<volume>/<dataset>
                    create <volume>/<dataset>/<dataset>
 
             Examples: create mypool/mydataset
@@ -914,7 +915,7 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
         if new:
             newname = this.entity['id']
             if len(newname.split('/')) < 2:
-                raise CommandException(_("Please include a volume in the dataset's path"))
+                raise CommandException(_("The 'name' parameter should include full path to the dataset. Example : create name=mypool/mydataset/mysubdataset"))
 
             self.context.submit_task(
                 'volume.dataset.create',

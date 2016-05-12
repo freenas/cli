@@ -1106,7 +1106,11 @@ class CreateVolumeCommand(Command):
 
         # This magic below make either `create foo` or `create name=foo` work
         if len(args) == 1:
-            kwargs[self.parent.primary_key.name] = args.pop(0)
+            # However, do not allow user to specify name as both implicit and explicit parameter as this suggests a mistake
+            if 'name' in kwargs:
+                raise CommandException(_("Both implicit and explicit 'name' parameters are specified."))
+            else:
+                kwargs[self.parent.primary_key.name] = args.pop(0)
 
         if 'name' not in kwargs:
             raise CommandException(_('Please specify a name for your pool'))

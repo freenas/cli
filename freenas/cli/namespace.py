@@ -911,9 +911,13 @@ class CreateEntityCommand(Command):
         kwargs = collections.OrderedDict(kwargs)
 
         if len(args) > 0:
-            prop = self.parent.primary_key
-            kwargs[prop.name] = args.pop(0)
-            kwargs.move_to_end(prop.name, False)
+            # Do not allow user to specify name as both implicit and explicit parameter as this suggests a mistake
+            if 'name' in kwargs:
+                raise CommandException(_("Both implicit and explicit 'name' parameters are specified."))
+            else:
+                prop = self.parent.primary_key
+                kwargs[prop.name] = args.pop(0)
+                kwargs.move_to_end(prop.name, False)
 
         for k, v in list(kwargs.items()):
             if not self.parent.has_property(k):

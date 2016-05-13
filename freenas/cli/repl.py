@@ -1531,6 +1531,8 @@ class MainLoop(object):
             if name == '..' and len(self.path) > 1:
                 self.prev_path = self.path[:]
                 ptr = self.path[-2]
+            if name == 'help':
+                continue
 
             if issubclass(type(ptr), Namespace):
                 for ns in ptr.namespaces():
@@ -1597,6 +1599,8 @@ class MainLoop(object):
 
                     if type(obj) is RootNamespace:
                         choices += builtin_command_set
+                    else:
+                        choices += ['help']
 
                     if text.startswith('/') and isinstance(obj, RootNamespace):
                         choices = ['/' + i for i in choices]

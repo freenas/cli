@@ -388,6 +388,10 @@ class Context(object):
 
         def update_task(task, old_task=None):
             self.pending_tasks[task['id']] = task
+            descr = task['name']
+
+            if task['description']:
+                descr = task['description']['message']
 
             if task['state'] in ('FINISHED', 'FAILED', 'ABORTED'):
                 del self.pending_tasks[task['id']]
@@ -399,7 +403,7 @@ class Context(object):
                 self.output_queue.put(_(
                     "Task #{0}: {1}: {2}".format(
                         task['id'],
-                        tasks.translate(self, task['name'], task['args']),
+                        descr,
                         task['state'].lower(),
                     )
                 ))
@@ -408,7 +412,7 @@ class Context(object):
                 self.output_queue.put(_(
                     "Task #{0}: {1}: {2}".format(
                         task['id'],
-                        tasks.translate(self, task['name'], task['args']),
+                        descr,
                         task['state'].lower(),
                     )
                 ))
@@ -432,7 +436,7 @@ class Context(object):
                     for i in task['warnings'][len(old_task['warnings']):]:
                         self.output_queue.put(_("Task #{0}: {1}: warning: {2}".format(
                             task['id'],
-                            tasks.translate(self, task['name'], task['args']),
+                            descr,
                             i['message']
                         )))
 

@@ -739,6 +739,7 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
 
             Examples: create mypool/mydataset
                       create mypool/mydataset/somedataset
+                      create mypool/mydataset dedup="sha512,verify" compression=gzip-4
 
             Creates a dataset.""")
 

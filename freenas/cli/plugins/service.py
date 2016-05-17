@@ -25,7 +25,6 @@
 #
 #####################################################################
 
-import copy
 import gettext
 from freenas.cli.namespace import (
     Namespace, ItemNamespace, EntityNamespace, RpcBasedLoadMixin, TaskBasedSaveMixin,

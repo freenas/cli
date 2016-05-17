@@ -29,7 +29,7 @@ from freenas.cli.namespace import (
     Namespace, ConfigNamespace, Command, CommandException, description,
     RpcBasedLoadMixin, EntityNamespace
 )
-from freenas.cli.output import Table, Object, Sequence, ValueType, format_value
+from freenas.cli.output import Object, Sequence, ValueType, format_value
 from freenas.cli.descriptions import events
 from freenas.cli.utils import post_save, parse_timedelta
 import gettext

@@ -554,6 +554,8 @@ class ItemNamespace(Namespace):
         return False
 
     def commands(self):
+        if self.entity is None:
+            self.load()
         base = {
             'get': self.GetEntityCommand(self),
             'show': self.ShowEntityCommand(self),

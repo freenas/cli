@@ -451,6 +451,62 @@ class MailNamespace(ConfigNamespace):
         )
 
 
+@description("System GUI settings and information")
+class SystemUINamespace(ConfigNamespace):
+    """
+    The System UI Namespace provides users with
+    GUI port certificate settings to view and/or edit
+    """
+
+    def __init__(self, name, context):
+        super(SystemUINamespace, self).__init__(name, context)
+        self.context = context
+        self.config_call = 'system.ui.get_config'
+        self.update_task = 'system.ui.update'
+
+        self.add_property(
+            descr='Redirect http to https',
+            name='http.redirect_https',
+            get='http.redirect_https',
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
+            descr='Enable http',
+            name='http.enable',
+            get='http.enable',
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
+            descr='http port',
+            name='http.port',
+            get='http.port',
+            type=ValueType.NUMBER
+        )
+
+        self.add_property(
+            descr='Enable https',
+            name='https.enable',
+            get='https.enable',
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
+            descr='https port',
+            name='https.port',
+            get='https.port',
+            type=ValueType.NUMBER
+        )
+
+        self.add_property(
+            descr='Https certificate',
+            name='https.certificate',
+            get='https.certificate',
+            type=ValueType.STRING
+        )
+
+
 @description("Advanced system configuration")
 class AdvancedNamespace(ConfigNamespace):
     """
@@ -702,6 +758,7 @@ class SystemNamespace(ConfigNamespace):
 
     def namespaces(self):
         return [
+            SystemUINamespace('ui', self.context),
             AdvancedNamespace('advanced', self.context),
             TimeNamespace('time', self.context),
             MailNamespace('mail', self.context),

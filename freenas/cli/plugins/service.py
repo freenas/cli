@@ -236,44 +236,6 @@ svc_cli_config = {
             'type': ValueType.NUMBER
         }
     ],
-    'nginx': [
-        {
-            'descr': 'Redirect http to https',
-            'name': 'http.redirect_https',
-            'get': 'http.redirect_https',
-            'type': ValueType.BOOLEAN
-        },
-        {
-            'descr': 'Enable http',
-            'name': 'http.enable',
-            'get': 'http.enable',
-            'type': ValueType.BOOLEAN
-        },
-        {
-            'descr': 'http port',
-            'name': 'http.port',
-            'get': 'http.port',
-            'type': ValueType.NUMBER
-        },
-        {
-            'descr': 'Enable https',
-            'name': 'https.enable',
-            'get': 'https.enable',
-            'type': ValueType.BOOLEAN
-        },
-        {
-            'descr': 'https port',
-            'name': 'https.port',
-            'get': 'https.port',
-            'type': ValueType.NUMBER
-        },
-        {
-            'descr': 'Https certificate',
-            'name': 'https.certificate',
-            'get': 'https.certificate',
-            'type': ValueType.STRING
-        }
-    ],
     "ftp": [
         {
             'descr': 'ftp port',

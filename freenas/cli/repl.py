@@ -1349,8 +1349,9 @@ class MainLoop(object):
                                 result = item.run(self.context, args, kwargs, opargs, input=input_data)
                                 resultset.append(PrintableNone.coerce(result) if not printable_none else result)
 
-                            result = item.run(self.context, args, kwargs, opargs)
-                            resultset.append(PrintableNone.coerce(result) if not printable_none else result)
+                            else:
+                                result = item.run(self.context, args, kwargs, opargs)
+                                resultset.append(PrintableNone.coerce(result) if not printable_none else result)
 
                     return resultset.unwind(dry_run)
                 except BaseException as err:
@@ -1421,7 +1422,7 @@ class MainLoop(object):
 
                     self.context.pipe_cwd = None
 
-                return resultset.unwind()
+                return resultset.unwind(dry_run)
 
             if isinstance(token, ShellEscape):
                 return self.builtin_commands['shell'].run(

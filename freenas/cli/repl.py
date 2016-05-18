@@ -680,6 +680,9 @@ class Context(object):
     def print_validation_errors(self, task):
         if task.get('error.type') == 'ValidationException':
             errors = self.get_validation_errors(task)
+            if not errors:
+                return
+
             for prop, __, msg in errors:
                 self.output_queue.put(_("Task #{0} validation error: {1}{2}{3}".format(
                     task['id'],

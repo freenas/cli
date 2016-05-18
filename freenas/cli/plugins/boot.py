@@ -49,7 +49,6 @@ class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
         super(BootEnvironmentNamespace, self).__init__(name, context)
         self.query_call = 'boot.environment.query'
         self.primary_key_name = 'name'
-        self.allow_edit = False
         self.required_props = ['name']
 
         self.localdoc['CreateEntityCommand'] = ("""\

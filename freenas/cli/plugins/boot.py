@@ -92,7 +92,7 @@ class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
             appears in the boot menu."""),
             set='id',
             list=True
-            )
+        )
 
         self.add_property(
             descr='Active',
@@ -105,7 +105,7 @@ class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
             list=True,
             type=ValueType.BOOLEAN,
             set=None,
-            )
+        )
 
         self.add_property(
             descr='Real Name',
@@ -116,7 +116,7 @@ class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
             is created."""),
             list=True,
             set=None,
-            )
+        )
 
         self.add_property(
             descr='On Reboot',
@@ -129,18 +129,7 @@ class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
             list=True,
             type=ValueType.BOOLEAN,
             set=None,
-            )
-
-#        self.add_property(
-#            descr='Mount point',
-#            name='mountpoint',
-#            get='mountpoint',
-#            usage=_("""
-#            Read-only value indicating the amount of space used
-#            by the boot environment."""),
-#            list=False,
-#            set=None,
-#            )
+        )
 
         self.add_property(
             descr='Space used',
@@ -151,7 +140,8 @@ class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
             environment occupies."""),
             list=True,
             set=None,
-            )
+            type=ValueType.SIZE
+        )
 
         self.add_property(
             descr='Date created',
@@ -162,7 +152,7 @@ class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
             environment was created."""),
             list=True,
             set=None,
-            )
+        )
 
         self.primary_key = self.get_mapping('name')
 

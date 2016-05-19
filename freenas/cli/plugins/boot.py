@@ -28,7 +28,7 @@
 
 import gettext
 from freenas.cli.namespace import (
-    Namespace, EntityNamespace, Command, RpcBasedLoadMixin,
+    Namespace, EntityNamespace, Command, EntitySubscriberBasedLoadMixin,
     description, CommandException
 )
 from freenas.cli.utils import iterate_vdevs, post_save, correct_disk_path
@@ -40,15 +40,15 @@ _ = t.gettext
 
 
 @description("Manage boot environments")
-class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
+class BootEnvironmentNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
     """
     The environment namespace provides commands for listing and
     managing boot environments.
     """
     def __init__(self, name, context):
         super(BootEnvironmentNamespace, self).__init__(name, context)
-        self.query_call = 'boot.environment.query'
-        self.primary_key_name = 'name'
+        self.entity_subscriber_name = 'boot.environment'
+        self.primary_key_name = 'id'
         self.required_props = ['name']
 
         self.localdoc['CreateEntityCommand'] = ("""\
@@ -162,11 +162,6 @@ class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
 
     def serialize(self):
         raise NotImplementedError()
-
-    def get_one(self, name):
-        return self.context.call_sync(
-            self.query_call, [('id', '=', name)], {'single': True}
-        )
 
     def delete(self, this, kwargs):
         self.context.submit_task('boot.environment.delete', this.entity['id'])

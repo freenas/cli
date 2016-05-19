@@ -133,7 +133,8 @@ ENTITY_SUBSCRIBERS = [
     'syslog',
     'replication.link',
     'replication.host',
-    'backup'
+    'backup',
+    'boot.environment'
 ]
 
 

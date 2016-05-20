@@ -164,11 +164,22 @@ class KillVMCommand(Command):
 
 
 class RebootVMCommand(Command):
+    """
+    Usage: reboot force=<force>
+
+    Examples:
+        reboot
+        reboot force=yes
+
+    Reboots container
+    """
     def __init__(self, parent):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        pass
+        force = kwargs.get('force', False)
+        context.call_task_sync('container.stop', self.parent.entity['id'], force)
+        context.call_task_sync('container.start', self.parent.entity['id'])
 
 
 class ConsoleCommand(Command):

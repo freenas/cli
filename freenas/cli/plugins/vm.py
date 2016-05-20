@@ -408,7 +408,8 @@ class VMNicsNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNamesp
         self.add_property(
             descr='NIC type',
             name='type',
-            get='properties.type'
+            get='properties.type',
+            enum=['NAT', 'BRIDGE', 'MANAGEMENT']
         )
 
         self.add_property(

@@ -477,11 +477,11 @@ class VMVolumesNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNam
         self.primary_key = self.get_mapping('name')
 
 
-@description("VM templates operations")
+@description("Container templates operations")
 class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
     def __init__(self, name, context):
         super(TemplateNamespace, self).__init__(name, context)
-        self.query_call = 'vm_template.query'
+        self.query_call = 'container.template.query'
         self.primary_key_name = 'template.name'
         self.allow_create = False
 
@@ -495,6 +495,7 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
             descr='Name',
             name='name',
             get='template.name',
+            usersetable=False,
             list=True
         )
 
@@ -502,6 +503,7 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
             descr='Description',
             name='description',
             get='template.description',
+            usersetable=False,
             list=True
         )
 
@@ -509,6 +511,7 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
             descr='Author',
             name='author',
             get='template.author',
+            usersetable=False,
             list=False
         )
 
@@ -516,6 +519,7 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
             descr='Memory size (MB)',
             name='memsize',
             get='config.memsize',
+            usersetable=False,
             list=False,
             type=ValueType.NUMBER
         )
@@ -524,6 +528,7 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
             descr='CPU cores',
             name='cores',
             get='config.ncpus',
+            usersetable=False,
             list=False,
             type=ValueType.NUMBER
         )
@@ -532,6 +537,7 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
             descr='Boot device',
             name='boot_device',
             get='config.boot_device',
+            usersetable=False,
             list=False
         )
 
@@ -540,13 +546,38 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
             name='bootloader',
             get='config.bootloader',
             list=False,
+            usersetable=False,
             enum=['BHYVELOAD', 'GRUB']
+        )
+
+        self.add_property(
+            descr='Template images cached',
+            name='cached',
+            get='template.cached',
+            usersetable=False,
+            list=False,
+            type=ValueType.BOOLEAN
         )
 
         self.primary_key = self.get_mapping('name')
         self.extra_commands = {
             'show': FetchShowCommand(self)
         }
+        self.entity_commands = self.get_entity_commands
+
+    def get_entity_commands(self, this):
+        this.load()
+        commands = {
+            'download': DownloadImagesCommand(this)
+        }
+
+        if this.entity is not None:
+            template = this.entity.get('template')
+            if template:
+                if template.get('cached', False):
+                    commands['delete'] = DeleteImagesCommand(this)
+
+        return commands
 
 
 @description("Downloads templates from git")
@@ -562,9 +593,41 @@ class FetchShowCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs, filtering=None):
-        context.call_task_sync('vm_template.fetch')
+        context.call_task_sync('container.template.fetch')
         show = ListCommand(self.parent)
         return show.run(context, args, kwargs, opargs, filtering)
+
+
+@description("Downloads container images to the local cache")
+class DownloadImagesCommand(Command):
+    """
+    Usage: download
+
+    Example: download
+
+    Downloads container template images to the local cache.
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs, filtering=None):
+        context.submit_task('container.cache.update', self.parent.entity['template']['name'])
+
+
+@description("Deletes container images from the local cache")
+class DeleteImagesCommand(Command):
+    """
+    Usage: delete
+
+    Example: delete
+
+    Deletes container template images from the local cache.
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs, filtering=None):
+        context.submit_task('container.cache.delete', self.parent.entity['template']['name'])
 
 
 def _init(context):

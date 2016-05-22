@@ -381,6 +381,13 @@ class VMDisksNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNames
         )
 
         self.add_property(
+            descr='Disk mode',
+            name='mode',
+            get='properties.mode',
+            enum=['AHCI', 'VIRTIO']
+        )
+
+        self.add_property(
             descr='Disk size',
             name='size',
             get='properties.size',

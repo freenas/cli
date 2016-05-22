@@ -466,7 +466,8 @@ class VMVolumesNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNam
         self.add_property(
             descr='Volume type',
             name='type',
-            get='properties.type'
+            get='properties.type',
+            enum=['VT9P']
         )
 
         self.add_property(
@@ -478,7 +479,8 @@ class VMVolumesNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNam
         self.add_property(
             descr='Automatically create storage',
             name='auto',
-            get='properties.auto'
+            get='properties.auto',
+            type=ValueType.BOOLEAN
         )
 
         self.primary_key = self.get_mapping('name')

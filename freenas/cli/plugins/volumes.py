@@ -416,6 +416,20 @@ class DetachVolumeCommand(Command):
                             str(result['result']))
 
 
+@description("Upgrades  given volume")
+class UpgradeVolumeCommand(Command):
+    """
+    Usage: upgrade
+
+    Upgrades a volume.
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        context.submit_task('volume.upgrade', self.parent.name)
+
+
 @description("Unlocks encrypted volume")
 class UnlockVolumeCommand(Command):
     """
@@ -810,8 +824,10 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
             get='properties.compression.value',
             set='properties.compression.value',
             list=True,
-            enum=['on', 'off', 'gzip', 'gzip-1', 'gzip-2', 'gzip-3', 'gzip-4', 'gzip-5',
-                  'gzip-6', 'gzip-7', 'gzip-8', 'gzip-9', 'lzjb', 'lz4', 'zle']
+            enum=[
+                'on', 'off', 'gzip', 'gzip-1', 'gzip-2', 'gzip-3', 'gzip-4', 'gzip-5',
+                'gzip-6', 'gzip-7', 'gzip-8', 'gzip-9', 'lzjb', 'lz4', 'zle'
+            ]
         )
 
         self.add_property(
@@ -846,8 +862,10 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
             get='properties.dedup.value',
             set='properties.dedup.value',
             list=False,
-            enum=['on', 'off', 'verify', 'sha256', 'sha256,verify',
-                  'sha512', 'sha512,verify', 'skein', 'skein,verify', 'edonr,verify']
+            enum=[
+                'on', 'off', 'verify', 'sha256', 'sha256,verify',
+                'sha512', 'sha512,verify', 'skein', 'skein,verify', 'edonr,verify'
+            ]
         )
 
         self.add_property(
@@ -1367,7 +1385,8 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
             'online': OnlineVdevCommand(this),
             'extend_vdev': ExtendVdevCommand(this),
             'import': ImportFromVolumeCommand(this),
-            'detach': DetachVolumeCommand(this)
+            'detach': DetachVolumeCommand(this),
+            'upgrade': UpgradeVolumeCommand(this)
         }
 
         if this.entity is not None:

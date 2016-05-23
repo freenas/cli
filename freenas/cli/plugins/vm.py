@@ -517,6 +517,24 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
         )
 
         self.add_property(
+            descr='Created at',
+            name='created_at',
+            get='template.created_at',
+            usersetable=False,
+            list=False,
+            type=ValueType.TIME
+        )
+
+        self.add_property(
+            descr='Updated at',
+            name='updated_at',
+            get='template.updated_at',
+            usersetable=False,
+            list=True,
+            type=ValueType.TIME
+        )
+
+        self.add_property(
             descr='Author',
             name='author',
             get='template.author',

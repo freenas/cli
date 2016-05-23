@@ -227,6 +227,9 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
         self.required_props = ['name', 'volume']
         self.primary_key_name = 'name'
 
+        def set_memsize(o, v):
+            o['config.memsize'] = int(v / 1024 / 1024)
+
         self.skeleton_entity = {
             'type': 'VM',
             'devices': [],
@@ -271,9 +274,10 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
         self.add_property(
             descr='Memory size (MB)',
             name='memsize',
-            get='config.memsize',
+            get=lambda o: o['config.memsize'] * 1024 * 1024,
+            set=set_memsize,
             list=True,
-            type=ValueType.NUMBER
+            type=ValueType.SIZE
         )
 
         self.add_property(

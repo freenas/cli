@@ -144,7 +144,7 @@ class StartVMCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        context.call_task_sync('container.start', self.parent.entity['id'])
+        context.submit_task('container.start', self.parent.entity['id'])
 
 
 class StopVMCommand(Command):
@@ -152,7 +152,7 @@ class StopVMCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        context.call_task_sync('container.stop', self.parent.entity['id'])
+        context.submit_task('container.stop', self.parent.entity['id'])
 
 
 class KillVMCommand(Command):
@@ -160,7 +160,7 @@ class KillVMCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        context.call_task_sync('container.stop', self.parent.entity['id'], True)
+        context.submit_task('container.stop', self.parent.entity['id'], True)
 
 
 class RebootVMCommand(Command):
@@ -178,8 +178,7 @@ class RebootVMCommand(Command):
 
     def run(self, context, args, kwargs, opargs):
         force = kwargs.get('force', False)
-        context.call_task_sync('container.stop', self.parent.entity['id'], force)
-        context.call_task_sync('container.start', self.parent.entity['id'])
+        context.submit_task('container.reboot', self.parent.entity['id'], force)
 
 
 class ConsoleCommand(Command):

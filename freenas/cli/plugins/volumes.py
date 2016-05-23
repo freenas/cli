@@ -809,7 +809,9 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
             name='compression',
             get='properties.compression.value',
             set='properties.compression.value',
-            list=True
+            list=True,
+            enum=['on', 'off', 'gzip', 'gzip-1', 'gzip-2', 'gzip-3', 'gzip-4', 'gzip-5',
+                  'gzip-6', 'gzip-7', 'gzip-8', 'gzip-9', 'lzjb', 'lz4', 'zle']
         )
 
         self.add_property(
@@ -834,6 +836,7 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
             get='properties.atime.value',
             set='properties.atime.value',
             list=False,
+            enum=['on', 'off'],
             condition=lambda o: o['type'] == 'FILESYSTEM'
         )
 
@@ -842,7 +845,9 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
             name='dedup',
             get='properties.dedup.value',
             set='properties.dedup.value',
-            list=False
+            list=False,
+            enum=['on', 'off', 'verify', 'sha256', 'sha256,verify',
+                  'sha512', 'sha512,verify', 'skein', 'skein,verify', 'edonr,verify']
         )
 
         self.add_property(

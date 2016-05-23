@@ -55,7 +55,7 @@ from freenas.cli.utils import PrintableNone, SIGTSTPException, SIGTSTP_setter, e
 from freenas.cli import functions
 from freenas.cli import config
 from freenas.cli.namespace import (
-    Namespace, EntityNamespace, RootNamespace, SingleItemNamespace, ConfigNamespace, Command,
+    Namespace, EntityNamespace, RootNamespace, ItemNamespace, SingleItemNamespace, ConfigNamespace, Command,
     FilteringCommand, PipeCommand, CommandException, EntitySubscriberBasedLoadMixin
 )
 from freenas.cli.parser import (
@@ -932,6 +932,7 @@ class MainLoop(object):
         self.aliases = {}
         self.connection = None
         self.saved_state = None
+        self.saved_last_completion = None
         self.cached_values = {
             'rel_cwd': None,
             'rel_tokens': None,
@@ -1618,6 +1619,13 @@ class MainLoop(object):
                 elif issubclass(type(obj), Command):
                     completions = obj.complete(self.context)
                     choices = [c.name for c in completions if isinstance(c.name, six.string_types)]
+
+                    if isinstance(obj,ItemNamespace.SetEntityCommand):
+                        if self.saved_last_completion in choices:
+                            if text == '':
+                                property_name = self.saved_last_completion.split("=")[0]
+                                choices = self.context.connection.call_sync('zfs.dataset.get_properties_allowed_values',[property_name])[property_name]
+
                     arg = find_arg(args, readline.get_begidx())
 
                     if arg is False:
@@ -1637,6 +1645,8 @@ class MainLoop(object):
 
                 options = [i + (' ' if append_space else '') for i in choices if i.startswith(text)]
                 self.saved_state = options
+                if len(options) == 1:
+                    self.saved_last_completion = options[0]
                 if options:
                     return options[0]
             except BaseException as err:

@@ -127,6 +127,7 @@ ENTITY_SUBSCRIBERS = [
     'service',
     'share',
     'task',
+    'tunable',
     'alert',
     'alert.filter',
     'container',

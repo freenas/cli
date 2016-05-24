@@ -126,7 +126,7 @@ class ConsoleCommand(Command):
     Usage: console
 
     Examples:
-        reboot
+        console
 
     Connects to container serial console. ^] returns to CLI
     """

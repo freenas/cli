@@ -25,13 +25,11 @@
 #
 #####################################################################
 
-import gettext
+import sys
+import tty
 import curses
-import pyte
-import time
-from signal import signal, SIGWINCH, SIG_DFL
-from shutil import get_terminal_size
-from threading import RLock, Thread
+import gettext
+import termios
 from freenas.dispatcher.shell import VMConsoleClient
 from freenas.cli.namespace import (
     EntityNamespace, Command, NestedObjectLoadMixin, NestedObjectSaveMixin, EntitySubscriberBasedLoadMixin,
@@ -46,97 +44,39 @@ _ = t.gettext
 
 
 class VMConsole(object):
-    class CursesScreen(pyte.DiffScreen):
-        def __init__(self, parent, cols, lines):
-            super(VMConsole.CursesScreen, self).__init__(cols, lines)
-            self.parent = parent
-
     def __init__(self, context, id, name):
         self.context = context
         self.id = id
         self.name = name
         self.conn = None
-        self.stream = pyte.Stream()
-        self.screen = None
-        self.window = None
-        self.output_lock = RLock()
         self.stdscr = None
-        self.header = None
-        self.header_msg = "Connected to {0} console - hit ^] to detach".format(self.name)
-        self.buffer = bytearray()
-        self.connected = False
 
     def on_data(self, data):
-        with self.output_lock:
-            self.buffer += data
-
-    def on_redraw(self):
-        while self.connected:
-            if len(self.buffer):
-                with self.output_lock:
-                    self.stream.feed(self.buffer.decode('utf-8'))
-                    for i in self.screen.dirty:
-                        self.window.addstr(i, 0, self.screen.display[i])
-
-                    self.screen.dirty.clear()
-                    curses.setsyx(self.screen.cursor.y + 1, self.screen.cursor.x)
-                    curses.doupdate()
-                    self.buffer = bytearray()
-
-            time.sleep(0.05)
+        sys.stdout.buffer.write(data)
+        sys.stdout.buffer.flush()
 
     def connect(self):
         token = self.context.call_sync('containerd.management.request_console', self.id)
         self.conn = VMConsoleClient(self.context.hostname, token)
         self.conn.on_data(self.on_data)
         self.conn.open()
-        self.connected = True
-        Thread(target=self.on_redraw).start()
-
-    def disconnect(self):
-        self.connected = False
-        self.conn.close()
-        signal(SIGWINCH, SIG_DFL)
 
     def start(self):
-        self.stdscr = curses.initscr()
-        self.stdscr.immedok(True)
-        curses.noecho()
-        curses.raw()
-        self.stdscr.clear()
-        rows, cols = self.stdscr.getmaxyx()
-        self.header = curses.newwin(1, cols, 0, 0)
-        self.screen = VMConsole.CursesScreen(self, cols, rows - 2)
-        self.stream.attach(self.screen)
-        self.window = curses.newwin(rows - 1, cols, 1, 0)
-        self.window.immedok(True)
-        self.header.immedok(True)
-        self.header.bkgdset(' ', curses.A_REVERSE)
-        self.header.addstr(0, 0, self.header_msg[:cols - 1])
-        signal(SIGWINCH, self.resize)
-        self.connect()
-        while True:
-            ch = self.stdscr.getch()
-            if ch == 29:
-                curses.endwin()
-                self.disconnect()
-                break
+        stdin_fd = sys.stdin.fileno()
+        old_stdin_settings = termios.tcgetattr(stdin_fd)
+        try:
+            tty.setraw(stdin_fd)
+            self.connect()
+            while True:
+                ch = sys.stdin.read(1)
+                if ch == '\x1d':
+                    self.conn.close()
+                    break
 
-            self.conn.write(chr(ch))
-
-    def resize(self, signum, frame):
-        with self.output_lock:
-            size = get_terminal_size()
-            self.screen.resize(size.lines - 2, size.columns)
-            self.header.resize(1, size.columns)
-            self.window.resize(size.lines - 1, size.columns)
-            self.screen.dirty.clear()
-            self.header.clear()
-            self.window.clear()
-            self.header.refresh()
-            self.window.refresh()
-            self.header.bkgdset(' ', curses.A_REVERSE)
-            self.header.addstr(0, 0, self.header_msg[:size.columns - 1])
+                self.conn.write(ch)
+        finally:
+            termios.tcsetattr(stdin_fd, termios.TCSADRAIN, old_stdin_settings)
+            curses.wrapper(lambda x: x)
 
 
 class StartVMCommand(Command):
@@ -182,6 +122,14 @@ class RebootVMCommand(Command):
 
 
 class ConsoleCommand(Command):
+    """
+    Usage: console
+
+    Examples:
+        reboot
+
+    Connects to container serial console. ^] returns to CLI
+    """
     def __init__(self, parent):
         self.parent = parent
 

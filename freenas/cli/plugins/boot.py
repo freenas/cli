@@ -295,7 +295,7 @@ class BootPoolAttachDiskCommand(Command):
             output_msg("Disk " + disk + " is not usable.")
             return
         volume = context.call_sync('zfs.pool.get_boot_pool')
-        context.submit_task('boot.attach_disk', volume['groups']['data'][0]['guid'], disk)
+        context.submit_task('boot.disk.attach', volume['groups']['data'][0]['guid'], disk)
         return
 
 

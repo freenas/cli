@@ -28,7 +28,7 @@
 
 import gettext
 from freenas.cli.namespace import (
-    Namespace, EntityNamespace, Command, RpcBasedLoadMixin,
+    Namespace, EntityNamespace, Command, EntitySubscriberBasedLoadMixin,
     description, CommandException
 )
 from freenas.cli.utils import iterate_vdevs, post_save, correct_disk_path
@@ -40,16 +40,15 @@ _ = t.gettext
 
 
 @description("Manage boot environments")
-class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
+class BootEnvironmentNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
     """
     The environment namespace provides commands for listing and
     managing boot environments.
     """
     def __init__(self, name, context):
         super(BootEnvironmentNamespace, self).__init__(name, context)
-        self.query_call = 'boot.environment.query'
-        self.primary_key_name = 'name'
-        self.allow_edit = False
+        self.entity_subscriber_name = 'boot.environment'
+        self.primary_key_name = 'id'
         self.required_props = ['name']
 
         self.localdoc['CreateEntityCommand'] = ("""\
@@ -92,7 +91,7 @@ class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
             appears in the boot menu."""),
             set='id',
             list=True
-            )
+        )
 
         self.add_property(
             descr='Active',
@@ -105,7 +104,7 @@ class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
             list=True,
             type=ValueType.BOOLEAN,
             set=None,
-            )
+        )
 
         self.add_property(
             descr='Real Name',
@@ -116,7 +115,7 @@ class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
             is created."""),
             list=True,
             set=None,
-            )
+        )
 
         self.add_property(
             descr='On Reboot',
@@ -129,18 +128,7 @@ class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
             list=True,
             type=ValueType.BOOLEAN,
             set=None,
-            )
-
-#        self.add_property(
-#            descr='Mount point',
-#            name='mountpoint',
-#            get='mountpoint',
-#            usage=_("""
-#            Read-only value indicating the amount of space used
-#            by the boot environment."""),
-#            list=False,
-#            set=None,
-#            )
+        )
 
         self.add_property(
             descr='Space used',
@@ -151,7 +139,8 @@ class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
             environment occupies."""),
             list=True,
             set=None,
-            )
+            type=ValueType.SIZE
+        )
 
         self.add_property(
             descr='Date created',
@@ -162,7 +151,7 @@ class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
             environment was created."""),
             list=True,
             set=None,
-            )
+        )
 
         self.primary_key = self.get_mapping('name')
 
@@ -173,11 +162,6 @@ class BootEnvironmentNamespace(RpcBasedLoadMixin, EntityNamespace):
 
     def serialize(self):
         raise NotImplementedError()
-
-    def get_one(self, name):
-        return self.context.call_sync(
-            self.query_call, [('id', '=', name)], {'single': True}
-        )
 
     def delete(self, this, kwargs):
         self.context.submit_task('boot.environment.delete', this.entity['id'])
@@ -311,7 +295,7 @@ class BootPoolAttachDiskCommand(Command):
             output_msg("Disk " + disk + " is not usable.")
             return
         volume = context.call_sync('zfs.pool.get_boot_pool')
-        context.submit_task('boot.attach_disk', volume['groups']['data'][0]['guid'], disk)
+        context.submit_task('boot.disk.attach', volume['groups']['data'][0]['guid'], disk)
         return
 
 

@@ -127,13 +127,15 @@ ENTITY_SUBSCRIBERS = [
     'service',
     'share',
     'task',
+    'tunable',
     'alert',
     'alert.filter',
     'container',
     'syslog',
     'replication.link',
     'replication.host',
-    'backup'
+    'backup',
+    'boot.environment'
 ]
 
 
@@ -680,6 +682,9 @@ class Context(object):
     def print_validation_errors(self, task):
         if task.get('error.type') == 'ValidationException':
             errors = self.get_validation_errors(task)
+            if not errors:
+                return
+
             for prop, __, msg in errors:
                 self.output_queue.put(_("Task #{0} validation error: {1}{2}{3}".format(
                     task['id'],
@@ -1614,6 +1619,7 @@ class MainLoop(object):
                 elif issubclass(type(obj), Command):
                     completions = obj.complete(self.context)
                     choices = [c.name for c in completions if isinstance(c.name, six.string_types)]
+
                     arg = find_arg(args, readline.get_begidx())
 
                     if arg is False:
@@ -1633,6 +1639,7 @@ class MainLoop(object):
 
                 options = [i + (' ' if append_space else '') for i in choices if i.startswith(text)]
                 self.saved_state = options
+
                 if options:
                     return options[0]
             except BaseException as err:

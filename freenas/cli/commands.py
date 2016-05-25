@@ -292,7 +292,7 @@ class ShellCommand(Command):
             self.closed = True
 
         self.closed = False
-        name = ' '.join(args) if len(args) > 0 else '/bin/sh'
+        name = ' '.join(str(i) for i in args) if len(args) > 0 else '/bin/sh'
         token = context.call_sync('shell.spawn', name)
         shell = ShellClient(context.hostname, token)
         shell.on_data(read)

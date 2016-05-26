@@ -140,7 +140,6 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
 
             Deletes an interface.""")
 
-
         self.link_states = {
             'LINK_STATE_UP': _("up"),
             'LINK_STATE_DOWN': _("down"),

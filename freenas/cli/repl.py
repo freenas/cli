@@ -1210,7 +1210,11 @@ class MainLoop(object):
                 local_env = Environment(self.context, outer=env)
                 expr = self.eval(token.expr, env)
                 if isinstance(token.var, tuple):
-                    for k, v in expr.items():
+                    if isinstance(expr, dict):
+                        expr_iter = expr.items()
+                    else:
+                        expr_iter = expr.copy()
+                    for k, v in expr_iter:
                         local_env[token.var[0]] = k
                         local_env[token.var[1]] = v
                         try:

@@ -128,6 +128,7 @@ ENTITY_SUBSCRIBERS = [
     'share',
     'task',
     'tunable',
+    'crypto.certificate',
     'alert',
     'alert.filter',
     'container',

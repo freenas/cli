@@ -1,0 +1,12 @@
+# Sample CLI script which will create one of every kind of VM there is.
+
+vol = $(volume show|select name)[0]["result"]
+x = $(vm template show | select name)
+n = 1
+
+for (i in x) {
+	/ vm create name=${"vm" + str(n)} volume=${vol} enabled=yes template=${i["result"]}
+	wait
+	/ vm ${"vm" + str(n)} start
+	n = n + 1
+}

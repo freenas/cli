@@ -70,9 +70,20 @@ class CertificateAuthorityNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoa
         self.import_task = 'crypto.certificate.import'
         self.delete_task = 'crypto.certificate.delete'
         self.primary_key_name = 'name'
+        self.extra_query_params = [
+            ('type', 'in', ('CA_EXISTING', 'CA_INTERMEDIATE', 'CA_INTERNAL'))
+        ]
+        self.extra_commands = {
+            'import': ImportCertificateAuthorityCommand()
+        }
 
         self.localdoc['CreateEntityCommand'] = ("""\
-            Examples: create type=CA_INTERNAL name=myCA key_length=2048 digest_algorithm=SHA256
+            Examples:
+            create type=CA_INTERNAL name=myCA key_length=2048 digest_algorithm=SHA256
+            lifetime=3650 country=PL state=Slaskie city=Czerwionka-Leszczyny organization=myorg email=a@b.c
+            common=MyCommonName
+
+            create type=CA_INTERMEDIATE signedby=myCA name=myInterCA key_length=2048 digest_algorithm=SHA256
             lifetime=3650 country=PL state=Slaskie city=Czerwionka-Leszczyny organization=myorg email=a@b.c
             common=MyCommonName
 
@@ -207,6 +218,18 @@ class CertificateAuthorityNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoa
         self.primary_key = self.get_mapping('name')
 
 
+@description("Imports given CA")
+class ImportCertificateAuthorityCommand(Command):
+    """
+    Usage: TODO
+
+    Example: TODO
+
+    Imports a Certificate Authority.
+    """
+    def run(self, context, args, kwargs, opargs):
+        pass
+
 @description(_("Provides access to Certificate actions"))
 class CertificateNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):
     """
@@ -221,6 +244,12 @@ class CertificateNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
         self.import_task = 'crypto.certificate.import'
         self.delete_task = 'crypto.certificate.delete'
         self.primary_key_name = 'name'
+        self.extra_query_params = [
+            ('type', 'in', ('CERT_INTERNAL', 'CERT_CSR', 'CERT_INTERMEDIATE', 'CERT_EXISTING'))
+        ]
+        self.extra_commands = {
+            'import': ImportCertificateCommand()
+        }
 
         self.localdoc['CreateEntityCommand'] = ("""\
             Examples: create type=CERT_INTERNAL name=myCert signedby=myCA key_length=2048
@@ -352,6 +381,18 @@ class CertificateNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
 
         self.primary_key = self.get_mapping('name')
 
+
+@description("Imports given CA")
+class ImportCertificateCommand(Command):
+    """
+    Usage: TODO
+
+    Example: TODO
+
+    Imports a Certificate Authority.
+    """
+    def run(self, context, args, kwargs, opargs):
+        pass
 
 def _init(context):
     #context.attach_namespace('/', CryptoNamespace('crypto', context))

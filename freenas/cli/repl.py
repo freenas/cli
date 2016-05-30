@@ -128,6 +128,7 @@ ENTITY_SUBSCRIBERS = [
     'share',
     'task',
     'tunable',
+    'crypto.certificate',
     'alert',
     'alert.filter',
     'container',
@@ -1210,7 +1211,11 @@ class MainLoop(object):
                 local_env = Environment(self.context, outer=env)
                 expr = self.eval(token.expr, env)
                 if isinstance(token.var, tuple):
-                    for k, v in expr.items():
+                    if isinstance(expr, dict):
+                        expr_iter = expr.items()
+                    else:
+                        expr_iter = expr.copy()
+                    for k, v in expr_iter:
                         local_env[token.var[0]] = k
                         local_env[token.var[1]] = v
                         try:
@@ -1450,6 +1455,11 @@ class MainLoop(object):
         raise SyntaxError("Invalid syntax: {0}".format(token))
 
     def process(self, line):
+        def add_line_to_history(line):
+            readline.add_history(line)
+            with open(os.path.expanduser('~/.cli_history'), 'a') as history_file:
+                history_file.write('\n' + line)
+
         if len(line) == 0:
             return
 
@@ -1464,16 +1474,16 @@ class MainLoop(object):
                 tokens = parse(line, '<stdin>')
             except KeyboardInterrupt:
                 return
+            except SyntaxError:
+                add_line_to_history(line)
+                raise
 
             if not tokens:
                 return
 
             # Unparse AST to string and add to readline history and history file
             line = '; '.join(unparse(t, oneliner=True) for t in tokens)
-            readline.add_history(line)
-
-            with open(os.path.expanduser('~/.cli_history'), 'a') as history_file:
-                history_file.write('\n'+line)
+            add_line_to_history(line)
 
             first = True
             for i in tokens:

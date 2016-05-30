@@ -26,16 +26,17 @@
 #
 #####################################################################
 
-
 import gettext
 from freenas.cli.namespace import (
-    Command, Namespace, EntityNamespace, TaskBasedSaveMixin,
-    EntitySubscriberBasedLoadMixin, description, CommandException
+    EntityNamespace, TaskBasedSaveMixin,
+    EntitySubscriberBasedLoadMixin, description
 )
-from freenas.cli.output import ValueType, Sequence
+from freenas.cli.output import ValueType
+
 
 t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
+
 
 @description(_("Provides access to OS tunables"))
 class TunablesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):
@@ -97,9 +98,6 @@ class TunablesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Enti
 
         self.primary_key = self.get_mapping('var')
 
-        def commands(self):
-            cmds = super(TunablesNamespace, self).commands()
-            return cmds
 
 def _init(context):
     context.attach_namespace('/', TunablesNamespace('tunable', context))

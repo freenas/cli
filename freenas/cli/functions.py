@@ -223,7 +223,6 @@ def json_dump(obj, file=None):
     else:
         return json.dumps(obj)
 
-
 functions = {
     'print': print_,
     'printf': printf,
@@ -262,4 +261,5 @@ functions = {
     'json_dump': json_dump,
     'eval': eval_,
     'join': strjoin,
+    'enumerate': lambda a: list(enumerate(a)),
 }

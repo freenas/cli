@@ -30,7 +30,6 @@ import re
 import ply.lex as lex
 import ply.yacc as yacc
 from freenas.cli import config
-from freenas.utils.permissions import string_to_int
 
 
 def ASTObject(name, *args):

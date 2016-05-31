@@ -30,6 +30,7 @@ import tty
 import curses
 import gettext
 import termios
+from freenas.cli.output import Sequence
 from freenas.dispatcher.shell import VMConsoleClient
 from freenas.cli.namespace import (
     EntityNamespace, Command, NestedObjectLoadMixin, NestedObjectSaveMixin, EntitySubscriberBasedLoadMixin,
@@ -281,6 +282,15 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             type=ValueType.BOOLEAN
         )
 
+        self.add_property(
+            descr='Readme',
+            name='readme',
+            get='template.readme',
+            set='template.readme',
+            list=False,
+            type=ValueType.STRING_HEAD
+        )
+
         self.primary_key = self.get_mapping('name')
         self.entity_namespaces = lambda this: [
             VMDisksNamespace('disks', self.context, this),
@@ -293,7 +303,8 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             'stop': StopVMCommand(this),
             'kill': KillVMCommand(this),
             'reboot': RebootVMCommand(this),
-            'console': ConsoleCommand(this)
+            'console': ConsoleCommand(this),
+            'readme': ReadmeCommand(this)
         }
 
         self.extra_commands = {
@@ -546,7 +557,8 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
     def get_entity_commands(self, this):
         this.load()
         commands = {
-            'download': DownloadImagesCommand(this)
+            'download': DownloadImagesCommand(this),
+            'readme': ReadmeCommand(this)
         }
 
         if this.entity is not None:
@@ -590,6 +602,25 @@ class DownloadImagesCommand(Command):
 
     def run(self, context, args, kwargs, opargs, filtering=None):
         context.submit_task('container.cache.update', self.parent.entity['template']['name'])
+
+
+@description("Shows readme entry of selected VM template")
+class ReadmeCommand(Command):
+    """
+    Usage: readme
+
+    Example: readme
+
+    Shows readme entry of selected VM
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs, filtering=None):
+        if self.parent.entity['template'].get('readme'):
+            return Sequence(self.parent.entity['template']['readme'])
+        else:
+            return Sequence("Selected template does not have readme entry")
 
 
 @description("Deletes container images from the local cache")

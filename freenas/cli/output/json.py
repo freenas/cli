@@ -43,10 +43,11 @@ class JsonOutputFormatter(object):
         if vt == ValueType.STRING:
             return str(value)
 
+        if vt == ValueType.STRING_HEAD:
+            return str(value[:10] + '(...)')
+
         if vt == ValueType.SET:
             return list(value)
-
-
 
         return json.dumps(value)
 

@@ -101,6 +101,9 @@ class AsciiOutputFormatter(object):
         if vt == ValueType.STRING:
             return format_literal(value)
 
+        if vt == ValueType.STRING_HEAD:
+            return format_literal(value[:10] + '(...)')
+
         if vt == ValueType.NUMBER:
             return str(value)
 

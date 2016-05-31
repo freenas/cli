@@ -49,15 +49,16 @@ _ = t.gettext
 
 class ValueType(enum.Enum):
     STRING = 1
-    NUMBER = 2
-    HEXNUMBER = 3
-    OCTNUMBER = 4
-    BOOLEAN = 5
-    SIZE = 6
-    TIME = 7
-    SET = 8
-    DICT = 9
-    PERMISSIONS = 10
+    STRING_HEAD = 2
+    NUMBER = 3
+    HEXNUMBER = 4
+    OCTNUMBER = 5
+    BOOLEAN = 6
+    SIZE = 7
+    TIME = 8
+    SET = 9
+    DICT = 10
+    PERMISSIONS = 11
 
 
 class Object(list):
@@ -205,7 +206,7 @@ def read_value(value, tv=ValueType.STRING):
 
         return value
 
-    if tv == ValueType.STRING:
+    if tv in (ValueType.STRING, ValueType.STRING_HEAD):
         return str(value)
 
     if tv in (ValueType.NUMBER, ValueType.SIZE):

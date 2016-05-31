@@ -57,7 +57,10 @@ class TableOutputFormatter(object):
             return '\n'.join(value)
 
         if vt == ValueType.STRING:
-            return value
+            return str(value)
+
+        if vt == ValueType.STRING_HEAD:
+            return str(value[:10] + '(...)')
 
         if vt == ValueType.NUMBER:
             return str(value)

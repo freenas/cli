@@ -1498,5 +1498,164 @@ svc_cli_config = {
             'get': 'auxiliary',
             'type': ValueType.STRING,
         },
+    ],
+
+
+ "openvpn": [
+        {
+            'descr': 'Device type tap/tun',
+            'name': 'dev',
+            'usage': _("""
+             Can be set to either tap or tun interface.
+             Plese provide a full device name. Example : tap1"""),
+            'get': 'dev',
+            'type': ValueType.STRING,
+        },
+        {
+            'descr': 'Persist-key option',
+            'name': 'persist-key',
+            'usage': _("""
+             Don't re-read key files across service restart.
+             Without this option service can't re-read needed keys after dropping root privilges."""),
+            'get': 'persist-key',
+            'type': ValueType.BOOLEAN,
+        },
+        {
+            'descr': 'Persist-tun option',
+            'name': 'persist-tun',
+            'usage': _("""
+             Don't close and reopen tap/tun device across restart."""),
+            'get': 'persist-tun',
+            'type': ValueType.BOOLEAN,
+        },
+        
+
+        {
+            'descr': 'Symmetric cipher used by OpenVPN',
+            'name': 'cipher',
+            'usage': _("""
+             You can choose between 'BF-CBC', 'AES-128-CBC', 'DES-EDE3-CBC'"""),
+            'get': 'cipher',
+            'type': ValueType.SET,
+            'enum': ['BF-CBC', 'AES-128-CBC', 'DES-EDE3-CBC'],
+        },
+
+
+        {
+            'descr': 'Server-bridge OpenVPN directive',
+            'name': 'server-bridge',
+            'usage': _("""
+             It can by an empty value or user defined subset of bridged network
+             If empty Vpn clients will acquire dhcp lease from local network dhcp server
+             Otherwise OpenVPN server will provide ip addressing
+             Usage: ['ip_for_local_bridge','netmask','ip_range_begin','ip_range_end']"""),
+            'get': 'server-bridge',
+            'type': ValueType.SET
+        },
+
+
+
+        {
+            'descr': 'Maximum vpn clients',
+            'name': 'max-clients',
+            'usage': _("""
+             A maximum nuber of clients to connect simultaneously"""),
+            'get': 'max-clients',
+            'type': ValueType.NUMBER,
+        },
+
+
+        {
+            'descr': 'OpenVPN user',
+            'name': 'user',
+            'usage': _("""
+             User for OpenVPN privilege downgrade"""),
+            'get': 'user',
+            'type': ValueType.STRING,
+        },
+
+
+        {
+            'descr': 'OpenVPN group',
+            'name': 'group',
+            'usage': _("""
+             Group for OpenVPN privilege downgrade"""),
+            'get': 'user',
+            'type': ValueType.STRING,
+        },
+
+
+        {
+            'descr': 'OpenVPN group',
+            'name': 'group',
+            'usage': _("""
+             Group for OpenVPN privilege downgrade"""),
+            'get': 'user',
+            'type': ValueType.STRING,
+        },
+
+        {
+            'descr': 'OpenVPN group',
+            'name': 'group',
+            'usage': _("""
+             Group for OpenVPN privilege downgrade"""),
+            'get': 'user',
+            'type': ValueType.STRING,
+        },
+
+
+        {
+            'descr': 'OpenVPN port',
+            'name': 'port',
+            'usage': _("""
+             Default: 1194"""),
+            'get': 'port',
+            'type': ValueType.NUMBER,
+        },
+
+
+        {
+            'descr': 'OpenVPN protocol',
+            'name': 'proto',
+            'usage': _("""
+             Protocol used by OpenVPN server - tcp/udp.
+             Default:udp"""),
+            'get': 'proto',
+            'type': ValueType.SET,
+            'enum': ['udp', 'tcp'],
+
+        },
+
+
+        {
+            'descr': 'OpenVPN compression',
+            'name': 'compression',
+            'usage': _("""
+             Enamble compression : True/False"""),
+            'get': 'comp-lzo',
+            'type': ValueType.BOOLEAN,
+        },
+
+        {
+            'descr': 'OpenVPN logging verbosity',
+            'name': 'verbosity',
+            'usage': _("""
+             Logging verbosity range : 0-15"""),
+            'get': 'verb',
+            'type': ValueType.NUMBER,
+        },
+
+        {
+ 
+            'descr': 'Auxiliary parameters',
+            'name': 'auxiliary',
+            'usage': _("""
+             Optional, additional openvpn parameters not provided
+             by other properties. Space delimited list of parameters
+             enclosed between double quotes."""),
+            'get': 'auxiliary',
+            'type': ValueType.STRING
+        },
+
     ]
 }

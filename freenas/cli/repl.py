@@ -185,22 +185,6 @@ def expand_wildcards(context, args, kwargs, opargs, completions):
     return args, kwargs, opargs
 
 
-def convert_to_literals(tokens):
-    def conv(t):
-        if isinstance(t, list):
-            return [conv(i) for i in t]
-
-        if isinstance(t, Symbol):
-            raise RuntimeError('"{0}" must be quoted'.format(t.name))
-
-        if isinstance(t, BinaryParameter):
-            t.right = conv(t.right)
-
-        return t
-
-    return [conv(i) for i in tokens]
-
-
 class FlowControlInstructionType(enum.Enum):
     RETURN = 'RETURN'
     BREAK = 'BREAK'
@@ -1331,10 +1315,9 @@ class MainLoop(object):
 
                         if isinstance(item, Command):
                             completions = item.complete(self.context)
-                            token_args = convert_to_literals(token.args)
                             args, kwargs, opargs = expand_wildcards(
                                 self.context,
-                                *sort_args([self.eval(i, env) for i in token_args]),
+                                *sort_args([self.eval(i, env) for i in token.args]),
                                 completions=completions
                             )
 

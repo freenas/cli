@@ -1528,8 +1528,6 @@ svc_cli_config = {
             'get': 'persist-tun',
             'type': ValueType.BOOLEAN,
         },
-        
-
         {
             'descr': 'Symmetric cipher used by OpenVPN',
             'name': 'cipher',
@@ -1539,8 +1537,6 @@ svc_cli_config = {
             'type': ValueType.SET,
             'enum': ['BF-CBC', 'AES-128-CBC', 'DES-EDE3-CBC'],
         },
-
-
         {
             'descr': 'Server-bridge OpenVPN directive',
             'name': 'server-bridge',
@@ -1552,9 +1548,6 @@ svc_cli_config = {
             'get': 'server-bridge',
             'type': ValueType.SET
         },
-
-
-
         {
             'descr': 'Maximum vpn clients',
             'name': 'max-clients',
@@ -1563,8 +1556,6 @@ svc_cli_config = {
             'get': 'max-clients',
             'type': ValueType.NUMBER,
         },
-
-
         {
             'descr': 'OpenVPN user',
             'name': 'user',
@@ -1573,8 +1564,6 @@ svc_cli_config = {
             'get': 'user',
             'type': ValueType.STRING,
         },
-
-
         {
             'descr': 'OpenVPN group',
             'name': 'group',
@@ -1583,8 +1572,6 @@ svc_cli_config = {
             'get': 'user',
             'type': ValueType.STRING,
         },
-
-
         {
             'descr': 'OpenVPN group',
             'name': 'group',
@@ -1593,7 +1580,6 @@ svc_cli_config = {
             'get': 'user',
             'type': ValueType.STRING,
         },
-
         {
             'descr': 'OpenVPN group',
             'name': 'group',
@@ -1602,8 +1588,6 @@ svc_cli_config = {
             'get': 'user',
             'type': ValueType.STRING,
         },
-
-
         {
             'descr': 'OpenVPN port',
             'name': 'port',
@@ -1612,8 +1596,6 @@ svc_cli_config = {
             'get': 'port',
             'type': ValueType.NUMBER,
         },
-
-
         {
             'descr': 'OpenVPN protocol',
             'name': 'proto',
@@ -1625,8 +1607,6 @@ svc_cli_config = {
             'enum': ['udp', 'tcp'],
 
         },
-
-
         {
             'descr': 'OpenVPN compression',
             'name': 'compression',
@@ -1635,7 +1615,6 @@ svc_cli_config = {
             'get': 'comp-lzo',
             'type': ValueType.BOOLEAN,
         },
-
         {
             'descr': 'OpenVPN logging verbosity',
             'name': 'verbosity',
@@ -1644,7 +1623,6 @@ svc_cli_config = {
             'get': 'verb',
             'type': ValueType.NUMBER,
         },
-
         {
  
             'descr': 'Auxiliary parameters',

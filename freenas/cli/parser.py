@@ -120,12 +120,6 @@ tokens = list(reserved.values()) + [
     'NEWLINE', 'COLON', 'REDIRECT', 'MOD', 'SHELL'
 ]
 
-
-states = (
-    ('script', 'inclusive'),
-)
-
-
 def t_COMMENT(t):
     r'\#.*'
     pass
@@ -245,13 +239,8 @@ def common_atom_routine(t):
     return t
 
 
-def t_script_ATOM(t):
+def t_ATOM(t):
     r'[a-zA-Z_][0-9a-zA-Z_\.\/#@]*'
-    return common_atom_routine(t)
-
-
-def t_INITIAL_ATOM(t):
-    r'[0-9a-zA-Z_\-\+\*\:#@\/][0-9a-zA-Z_\.\/#@\:\-\+\*\/]*'
     return common_atom_routine(t)
 
 
@@ -268,16 +257,16 @@ t_GT = r'>'
 t_GE = r'>='
 t_LT = r'<'
 t_LE = r'<='
-t_script_PLUS = r'\+'
-t_script_MINUS = r'-'
-t_script_MUL = r'\*'
+t_PLUS = r'\+'
+t_MINUS = r'-'
+t_MUL = r'\*'
 t_DIV = r'\/'
-t_script_MOD = r'\%'
+t_MOD = r'\%'
 t_REGEX = r'~='
 t_COMMA = r'\,'
 t_UP = r'\.\.'
 t_LIST = r'\?'
-t_script_COLON = r':'
+t_COLON = r':'
 t_REDIRECT = r'>>'
 t_SHELL = r'!'
 
@@ -302,38 +291,32 @@ def t_ESCAPENL(t):
 
 def t_ANY_EOPEN(t):
     r'\$\('
-    t.lexer.push_state('INITIAL')
     return t
 
 
 def t_ANY_LPAREN(t):
     r'\('
-    t.lexer.push_state('script')
     return t
 
 
 def t_ANY_RPAREN(t):
     r'\)'
-    t.lexer.pop_state()
     return t
 
 
 def t_ANY_COPEN(t):
     r'\${'
-    t.lexer.push_state('script')
     return t
 
 
 def t_LBRACE(t):
     r'{'
-    t.lexer.push_state('script')
     t.lexer.parens += 1
     return t
 
 
 def t_ANY_RBRACE(t):
     r'}'
-    t.lexer.pop_state()
     t.lexer.parens -= 1
     return t
 
@@ -844,10 +827,7 @@ def p_set_parameter(p):
 
 def p_unary_parameter(p):
     """
-    unary_parameter : symbol
-    unary_parameter : literal
-    unary_parameter : array_literal
-    unary_parameter : dict_literal
+    unary_parameter : expr
     unary_parameter : COPEN expr RBRACE
     """
     if len(p) == 4:

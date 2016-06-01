@@ -191,7 +191,7 @@ def convert_to_literals(tokens):
             return [conv(i) for i in t]
 
         if isinstance(t, Symbol):
-            return Literal(t.name, str)
+            raise RuntimeError('"{0}" must be quoted'.format(t.name))
 
         if isinstance(t, BinaryParameter):
             t.right = conv(t.right)

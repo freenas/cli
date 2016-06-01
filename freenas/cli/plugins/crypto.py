@@ -80,16 +80,19 @@ class CertificateAuthorityNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoa
 
         self.localdoc['CreateEntityCommand'] = ("""\
             Examples:
-            create type=CA_INTERNAL name=myCA key_length=2048 digest_algorithm=SHA256
-            lifetime=3650 country=PL state=Slaskie city=Czerwionka-Leszczyny organization=myorg email=a@b.c
+            Create root CA Certificate :
+            create type=CA_INTERNAL name=myRootCA key_length=2048 digest_algorithm=SHA256
+            lifetime=3650 country=PL state=Slaskie city=Czerwionka-Leszczyny
+            organization=myCAOrg email=a@b.c common=my_CA_Server
+
+            Create intermediate CA Certificate :
+            create type=CA_INTERMEDIATE signedby=myRootCA name=myInterCA key_length=2048 digest_algorithm=SHA256
+            lifetime=365 country=PL state=Slaskie city=Czerwionka-Leszczyny organization=myorg email=a@b.c
             common=MyCommonName
 
-            create type=CA_INTERMEDIATE signedby=myCA name=myInterCA key_length=2048 digest_algorithm=SHA256
-            lifetime=3650 country=PL state=Slaskie city=Czerwionka-Leszczyny organization=myorg email=a@b.c
-            common=MyCommonName
-
-            import type=CA_EXISTING name=myimportedCA certificate=<certificate> privatekey=<privatekey>
-            passphrase=<passphrase> serial=<serial_number>
+            Import existing CA Certificate :
+            import type=CA_EXISTING name=myImportedCA certificate=<certificate> privatekey=<privatekey>
+            [passphrase=<passphrase>]
 
             Crates a Certificate Authority. For a list of properties, see 'help properties'.""")
 
@@ -110,6 +113,7 @@ class CertificateAuthorityNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoa
                 'CA_INTERMEDIATE',
                 'CA_INTERNAL'
             ],
+            usersetable=False,
             list=True)
 
         self.add_property(
@@ -117,6 +121,8 @@ class CertificateAuthorityNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoa
             name='certificate',
             get='certificate',
             set='certificate',
+            type=ValueType.STRING,
+            usersetable=False,
             list=False)
 
         self.add_property(
@@ -124,6 +130,8 @@ class CertificateAuthorityNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoa
             name='privatekey',
             get='privatekey',
             set='privatekey',
+            type=ValueType.STRING,
+            usersetable=False,
             list=False)
 
         self.add_property(
@@ -131,13 +139,16 @@ class CertificateAuthorityNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoa
             name='serial',
             get='serial',
             set='serial',
-            list=False)
+            type=ValueType.NUMBER,
+            usersetable=False,
+            list=True)
 
         self.add_property(
             descr='Pass Phrase',
             name='passphrase',
             get='passphrase',
             set='passphrase',
+            usersetable=False,
             list=False)
 
         self.add_property(
@@ -147,6 +158,7 @@ class CertificateAuthorityNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoa
             set='key_length',
             type=ValueType.NUMBER,
             condition=lambda e: e['type'] != 'CA_EXISTING',
+            usersetable=False,
             list=True)
 
         self.add_property(
@@ -156,6 +168,7 @@ class CertificateAuthorityNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoa
             set='digest_algorithm',
             enum=['SHA1', 'SHA224', 'SHA256', 'SHA384', 'SHA512'],
             condition=lambda e: e['type'] != 'CA_EXISTING',
+            usersetable=False,
             list=True)
 
         self.add_property(
@@ -163,8 +176,10 @@ class CertificateAuthorityNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoa
             name='lifetime',
             get='lifetime',
             set='lifetime',
-            condition=lambda e: e['type'] != 'CA_EXISTING',
+            usage=_("""\
+            Certificate lifetime in days, accepts number values"""),
             type=ValueType.NUMBER,
+            usersetable=False,
             list=True)
 
         self.add_property(
@@ -173,6 +188,7 @@ class CertificateAuthorityNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoa
             get='country',
             set='country',
             condition=lambda e: e['type'] != 'CA_EXISTING',
+            usersetable=False,
             list=True)
 
         self.add_property(
@@ -181,6 +197,7 @@ class CertificateAuthorityNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoa
             get='state',
             set='state',
             condition=lambda e: e['type'] != 'CA_EXISTING',
+            usersetable=False,
             list=True)
 
         self.add_property(
@@ -189,6 +206,7 @@ class CertificateAuthorityNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoa
             get='city',
             set='city',
             condition=lambda e: e['type'] != 'CA_EXISTING',
+            usersetable=False,
             list=True)
 
         self.add_property(
@@ -197,6 +215,7 @@ class CertificateAuthorityNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoa
             get='organization',
             set='organization',
             condition=lambda e: e['type'] != 'CA_EXISTING',
+            usersetable=False,
             list=True)
 
         self.add_property(
@@ -205,6 +224,7 @@ class CertificateAuthorityNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoa
             get='common',
             set='common',
             condition=lambda e: e['type'] != 'CA_EXISTING',
+            usersetable=False,
             list=True)
 
         self.add_property(
@@ -213,6 +233,7 @@ class CertificateAuthorityNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoa
             get='email',
             set='email',
             condition=lambda e: e['type'] != 'CA_EXISTING',
+            usersetable=False,
             list=True)
 
         self.add_property(
@@ -221,6 +242,7 @@ class CertificateAuthorityNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoa
             get='signedby',
             set='signedby',
             condition=lambda e: e['type'] == 'CA_INTERMEDIATE',
+            usersetable=False,
             list=True)
 
         self.primary_key = self.get_mapping('name')
@@ -287,10 +309,17 @@ class CertificateNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
 
         self.localdoc['CreateEntityCommand'] = ("""\
             Examples:
-            create type=CERT_INTERNAL name=myCert signedby=myCA key_length=2048
-            digest_algorithm=SHA256 lifetime=3650 country=PL state=Slaskie city=Czerwionka-Leszczyny
-            organization=myorg email=a@b.c common=MyCommonName
+            Create self-signed server certificate without CA:
+            create type=CERT_INTERNAL name=mySelfSignedServerCert signedby=selfsigned key_length=2048
+            digest_algorithm=SHA256 lifetime=365 country=PL state=Slaskie city=Czerwionka-Leszczyny
+            organization=myorg email=a@b.c common=www.myserver.com
 
+            Create server certificate signed by internal root CA Certificate:
+            create type=CERT_INTERNAL name=myCASignedServerCert signedby=myRootCA key_length=2048
+            digest_algorithm=SHA256 lifetime=365 country=PL state=Slaskie city=Czerwionka-Leszczyny
+            organization=myorg email=a@b.c common=www.myserver.com
+
+            Import existing server certificate:
             import type=CERT_EXISTING name=myimportedCert certificate=<certificate> privatekey=<privatekey>
             [passphrase=<passphrase>]
 
@@ -314,6 +343,7 @@ class CertificateNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
                 'CERT_INTERMEDIATE',
                 'CERT_INTERNAL',
             ],
+            usersetable=False,
             list=True)
 
         self.add_property(
@@ -321,6 +351,8 @@ class CertificateNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             name='certificate',
             get='certificate',
             set='certificate',
+            type=ValueType.STRING,
+            usersetable=False,
             list=False)
 
         self.add_property(
@@ -328,7 +360,18 @@ class CertificateNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             name='privatekey',
             get='privatekey',
             set='privatekey',
+            type=ValueType.STRING,
+            usersetable=False,
             list=False)
+
+        self.add_property(
+            descr='Serial',
+            name='serial',
+            get='serial',
+            set='serial',
+            type=ValueType.NUMBER,
+            usersetable=False,
+            list=True)
 
         self.add_property(
             descr='Signing CA',
@@ -336,8 +379,9 @@ class CertificateNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             get='signedby',
             set='signedby',
             usage=_("""\
-            Signing CA's name, accepts string values"""),
+            Signing CA's name or 'selfsigned' - for self-signed certificate, accepts string values"""),
             condition=lambda e: e['type'] != 'CERT_EXISTING' and e['type'] != 'CERT_CSR',
+            usersetable=False,
             list=True)
 
         self.add_property(
@@ -347,6 +391,7 @@ class CertificateNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             set='key_length',
             type=ValueType.NUMBER,
             condition=lambda e: e['type'] != 'CERT_EXISTING',
+            usersetable=False,
             list=True)
 
         self.add_property(
@@ -356,6 +401,7 @@ class CertificateNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             set='digest_algorithm',
             enum=['SHA1', 'SHA224', 'SHA256', 'SHA384', 'SHA512'],
             condition=lambda e: e['type'] != 'CERT_EXISTING',
+            usersetable=False,
             list=True)
 
         self.add_property(
@@ -363,8 +409,11 @@ class CertificateNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             name='lifetime',
             get='lifetime',
             set='lifetime',
+            usage=_("""\
+            Certificate lifetime in days, accepts number values"""),
             type=ValueType.NUMBER,
             condition=lambda e: e['type'] != 'CERT_EXISTING',
+            usersetable=False,
             list=True)
 
         self.add_property(
@@ -373,6 +422,7 @@ class CertificateNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             get='country',
             set='country',
             condition=lambda e: e['type'] != 'CERT_EXISTING',
+            usersetable=False,
             list=True)
 
         self.add_property(
@@ -381,6 +431,7 @@ class CertificateNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             get='state',
             set='state',
             condition=lambda e: e['type'] != 'CERT_EXISTING',
+            usersetable=False,
             list=True)
 
         self.add_property(
@@ -389,6 +440,7 @@ class CertificateNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             get='city',
             set='city',
             condition=lambda e: e['type'] != 'CERT_EXISTING',
+            usersetable=False,
             list=True)
 
         self.add_property(
@@ -397,6 +449,7 @@ class CertificateNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             get='organization',
             set='organization',
             condition=lambda e: e['type'] != 'CERT_EXISTING',
+            usersetable=False,
             list=True)
 
         self.add_property(
@@ -405,6 +458,7 @@ class CertificateNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             get='common',
             set='common',
             condition=lambda e: e['type'] != 'CERT_EXISTING',
+            usersetable=False,
             list=True)
 
         self.add_property(
@@ -413,6 +467,7 @@ class CertificateNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             get='email',
             set='email',
             condition=lambda e: e['type'] != 'CERT_EXISTING',
+            usersetable=False,
             list=True)
 
         self.primary_key = self.get_mapping('name')

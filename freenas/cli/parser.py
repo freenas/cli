@@ -74,6 +74,7 @@ UnaryExpr = ASTObject('UnaryExpr', 'expr', 'op')
 BinaryExpr = ASTObject('BinaryExpr', 'left', 'op', 'right')
 BinaryParameter = ASTObject('BinaryParameter', 'left', 'op', 'right')
 Literal = ASTObject('Literal', 'value', 'type')
+Parentheses = ASTObject('Parentheses', 'expr')
 CommandExpansion = ASTObject('CommandExpansion', 'expr')
 ExpressionExpansion = ASTObject('ExpressionExpansion', 'expr')
 PipeExpr = ASTObject('PipeExpr', 'left', 'right')
@@ -568,10 +569,11 @@ def p_simple_expr(p):
     simple_expr : anon_function_expr
     simple_expr : expr_expansion
     simple_expr : LPAREN expr RPAREN
+    simple_expr : FCALL expr RPAREN
     simple_expr : LPAREN command RPAREN
     """
     if len(p) == 4:
-        p[0] = p[2]
+        p[0] = Parentheses(p[2], p=p)
         return
 
     p[0] = p[1]
@@ -973,6 +975,9 @@ def unparse(token, indent=0, oneliner=False):
 
     if isinstance(token, BinaryExpr):
         return ind(' '.join([unparse(token.left), token.op, unparse(token.right)]))
+
+    if isinstance(token, Parentheses):
+        return ind('({0})'.format(unparse(token.expr)))
 
     if isinstance(token, IfStatement):
         return ind('if ({0}) {{{1}}}'.format(

@@ -86,13 +86,9 @@ class CertificateAuthorityNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoa
             organization=myCAOrg email=a@b.c common=my_CA_Server
 
             Create intermediate CA Certificate :
-            create type=CA_INTERMEDIATE signedby=myRootCA name=myInterCA key_length=2048 digest_algorithm=SHA256
+            create type=CA_INTERMEDIATE signing_ca_name=myRootCA name=myInterCA key_length=2048 digest_algorithm=SHA256
             lifetime=365 country=PL state=Slaskie city=Czerwionka-Leszczyny organization=myorg email=a@b.c
             common=MyCommonName
-
-            Import existing CA Certificate :
-            import type=CA_EXISTING name=myImportedCA certificate=<certificate> privatekey=<privatekey>
-            [passphrase=<passphrase>]
 
             Crates a Certificate Authority. For a list of properties, see 'help properties'.""")
 
@@ -142,6 +138,24 @@ class CertificateAuthorityNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoa
             type=ValueType.NUMBER,
             usersetable=False,
             list=True)
+
+        self.add_property(
+            descr="Signing CA's Name",
+            name='signing_ca_name',
+            get='signing_ca_name',
+            set='signing_ca_name',
+            condition=lambda e: e['type'] == 'CA_INTERMEDIATE',
+            usersetable=False,
+            list=True)
+
+        self.add_property(
+            descr="Signing CA's ID",
+            name='signing_ca_id',
+            get='signing_ca_id',
+            set='signing_ca_id',
+            condition=lambda e: e['type'] == 'CA_INTERMEDIATE',
+            usersetable=False,
+            list=False)
 
         self.add_property(
             descr='Pass Phrase',
@@ -236,15 +250,6 @@ class CertificateAuthorityNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoa
             usersetable=False,
             list=True)
 
-        self.add_property(
-            descr='Signing CA',
-            name='signedby',
-            get='signedby',
-            set='signedby',
-            condition=lambda e: e['type'] == 'CA_INTERMEDIATE',
-            usersetable=False,
-            list=True)
-
         self.primary_key = self.get_mapping('name')
 
 
@@ -253,6 +258,10 @@ class ImportCertificateAuthorityCommand(Command):
     """
     Usage: import type=CA_EXISTING name=<name> certificate=<certificate> privatekey=<privatekey>
            [passphrase=<passphrase>] serial=<serial_number>
+
+    Examples:
+    Import existing CA Certificate :
+    import type=CA_EXISTING name=myImportedCA certificate=<certificate> privatekey=<privatekey>
 
     Imports a Certificate Authority.
     """
@@ -310,18 +319,14 @@ class CertificateNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
         self.localdoc['CreateEntityCommand'] = ("""\
             Examples:
             Create self-signed server certificate without CA:
-            create type=CERT_INTERNAL name=mySelfSignedServerCert signedby=selfsigned key_length=2048
+            create type=CERT_INTERNAL name=mySelfSignedServerCert signing_ca_name=selfsigned key_length=2048
             digest_algorithm=SHA256 lifetime=365 country=PL state=Slaskie city=Czerwionka-Leszczyny
             organization=myorg email=a@b.c common=www.myserver.com
 
             Create server certificate signed by internal root CA Certificate:
-            create type=CERT_INTERNAL name=myCASignedServerCert signedby=myRootCA key_length=2048
+            create type=CERT_INTERNAL name=myCASignedServerCert signing_ca_name=myRootCA key_length=2048
             digest_algorithm=SHA256 lifetime=365 country=PL state=Slaskie city=Czerwionka-Leszczyny
             organization=myorg email=a@b.c common=www.myserver.com
-
-            Import existing server certificate:
-            import type=CERT_EXISTING name=myimportedCert certificate=<certificate> privatekey=<privatekey>
-            [passphrase=<passphrase>]
 
             Crates a certificate. For a list of properties, see 'help properties'.""")
 
@@ -374,15 +379,24 @@ class CertificateNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             list=True)
 
         self.add_property(
-            descr='Signing CA',
-            name='signedby',
-            get='signedby',
-            set='signedby',
+            descr="Signing CA's Name",
+            name='signing_ca_name',
+            get='signing_ca_name',
+            set='signing_ca_name',
             usage=_("""\
             Signing CA's name or 'selfsigned' - for self-signed certificate, accepts string values"""),
             condition=lambda e: e['type'] != 'CERT_EXISTING' and e['type'] != 'CERT_CSR',
             usersetable=False,
             list=True)
+
+        self.add_property(
+            descr="Signing CA's ID",
+            name='signing_ca_id',
+            get='signing_ca_id',
+            set='signing_ca_id',
+            condition=lambda e: e['type'] != 'CERT_EXISTING' and e['type'] != 'CERT_CSR',
+            usersetable=False,
+            list=False)
 
         self.add_property(
             descr='Key length',
@@ -476,8 +490,12 @@ class CertificateNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
 @description("Imports given CA")
 class ImportCertificateCommand(Command):
     """
-    Usage: Usage: import type=CERT_EXISTING name=<name> certificate=<certificate> privatekey=<privatekey>
+    Usage: import type=CERT_EXISTING name=<name> certificate=<certificate> privatekey=<privatekey>
            [passphrase=<passphrase>]
+
+    Examples:
+    Import existing server certificate:
+    import type=CERT_EXISTING name=myImportedCert certificate=<certificate> privatekey=<privatekey>
 
     Imports a Certificate.
     """

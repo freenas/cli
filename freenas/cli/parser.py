@@ -116,9 +116,10 @@ tokens = list(reserved.values()) + [
     'ATOM', 'NUMBER', 'HEXNUMBER', 'BINNUMBER', 'OCTNUMBER', 'STRING',
     'ASSIGN', 'LPAREN', 'RPAREN', 'EQ', 'NE', 'GT', 'GE', 'LT', 'LE',
     'REGEX', 'UP', 'PIPE', 'LIST', 'COMMA', 'INC', 'DEC', 'PLUS', 'MINUS',
-    'MUL', 'DIV', 'EOPEN', 'COPEN', 'LBRACE', 'RBRACE', 'LBRACKET', 'RBRACKET',
-    'NEWLINE', 'COLON', 'REDIRECT', 'MOD', 'SHELL'
+    'MUL', 'DIV', 'EOPEN', 'LBRACE', 'RBRACE', 'LBRACKET', 'RBRACKET',
+    'NEWLINE', 'COLON', 'REDIRECT', 'MOD', 'SHELL', 'SUBSCRIPT', 'FCALL'
 ]
+
 
 def t_COMMENT(t):
     r'\#.*'
@@ -245,7 +246,6 @@ def t_ATOM(t):
 
 
 t_ignore = ' \t'
-t_LBRACKET = r'\['
 t_RBRACKET = r'\]'
 t_PIPE = r'\|'
 t_ASSIGN = r'='
@@ -258,7 +258,6 @@ t_GE = r'>='
 t_LT = r'<'
 t_LE = r'<='
 t_PLUS = r'\+'
-t_MINUS = r'-'
 t_MUL = r'\*'
 t_DIV = r'\/'
 t_MOD = r'\%'
@@ -270,6 +269,7 @@ t_COLON = r':'
 t_REDIRECT = r'>>'
 t_SHELL = r'!'
 
+
 precedence = (
     ('left', 'AND', 'OR'),
     ('right', 'NOT'),
@@ -279,8 +279,10 @@ precedence = (
     ('left', 'MINUS', 'PLUS'),
     ('left', 'MUL', 'DIV', 'MOD'),
     ('left', 'REGEX'),
-    ('right', 'LBRACKET', 'RBRACKET'),
-    ('left', 'INC', 'DEC'),
+    ('right', 'LBRACKET', 'RBRACKET', 'SUBSCRIPT'),
+    ('right', 'UMINUS'),
+    ('left', 'LPAREN', 'RPAREN'),
+    ('left', 'INC', 'DEC')
 )
 
 
@@ -289,23 +291,26 @@ def t_ESCAPENL(t):
     t.lexer.lineno += 1
 
 
-def t_ANY_EOPEN(t):
+def t_EOPEN(t):
     r'\$\('
     return t
 
 
-def t_ANY_LPAREN(t):
+def t_LPAREN(t):
     r'\('
+    if t.lexer.lexpos > 1 and t.lexer.lexdata[t.lexer.lexpos - 2] != ' ':
+        t.type = 'FCALL'
+
     return t
 
 
-def t_ANY_RPAREN(t):
+def t_MINUS(t):
+    r'-'
+    return t
+
+
+def t_RPAREN(t):
     r'\)'
-    return t
-
-
-def t_ANY_COPEN(t):
-    r'\${'
     return t
 
 
@@ -315,7 +320,7 @@ def t_LBRACE(t):
     return t
 
 
-def t_ANY_RBRACE(t):
+def t_RBRACE(t):
     r'}'
     t.lexer.parens -= 1
     return t
@@ -324,6 +329,16 @@ def t_ANY_RBRACE(t):
 def t_NEWLINE(t):
     r'[\n;]+'
     t.lexer.lineno += len(t.value)
+    return t
+
+
+def t_LBRACKET(t):
+    r'\['
+    print('hej')
+    if t.lexer.lexdata[t.lexer.lexpos - 2] != ' ':
+        print('hej2')
+        t.type = 'SUBSCRIPT'
+
     return t
 
 
@@ -398,7 +413,7 @@ def p_stmt(p):
     stmt : break_stmt
     stmt : undef_stmt
     stmt : command
-    stmt : call
+    stmt : expr
     stmt : shell
     """
     p[0] = p[1]
@@ -457,8 +472,7 @@ def p_while_stmt(p):
 
 def p_assignment_stmt(p):
     """
-    assignment_stmt : ATOM ASSIGN expr
-    assignment_stmt : subscript_left ASSIGN expr
+    assignment_stmt : expr ASSIGN expr
     """
     p[0] = AssignmentStatement(p[1], p[3], p=p)
 
@@ -543,25 +557,32 @@ def p_expr_list(p):
     p[0] = [p[1]] + p[3]
 
 
-def p_expr(p):
+def p_simple_expr(p):
     """
-    expr : symbol
-    expr : literal
-    expr : array_literal
-    expr : dict_literal
-    expr : unary_expr
-    expr : binary_expr
-    expr : call
-    expr : subscript_expr
-    expr : anon_function_expr
-    expr : expr_expansion
-    expr : LPAREN expr RPAREN
-    expr : COPEN expr RBRACE
+    simple_expr : symbol
+    simple_expr : literal
+    simple_expr : array_literal
+    simple_expr : dict_literal
+    simple_expr : call
+    simple_expr : subscript_expr
+    simple_expr : anon_function_expr
+    simple_expr : expr_expansion
+    simple_expr : LPAREN expr RPAREN
+    simple_expr : LPAREN command RPAREN
     """
     if len(p) == 4:
         p[0] = p[2]
         return
 
+    p[0] = p[1]
+
+
+def p_expr(p):
+    """
+    expr : simple_expr
+    expr : unary_expr
+    expr : binary_expr
+    """
     p[0] = p[1]
 
 
@@ -650,23 +671,15 @@ def p_symbol(p):
 
 def p_call(p):
     """
-    call : ATOM LPAREN RPAREN
-    call : ATOM LPAREN expr_list RPAREN
+    call : ATOM FCALL RPAREN
+    call : ATOM FCALL expr_list RPAREN
     """
     p[0] = FunctionCall(p[1], p[3] if len(p) == 5 else [], p=p)
 
 
-def p_subscript_left(p):
-    """
-    subscript_left : subscript_left LBRACKET expr RBRACKET
-    subscript_left : symbol LBRACKET expr RBRACKET
-    """
-    p[0] = Subscript(p[1], p[3], p=p)
-
-
 def p_subscript_expr(p):
     """
-    subscript_expr : expr LBRACKET expr RBRACKET
+    subscript_expr : simple_expr SUBSCRIPT expr RBRACKET
     """
     p[0] = Subscript(p[1], p[3], p=p)
 
@@ -701,7 +714,7 @@ def p_anon_function_expr_4(p):
 
 def p_unary_expr(p):
     """
-    unary_expr : MINUS expr
+    unary_expr : MINUS expr %prec UMINUS
     unary_expr : NOT expr
     """
     p[0] = UnaryExpr(p[2], p[1], p=p)
@@ -722,7 +735,6 @@ def p_binary_expr(p):
     binary_expr : expr REGEX expr
     binary_expr : expr AND expr
     binary_expr : expr OR expr
-    binary_expr : expr NOT expr
     binary_expr : expr MOD expr
     """
     p[0] = BinaryExpr(p[1], p[2], p[3], p=p)
@@ -730,7 +742,6 @@ def p_binary_expr(p):
 
 def p_command_1(p):
     """
-    command : command_item
     command : command_item parameter_list
     """
     if len(p) == 2:
@@ -755,7 +766,7 @@ def p_command_2(p):
 def p_command_item_1(p):
     """
     command_item : LIST
-    command_item : NUMBER
+    command_item : symbol
     """
     p[0] = Symbol(p[1], p=p)
 
@@ -763,21 +774,13 @@ def p_command_item_1(p):
 def p_command_item_2(p):
     """
     command_item : UP
-    command_item : symbol
     """
     p[0] = p[1]
 
 
-def p_command_item_3(p):
-    """
-    command_item : COPEN expr RBRACE
-    """
-    p[0] = ExpressionExpansion(p[2], p=p)
-
-
 def p_command_item_4(p):
     """
-    command_item : STRING
+    command_item : literal
     """
     p[0] = Literal(p[1], type(str))
 
@@ -797,7 +800,6 @@ def p_parameter_list(p):
 def p_parameter(p):
     """
     parameter : set_parameter
-    parameter : binary_parameter
     """
     p[0] = p[1]
 
@@ -827,8 +829,7 @@ def p_set_parameter(p):
 
 def p_unary_parameter(p):
     """
-    unary_parameter : expr
-    unary_parameter : COPEN expr RBRACE
+    unary_parameter : simple_expr
     """
     if len(p) == 4:
         p[0] = ExpressionExpansion(p[2], p=p)
@@ -849,22 +850,6 @@ def p_unary_parameter_2(p):
     unary_parameter : UP
     """
     p[0] = p[1]
-
-
-def p_binary_parameter(p):
-    """
-    binary_parameter : ATOM ASSIGN parameter
-    binary_parameter : ATOM EQ parameter
-    binary_parameter : ATOM NE parameter
-    binary_parameter : ATOM GT parameter
-    binary_parameter : ATOM GE parameter
-    binary_parameter : ATOM LT parameter
-    binary_parameter : ATOM LE parameter
-    binary_parameter : ATOM REGEX parameter
-    binary_parameter : ATOM INC parameter
-    binary_parameter : ATOM DEC parameter
-    """
-    p[0] = BinaryParameter(p[1], p[2], p[3], p=p)
 
 
 def p_shell(p):

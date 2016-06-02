@@ -802,6 +802,7 @@ def p_parameter_list(p):
 def p_parameter(p):
     """
     parameter : set_parameter
+    parameter : binary_parameter
     """
     p[0] = p[1]
 
@@ -852,6 +853,22 @@ def p_unary_parameter_2(p):
     unary_parameter : UP
     """
     p[0] = p[1]
+
+
+def p_binary_parameter(p):
+    """
+    binary_parameter : ATOM ASSIGN parameter
+    binary_parameter : ATOM EQ parameter
+    binary_parameter : ATOM NE parameter
+    binary_parameter : ATOM GT parameter
+    binary_parameter : ATOM GE parameter
+    binary_parameter : ATOM LT parameter
+    binary_parameter : ATOM LE parameter
+    binary_parameter : ATOM REGEX parameter
+    binary_parameter : ATOM INC parameter
+    binary_parameter : ATOM DEC parameter
+    """
+    p[0] = BinaryParameter(p[1], p[2], p[3], p=p)
 
 
 def p_shell(p):

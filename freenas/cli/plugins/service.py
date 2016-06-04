@@ -1516,8 +1516,9 @@ svc_cli_config = {
             'name': 'persist-key',
             'usage': _("""
              Don't re-read key files across service restart.
-             Without this option service can't re-read needed keys after dropping root privilges."""),
-            'get': 'persist-key',
+             Without this option service can't re-read needed keys
+             after dropping root privilges."""),
+            'get': 'persist_key',
             'type': ValueType.BOOLEAN,
         },
         {
@@ -1525,7 +1526,7 @@ svc_cli_config = {
             'name': 'persist-tun',
             'usage': _("""
              Don't close and reopen tap/tun device across restart."""),
-            'get': 'persist-tun',
+            'get': 'persist_tun',
             'type': ValueType.BOOLEAN,
         },
         {
@@ -1538,23 +1539,80 @@ svc_cli_config = {
             'enum': ['BF-CBC', 'AES-128-CBC', 'DES-EDE3-CBC'],
         },
         {
-            'descr': 'Server-bridge OpenVPN directive',
-            'name': 'server-bridge',
-            'usage': _("""
-             It can by an empty value or user defined subset of bridged network
-             If empty Vpn clients will acquire dhcp lease from local network dhcp server
-             Otherwise OpenVPN server will provide ip addressing
-             Usage: ['ip_for_local_bridge','netmask','ip_range_begin','ip_range_end']"""),
-            'get': 'server-bridge',
-            'type': ValueType.SET
-        },
-        {
             'descr': 'Maximum vpn clients',
             'name': 'max-clients',
             'usage': _("""
              A maximum nuber of clients to connect simultaneously"""),
-            'get': 'max-clients',
+            'get': 'max_clients',
             'type': ValueType.NUMBER,
+        },
+        {
+            'descr': 'Keepalive ping interval',
+            'name': 'keepalive_ping_interval',
+            'usage': _("""
+             Ping interval of keepalive directive"""),
+            'get': 'keepalive_ping_interval',
+            'type': ValueType.NUMBER,
+        },
+        {
+            'descr': 'Keepalive peer down',
+            'name': 'keepalive_peer_down',
+            'usage': _("""
+             Peer down argument of keepalive directive"""),
+            'get': 'keepalive_peer_down',
+            'type': ValueType.NUMBER,
+        },
+        {
+            'descr': 'Server Bridge',
+            'name': 'server-bridge',
+            'usage': _("""
+             Enable basic bridging fuctionality"""),
+            'get': 'server-bridge',
+            'type': ValueType.BOOLEAN,
+        },
+        {
+            'descr': 'Server Bridge extend',
+            'name': 'server_bridge_extended',
+            'usage': _("""
+             True/False - allows to enable user defined ip range"""),
+            'get': 'server_bridge_extended',
+            'type': ValueType.BOOLEAN,
+        },
+        {
+            'descr': 'Starting address of user defined ip range',
+            'name': 'server_bridge_range_begin',
+            'usage': _("""
+             User defined ip range cannot interfere
+             with bridge IP or existing local network"""),
+            'get': 'server_bridge_range_begin',
+            'type': ValueType.STRING,
+        },
+        {
+            'descr': 'Ending address of user defined ip range',
+            'name': 'server_bridge_range_end',
+            'usage': _("""
+             User defined ip range cannot interfere
+             with bridge IP or existing local network"""),
+            'get': 'server_bridge_range_end',
+            'type': ValueType.STRING,
+        },
+        {
+            'descr': 'Netmask for user defined ip range',
+            'name': 'server_bridge_netmask',
+            'usage': _("""
+             User defined ip range cannot interfere
+             with bridge IP or existing local network"""),
+            'get': 'server_bridge_netmask',
+            'type': ValueType.STRING,
+        },
+        {
+            'descr': 'IP Address for VPN bridge ',
+            'name': 'server_bridge_ip',
+            'usage': _("""
+             User defined bridge ip cannot interfere 
+             with user defined range or existing local network"""),
+            'get': 'server_bridge_ip',
+            'type': ValueType.STRING,
         },
         {
             'descr': 'OpenVPN user',
@@ -1569,23 +1627,7 @@ svc_cli_config = {
             'name': 'group',
             'usage': _("""
              Group for OpenVPN privilege downgrade"""),
-            'get': 'user',
-            'type': ValueType.STRING,
-        },
-        {
-            'descr': 'OpenVPN group',
-            'name': 'group',
-            'usage': _("""
-             Group for OpenVPN privilege downgrade"""),
-            'get': 'user',
-            'type': ValueType.STRING,
-        },
-        {
-            'descr': 'OpenVPN group',
-            'name': 'group',
-            'usage': _("""
-             Group for OpenVPN privilege downgrade"""),
-            'get': 'user',
+            'get': 'group',
             'type': ValueType.STRING,
         },
         {
@@ -1612,7 +1654,7 @@ svc_cli_config = {
             'name': 'compression',
             'usage': _("""
              Enamble compression : True/False"""),
-            'get': 'comp-lzo',
+            'get': 'comp_lzo',
             'type': ValueType.BOOLEAN,
         },
         {

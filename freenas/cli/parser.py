@@ -335,9 +335,7 @@ def t_NEWLINE(t):
 
 def t_LBRACKET(t):
     r'\['
-    print('hej')
-    if t.lexer.lexdata[t.lexer.lexpos - 2] != ' ':
-        print('hej2')
+    if t.lexer.lexpos > 1 and t.lexer.lexdata[t.lexer.lexpos - 2] != ' ':
         t.type = 'SUBSCRIPT'
 
     return t
@@ -480,28 +478,28 @@ def p_assignment_stmt(p):
 
 def p_function_definition_stmt_1(p):
     """
-    function_definition_stmt : FUNCTION ATOM LPAREN RPAREN block
+    function_definition_stmt : FUNCTION ATOM FCALL RPAREN block
     """
     p[0] = FunctionDefinition(p[2], [], p[5], p=p)
 
 
 def p_function_definition_stmt_2(p):
     """
-    function_definition_stmt : FUNCTION ATOM LPAREN function_argument_list RPAREN block
+    function_definition_stmt : FUNCTION ATOM FCALL function_argument_list RPAREN block
     """
     p[0] = FunctionDefinition(p[2], p[4], p[6], p=p)
 
 
 def p_function_definition_stmt_3(p):
     """
-    function_definition_stmt : FUNCTION ATOM LPAREN RPAREN NEWLINE block
+    function_definition_stmt : FUNCTION ATOM FCALL RPAREN NEWLINE block
     """
     p[0] = FunctionDefinition(p[2], [], p[6], p=p)
 
 
 def p_function_definition_stmt_4(p):
     """
-    function_definition_stmt : FUNCTION ATOM LPAREN function_argument_list RPAREN NEWLINE block
+    function_definition_stmt : FUNCTION ATOM FCALL function_argument_list RPAREN NEWLINE block
     """
     p[0] = FunctionDefinition(p[2], p[4], p[7], p=p)
 
@@ -744,19 +742,25 @@ def p_binary_expr(p):
 
 def p_command_1(p):
     """
-    command : UP
     command : LIST
     command : DIV
     command : command_item parameter_list
     """
     if len(p) == 2:
-        p[0] = CommandCall([p[1]], p=p)
+        p[0] = CommandCall([Symbol(p[1])], p=p)
         return
 
     p[0] = CommandCall([p[1]] + p[2], p=p)
 
 
 def p_command_2(p):
+    """
+    command : UP
+    """
+    p[0] = CommandCall(['..'])
+
+
+def p_command_3(p):
     """
     command : command_item PIPE command
     command : command_item parameter_list PIPE command
@@ -771,6 +775,7 @@ def p_command_2(p):
 def p_command_item_1(p):
     """
     command_item : LIST
+    command_item : DIV
     """
     p[0] = Symbol(p[1], p=p)
 

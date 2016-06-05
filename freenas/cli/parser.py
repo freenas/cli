@@ -744,6 +744,9 @@ def p_binary_expr(p):
 
 def p_command_1(p):
     """
+    command : UP
+    command : LIST
+    command : DIV
     command : command_item parameter_list
     """
     if len(p) == 2:

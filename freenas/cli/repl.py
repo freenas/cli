@@ -1489,6 +1489,13 @@ class MainLoop(object):
 
                     return
 
+                if isinstance(ret, Namespace):
+                    self.cd(ret)
+                    continue
+
+                if isinstance(ret, Command):
+                    ret = ret.run(self.context, [], [], [])
+
                 if ret is not None:
                     output = self.context.variables.get('output')
                     if output:

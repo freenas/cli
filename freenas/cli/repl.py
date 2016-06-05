@@ -1180,9 +1180,9 @@ class MainLoop(object):
                     return
 
                 try:
-                    env.find(token.name).value = expr
+                    env.find(token.name.name).value = expr
                 except KeyError:
-                    env[token.name] = Environment.Variable(expr)
+                    env[token.name.name] = Environment.Variable(expr)
 
                 return
 

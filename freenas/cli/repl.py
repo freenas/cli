@@ -50,19 +50,18 @@ import re
 from six.moves.urllib.parse import urlparse
 from socket import gaierror as socket_error
 from freenas.cli.descriptions import events
-from freenas.cli.descriptions import tasks
 from freenas.cli.utils import PrintableNone, SIGTSTPException, SIGTSTP_setter, errors_by_path
 from freenas.cli import functions
 from freenas.cli import config
 from freenas.cli.namespace import (
     Namespace, EntityNamespace, RootNamespace, SingleItemNamespace, ConfigNamespace, Command,
-    FilteringCommand, PipeCommand, CommandException, EntitySubscriberBasedLoadMixin
+    FilteringCommand, PipeCommand, CommandException
 )
 from freenas.cli.parser import (
     parse, unparse, Symbol, Literal, BinaryParameter, UnaryExpr, BinaryExpr, PipeExpr, AssignmentStatement,
     IfStatement, ForStatement, WhileStatement, FunctionCall, CommandCall, Subscript,
     ExpressionExpansion, CommandExpansion, FunctionDefinition, ReturnStatement, BreakStatement,
-    UndefStatement, Redirection, AnonymousFunction, ShellEscape
+    UndefStatement, Redirection, AnonymousFunction, ShellEscape, Parentheses
 )
 from freenas.cli.output import (
     ValueType, ProgressBar, Sequence, output_lock, output_msg, read_value, format_value,
@@ -1115,6 +1114,9 @@ class MainLoop(object):
         try:
             if isinstance(token, list):
                 return [self.eval(i, env, path) for i in token]
+
+            if isinstance(token, Parentheses):
+                return self.eval(token.expr, env, path)
 
             if isinstance(token, UnaryExpr):
                 expr = self.eval(token.expr, env)

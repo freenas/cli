@@ -1597,9 +1597,12 @@ class MainLoop(object):
                             token = token.right
                             builtin_command_set = list(self.pipe_commands.keys())
 
-                        args = token.args
+                        if isinstance(token, Symbol):
+                            args = [token.name]
+                        else:
+                            args = token.args
 
-                if isinstance(token, CommandCall) or not args:
+                if isinstance(token, (CommandCall, Symbol)) or not args:
                     obj = self.get_relative_object(self.cwd, args)
                 else:
                     return None

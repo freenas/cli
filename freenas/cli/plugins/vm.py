@@ -571,7 +571,7 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
 
 
 @description("Downloads templates from git")
-class FetchShowCommand(Command):
+class FetchShowCommand(ListCommand):
     """
     Usage: show
 
@@ -584,8 +584,7 @@ class FetchShowCommand(Command):
 
     def run(self, context, args, kwargs, opargs, filtering=None):
         context.call_task_sync('container.template.fetch')
-        show = ListCommand(self.parent)
-        return show.run(context, args, kwargs, opargs, filtering)
+        return super(FetchShowCommand, self).run(context, args, kwargs, opargs, filtering)
 
 
 @description("Downloads container images to the local cache")

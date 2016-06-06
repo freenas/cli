@@ -767,15 +767,9 @@ def p_command_item_2(p):
     """
     command_item : UP
     command_item : symbol
-    """
-    p[0] = p[1]
-
-
-def p_command_item_4(p):
-    """
     command_item : literal
     """
-    p[0] = Literal(p[1], type(str))
+    p[0] = p[1]
 
 
 def p_parameter_list(p):

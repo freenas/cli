@@ -334,7 +334,7 @@ class Context(object):
         self.builtin_operators = functions.operators
         self.builtin_functions = functions.functions
         self.global_env = Environment(self)
-        self.global_env['_cli_src_path'] = Context.default_env()
+        self.global_env.update(Context.default_env())
         self.user = None
         self.pending_tasks = QueryDict()
         self.session_id = None

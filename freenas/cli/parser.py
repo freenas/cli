@@ -943,6 +943,9 @@ def unparse(token, indent=0, oneliner=False):
 
         return str(token.value)
 
+    if isinstance(token, AnonymousFunction):
+        return ind('function({0}) {{{1}}}'.format(', '.join(token.args), format_block(token.body)))
+
     if isinstance(token, BinaryParameter):
         return ind(''.join([token.left, token.op, unparse(token.right)]))
 

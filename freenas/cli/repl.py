@@ -1513,7 +1513,7 @@ class MainLoop(object):
                 if isinstance(ret, Command):
                     ret.exec_path = self.path
                     ret.current_env = self.context.global_env
-                    ret = ret.run(self.context, [], [], [])
+                    ret = ret.run(self.context, [], {}, [])
 
                 if ret is not None:
                     output = self.context.variables.get('output')

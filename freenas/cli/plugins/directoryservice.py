@@ -25,458 +25,339 @@
 #
 #####################################################################
 
+import copy
 import gettext
+from freenas.cli.output import ValueType
 from freenas.cli.namespace import (
     Command,
     Namespace,
-    ConfigNamespace,
+    ItemNamespace,
     EntityNamespace,
+    EntitySubscriberBasedLoadMixin,
     RpcBasedLoadMixin,
     TaskBasedSaveMixin,
     description
 )
 
-from freenas.cli.output import (
-    output_msg,
-    ValueType
-)
-
-from freenas.cli.utils import post_save
 
 t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
 
 
+class DirectoryStatusCommand(Command):
+    def __init__(self, parent):
+        super(DirectoryStatusCommand, self).__init__()
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        pass
+
+
 @description("Configure and manage directory services")
 class DirectoryServiceNamespace(Namespace):
-    """
-    The directoryservice namespace contains the
-    namespaces for managing activedirectory and ldap
-    settings.
-    """
     def __init__(self, name, context):
         super(DirectoryServiceNamespace, self).__init__(name)
         self.context = context
 
     def namespaces(self):
         return [
-            ActiveDirectoryNamespace('activedirectory', self.context),
-            LDAPDirectoryNamespace('ldap', self.context)
+            DirectoriesNamespace('directories', self.context),
+            KerberosNamespace('kerberos', self.context)
         ]
 
-class DirectoryServiceCommandBase(Command):
-    def __init__(self, parent, enable=True):
-        self.parent = parent
-        self.enable = enable
 
-    def run(self, context, args, kwargs, opargs):
-        pass
+class DirectoriesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
+    def __init__(self, name, context):
+        super(DirectoriesNamespace, self).__init__(name, context)
 
-
-@description("Enables a directory service")
-class DirectoryServiceEnableCommand(DirectoryServiceCommandBase):
-    def __init__(self, parent):
-        self.parent = parent
-
-    def run(self, context, args, kwargs, opargs):
-        ds_id = self.parent.entity['id']
-        context.submit_task('directoryservice.enable', ds_id,
-            callback=lambda s, t: post_save(self.parent, s, t))
-
-
-@description("Disables a directory service")
-class DirectoryServiceDisableCommand(DirectoryServiceCommandBase):
-    def __init__(self, parent):
-        self.parent = parent
-
-    def run(self, context, args, kwargs, opargs):
-        ds_id = self.parent.entity['id']
-        context.submit_task('directoryservice.disable', ds_id,
-            callback=lambda s, t: post_save(self.parent, s, t))
-
-
-@description("Displays cached domain controllers")
-class DirectoryServiceShowDCCommand(DirectoryServiceCommandBase):
-    def run(self, context, args, kwargs, opargs):
-        ds_id = self.parent.entity['id']
-        dcs = context.call_sync('directoryservices.get', ds_id, 'dcs')
-        if dcs:
-            for dc in dcs:
-                output_msg(dc)
-
-
-@description("Displays cached global catalogs")
-class DirectoryServiceShowGCCommand(DirectoryServiceCommandBase):
-    def run(self, context, args, kwargs, opargs):
-        ds_id = self.parent.entity['id']
-        gcs = context.call_sync('directoryservices.get', ds_id, 'gcs')
-        if gcs:
-            for gc in gcs:
-                output_msg(gc)
-
-
-@description("Displays cached Kerberos KDC servers")
-class DirectoryServiceShowKDCCommand(DirectoryServiceCommandBase):
-    def run(self, context, args, kwargs, opargs):
-        ds_id = self.parent.entity['id']
-        kdcs = context.call_sync('directoryservices.get', ds_id, 'kdcs')
-        if kdcs:
-            for kdc in kdcs:
-                output_msg(kdc)
-
-
-@description("Configures hostname for directory service")
-class DirectoryServiceConfigureHostnameCommand(DirectoryServiceCommandBase):
-    def run(self, context, args, kwargs, opargs):
-        ds_id = self.parent.entity['id']
-        args = [ ds_id, 'hostname', self.enable ]
-
-        context.submit_task('directoryservice.update', args,
-            callback=lambda s, t: post_save(self.parent, s, t))
-
-
-@description("Configures hosts file for directory service")
-class DirectoryServiceConfigureHostsCommand(DirectoryServiceCommandBase):
-    def run(self, context, args, kwargs, opargs):
-        ds_id = self.parent.entity['id']
-        args = [ ds_id, 'hosts', self.enable ]
-
-        context.submit_task('directoryservice.update', args,
-            callback=lambda s, t: post_save(self.parent, s, t))
-
-
-@description("Configures Kerberos for directory service")
-class DirectoryServiceConfigureKerberosCommand(DirectoryServiceCommandBase):
-    def run(self, context, args, kwargs, opargs):
-        ds_id = self.parent.entity['id']
-        args = [ ds_id, 'kerberos', self.enable ]
-
-        context.submit_task('directoryservice.update', args,
-            callback=lambda s, t: post_save(self.parent, s, t))
-
-
-@description("Configures nsswitch for directory service")
-class DirectoryServiceConfigureNSSWitchCommand(DirectoryServiceCommandBase):
-    def run(self, context, args, kwargs, opargs):
-        ds_id = self.parent.entity['id']
-        args = [ ds_id, 'nsswitch', self.enable ]
-
-        context.submit_task('directoryservice.update', args,
-            callback=lambda s, t: post_save(self.parent, s, t))
-
-
-@description("Configures openldap for directory service")
-class DirectoryServiceConfigureOpenLDAPCommand(DirectoryServiceCommandBase):
-    def run(self, context, args, kwargs, opargs):
-        ds_id = self.parent.entity['id']
-        args = [ ds_id, 'openldap', self.enable ]
-
-        context.submit_task('directoryservice.update', args,
-            callback=lambda s, t: post_save(self.parent, s, t))
-
-
-@description("Configures nssldap for directory service")
-class DirectoryServiceConfigureNSSLDAPCommand(DirectoryServiceCommandBase):
-    def run(self, context, args, kwargs, opargs):
-        ds_id = self.parent.entity['id']
-        args = [ ds_id, 'nssldap', self.enable ]
-
-        context.submit_task('directoryservice.update', args,
-            callback=lambda s, t: post_save(self.parent, s, t))
-
-
-@description("Configures sssd for directory service")
-class DirectoryServiceConfigureSSSDCommand(DirectoryServiceCommandBase):
-    def run(self, context, args, kwargs, opargs):
-        ds_id = self.parent.entity['id']
-        args = [ ds_id, 'sssd', self.enable ]
-
-        context.submit_task('directoryservice.update', args,
-            callback=lambda s, t: post_save(self.parent, s, t))
-
-
-@description("Configures samba for directory service")
-class DirectoryServiceConfigureSambaCommand(DirectoryServiceCommandBase):
-    def run(self, context, args, kwargs, opargs):
-        ds_id = self.parent.entity['id']
-        args = [ ds_id, 'samba', self.enable ]
-
-        context.submit_task('directoryservice.update', args,
-            callback=lambda s, t: post_save(self.parent, s, t))
-
-
-@description("Configures pam for directory service")
-class DirectoryServiceConfigurePAMCommand(DirectoryServiceCommandBase):
-    def run(self, context, args, kwargs, opargs):
-        ds_id = self.parent.entity['id']
-        args = [ ds_id, 'pam', self.enable ]
-
-        context.submit_task('directoryservice.update', args,
-            callback=lambda s, t: post_save(self.parent, s, t))
-
-
-@description("Configures the system for Active Directory")
-class DirectoryServiceConfigureActiveDirectoryCommand(DirectoryServiceCommandBase):
-    def run(self, context, args, kwargs, opargs):
-        ds_id = self.parent.entity['id']
-        args = [ ds_id, 'activedirectory', self.enable ]
-
-        context.submit_task('directoryservice.update', args,
-            callback=lambda s, t: post_save(self.parent, s, t))
-
-
-@description("Obtains a Kerberos ticket")
-class DirectoryServiceGetKerberosTicketCommand(DirectoryServiceCommandBase):
-    def run(self, context, args, kwargs, opargs):
-        ds_id = self.parent.entity['id']
-        context.submit_task('directoryservice.kerberosticket', ds_id,
-            callback=lambda s, t: post_save(self.parent, s, t))
-
-
-@description("Joins an Active Directory domain")
-class DirectoryServiceJoinActiveDirectoryCommand(DirectoryServiceCommandBase):
-    def run(self, context, args, kwargs, opargs):
-        ds_id = self.parent.entity['id']
-        context.submit_task('directoryservice.join', ds_id,
-            callback=lambda s, t: post_save(self.parent, s, t))
-
-
-class BaseDirectoryServiceNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
-    def __init__(self, name, type_name, context):
-        super(BaseDirectoryServiceNamespace, self).__init__(name, context)
-
-        self.type_name = type_name
-        self.query_call = 'directoryservices.query'
-        self.create_task = 'directoryservice.create'
-        self.update_task = 'directoryservice.update'
-        self.delete_task = 'directoryservice.delete'
-        self.required_props = ['name']
-
-        self.skeleton_entity = {
-            'type': type_name,
-            'properties': {}
-        }
+        self.primary_key_name = 'name'
+        self.entity_subscriber_name = 'directory'
+        self.create_task = 'directory.create'
+        self.update_task = 'directory.update'
+        self.delete_task = 'directory.delete'
 
         self.add_property(
-            descr='Name',
+            descr='Directory name',
             name='name',
             get='name',
             list=True
         )
 
+        self.add_property(
+            descr='Type',
+            name='type',
+            get='plugin',
+            list=True
+        )
+
+        self.add_property(
+            descr='Enabled',
+            name='enabled',
+            get='enabled',
+            list=True,
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
+            descr='Enumerate users and groups',
+            name='enumerate',
+            get='enumerate',
+            list=True,
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
+            descr='Minimum UID',
+            name='uid_min',
+            get='uid_range.0',
+            list=False
+        )
+
+        self.add_property(
+            descr='Maximum UID',
+            name='uid_max',
+            get='uid_range.1',
+            list=False
+        )
+
+        self.add_property(
+            descr='Minimum GID',
+            name='gid_min',
+            get='gid_range.0',
+            list=False
+        )
+
+        self.add_property(
+            descr='Maximum GID',
+            name='gid_max',
+            get='gid_range.1',
+            list=False
+        )
+
+        def get_entity_namespaces(this):
+            PROVIDERS = {
+                'winbind': ActiveDirectoryPropertiesNamespace,
+                'freeipa': FreeIPAPropertiesNamespace,
+                'ldap': LDAPPropertiesNamespace
+            }
+
+            this.load()
+            if this.entity and this.entity.get('plugin'):
+                provider = PROVIDERS.get(this.entity['plugin'])
+                if provider:
+                    return [provider('properties', self.context, this)]
+
+            return []
+
+        self.entity_namespaces = get_entity_namespaces
         self.primary_key = self.get_mapping('name')
-        self.primary_key_name = 'name'
-        self.save_key_name = 'name'
-
-    def query(self, params, options):
-        params.append(('type', '=', self.type_name))
-        return self.context.call_sync('directoryservices.query', params)
 
 
-@description("Active Directory settings")
-class ActiveDirectoryNamespace(BaseDirectoryServiceNamespace):
-    def __init__(self, name, context):
-        super(ActiveDirectoryNamespace, self).__init__(name, 'activedirectory', context)
-        self.config_call = "activedirectory.get_config"
+class BaseDirectoryPropertiesNamespace(ItemNamespace):
+    def __init__(self, name, context, parent):
+        super(BaseDirectoryPropertiesNamespace, self).__init__(name)
+        self.context = context
+        self.parent = parent
 
-        self.add_property(
-            descr='Domain',
-            name='domain',
-            get='domain',
-            usage=_("""\
-            Name of Active Directory domain or child domain.
-            This setting is mandatory and the domain controller
-            for the specified domain must be reachable."""),
-            type=ValueType.STRING,
-            list=True
-        ) 
+    def load(self):
+        self.entity = self.parent.entity['parameters']
+        self.orig_entity = copy.deepcopy(self.entity)
+
+    def save(self):
+        return self.parent.save()
+
+
+class ActiveDirectoryPropertiesNamespace(BaseDirectoryPropertiesNamespace):
+    def __init__(self, name, context, parent):
+        super(ActiveDirectoryPropertiesNamespace, self).__init__(name, context, parent)
 
         self.add_property(
-            descr='Bind Name',
-            name='binddn',
-            get='binddn',
-            usage=_("""\
-            Name of the Active Directory administrator account.
-            This setting is mandatory and the specified name must
-            be able to connect to the domain controller."""),
-            type=ValueType.STRING,
-            list=True
-        ) 
+            descr='Realm',
+            name='realm',
+            get='realm'
+        )
 
         self.add_property(
-            descr='Bind Password',
-            name='bindpw',
-            set='bindpw',
+            descr='Username',
+            name='username',
+            get='username'
+        )
+
+        self.add_property(
+            descr='Password',
+            name='password',
             get=None,
-            usage=_("""\
-            Password associated with the Active Directory.
-            administrative account This setting is mandatory and
-            the specified password must result in a successful
-            connection to the domain controller."""),
-            type=ValueType.STRING,
-            list=False
-        ) 
+            set='password'
+        )
+
+
+class FreeIPAPropertiesNamespace(BaseDirectoryPropertiesNamespace):
+    def __init__(self, name, context, parent):
+        super(FreeIPAPropertiesNamespace, self).__init__(name, context, parent)
 
         self.add_property(
-            descr='Domain Controller',
-            name='dchost',
-            get='dchost',
-            usage=_("""\
-            Hostname of the domain controller. If specified, it must
-            be resolvable."""),
-            type=ValueType.STRING,
-            list=False
+            descr='Realm',
+            name='realm',
+            get='realm'
         )
 
         self.add_property(
-            descr='Global Catalog',
-            name='gchost',
-            get='gchost',
-            usage=_("""\
-            Hostname of the global catalog server. If specified, it
-            must be resolvable."""),
-            type=ValueType.STRING,
-            list=False
+            descr='Username',
+            name='username',
+            get='username'
         )
 
         self.add_property(
-            descr='Kerberos KDC',
-            name='kdchost',
-            get='kdchost',
-            usage=_("""\
-            Hostname of the Key Distribution Center. If specified, it
-            must be resolvable."""),
-            type=ValueType.STRING,
-            list=False
-        )
-
-        self.add_property(
-            descr='Site Name',
-            name='site',
-            get='site',
-            usage=_("""\
-            Relative distinguished name of the site object in Active
-            Directory."""),
-            type=ValueType.STRING,
-            list=False
-        )
-
-        self.primary_key = self.get_mapping('name')
-        self.primary_key_name = 'name'
-        self.save_key_name = 'name'
-
-        # XXX Most of these are for debugging, remove when 
-        # XXX everything works
-        # XXX Perhaps they can be conditional ?
-        self.entity_commands = lambda this: {
-            'enable': DirectoryServiceEnableCommand(this),
-            'disable': DirectoryServiceDisableCommand(this),
-            'show_dcs': DirectoryServiceShowDCCommand(this),
-            'show_gcs': DirectoryServiceShowGCCommand(this),
-            'show_kdcs': DirectoryServiceShowKDCCommand(this),
-        }
-"""
-            'configure_hostname': DirectoryServiceConfigureHostnameCommand(this, True),
-            'unconfigure_hostname': DirectoryServiceConfigureHostnameCommand(this, False),
-            'configure_hosts': DirectoryServiceConfigureHostsCommand(this, True),
-            'unconfigure_hosts': DirectoryServiceConfigureHostsCommand(this, False),
-            'configure_kerberos': DirectoryServiceConfigureKerberosCommand(this, True),
-            'unconfigure_kerberos': DirectoryServiceConfigureKerberosCommand(this, False),
-            'configure_nsswitch': DirectoryServiceConfigureNSSWitchCommand(this, True),
-            'unconfigure_nsswitch': DirectoryServiceConfigureNSSWitchCommand(this, False),
-            'configure_openldap': DirectoryServiceConfigureOpenLDAPCommand(this, True),
-            'unconfigure_openldap': DirectoryServiceConfigureOpenLDAPCommand(this, False),
-            'configure_nssldap': DirectoryServiceConfigureNSSLDAPCommand(this, True),
-            'unconfigure_nssldap': DirectoryServiceConfigureNSSLDAPCommand(this, False),
-            'configure_sssd': DirectoryServiceConfigureSSSDCommand(this, True),
-            'unconfigure_sssd': DirectoryServiceConfigureSSSDCommand(this, False),
-            'configure_samba': DirectoryServiceConfigureSambaCommand(this, True),
-            'unconfigure_samba': DirectoryServiceConfigureSambaCommand(this, False),
-            'configure_pam': DirectoryServiceConfigurePAMCommand(this, True),
-            'unconfigure_pam': DirectoryServiceConfigurePAMCommand(this, False),
-            'configure_activedirectory': DirectoryServiceConfigureActiveDirectoryCommand(this, True),
-            'unconfigure_activedirectory': DirectoryServiceConfigureActiveDirectoryCommand(this, False),
-            'get_kerberos_ticket': DirectoryServiceGetKerberosTicketCommand(this),
-            'join_activedirectory': DirectoryServiceJoinActiveDirectoryCommand(this),
-        }
-"""
-
-
-@description("LDAP directory settings")
-class LDAPDirectoryNamespace(BaseDirectoryServiceNamespace):
-    def __init__(self, name, context):
-        super(LDAPDirectoryNamespace, self).__init__(name, 'ldap', context)
-        self.config_call = "ldap.get_config"
-
-        self.add_property(
-            descr='Domain',
-            name='domain',
-            get='domain',
-            type=ValueType.STRING,
-            list=True
-        ) 
-
-        self.add_property(
-            descr='Bind Name',
-            name='binddn',
-            get='binddn',
-            usage=_("""\
-            Name of the administrative account on LDAP server."""),
-            type=ValueType.STRING,
-            list=True
-        ) 
-
-        self.add_property(
-            descr='Bind Password',
-            name='bindpw',
-            set='bindpw',
+            descr='Password',
+            name='password',
             get=None,
-            usage=_("""\
-            Password associated with the "binddn"."""),
-            type=ValueType.STRING,
-            list=False
-        ) 
+            set='password'
+        )
 
         self.add_property(
-            descr='Host Name',
-            name='host',
-            get='host',
-            usage=_("""\
-            Hostname or IP address of LDAP server."""),
-            type=ValueType.STRING,
-            list=False
+            descr='Server address',
+            name='server',
+            get='server'
+        )
+
+
+class LDAPPropertiesNamespace(BaseDirectoryPropertiesNamespace):
+    def __init__(self, name, context, parent):
+        super(LDAPPropertiesNamespace, self).__init__(name, context, parent)
+
+        self.add_property(
+            descr='Server address',
+            name='server',
+            get='server'
         )
 
         self.add_property(
             descr='Base DN',
-            name='baseDN',
-            get='baseDN',
-            usage=_("""\
-            Top level of the LDAP directory tree to be used when searching
-            for resources."""),
-            type=ValueType.STRING,
+            name='base_dn',
+            get='base_dn'
+        )
+
+        self.add_property(
+            descr='Bind DN',
+            name='bind_dn',
+            get='bind_dn'
+        )
+
+        self.add_property(
+            descr='Bind password',
+            name='password',
+            get=None,
+            set='password'
+        )
+
+        self.add_property(
+            descr='User suffix',
+            name='user_suffix',
+            get='user_suffix',
+        )
+
+        self.add_property(
+            descr='Group suffix',
+            name='group_suffix',
+            get='group_suffix',
+        )
+
+
+class KerberosNamespace(Namespace):
+    def __init__(self, name, context):
+        super(KerberosNamespace, self).__init__(name)
+        self.context = context
+
+    def namespaces(self):
+        return [
+            KerberosRealmsNamespace('realm', self.context),
+            KerberosKeytabsNamespace('keytab', self.context)
+        ]
+
+
+class KerberosRealmsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):
+    def __init__(self, name, context):
+        super(KerberosRealmsNamespace, self).__init__(name, context)
+
+        self.primary_key_name = 'realm'
+        self.entity_subscriber_name = 'kerberos.realm'
+        self.create_task = 'kerberos.realm.create'
+        self.update_task = 'kerberos.realm.update'
+        self.delete_task = 'kerberos.realm.delete'
+
+        self.add_property(
+            descr='Realm name',
+            name='realm',
+            get='realm',
+            list=True
+        )
+
+        self.add_property(
+            descr='KDC',
+            name='kdc',
+            get='kdc_address',
+            list=True
+        )
+
+        self.add_property(
+            descr='Admin server',
+            name='admin_server',
+            get='admin_server_address',
+            list=True
+        )
+
+        self.add_property(
+            descr='Password server',
+            name='password_server',
+            get='password_server_address',
+            list=True
+        )
+
+        self.primary_key = self.get_mapping('realm')
+
+
+class KerberosKeytabsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):
+    def __init__(self, name, context):
+        super(KerberosKeytabsNamespace, self).__init__(name, context)
+
+        self.primary_key_name = 'name'
+        self.entity_subscriber_name = 'kerberos.keytab'
+        self.create_task = 'kerberos.keytab.create'
+        self.update_task = 'kerberos.keytab.update'
+        self.delete_task = 'kerberos.keytab.delete'
+
+        self.add_property(
+            descr='Keytab name',
+            name='name',
+            get='name',
+            list=True
+        )
+
+        self.add_property(
+            descr='Keytab file',
+            name='keytab',
+            get=None,
+            set=self.set_keytab_file,
             list=False
         )
 
         self.add_property(
-            descr='Kerberos KDC',
-            name='kdchost',
-            get='kdchost',
-            usage=_("""\
-            Hostname of the Key Distribution Center. If specified, it
-            must be resolvable."""),
-            type=ValueType.STRING,
+            descr='Keytab entries',
+            name='entries',
+            get=self.get_keytab_entries,
+            set=None,
+            type=ValueType.SET,
             list=False
         )
 
         self.primary_key = self.get_mapping('name')
-        self.primary_key_name = 'name'
-        self.save_key_name = 'name'
 
-        self.entity_commands = lambda this: {
-            'enable': DirectoryServiceEnableCommand(this),
-            'disable': DirectoryServiceDisableCommand(this)
-        }
+    def set_keytab_file(self, obj, path):
+        with open(path, 'rb') as f:
+            obj['keytab'] = f.read()
+
+    def get_keytab_entries(self, obj):
+        return ['{principal} ({enctype}, vno {vno})'.format(**i) for i in obj['entries']]
 
 
 def _init(context):

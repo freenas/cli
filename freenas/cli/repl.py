@@ -135,6 +135,9 @@ ENTITY_SUBSCRIBERS = [
     'replication.link',
     'replication.host',
     'backup',
+    'kerberos.realm',
+    'kerberos.keytab',
+    'directory',
     'boot.environment'
 ]
 

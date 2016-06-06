@@ -119,7 +119,8 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             get='uid',
             list=True,
             usage=_("An unused number greater than 1000 and less than 65535."),
-            type=ValueType.NUMBER)
+            type=ValueType.NUMBER
+        )
 
         self.add_property(
             descr='User name',
@@ -131,14 +132,16 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             a tab, a double quote, or any of these characters:
             , : + & # % ^ & ( ) ! @ ~ * ? < > =
             If a $ is used, it can only be the last character."""),
-            list=True)
+            list=True
+        )
 
         self.add_property(
             descr='Full name',
             name='fullname',
             get='full_name',
             usage=_("Place within double quotes if contains a space."),
-            list=True)
+            list=True
+        )
 
         self.add_property(
             descr='Primary group',
@@ -150,7 +153,8 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             with the same name as the user is also created.
             When specifying a different group name, that group
             must already exist."""),
-            set=self.set_group)
+            set=self.set_group
+        )
 
         self.add_property(
             descr='Auxiliary groups',

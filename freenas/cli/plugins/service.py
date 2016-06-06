@@ -184,6 +184,13 @@ svc_cli_config = {
             'type': ValueType.BOOLEAN
         },
         {
+            'descr': 'Allow GSSAPI authentication',
+            'name': 'allow_gssapi_auth',
+            'usage': _(""""""),
+            'get': 'allow_gssapi_auth',
+            'type': ValueType.BOOLEAN
+        },
+        {
             'descr': 'Enable compression',
             'name': 'compression',
             'usage': _("""

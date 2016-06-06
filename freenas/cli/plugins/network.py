@@ -518,7 +518,7 @@ class HostsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityN
         self.create_task = 'network.host.create'
         self.update_task = 'network.host.update'
         self.delete_task = 'network.host.delete'
-        self.required_props = ['name', 'address']
+        self.required_props = ['name', 'addresses']
         self.localdoc['CreateEntityCommand'] = ("""\
             Usage: create <hostname> address=<IP address>
 
@@ -533,11 +533,12 @@ class HostsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityN
             Deletes a hostname.""")
 
         self.add_property(
-            descr='IP address',
-            name='address',
-            get='address',
+            descr='IP addresses',
+            name='addresses',
+            get='addresses',
             usage=_("""\
             The IP address to add to the hosts file."""),
+            type=ValueType.SET,
             list=True
         )
 

@@ -25,7 +25,6 @@
 #
 #####################################################################
 
-import copy
 import gettext
 from freenas.cli.namespace import (
     Namespace, ItemNamespace, EntityNamespace, RpcBasedLoadMixin, TaskBasedSaveMixin,
@@ -243,44 +242,6 @@ svc_cli_config = {
             'type': ValueType.NUMBER
         }
     ],
-    'nginx': [
-        {
-            'descr': 'Redirect http to https',
-            'name': 'http.redirect_https',
-            'get': 'http.redirect_https',
-            'type': ValueType.BOOLEAN
-        },
-        {
-            'descr': 'Enable http',
-            'name': 'http.enable',
-            'get': 'http.enable',
-            'type': ValueType.BOOLEAN
-        },
-        {
-            'descr': 'http port',
-            'name': 'http.port',
-            'get': 'http.port',
-            'type': ValueType.NUMBER
-        },
-        {
-            'descr': 'Enable https',
-            'name': 'https.enable',
-            'get': 'https.enable',
-            'type': ValueType.BOOLEAN
-        },
-        {
-            'descr': 'https port',
-            'name': 'https.port',
-            'get': 'https.port',
-            'type': ValueType.NUMBER
-        },
-        {
-            'descr': 'Https certificate',
-            'name': 'https.certificate',
-            'get': 'https.certificate',
-            'type': ValueType.STRING
-        }
-    ],
     "ftp": [
         {
             'descr': 'ftp port',
@@ -376,15 +337,13 @@ svc_cli_config = {
             'descr': 'File creation mask',
             'name': 'filemask',
             'get': 'filemask',
-            'regex': '^\d{0,4}$',
-            'type': ValueType.NUMBER
+            'type': ValueType.PERMISSIONS
         },
         {
             'descr': 'Directory creation mask',
             'name': 'dirmask',
             'get': 'dirmask',
-            'regex': '^\d{0,4}$',
-            'type': ValueType.NUMBER
+            'type': ValueType.PERMISSIONS
         },
         {
             'descr': 'Enable FXP protocol',
@@ -776,11 +735,13 @@ svc_cli_config = {
             'descr': 'File mask',
             'name': 'filemask',
             'get': 'filemask',
+            'type': ValueType.PERMISSIONS
         },
         {
             'descr': 'Directory mask',
             'name': 'dirmask',
             'get': 'dirmask',
+            'type': ValueType.PERMISSIONS
         },
         {
             'descr': 'Empty password logons',
@@ -975,7 +936,6 @@ svc_cli_config = {
             When setting this number, do not exceed the number
             of CPUS shown from running shell "sysctl -n
             kern.smp.cpus"."""),
-            'get': 'update_period',
             'get': 'servers',
             'type': ValueType.NUMBER
         },
@@ -985,7 +945,6 @@ svc_cli_config = {
             'usage': _("""
             Can be set to yes or no. When set to yes,
             older NFS clients that require UDP are supported."""),
-            'get': 'update_period',
             'get': 'udp',
             'type': ValueType.BOOLEAN
         },
@@ -1015,7 +974,6 @@ svc_cli_config = {
             Space delimited list of IP addresses to listen for NFS
             requests, placed between double quotes. Unless specified,
             NFS will listen on all available addresses."""),
-            'get': 'update_period',
             'get': 'bind_addresses',
             'type': ValueType.SET
         },
@@ -1024,7 +982,6 @@ svc_cli_config = {
             'name': 'mountd_port',
             'usage': _("""
             Number representing the port for mountd(8) to bind to."""),
-            'get': 'update_period',
             'get': 'mountd_port',
             'type': ValueType.NUMBER
         },
@@ -1375,7 +1332,7 @@ svc_cli_config = {
             is 022 (everyone can read, nobody can write). Some devices
             require a less strict umask."""),
             'get': 'umask',
-            'type': ValueType.STRING
+            'type': ValueType.PERMISSIONS
         },
         {
             'descr': 'Auxiliary',

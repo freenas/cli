@@ -51,8 +51,16 @@ class ConnectedUsersCommand(Command):
         return Table(result, [
             Table.Column(_("IP address"), 'host', ValueType.STRING),
             Table.Column(_("User"), 'user', ValueType.STRING),
-            Table.Column(_("Connected at"), 'connected_at', ValueType.STRING)
+            Table.Column(_("Connected at"), 'connected_at', ValueType.TIME)
         ])
+
+
+class KillConnectionCommand(Command):
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        context.submit_task('share.terminate_connection', self.parent.type_name, args[0])
 
 
 class ImportShareCommand(Command):
@@ -264,6 +272,15 @@ class BaseSharesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, En
         )
 
         self.add_property(
+            descr='Immutable',
+            name='immutable',
+            get='immutable',
+            list=False,
+            usersetable=False,
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
             descr='Owner',
             name='owner',
             get='permissions.user',
@@ -287,7 +304,8 @@ class BaseSharesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, En
         }
 
         self.extra_commands = {
-            'import': ImportShareCommand(self)
+            'import': ImportShareCommand(self),
+            'kill': KillConnectionCommand(self)
         }
 
     def get_share_target(self, obj):
@@ -514,27 +532,81 @@ class AFPSharesNamespace(BaseSharesNamespace):
         )
 
         self.add_property(
-            descr='Allowed users/groups',
+            descr='Allowed users',
             name='users_allow',
             usage=_("""
             Space delimited list, enclosed within double quotes, of
-            allowed users and/or groups, where groupname begins with a
-            @. Note that setting this property will deny any user/group
-            that is not specified."""),
+            allowed users. Note that setting this property will deny
+            any user that is not specified."""),
             get='properties.users_allow',
             list=False,
             type=ValueType.SET
         )
 
         self.add_property(
-            descr='Denied users/groups',
+            descr='Allowed groups',
+            name='groups_allow',
+            usage=_("""
+            Space delimited list, enclosed within double quotes, of
+            allowed groups. Note that setting this property will deny
+            any group that is not specified."""),
+            get='properties.groups_allow',
+            list=False,
+            type=ValueType.SET
+        )
+
+        self.add_property(
+            descr='Denied users',
             name='users_deny',
             usage=_("""
             Space delimited list, enclosed within double quotes, of
-            denied users and/or groups, where groupname begins with a
-            @. Note that setting this property will allow any user/group
-            that is not specified."""),
+            denied users. Note that setting this property will allow
+            any user that is not specified."""),
             get='properties.users_deny',
+            list=False,
+            type=ValueType.SET
+        )
+
+        self.add_property(
+            descr='Denied groups',
+            name='groups_deny',
+            usage=_("""
+            Space delimited list, enclosed within double quotes, of
+            denied groups. Note that setting this property will allow
+            any group that is not specified."""),
+            get='properties.groups_deny',
+            list=False,
+            type=ValueType.SET
+        )
+
+        self.add_property(
+            descr='Read only users',
+            name='ro_users',
+            get='properties.ro_users',
+            list=False,
+            type=ValueType.SET
+        )
+
+        self.add_property(
+            descr='Read only groups',
+            name='ro_groups',
+            get='properties.ro_groups',
+            list=False,
+            type=ValueType.SET
+        )
+
+        self.add_property(
+            descr='Read/write users',
+            name='rw_users',
+            get='properties.rw_users',
+            list=False,
+            type=ValueType.SET
+        )
+
+        self.add_property(
+            descr='Read/write groups',
+            name='rw_groups',
+            get='properties.rw_groups',
             list=False,
             type=ValueType.SET
         )

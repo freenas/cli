@@ -430,7 +430,7 @@ class ItemNamespace(Namespace):
             if len(args) < 1:
                 raise CommandException(_("Please provide a property to be edited.\n{0}".format(inspect.getdoc(self))))
             prop = self.parent.get_mapping(args[0])
-            if prop.type != ValueType.STRING:
+            if prop.type not in (ValueType.STRING, ValueType.STRING_HEAD):
                 raise CommandException(_("The edit command can only be used on string properties"))
             value = edit_in_editor(prop.do_get(self.parent.entity))
             prop.do_set(self.parent.entity, value)
@@ -537,7 +537,7 @@ class ItemNamespace(Namespace):
 
     def has_editable_string(self):
         for prop in self.property_mappings:
-            if prop.set is not None and prop.is_usersetable(self.entity) and prop.type == ValueType.STRING:
+            if prop.set is not None and prop.is_usersetable(self.entity) and prop.type in (ValueType.STRING, ValueType.STRING_HEAD):
                 if prop.condition and not prop.condition(self.entity):
                     continue
                 else:
@@ -554,6 +554,8 @@ class ItemNamespace(Namespace):
         return False
 
     def commands(self):
+        if self.entity is None:
+            self.load()
         base = {
             'get': self.GetEntityCommand(self),
             'show': self.ShowEntityCommand(self),
@@ -911,9 +913,13 @@ class CreateEntityCommand(Command):
         kwargs = collections.OrderedDict(kwargs)
 
         if len(args) > 0:
-            prop = self.parent.primary_key
-            kwargs[prop.name] = args.pop(0)
-            kwargs.move_to_end(prop.name, False)
+            # Do not allow user to specify name as both implicit and explicit parameter as this suggests a mistake
+            if 'name' in kwargs:
+                raise CommandException(_("Both implicit and explicit 'name' parameters are specified."))
+            else:
+                prop = self.parent.primary_key
+                kwargs[prop.name] = args.pop(0)
+                kwargs.move_to_end(prop.name, False)
 
         for k, v in list(kwargs.items()):
             if not self.parent.has_property(k):
@@ -1059,8 +1065,8 @@ class EntitySubscriberBasedLoadMixin(object):
 
     def on_enter(self, *args, **kwargs):
         super(EntitySubscriberBasedLoadMixin, self).on_enter(*args, **kwargs)
-        self.context.entity_subscribers[self.entity_subscriber_name].on_delete = self.on_delete
-        self.context.entity_subscribers[self.entity_subscriber_name].on_update = self.on_update
+        self.context.entity_subscribers[self.entity_subscriber_name].on_delete.add(self.on_delete)
+        self.context.entity_subscribers[self.entity_subscriber_name].on_update.add(self.on_update)
 
     def on_delete(self, entity):
         cwd = self.context.ml.cwd
@@ -1070,8 +1076,9 @@ class EntitySubscriberBasedLoadMixin(object):
     def on_update(self, old_entity, new_entity):
         cwd = self.context.ml.cwd
         if isinstance(cwd, SingleItemNamespace) and cwd.parent == self:
-            cwd.entity[self.primary_key_name] = new_entity[self.primary_key_name]
-            cwd.load()
+            if old_entity[self.primary_key_name] == cwd.entity[self.primary_key_name]:
+                cwd.entity[self.primary_key_name] = new_entity[self.primary_key_name]
+                cwd.load()
 
             if not cwd.entity:
                 self.context.ml.cd_up()

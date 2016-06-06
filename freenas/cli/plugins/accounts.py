@@ -289,10 +289,11 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             yield group['name'] if group else '<unknown group>'
 
     def set_aux_groups(self, entity, value):
-        groups = self.context.call_sync('group.query', [('name', 'in', list(value))])
-        diff_groups = set.difference(set([x['name'] for x in groups]), set(value))
+        groups = self.context.entity_subscribers['group'].query(('name', 'in', list(value)))
+        diff_groups = set.difference(set(value), set(x['name'] for x in groups))
         if len(diff_groups):
-            raise CommandException(_('Groups {0} do not exist.'.format(diff_groups)))
+            raise CommandException(_('Groups {0} do not exist.'.format(', '.join(diff_groups))))
+
         entity['groups'] = [group['id'] for group in groups]
 
 

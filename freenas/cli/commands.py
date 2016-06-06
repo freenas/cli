@@ -74,16 +74,16 @@ def create_variable_completer(name, var):
     return NullComplete(name + '=')
 
 
-@description("Set environment variable value")
-class SetenvCommand(Command):
+@description("Set configuration variable value")
+class SetoptCommand(Command):
 
     """
-    Usage: setenv <variable>=<value>
+    Usage: setopt <variable>=<value>
 
-    Example: setenv debug=yes
-             setenv prompt="{path}>"
+    Example: setopt debug=yes
+             setopt prompt="{path}>"
 
-    Set value of environment variable. Use 'printenv' to display
+    Set value of environment variable. Use 'printopt' to display
     available variables and their current values.
 
     If the value contains any non-alphanumeric characters,
@@ -108,15 +108,15 @@ class SetenvCommand(Command):
         return [create_variable_completer(k, v) for k, v in context.variables.get_all()]
 
 
-@description("Print environment variable values")
-class PrintenvCommand(Command):
+@description("Print configuration variable values")
+class PrintoptCommand(Command):
 
     """
 
-    Usage: printenv <variable>
+    Usage: printopt <variable>
 
-    Example: printenv
-             printenv timeout
+    Example: printopt
+             printopt timeout
 
     Print a list of all environment variables and their values
     or the value of the specified environment variable.
@@ -152,16 +152,16 @@ class PrintenvCommand(Command):
         return [create_variable_completer(k, v) for k, v in context.variables.get_all()]
 
 
-@description("Save environment variables to CLI configuration file")
-class SaveenvCommand(Command):
+@description("Save configuration variables to CLI configuration file")
+class SaveoptCommand(Command):
 
     """
-    Usage: saveenv
-           saveenv <filename>
+    Usage: saveopt
+           saveopt <filename>
 
     Examples:
-           saveenv
-           saveenv "/root/myclisave.conf"
+           saveopt
+           saveopt "/root/myclisave.conf"
 
     Save the current set of environment variables to either the specified filename
     or, when not specified, to "~/.freenascli.conf". To start the CLI with the saved
@@ -181,6 +181,39 @@ class SaveenvCommand(Command):
             raise CommandException(_(
                 "Incorrect syntax: {0}\n{1}".format(args, inspect.getdoc(self))
             ))
+
+
+@description("Set environment variable value")
+class SetenvCommand(Command):
+    """
+    Usage: setenv variable=name
+
+    Examples:
+           setenv EDITOR=/usr/local/bin/nano
+
+
+    Sets an environment variable.
+    """
+    def run(self, context, args, kwargs, opargs):
+        for k, v in kwargs.items():
+            os.environ[k] = str(v)
+
+
+@description("Print environment variable values")
+class PrintenvCommand(Command):
+    """
+    Usage: printenv
+
+    Prints currently set environment variables and their values.
+    """
+    def run(self, context, args, kwargs, opargs):
+        return Table(
+            [{'name': k, 'value': v} for k, v in os.environ.items()],
+            [
+                Table.Column('Name', 'name'),
+                Table.Column('Value', 'value')
+            ]
+        )
 
 
 @description("Create aliases for commonly used commands")
@@ -259,7 +292,7 @@ class ShellCommand(Command):
             self.closed = True
 
         self.closed = False
-        name = ' '.join(args) if len(args) > 0 else '/bin/sh'
+        name = ' '.join(str(i) for i in args) if len(args) > 0 else '/bin/sh'
         token = context.call_sync('shell.spawn', name)
         shell = ShellClient(context.hostname, token)
         shell.on_data(read)
@@ -388,7 +421,7 @@ class HelpCommand(Command):
 
     Examples:
         help
-        help printenv
+        help printopt
         help account user create
         account group help properties
 
@@ -579,8 +612,8 @@ class IndexCommand(Command):
 
         ns_seq = Sequence(
             _("Current namespace items:"),
-            sorted(list(cmds.keys())) +
-            [ns.get_name() for ns in sorted(nss, key=lambda i: i.get_name())]
+            sorted(list(cmds)) +
+            [ns.get_name() for ns in sorted(nss, key=lambda i: str(i.get_name()))]
         )
         if outseq is not None:
             outseq += ns_seq
@@ -887,7 +920,6 @@ class AttachDebuggerCommand(Command):
 
         import pydevd
         pydevd.settrace(args[1], port=args[2])
-
 
 
 @description("Scroll through long output")

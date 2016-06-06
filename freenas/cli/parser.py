@@ -74,6 +74,7 @@ UnaryExpr = ASTObject('UnaryExpr', 'expr', 'op')
 BinaryExpr = ASTObject('BinaryExpr', 'left', 'op', 'right')
 BinaryParameter = ASTObject('BinaryParameter', 'left', 'op', 'right')
 Literal = ASTObject('Literal', 'value', 'type')
+Parentheses = ASTObject('Parentheses', 'expr')
 CommandExpansion = ASTObject('CommandExpansion', 'expr')
 ExpressionExpansion = ASTObject('ExpressionExpansion', 'expr')
 PipeExpr = ASTObject('PipeExpr', 'left', 'right')
@@ -82,6 +83,7 @@ CommandCall = ASTObject('CommandCall', 'args')
 Subscript = ASTObject('Subscript', 'expr', 'index')
 IfStatement = ASTObject('IfStatement', 'expr', 'body', 'else_body')
 AssignmentStatement = ASTObject('AssignmentStatement', 'name', 'expr')
+ConstStatement = ASTObject('ConstStatement', 'name', 'expr')
 ForStatement = ASTObject('ForStatement', 'var', 'expr', 'body')
 WhileStatement = ASTObject('WhileStatement', 'expr', 'body')
 UndefStatement = ASTObject('UndefStatement', 'name')
@@ -106,6 +108,7 @@ reserved = {
     'or': 'OR',
     'not': 'NOT',
     'undef': 'UNDEF',
+    'const': 'CONST',
     'true': 'TRUE',
     'false': 'FALSE',
     'none': 'NULL',
@@ -116,14 +119,9 @@ tokens = list(reserved.values()) + [
     'ATOM', 'NUMBER', 'HEXNUMBER', 'BINNUMBER', 'OCTNUMBER', 'STRING',
     'ASSIGN', 'LPAREN', 'RPAREN', 'EQ', 'NE', 'GT', 'GE', 'LT', 'LE',
     'REGEX', 'UP', 'PIPE', 'LIST', 'COMMA', 'INC', 'DEC', 'PLUS', 'MINUS',
-    'MUL', 'DIV', 'EOPEN', 'COPEN', 'LBRACE', 'RBRACE', 'LBRACKET', 'RBRACKET',
-    'NEWLINE', 'COLON', 'REDIRECT', 'MOD', 'SHELL'
+    'MUL', 'DIV', 'EOPEN', 'LBRACE', 'RBRACE', 'LBRACKET', 'RBRACKET',
+    'NEWLINE', 'COLON', 'REDIRECT', 'MOD', 'SHELL', 'SUBSCRIPT', 'FCALL'
 ]
-
-
-states = (
-    ('script', 'inclusive'),
-)
 
 
 def t_COMMENT(t):
@@ -144,7 +142,7 @@ def t_IPV6(t):
 
 
 def t_SIZE(t):
-    r'(\d+)([kKmMgGtT][iI]?[Bb]?)'
+    r'(\d+)([kKmMgGtTpP][iI]?[Bb]?)'
     t.type = 'NUMBER'
     m = re.match(t_SIZE.__doc__, t.value)
     suffix = m.group(2).lower()
@@ -162,34 +160,10 @@ def t_SIZE(t):
     if suffix in ('t', 'tb', 'tib'):
         value *= 1024 * 1024 * 1024 * 1024
 
-    t.value = value
-    return t
-
-
-def t_DATEDELTA(t):
-    r'(\d+)([yKwWdDhH])'
-    t.type = 'NUMBER'
-    m = re.match(t_DATEDELTA.__doc__, t.value)
-    suffix = m.group(2).lower()
-    value = int(m.group(1))
-    value *= 60 * 60
-
-    if suffix == 'y':
-        value *= 24 * 7 * 365
-
-    if suffix == 'w':
-        value *= 24 * 7
-
-    if suffix == 'd':
-        value *= 24
+    if suffix in ('p', 'pb', 'pib'):
+        value *= 1024 * 1024 * 1024 * 1024 * 1024
 
     t.value = value
-    return t
-
-
-def t_TIMEDELTA(t):
-    r'(\d+:\d+\.?\d*)+'
-    t.type = 'STRING'
     return t
 
 
@@ -245,18 +219,12 @@ def common_atom_routine(t):
     return t
 
 
-def t_script_ATOM(t):
+def t_ATOM(t):
     r'[a-zA-Z_][0-9a-zA-Z_\.\/#@]*'
     return common_atom_routine(t)
 
 
-def t_INITIAL_ATOM(t):
-    r'[0-9a-zA-Z_\-\+\*\:#@\/][0-9a-zA-Z_\.\/#@\:\-\+\*\/]*'
-    return common_atom_routine(t)
-
-
 t_ignore = ' \t'
-t_LBRACKET = r'\['
 t_RBRACKET = r'\]'
 t_PIPE = r'\|'
 t_ASSIGN = r'='
@@ -268,18 +236,18 @@ t_GT = r'>'
 t_GE = r'>='
 t_LT = r'<'
 t_LE = r'<='
-t_script_PLUS = r'\+'
-t_script_MINUS = r'-'
-t_script_MUL = r'\*'
+t_PLUS = r'\+'
+t_MUL = r'\*'
 t_DIV = r'\/'
-t_script_MOD = r'\%'
+t_MOD = r'\%'
 t_REGEX = r'~='
 t_COMMA = r'\,'
 t_UP = r'\.\.'
 t_LIST = r'\?'
-t_script_COLON = r':'
+t_COLON = r':'
 t_REDIRECT = r'>>'
 t_SHELL = r'!'
+
 
 precedence = (
     ('left', 'AND', 'OR'),
@@ -290,8 +258,10 @@ precedence = (
     ('left', 'MINUS', 'PLUS'),
     ('left', 'MUL', 'DIV', 'MOD'),
     ('left', 'REGEX'),
-    ('right', 'LBRACKET', 'RBRACKET'),
-    ('left', 'INC', 'DEC'),
+    ('right', 'LBRACKET', 'RBRACKET', 'SUBSCRIPT'),
+    ('right', 'UMINUS'),
+    ('left', 'LPAREN', 'RPAREN'),
+    ('left', 'INC', 'DEC')
 )
 
 
@@ -300,40 +270,37 @@ def t_ESCAPENL(t):
     t.lexer.lineno += 1
 
 
-def t_ANY_EOPEN(t):
+def t_EOPEN(t):
     r'\$\('
-    t.lexer.push_state('INITIAL')
     return t
 
 
-def t_ANY_LPAREN(t):
+def t_LPAREN(t):
     r'\('
-    t.lexer.push_state('script')
+    if t.lexer.lexpos > 1 and t.lexer.lexdata[t.lexer.lexpos - 2] not in (' ', '(', ',', '='):
+        t.type = 'FCALL'
+
     return t
 
 
-def t_ANY_RPAREN(t):
+def t_MINUS(t):
+    r'-'
+    return t
+
+
+def t_RPAREN(t):
     r'\)'
-    t.lexer.pop_state()
-    return t
-
-
-def t_ANY_COPEN(t):
-    r'\${'
-    t.lexer.push_state('script')
     return t
 
 
 def t_LBRACE(t):
     r'{'
-    t.lexer.push_state('script')
     t.lexer.parens += 1
     return t
 
 
-def t_ANY_RBRACE(t):
+def t_RBRACE(t):
     r'}'
-    t.lexer.pop_state()
     t.lexer.parens -= 1
     return t
 
@@ -341,6 +308,14 @@ def t_ANY_RBRACE(t):
 def t_NEWLINE(t):
     r'[\n;]+'
     t.lexer.lineno += len(t.value)
+    return t
+
+
+def t_LBRACKET(t):
+    r'\['
+    if t.lexer.lexpos > 1 and t.lexer.lexdata[t.lexer.lexpos - 2] not in (' ', '(', ',', '='):
+        t.type = 'SUBSCRIPT'
+
     return t
 
 
@@ -410,12 +385,13 @@ def p_stmt(p):
     stmt : for_stmt
     stmt : while_stmt
     stmt : assignment_stmt
+    stmt : const_stmt
     stmt : function_definition_stmt
     stmt : return_stmt
     stmt : break_stmt
     stmt : undef_stmt
     stmt : command
-    stmt : call
+    stmt : expr
     stmt : shell
     """
     p[0] = p[1]
@@ -474,36 +450,42 @@ def p_while_stmt(p):
 
 def p_assignment_stmt(p):
     """
-    assignment_stmt : ATOM ASSIGN expr
-    assignment_stmt : subscript_left ASSIGN expr
+    assignment_stmt : expr ASSIGN expr
     """
     p[0] = AssignmentStatement(p[1], p[3], p=p)
 
 
+def p_const_stmt(p):
+    """
+    const_stmt : CONST symbol ASSIGN expr
+    """
+    p[0] = ConstStatement(p[2], p[4], p=p)
+
+
 def p_function_definition_stmt_1(p):
     """
-    function_definition_stmt : FUNCTION ATOM LPAREN RPAREN block
+    function_definition_stmt : FUNCTION ATOM FCALL RPAREN block
     """
     p[0] = FunctionDefinition(p[2], [], p[5], p=p)
 
 
 def p_function_definition_stmt_2(p):
     """
-    function_definition_stmt : FUNCTION ATOM LPAREN function_argument_list RPAREN block
+    function_definition_stmt : FUNCTION ATOM FCALL function_argument_list RPAREN block
     """
     p[0] = FunctionDefinition(p[2], p[4], p[6], p=p)
 
 
 def p_function_definition_stmt_3(p):
     """
-    function_definition_stmt : FUNCTION ATOM LPAREN RPAREN NEWLINE block
+    function_definition_stmt : FUNCTION ATOM FCALL RPAREN NEWLINE block
     """
     p[0] = FunctionDefinition(p[2], [], p[6], p=p)
 
 
 def p_function_definition_stmt_4(p):
     """
-    function_definition_stmt : FUNCTION ATOM LPAREN function_argument_list RPAREN NEWLINE block
+    function_definition_stmt : FUNCTION ATOM FCALL function_argument_list RPAREN NEWLINE block
     """
     p[0] = FunctionDefinition(p[2], p[4], p[7], p=p)
 
@@ -560,25 +542,33 @@ def p_expr_list(p):
     p[0] = [p[1]] + p[3]
 
 
-def p_expr(p):
+def p_simple_expr(p):
     """
-    expr : symbol
-    expr : literal
-    expr : array_literal
-    expr : dict_literal
-    expr : unary_expr
-    expr : binary_expr
-    expr : call
-    expr : subscript_expr
-    expr : anon_function_expr
-    expr : expr_expansion
-    expr : LPAREN expr RPAREN
-    expr : COPEN expr RBRACE
+    simple_expr : symbol
+    simple_expr : literal
+    simple_expr : array_literal
+    simple_expr : dict_literal
+    simple_expr : call
+    simple_expr : subscript_expr
+    simple_expr : anon_function_expr
+    simple_expr : expr_expansion
+    simple_expr : LPAREN expr RPAREN
+    simple_expr : FCALL expr RPAREN
+    simple_expr : LPAREN command RPAREN
     """
     if len(p) == 4:
-        p[0] = p[2]
+        p[0] = Parentheses(p[2], p=p)
         return
 
+    p[0] = p[1]
+
+
+def p_expr(p):
+    """
+    expr : simple_expr
+    expr : unary_expr
+    expr : binary_expr
+    """
     p[0] = p[1]
 
 
@@ -667,58 +657,51 @@ def p_symbol(p):
 
 def p_call(p):
     """
-    call : ATOM LPAREN RPAREN
-    call : ATOM LPAREN expr_list RPAREN
+    call : ATOM FCALL RPAREN
+    call : ATOM FCALL expr_list RPAREN
+    call : LPAREN expr RPAREN FCALL expr_list RPAREN
     """
     p[0] = FunctionCall(p[1], p[3] if len(p) == 5 else [], p=p)
 
 
-def p_subscript_left(p):
-    """
-    subscript_left : subscript_left LBRACKET expr RBRACKET
-    subscript_left : symbol LBRACKET expr RBRACKET
-    """
-    p[0] = Subscript(p[1], p[3], p=p)
-
-
 def p_subscript_expr(p):
     """
-    subscript_expr : expr LBRACKET expr RBRACKET
+    subscript_expr : simple_expr SUBSCRIPT expr RBRACKET
     """
     p[0] = Subscript(p[1], p[3], p=p)
 
 
 def p_anon_function_expr_1(p):
     """
-    anon_function_expr : FUNCTION LPAREN RPAREN block
+    anon_function_expr : FUNCTION FCALL RPAREN block
     """
     p[0] = AnonymousFunction([], p[4], p=p)
 
 
 def p_anon_function_expr_2(p):
     """
-    anon_function_expr : FUNCTION LPAREN RPAREN NEWLINE block
+    anon_function_expr : FUNCTION FCALL RPAREN NEWLINE block
     """
     p[0] = AnonymousFunction([], p[5], p=p)
 
 
 def p_anon_function_expr_3(p):
     """
-    anon_function_expr : FUNCTION LPAREN function_argument_list RPAREN block
+    anon_function_expr : FUNCTION FCALL function_argument_list RPAREN block
     """
     p[0] = AnonymousFunction(p[3], p[5], p=p)
 
 
 def p_anon_function_expr_4(p):
     """
-    anon_function_expr : FUNCTION LPAREN function_argument_list RPAREN NEWLINE block
+    anon_function_expr : FUNCTION FCALL function_argument_list RPAREN NEWLINE block
     """
     p[0] = AnonymousFunction(p[3], p[6], p=p)
 
 
 def p_unary_expr(p):
     """
-    unary_expr : MINUS expr
+    unary_expr : MINUS expr %prec UMINUS
     unary_expr : NOT expr
     """
     p[0] = UnaryExpr(p[2], p[1], p=p)
@@ -739,7 +722,6 @@ def p_binary_expr(p):
     binary_expr : expr REGEX expr
     binary_expr : expr AND expr
     binary_expr : expr OR expr
-    binary_expr : expr NOT expr
     binary_expr : expr MOD expr
     """
     p[0] = BinaryExpr(p[1], p[2], p[3], p=p)
@@ -747,17 +729,25 @@ def p_binary_expr(p):
 
 def p_command_1(p):
     """
-    command : command_item
+    command : LIST
+    command : DIV
     command : command_item parameter_list
     """
     if len(p) == 2:
-        p[0] = CommandCall([p[1]], p=p)
+        p[0] = CommandCall([Symbol(p[1])], p=p)
         return
 
     p[0] = CommandCall([p[1]] + p[2], p=p)
 
 
 def p_command_2(p):
+    """
+    command : UP
+    """
+    p[0] = CommandCall(['..'])
+
+
+def p_command_3(p):
     """
     command : command_item PIPE command
     command : command_item parameter_list PIPE command
@@ -772,7 +762,7 @@ def p_command_2(p):
 def p_command_item_1(p):
     """
     command_item : LIST
-    command_item : NUMBER
+    command_item : DIV
     """
     p[0] = Symbol(p[1], p=p)
 
@@ -781,22 +771,9 @@ def p_command_item_2(p):
     """
     command_item : UP
     command_item : symbol
+    command_item : literal
     """
     p[0] = p[1]
-
-
-def p_command_item_3(p):
-    """
-    command_item : COPEN expr RBRACE
-    """
-    p[0] = ExpressionExpansion(p[2], p=p)
-
-
-def p_command_item_4(p):
-    """
-    command_item : STRING
-    """
-    p[0] = Literal(p[1], type(str))
 
 
 def p_parameter_list(p):
@@ -844,11 +821,7 @@ def p_set_parameter(p):
 
 def p_unary_parameter(p):
     """
-    unary_parameter : symbol
-    unary_parameter : literal
-    unary_parameter : array_literal
-    unary_parameter : dict_literal
-    unary_parameter : COPEN expr RBRACE
+    unary_parameter : simple_expr
     """
     if len(p) == 4:
         p[0] = ExpressionExpansion(p[2], p=p)
@@ -913,7 +886,7 @@ def p_error(p):
 
 
 lexer = lex.lex()
-parser = yacc.yacc(debug=False, optimize=True, write_tables=False)
+parser = yacc.yacc(debug=True, optimize=True, write_tables=False)
 
 
 def parse(s, filename, recover_errors=False):
@@ -974,6 +947,9 @@ def unparse(token, indent=0, oneliner=False):
 
         return str(token.value)
 
+    if isinstance(token, AnonymousFunction):
+        return ind('function({0}) {{{1}}}'.format(', '.join(token.args), format_block(token.body)))
+
     if isinstance(token, BinaryParameter):
         return ind(''.join([token.left, token.op, unparse(token.right)]))
 
@@ -1008,6 +984,9 @@ def unparse(token, indent=0, oneliner=False):
 
     if isinstance(token, BinaryExpr):
         return ind(' '.join([unparse(token.left), token.op, unparse(token.right)]))
+
+    if isinstance(token, Parentheses):
+        return ind('({0})'.format(unparse(token.expr)))
 
     if isinstance(token, IfStatement):
         return ind('if ({0}) {{{1}}}'.format(

@@ -50,19 +50,18 @@ import re
 from six.moves.urllib.parse import urlparse
 from socket import gaierror as socket_error
 from freenas.cli.descriptions import events
-from freenas.cli.descriptions import tasks
 from freenas.cli.utils import PrintableNone, SIGTSTPException, SIGTSTP_setter, errors_by_path
 from freenas.cli import functions
 from freenas.cli import config
 from freenas.cli.namespace import (
     Namespace, EntityNamespace, RootNamespace, SingleItemNamespace, ConfigNamespace, Command,
-    FilteringCommand, PipeCommand, CommandException, EntitySubscriberBasedLoadMixin
+    FilteringCommand, PipeCommand, CommandException
 )
 from freenas.cli.parser import (
     parse, unparse, Symbol, Literal, BinaryParameter, UnaryExpr, BinaryExpr, PipeExpr, AssignmentStatement,
-    IfStatement, ForStatement, WhileStatement, FunctionCall, CommandCall, Subscript,
+    ConstStatement, IfStatement, ForStatement, WhileStatement, FunctionCall, CommandCall, Subscript,
     ExpressionExpansion, CommandExpansion, FunctionDefinition, ReturnStatement, BreakStatement,
-    UndefStatement, Redirection, AnonymousFunction, ShellEscape
+    UndefStatement, Redirection, AnonymousFunction, ShellEscape, Parentheses
 )
 from freenas.cli.output import (
     ValueType, ProgressBar, Sequence, output_lock, output_msg, read_value, format_value,
@@ -74,12 +73,12 @@ from freenas.dispatcher.rpc import RpcException
 from freenas.utils import first_or_default, include, best_match
 from freenas.utils.query import QueryDict, wrap
 from freenas.cli.commands import (
-    ExitCommand, PrintenvCommand, SetenvCommand, ShellCommand, HelpCommand,
-    ShowUrlsCommand, ShowIpsCommand, TopCommand, ClearCommand, HistoryCommand,
-    SaveenvCommand, EchoCommand, SourceCommand, MorePipeCommand, SearchPipeCommand,
-    ExcludePipeCommand, SortPipeCommand, LimitPipeCommand, SelectPipeCommand,
-    LoginCommand, DumpCommand, WhoamiCommand, PendingCommand, WaitCommand,
-    OlderThanPipeCommand, NewerThanPipeCommand, IndexCommand, AliasCommand,
+    ExitCommand, PrintoptCommand, SetoptCommand, SetenvCommand, PrintenvCommand,
+    ShellCommand, HelpCommand, ShowUrlsCommand, ShowIpsCommand, TopCommand, ClearCommand,
+    HistoryCommand, SaveoptCommand, EchoCommand, SourceCommand, MorePipeCommand,
+    SearchPipeCommand, ExcludePipeCommand, SortPipeCommand, LimitPipeCommand,
+    SelectPipeCommand, LoginCommand, DumpCommand, WhoamiCommand, PendingCommand,
+    WaitCommand, OlderThanPipeCommand, NewerThanPipeCommand, IndexCommand, AliasCommand,
     UnaliasCommand, ListVarsCommand, AttachDebuggerCommand
 )
 import collections
@@ -127,6 +126,8 @@ ENTITY_SUBSCRIBERS = [
     'service',
     'share',
     'task',
+    'tunable',
+    'crypto.certificate',
     'alert',
     'alert.filter',
     'container',
@@ -136,7 +137,8 @@ ENTITY_SUBSCRIBERS = [
     'backup',
     'kerberos.realm',
     'kerberos.keytab',
-    'directory'
+    'directory',
+    'boot.environment'
 ]
 
 
@@ -183,22 +185,6 @@ def expand_wildcards(context, args, kwargs, opargs, completions):
                 kwargs[name] = expand_one(kwargs[name], i)
 
     return args, kwargs, opargs
-
-
-def convert_to_literals(tokens):
-    def conv(t):
-        if isinstance(t, list):
-            return [conv(i) for i in t]
-
-        if isinstance(t, Symbol):
-            return Literal(t.name, str)
-
-        if isinstance(t, BinaryParameter):
-            t.right = conv(t.right)
-
-        return t
-
-    return [conv(i) for i in tokens]
 
 
 class FlowControlInstructionType(enum.Enum):
@@ -351,9 +337,7 @@ class Context(object):
         self.builtin_operators = functions.operators
         self.builtin_functions = functions.functions
         self.global_env = Environment(self)
-        self.global_env['_cli_src_path'] = Environment.Variable(
-            os.path.dirname(os.path.realpath(__file__))
-        )
+        self.global_env.update(Context.default_env())
         self.user = None
         self.pending_tasks = QueryDict()
         self.session_id = None
@@ -375,6 +359,14 @@ class Context(object):
             self.pending_tasks.values()
         )))
 
+    @staticmethod
+    def default_env():
+        return {
+            '_cli_src_path': Environment.Variable(os.path.dirname(os.path.realpath(__file__))),
+            'yes': Environment.Variable(True, True),
+            'no': Environment.Variable(False, True)
+        }
+
     def start(self, password=None):
         self.discover_plugins()
         self.connect(password)
@@ -391,6 +383,10 @@ class Context(object):
 
         def update_task(task, old_task=None):
             self.pending_tasks[task['id']] = task
+            descr = task['name']
+
+            if task['description']:
+                descr = task['description']['message']
 
             if task['state'] in ('FINISHED', 'FAILED', 'ABORTED'):
                 del self.pending_tasks[task['id']]
@@ -402,7 +398,7 @@ class Context(object):
                 self.output_queue.put(_(
                     "Task #{0}: {1}: {2}".format(
                         task['id'],
-                        tasks.translate(self, task['name'], task['args']),
+                        descr,
                         task['state'].lower(),
                     )
                 ))
@@ -411,7 +407,7 @@ class Context(object):
                 self.output_queue.put(_(
                     "Task #{0}: {1}: {2}".format(
                         task['id'],
-                        tasks.translate(self, task['name'], task['args']),
+                        descr,
                         task['state'].lower(),
                     )
                 ))
@@ -435,12 +431,12 @@ class Context(object):
                     for i in task['warnings'][len(old_task['warnings']):]:
                         self.output_queue.put(_("Task #{0}: {1}: warning: {2}".format(
                             task['id'],
-                            tasks.translate(self, task['name'], task['args']),
+                            descr,
                             i['message']
                         )))
 
-        self.entity_subscribers['task'].on_add = update_task
-        self.entity_subscribers['task'].on_update = lambda o, n: update_task(n, o)
+        self.entity_subscribers['task'].on_add.add(update_task)
+        self.entity_subscribers['task'].on_update.add(lambda o, n: update_task(n, o))
 
     def wait_entity_subscribers(self):
         for i in self.entity_subscribers.values():
@@ -679,6 +675,9 @@ class Context(object):
     def print_validation_errors(self, task):
         if task.get('error.type') == 'ValidationException':
             errors = self.get_validation_errors(task)
+            if not errors:
+                return
+
             for prop, __, msg in errors:
                 self.output_queue.put(_("Task #{0} validation error: {1}{2}{3}".format(
                     task['id'],
@@ -815,6 +814,7 @@ class Function(object):
         self.param_names = param_names
         self.exp = exp
         self.env = env
+        self.const = False
 
     def __call__(self, *args):
         env = Environment(self.context, self.env, zip(self.param_names, args))
@@ -851,8 +851,9 @@ class BuiltinFunction(object):
 
 class Environment(dict):
     class Variable(object):
-        def __init__(self, value):
+        def __init__(self, value, const=False):
             self.value = value
+            self.const = const
 
     def __init__(self, context, outer=None, iterable=None):
         super(Environment, self).__init__()
@@ -891,9 +892,11 @@ class MainLoop(object):
         '?': IndexCommand(),
         'login': LoginCommand(),
         'exit': ExitCommand(),
+        'setopt': SetoptCommand(),
+        'printopt': PrintoptCommand(),
+        'saveopt': SaveoptCommand(),
         'setenv': SetenvCommand(),
         'printenv': PrintenvCommand(),
-        'saveenv': SaveenvCommand(),
         'shell': ShellCommand(),
         'help': HelpCommand(),
         'top': TopCommand(),
@@ -1123,6 +1126,9 @@ class MainLoop(object):
             if isinstance(token, list):
                 return [self.eval(i, env, path) for i in token]
 
+            if isinstance(token, Parentheses):
+                return self.eval(token.expr, env, path)
+
             if isinstance(token, UnaryExpr):
                 expr = self.eval(token.expr, env)
                 if token.op == '-':
@@ -1171,13 +1177,11 @@ class MainLoop(object):
             if isinstance(token, AssignmentStatement):
                 expr = self.eval(token.expr, env, first=first)
 
-                try:
-                    self.context.variables.variables[token.name]
+                if token.name in self.context.variables.variables:
                     raise SyntaxError(_(
-                        "{0} is an Environment Variable. Use `setenv` command to set it".format(token.name)
+                        "{0} is a configuration variable. Use `setopt` command to set it".format(token.name)
                     ))
-                except KeyError:
-                    pass
+
                 if isinstance(token.name, Subscript):
                     array = self.eval(token.name.expr, env)
                     index = self.eval(token.name.index, env)
@@ -1185,10 +1189,19 @@ class MainLoop(object):
                     return
 
                 try:
-                    env.find(token.name).value = expr
-                except KeyError:
-                    env[token.name] = Environment.Variable(expr)
+                    var = env.find(token.name.name)
+                    if var.const:
+                        raise SyntaxError('{0} is defined as a constant'.format(token.name.name))
 
+                    var.value = expr
+                except KeyError:
+                    env[token.name.name] = Environment.Variable(expr)
+
+                return
+
+            if isinstance(token, ConstStatement):
+                expr = self.eval(token.expr, env, first=first)
+                env[token.name.name] = Environment.Variable(expr, True)
                 return
 
             if isinstance(token, IfStatement):
@@ -1202,7 +1215,11 @@ class MainLoop(object):
                 local_env = Environment(self.context, outer=env)
                 expr = self.eval(token.expr, env)
                 if isinstance(token.var, tuple):
-                    for k, v in expr.items():
+                    if isinstance(expr, dict):
+                        expr_iter = expr.items()
+                    else:
+                        expr_iter = expr.copy()
+                    for k, v in expr_iter:
                         local_env[token.var[0]] = k
                         local_env[token.var[1]] = v
                         try:
@@ -1318,10 +1335,9 @@ class MainLoop(object):
 
                         if isinstance(item, Command):
                             completions = item.complete(self.context)
-                            token_args = convert_to_literals(token.args)
                             args, kwargs, opargs = expand_wildcards(
                                 self.context,
-                                *sort_args([self.eval(i, env) for i in token_args]),
+                                *sort_args([self.eval(i, env) for i in token.args]),
                                 completions=completions
                             )
 
@@ -1346,8 +1362,9 @@ class MainLoop(object):
                                 result = item.run(self.context, args, kwargs, opargs, input=input_data)
                                 resultset.append(PrintableNone.coerce(result) if not printable_none else result)
 
-                            result = item.run(self.context, args, kwargs, opargs)
-                            resultset.append(PrintableNone.coerce(result) if not printable_none else result)
+                            else:
+                                result = item.run(self.context, args, kwargs, opargs)
+                                resultset.append(PrintableNone.coerce(result) if not printable_none else result)
 
                     return resultset.unwind(dry_run)
                 except BaseException as err:
@@ -1418,7 +1435,7 @@ class MainLoop(object):
 
                     self.context.pipe_cwd = None
 
-                return resultset.unwind()
+                return resultset.unwind(dry_run)
 
             if isinstance(token, ShellEscape):
                 return self.builtin_commands['shell'].run(
@@ -1441,6 +1458,11 @@ class MainLoop(object):
         raise SyntaxError("Invalid syntax: {0}".format(token))
 
     def process(self, line):
+        def add_line_to_history(line):
+            readline.add_history(line)
+            with open(os.path.expanduser('~/.cli_history'), 'a') as history_file:
+                history_file.write('\n' + line)
+
         if len(line) == 0:
             return
 
@@ -1455,16 +1477,16 @@ class MainLoop(object):
                 tokens = parse(line, '<stdin>')
             except KeyboardInterrupt:
                 return
+            except SyntaxError:
+                add_line_to_history(line)
+                raise
 
             if not tokens:
                 return
 
             # Unparse AST to string and add to readline history and history file
             line = '; '.join(unparse(t, oneliner=True) for t in tokens)
-            readline.add_history(line)
-
-            with open(os.path.expanduser('~/.cli_history'), 'a') as history_file:
-                history_file.write('\n'+line)
+            add_line_to_history(line)
 
             first = True
             for i in tokens:
@@ -1486,6 +1508,15 @@ class MainLoop(object):
                         output_msg(traceback.format_exc())
 
                     return
+
+                if isinstance(ret, Namespace):
+                    self.cd(ret)
+                    continue
+
+                if isinstance(ret, Command):
+                    ret.exec_path = self.path
+                    ret.current_env = self.context.global_env
+                    ret = ret.run(self.context, [], [], [])
 
                 if ret is not None:
                     output = self.context.variables.get('output')
@@ -1532,6 +1563,8 @@ class MainLoop(object):
             if name == '..' and len(self.path) > 1:
                 self.prev_path = self.path[:]
                 ptr = self.path[-2]
+            if name == 'help':
+                continue
 
             if issubclass(type(ptr), Namespace):
                 for ns in ptr.namespaces():
@@ -1584,9 +1617,12 @@ class MainLoop(object):
                             token = token.right
                             builtin_command_set = list(self.pipe_commands.keys())
 
-                        args = token.args
+                        if isinstance(token, Symbol):
+                            args = [token.name]
+                        else:
+                            args = token.args
 
-                if isinstance(token, CommandCall) or not args:
+                if isinstance(token, (CommandCall, Symbol)) or not args:
                     obj = self.get_relative_object(self.cwd, args)
                 else:
                     return None
@@ -1598,6 +1634,8 @@ class MainLoop(object):
 
                     if type(obj) is RootNamespace:
                         choices += builtin_command_set
+                    else:
+                        choices += ['help']
 
                     if text.startswith('/') and isinstance(obj, RootNamespace):
                         choices = ['/' + i for i in choices]
@@ -1606,6 +1644,7 @@ class MainLoop(object):
                 elif issubclass(type(obj), Command):
                     completions = obj.complete(self.context)
                     choices = [c.name for c in completions if isinstance(c.name, six.string_types)]
+
                     arg = find_arg(args, readline.get_begidx())
 
                     if arg is False:
@@ -1625,6 +1664,7 @@ class MainLoop(object):
 
                 options = [i + (' ' if append_space else '') for i in choices if i.startswith(text)]
                 self.saved_state = options
+
                 if options:
                     return options[0]
             except BaseException as err:

@@ -33,6 +33,7 @@ import natural.date
 from texttable import Texttable
 from freenas.cli import config
 from freenas.cli.output import ValueType, get_terminal_size, resolve_cell, get_humanized_size
+from freenas.utils.permissions import int_to_string
 
 
 t = gettext.translation('freenas-cli', fallback=True)
@@ -56,13 +57,22 @@ class TableOutputFormatter(object):
             return '\n'.join(value)
 
         if vt == ValueType.STRING:
-            return value
+            return str(value)
+
+        if vt == ValueType.STRING_HEAD:
+            return str(value[:10] + '(...)')
 
         if vt == ValueType.NUMBER:
             return str(value)
 
         if vt == ValueType.HEXNUMBER:
             return hex(value)
+
+        if vt == ValueType.OCTNUMBER:
+            return oct(value)
+
+        if vt == ValueType.PERMISSIONS:
+            return '{0} ({1})'.format(oct(value['value']).zfill(3), int_to_string(value['value']))
 
         if vt == ValueType.SIZE:
             return get_humanized_size(value)

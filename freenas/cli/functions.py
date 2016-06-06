@@ -113,6 +113,10 @@ def range_(*args):
     return list(range(*args))
 
 
+def typeof(val):
+    return type(val).__name__
+
+
 def readline(prompt):
     return input(prompt)
 
@@ -219,7 +223,6 @@ def json_dump(obj, file=None):
     else:
         return json.dumps(obj)
 
-
 functions = {
     'print': print_,
     'printf': printf,
@@ -241,6 +244,7 @@ functions = {
     'range': range_,
     'str': str,
     'length': len,
+    'typeof': typeof,
     'rand': rand,
     'setinterval': setinterval,
     'append': lambda a, i: a.append(i),
@@ -257,4 +261,5 @@ functions = {
     'json_dump': json_dump,
     'eval': eval_,
     'join': strjoin,
+    'enumerate': lambda a: list(enumerate(a)),
 }

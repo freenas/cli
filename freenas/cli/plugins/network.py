@@ -140,7 +140,6 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
 
             Deletes an interface.""")
 
-
         self.link_states = {
             'LINK_STATE_UP': _("up"),
             'LINK_STATE_DOWN': _("down"),
@@ -190,7 +189,7 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
         )
 
         self.add_property(
-            descr='DHCP',
+            descr='DHCP enabled',
             name='dhcp',
             get='dhcp',
             usage=_("""\
@@ -200,6 +199,44 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
             on the system can be set to yes."""),
             type=ValueType.BOOLEAN,
             list=True
+        )
+
+        self.add_property(
+            descr='DHCP state',
+            name='dhcp_state',
+            get='status.dhcp.state',
+            set=None,
+            list=False,
+            condition=lambda e: e['dhcp']
+        )
+
+        self.add_property(
+            descr='DHCP server address',
+            name='dhcp_server_address',
+            get='status.dhcp.server_address',
+            set=None,
+            list=False,
+            condition=lambda e: e['dhcp']
+        )
+
+        self.add_property(
+            descr='DHCP lease start time',
+            name='dhcp_lease_start',
+            get='status.dhcp.lease_starts_at',
+            set=None,
+            list=False,
+            type=ValueType.TIME,
+            condition=lambda e: e['dhcp']
+        )
+
+        self.add_property(
+            descr='DHCP lease end time',
+            name='dhcp_lease_end',
+            get='status.dhcp.lease_ends_at',
+            set=None,
+            list=False,
+            type=ValueType.TIME,
+            condition=lambda e: e['dhcp']
         )
 
         self.add_property(

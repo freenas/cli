@@ -33,7 +33,7 @@ from freenas.cli.namespace import (
     EntitySubscriberBasedLoadMixin, Namespace, description
 )
 from freenas.cli.complete import NullComplete, EnumComplete
-from freenas.cli.output import ValueType
+from freenas.cli.output import ValueType, read_value
 from freenas.cli.utils import post_save
 from freenas.utils import query
 
@@ -44,9 +44,13 @@ _ = t.gettext
 @description(_("Triggers replication process"))
 class SyncCommand(Command):
     """
-    Usage: sync
+    Usage: sync encrypt=<encrypt> compress=<fast/default/best> throttle=<throttle>
 
     Example: sync
+             sync encrypt=AES128
+             sync compress=best
+             sync throttle=10MiB
+             sync encrypt=AES128 compress=best throttle=10MiB
 
     Triggers replication process.
     """
@@ -55,7 +59,41 @@ class SyncCommand(Command):
 
     def run(self, context, args, kwargs, opargs):
         name = self.parent.entity['name']
-        context.submit_task('replication.sync', name, callback=lambda s, t: post_save(self.parent, s, t))
+        compress = kwargs.pop('compress', None)
+        encrypt = kwargs.pop('encrypt', None)
+        throttle = kwargs.pop('throttle', None)
+        transport_plugins = []
+
+        if compress:
+            if compress not in ['fast', 'default', 'best']:
+                raise CommandException('Compression level must be selected as one of: fast, default, best')
+            transport_plugins.append({
+                'name': 'compress',
+                'level': compress.upper()
+            })
+
+        if throttle:
+            if not isinstance(throttle, int):
+                raise CommandException('Throttle must be a number representing maximum transfer per second')
+            transport_plugins.append({
+                'name': 'throttle',
+                'buffer_size': throttle
+            })
+
+        if encrypt:
+            if encrypt not in ['AES128', 'AES192', 'AES256']:
+                raise CommandException('Encryption type must be selected as one of: AES128, AES192, AES256')
+            transport_plugins.append({
+                'name': 'encrypt',
+                'type': encrypt
+            })
+
+        context.submit_task(
+            'replication.sync',
+            name,
+            transport_plugins,
+            callback=lambda s, t: post_save(self.parent, s, t)
+        )
 
 
 @description(_("Switch roles of partners in bi-directional replication"))
@@ -80,6 +118,7 @@ class SwitchCommand(Command):
         for partner in partners:
             if partner != master:
                 master = partner
+                break
 
         context.submit_task(
             'replication.update',
@@ -158,9 +197,9 @@ class CreateReplicationCommand(Command):
         datasets = kwargs.pop('datasets', [])
         if isinstance(datasets, six.string_types):
             datasets = [datasets]
-        bidirectional = kwargs.pop('bidirectional', False)
-        recursive = kwargs.pop('recursive', False)
-        replicate_services = kwargs.pop('replicate_services', False)
+        bidirectional = read_value(kwargs.pop('bidirectional', False), ValueType.BOOLEAN)
+        recursive = read_value(kwargs.pop('recursive', False), ValueType.BOOLEAN)
+        replicate_services = read_value(kwargs.pop('replicate_services', False), ValueType.BOOLEAN)
 
         if replicate_services and not bidirectional:
             raise CommandException(_(
@@ -279,6 +318,38 @@ class ReplicationTaskNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixi
             set='replicate_services',
             list=False,
             type=ValueType.BOOLEAN)
+
+        self.add_property(
+            descr='Last result',
+            name='result',
+            get='status.status',
+            usersetable=False,
+            list=False,
+            type=ValueType.STRING)
+
+        self.add_property(
+            descr='Last output message',
+            name='message',
+            get='status.message',
+            usersetable=False,
+            list=False,
+            type=ValueType.STRING)
+
+        self.add_property(
+            descr='Last transfer size',
+            name='size',
+            get='status.size',
+            usersetable=False,
+            list=False,
+            type=ValueType.SIZE)
+
+        self.add_property(
+            descr='Last transfer speed per second',
+            name='speed',
+            get='status.speed',
+            usersetable=False,
+            list=False,
+            type=ValueType.SIZE)
 
         self.primary_key = self.get_mapping('name')
 
@@ -405,6 +476,13 @@ class ReplicationHostNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixi
             descr='Host key',
             name='hostkey',
             get='hostkey',
+            usersetable=False,
+            list=False)
+
+        self.add_property(
+            descr='Port',
+            name='port',
+            get='port',
             usersetable=False,
             list=False)
 

@@ -416,6 +416,20 @@ class DetachVolumeCommand(Command):
                             str(result['result']))
 
 
+@description("Upgrades  given volume")
+class UpgradeVolumeCommand(Command):
+    """
+    Usage: upgrade
+
+    Upgrades a volume.
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        context.submit_task('volume.upgrade', self.parent.name)
+
+
 @description("Unlocks encrypted volume")
 class UnlockVolumeCommand(Command):
     """
@@ -610,16 +624,55 @@ class ScrubCommand(Command):
 
 @description("Replicates dataset to another system")
 class ReplicateCommand(Command):
+    """
+    Usage: replicate remote=<remote> remote_dataset=<remote_dataset>
+           dry_run=<yes/no> recursive=<yes/no> follow_delete=<yes/no>
+           encrypt=<encrypt> compress=<fast/default/best> throttle=<throttle>
+
+    Example: replicate remote=10.20.0.2 remote_dataset=mypool
+             replicate remote=10.20.0.2 remote_dataset=mypool encrypt=AES128
+             replicate remote=10.20.0.2 remote_dataset=mypool throttle=10MiB
+
+    Replicate a dataset to a remote dataset.
+    Currently available encryption methods are AES128, AES192 and AES256.
+    """
     def __init__(self, parent):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
         remote = kwargs.pop('remote')
         remote_dataset = kwargs.pop('remote_dataset')
-        bandwidth = kwargs.pop('bandwidth_limit', None)
         dry_run = kwargs.pop('dry_run', False)
         recursive = kwargs.pop('recursive', False)
         follow_delete = kwargs.pop('follow_delete', False)
+        compress = kwargs.pop('compress', None)
+        encrypt = kwargs.pop('encrypt', None)
+        throttle = kwargs.pop('throttle', None)
+        transport_plugins = []
+
+        if compress:
+            if compress not in ['fast', 'default', 'best']:
+                raise CommandException('Compression level must be selected as one of: fast, default, best')
+            transport_plugins.append({
+                'name': 'compress',
+                'level': compress.upper()
+            })
+
+        if throttle:
+            if not isinstance(throttle, int):
+                raise CommandException('Throttle must be a number representing maximum transfer per second')
+            transport_plugins.append({
+                'name': 'throttle',
+                'buffer_size': throttle
+            })
+
+        if encrypt:
+            if encrypt not in ['AES128', 'AES192', 'AES256']:
+                raise CommandException('Encryption type must be selected as one of: AES128, AES192, AES256')
+            transport_plugins.append({
+                'name': 'encrypt',
+                'type': encrypt
+            })
 
         args = (
             'replication.replicate_dataset',
@@ -627,10 +680,10 @@ class ReplicateCommand(Command):
             {
                 'remote': remote,
                 'remote_dataset': remote_dataset,
-                'bandwidth_limit': bandwidth,
                 'recursive': recursive,
                 'followdelete': follow_delete
             },
+            transport_plugins,
             dry_run
         )
 
@@ -657,7 +710,7 @@ class ReplicateCommand(Command):
                     ]
                 ),
                 "Estimated replication stream size: {0}".format(format_value(
-                    sum(a.get('send_size', 0) for a in result['result']),
+                    result[1],
                     ValueType.SIZE)
                 )
             )
@@ -695,10 +748,12 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
 
         self.localdoc['CreateEntityCommand'] = ("""\
             Usage: create <volume>/<dataset>
+                   create name=<volume>/<dataset>
                    create <volume>/<dataset>/<dataset>
 
             Examples: create mypool/mydataset
                       create mypool/mydataset/somedataset
+                      create mypool/mydataset dedup="sha512,verify" compression=gzip-4
 
             Creates a dataset.""")
 
@@ -768,7 +823,11 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
             name='compression',
             get='properties.compression.value',
             set='properties.compression.value',
-            list=True
+            list=True,
+            enum=[
+                'on', 'off', 'gzip', 'gzip-1', 'gzip-2', 'gzip-3', 'gzip-4', 'gzip-5',
+                'gzip-6', 'gzip-7', 'gzip-8', 'gzip-9', 'lzjb', 'lz4', 'zle'
+            ]
         )
 
         self.add_property(
@@ -793,6 +852,7 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
             get='properties.atime.value',
             set='properties.atime.value',
             list=False,
+            enum=['on', 'off'],
             condition=lambda o: o['type'] == 'FILESYSTEM'
         )
 
@@ -801,7 +861,11 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
             name='dedup',
             get='properties.dedup.value',
             set='properties.dedup.value',
-            list=False
+            list=False,
+            enum=[
+                'on', 'off', 'verify', 'sha256', 'sha256,verify',
+                'sha512', 'sha512,verify', 'skein', 'skein,verify', 'edonr,verify'
+            ]
         )
 
         self.add_property(
@@ -875,7 +939,7 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
         if new:
             newname = this.entity['id']
             if len(newname.split('/')) < 2:
-                raise CommandException(_("Please include a volume in the dataset's path"))
+                raise CommandException(_("Please specify name as a relative path starting from the dataset's parent volume."))
 
             self.context.submit_task(
                 'volume.dataset.create',
@@ -1066,7 +1130,11 @@ class CreateVolumeCommand(Command):
 
         # This magic below make either `create foo` or `create name=foo` work
         if len(args) == 1:
-            kwargs[self.parent.primary_key.name] = args.pop(0)
+            # However, do not allow user to specify name as both implicit and explicit parameter as this suggests a mistake
+            if 'name' in kwargs:
+                raise CommandException(_("Both implicit and explicit 'name' parameters are specified."))
+            else:
+                kwargs[self.parent.primary_key.name] = args.pop(0)
 
         if 'name' not in kwargs:
             raise CommandException(_('Please specify a name for your pool'))
@@ -1317,7 +1385,8 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
             'online': OnlineVdevCommand(this),
             'extend_vdev': ExtendVdevCommand(this),
             'import': ImportFromVolumeCommand(this),
-            'detach': DetachVolumeCommand(this)
+            'detach': DetachVolumeCommand(this),
+            'upgrade': UpgradeVolumeCommand(this)
         }
 
         if this.entity is not None:

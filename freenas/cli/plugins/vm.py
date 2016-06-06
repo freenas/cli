@@ -25,13 +25,12 @@
 #
 #####################################################################
 
-import gettext
+import sys
+import tty
 import curses
-import pyte
-import time
-from signal import signal, SIGWINCH, SIG_DFL
-from shutil import get_terminal_size
-from threading import RLock, Thread
+import gettext
+import termios
+from freenas.cli.output import Sequence
 from freenas.dispatcher.shell import VMConsoleClient
 from freenas.cli.namespace import (
     EntityNamespace, Command, NestedObjectLoadMixin, NestedObjectSaveMixin, EntitySubscriberBasedLoadMixin,
@@ -46,97 +45,39 @@ _ = t.gettext
 
 
 class VMConsole(object):
-    class CursesScreen(pyte.DiffScreen):
-        def __init__(self, parent, cols, lines):
-            super(VMConsole.CursesScreen, self).__init__(cols, lines)
-            self.parent = parent
-
     def __init__(self, context, id, name):
         self.context = context
         self.id = id
         self.name = name
         self.conn = None
-        self.stream = pyte.Stream()
-        self.screen = None
-        self.window = None
-        self.output_lock = RLock()
         self.stdscr = None
-        self.header = None
-        self.header_msg = "Connected to {0} console - hit ^] to detach".format(self.name)
-        self.buffer = bytearray()
-        self.connected = False
 
     def on_data(self, data):
-        with self.output_lock:
-            self.buffer += data
-
-    def on_redraw(self):
-        while self.connected:
-            if len(self.buffer):
-                with self.output_lock:
-                    self.stream.feed(self.buffer.decode('utf-8'))
-                    for i in self.screen.dirty:
-                        self.window.addstr(i, 0, self.screen.display[i])
-
-                    self.screen.dirty.clear()
-                    curses.setsyx(self.screen.cursor.y + 1, self.screen.cursor.x)
-                    curses.doupdate()
-                    self.buffer = bytearray()
-
-            time.sleep(0.05)
+        sys.stdout.buffer.write(data)
+        sys.stdout.buffer.flush()
 
     def connect(self):
         token = self.context.call_sync('containerd.management.request_console', self.id)
         self.conn = VMConsoleClient(self.context.hostname, token)
         self.conn.on_data(self.on_data)
         self.conn.open()
-        self.connected = True
-        Thread(target=self.on_redraw).start()
-
-    def disconnect(self):
-        self.connected = False
-        self.conn.close()
-        signal(SIGWINCH, SIG_DFL)
 
     def start(self):
-        self.stdscr = curses.initscr()
-        self.stdscr.immedok(True)
-        curses.noecho()
-        curses.raw()
-        self.stdscr.clear()
-        rows, cols = self.stdscr.getmaxyx()
-        self.header = curses.newwin(1, cols, 0, 0)
-        self.screen = VMConsole.CursesScreen(self, cols, rows - 2)
-        self.stream.attach(self.screen)
-        self.window = curses.newwin(rows - 1, cols, 1, 0)
-        self.window.immedok(True)
-        self.header.immedok(True)
-        self.header.bkgdset(' ', curses.A_REVERSE)
-        self.header.addstr(0, 0, self.header_msg[:cols - 1])
-        signal(SIGWINCH, self.resize)
-        self.connect()
-        while True:
-            ch = self.stdscr.getch()
-            if ch == 29:
-                curses.endwin()
-                self.disconnect()
-                break
+        stdin_fd = sys.stdin.fileno()
+        old_stdin_settings = termios.tcgetattr(stdin_fd)
+        try:
+            tty.setraw(stdin_fd)
+            self.connect()
+            while True:
+                ch = sys.stdin.read(1)
+                if ch == '\x1d':
+                    self.conn.close()
+                    break
 
-            self.conn.write(chr(ch))
-
-    def resize(self, signum, frame):
-        with self.output_lock:
-            size = get_terminal_size()
-            self.screen.resize(size.lines - 2, size.columns)
-            self.header.resize(1, size.columns)
-            self.window.resize(size.lines - 1, size.columns)
-            self.screen.dirty.clear()
-            self.header.clear()
-            self.window.clear()
-            self.header.refresh()
-            self.window.refresh()
-            self.header.bkgdset(' ', curses.A_REVERSE)
-            self.header.addstr(0, 0, self.header_msg[:size.columns - 1])
+                self.conn.write(ch)
+        finally:
+            termios.tcsetattr(stdin_fd, termios.TCSADRAIN, old_stdin_settings)
+            curses.wrapper(lambda x: x)
 
 
 class StartVMCommand(Command):
@@ -144,7 +85,7 @@ class StartVMCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        context.call_task_sync('container.start', self.parent.entity['id'])
+        context.submit_task('container.start', self.parent.entity['id'])
 
 
 class StopVMCommand(Command):
@@ -152,7 +93,7 @@ class StopVMCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        context.call_task_sync('container.stop', self.parent.entity['id'])
+        context.submit_task('container.stop', self.parent.entity['id'])
 
 
 class KillVMCommand(Command):
@@ -160,18 +101,36 @@ class KillVMCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        context.call_task_sync('container.stop', self.parent.entity['id'], True)
+        context.submit_task('container.stop', self.parent.entity['id'], True)
 
 
 class RebootVMCommand(Command):
+    """
+    Usage: reboot force=<force>
+
+    Examples:
+        reboot
+        reboot force=yes
+
+    Reboots container
+    """
     def __init__(self, parent):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        pass
+        force = kwargs.get('force', False)
+        context.submit_task('container.reboot', self.parent.entity['id'], force)
 
 
 class ConsoleCommand(Command):
+    """
+    Usage: console
+
+    Examples:
+        console
+
+    Connects to container serial console. ^] returns to CLI
+    """
     def __init__(self, parent):
         self.parent = parent
 
@@ -215,6 +174,9 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
         self.delete_task = 'container.delete'
         self.required_props = ['name', 'volume']
         self.primary_key_name = 'name'
+
+        def set_memsize(o, v):
+            o['config.memsize'] = int(v / 1024 / 1024)
 
         self.skeleton_entity = {
             'type': 'VM',
@@ -260,9 +222,10 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
         self.add_property(
             descr='Memory size (MB)',
             name='memsize',
-            get='config.memsize',
+            get=lambda o: o['config.memsize'] * 1024 * 1024,
+            set=set_memsize,
             list=True,
-            type=ValueType.NUMBER
+            type=ValueType.SIZE
         )
 
         self.add_property(
@@ -302,6 +265,32 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             list=False,
         )
 
+        self.add_property(
+            descr='Enabled',
+            name='enabled',
+            get='enabled',
+            list=True,
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
+            descr='Immutable',
+            name='immutable',
+            get='immutable',
+            list=False,
+            usersetable=False,
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
+            descr='Readme',
+            name='readme',
+            get='template.readme',
+            set='template.readme',
+            list=False,
+            type=ValueType.STRING_HEAD
+        )
+
         self.primary_key = self.get_mapping('name')
         self.entity_namespaces = lambda this: [
             VMDisksNamespace('disks', self.context, this),
@@ -314,7 +303,8 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             'stop': StopVMCommand(this),
             'kill': KillVMCommand(this),
             'reboot': RebootVMCommand(this),
-            'console': ConsoleCommand(this)
+            'console': ConsoleCommand(this),
+            'readme': ReadmeCommand(this)
         }
 
         self.extra_commands = {
@@ -350,6 +340,13 @@ class VMDisksNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNames
             name='type',
             get='type',
             enum=['DISK', 'CDROM']
+        )
+
+        self.add_property(
+            descr='Disk mode',
+            name='mode',
+            get='properties.mode',
+            enum=['AHCI', 'VIRTIO']
         )
 
         self.add_property(
@@ -391,7 +388,8 @@ class VMNicsNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNamesp
         self.add_property(
             descr='NIC type',
             name='type',
-            get='properties.type'
+            get='properties.type',
+            enum=['NAT', 'BRIDGE', 'MANAGEMENT']
         )
 
         self.add_property(
@@ -430,7 +428,8 @@ class VMVolumesNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNam
         self.add_property(
             descr='Volume type',
             name='type',
-            get='properties.type'
+            get='properties.type',
+            enum=['VT9P']
         )
 
         self.add_property(
@@ -442,17 +441,18 @@ class VMVolumesNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNam
         self.add_property(
             descr='Automatically create storage',
             name='auto',
-            get='properties.auto'
+            get='properties.auto',
+            type=ValueType.BOOLEAN
         )
 
         self.primary_key = self.get_mapping('name')
 
 
-@description("VM templates operations")
+@description("Container templates operations")
 class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
     def __init__(self, name, context):
         super(TemplateNamespace, self).__init__(name, context)
-        self.query_call = 'vm_template.query'
+        self.query_call = 'container.template.query'
         self.primary_key_name = 'template.name'
         self.allow_create = False
 
@@ -466,6 +466,7 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
             descr='Name',
             name='name',
             get='template.name',
+            usersetable=False,
             list=True
         )
 
@@ -473,13 +474,33 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
             descr='Description',
             name='description',
             get='template.description',
+            usersetable=False,
             list=True
+        )
+
+        self.add_property(
+            descr='Created at',
+            name='created_at',
+            get='template.created_at',
+            usersetable=False,
+            list=False,
+            type=ValueType.TIME
+        )
+
+        self.add_property(
+            descr='Updated at',
+            name='updated_at',
+            get='template.updated_at',
+            usersetable=False,
+            list=True,
+            type=ValueType.TIME
         )
 
         self.add_property(
             descr='Author',
             name='author',
             get='template.author',
+            usersetable=False,
             list=False
         )
 
@@ -487,6 +508,7 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
             descr='Memory size (MB)',
             name='memsize',
             get='config.memsize',
+            usersetable=False,
             list=False,
             type=ValueType.NUMBER
         )
@@ -495,6 +517,7 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
             descr='CPU cores',
             name='cores',
             get='config.ncpus',
+            usersetable=False,
             list=False,
             type=ValueType.NUMBER
         )
@@ -503,6 +526,7 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
             descr='Boot device',
             name='boot_device',
             get='config.boot_device',
+            usersetable=False,
             list=False
         )
 
@@ -511,13 +535,39 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
             name='bootloader',
             get='config.bootloader',
             list=False,
+            usersetable=False,
             enum=['BHYVELOAD', 'GRUB']
+        )
+
+        self.add_property(
+            descr='Template images cached',
+            name='cached',
+            get='template.cached',
+            usersetable=False,
+            list=False,
+            type=ValueType.BOOLEAN
         )
 
         self.primary_key = self.get_mapping('name')
         self.extra_commands = {
             'show': FetchShowCommand(self)
         }
+        self.entity_commands = self.get_entity_commands
+
+    def get_entity_commands(self, this):
+        this.load()
+        commands = {
+            'download': DownloadImagesCommand(this),
+            'readme': ReadmeCommand(this)
+        }
+
+        if this.entity is not None:
+            template = this.entity.get('template')
+            if template:
+                if template.get('cached', False):
+                    commands['delete'] = DeleteImagesCommand(this)
+
+        return commands
 
 
 @description("Downloads templates from git")
@@ -533,9 +583,60 @@ class FetchShowCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs, filtering=None):
-        context.call_task_sync('vm_template.fetch')
+        context.call_task_sync('container.template.fetch')
         show = ListCommand(self.parent)
         return show.run(context, args, kwargs, opargs, filtering)
+
+
+@description("Downloads container images to the local cache")
+class DownloadImagesCommand(Command):
+    """
+    Usage: download
+
+    Example: download
+
+    Downloads container template images to the local cache.
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs, filtering=None):
+        context.submit_task('container.cache.update', self.parent.entity['template']['name'])
+
+
+@description("Shows readme entry of selected VM template")
+class ReadmeCommand(Command):
+    """
+    Usage: readme
+
+    Example: readme
+
+    Shows readme entry of selected VM
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs, filtering=None):
+        if self.parent.entity['template'].get('readme'):
+            return Sequence(self.parent.entity['template']['readme'])
+        else:
+            return Sequence("Selected template does not have readme entry")
+
+
+@description("Deletes container images from the local cache")
+class DeleteImagesCommand(Command):
+    """
+    Usage: delete
+
+    Example: delete
+
+    Deletes container template images from the local cache.
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs, filtering=None):
+        context.submit_task('container.cache.delete', self.parent.entity['template']['name'])
 
 
 def _init(context):

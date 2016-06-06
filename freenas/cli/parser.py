@@ -142,7 +142,7 @@ def t_IPV6(t):
 
 
 def t_SIZE(t):
-    r'(\d+)([kKmMgGtT][iI]?[Bb]?)'
+    r'(\d+)([kKmMgGtTpP][iI]?[Bb]?)'
     t.type = 'NUMBER'
     m = re.match(t_SIZE.__doc__, t.value)
     suffix = m.group(2).lower()
@@ -159,6 +159,9 @@ def t_SIZE(t):
 
     if suffix in ('t', 'tb', 'tib'):
         value *= 1024 * 1024 * 1024 * 1024
+
+    if suffix in ('p', 'pb', 'pib'):
+        value *= 1024 * 1024 * 1024 * 1024 * 1024
 
     t.value = value
     return t
@@ -656,6 +659,7 @@ def p_call(p):
     """
     call : ATOM FCALL RPAREN
     call : ATOM FCALL expr_list RPAREN
+    call : LPAREN expr RPAREN FCALL expr_list RPAREN
     """
     p[0] = FunctionCall(p[1], p[3] if len(p) == 5 else [], p=p)
 
@@ -882,7 +886,7 @@ def p_error(p):
 
 
 lexer = lex.lex()
-parser = yacc.yacc(debug=False, optimize=True, write_tables=False)
+parser = yacc.yacc(debug=True, optimize=True, write_tables=False)
 
 
 def parse(s, filename, recover_errors=False):

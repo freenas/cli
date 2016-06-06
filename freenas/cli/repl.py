@@ -59,7 +59,7 @@ from freenas.cli.namespace import (
 )
 from freenas.cli.parser import (
     parse, unparse, Symbol, Literal, BinaryParameter, UnaryExpr, BinaryExpr, PipeExpr, AssignmentStatement,
-    IfStatement, ForStatement, WhileStatement, FunctionCall, CommandCall, Subscript,
+    ConstStatement, IfStatement, ForStatement, WhileStatement, FunctionCall, CommandCall, Subscript,
     ExpressionExpansion, CommandExpansion, FunctionDefinition, ReturnStatement, BreakStatement,
     UndefStatement, Redirection, AnonymousFunction, ShellEscape, Parentheses
 )
@@ -841,8 +841,9 @@ class BuiltinFunction(object):
 
 class Environment(dict):
     class Variable(object):
-        def __init__(self, value):
+        def __init__(self, value, const=False):
             self.value = value
+            self.const = const
 
     def __init__(self, context, outer=None, iterable=None):
         super(Environment, self).__init__()
@@ -1166,13 +1167,11 @@ class MainLoop(object):
             if isinstance(token, AssignmentStatement):
                 expr = self.eval(token.expr, env, first=first)
 
-                try:
-                    self.context.variables.variables[token.name]
+                if token.name in self.context.variables.variables:
                     raise SyntaxError(_(
-                        "{0} is an Environment Variable. Use `setenv` command to set it".format(token.name)
+                        "{0} is a configuration variable. Use `setopt` command to set it".format(token.name)
                     ))
-                except KeyError:
-                    pass
+
                 if isinstance(token.name, Subscript):
                     array = self.eval(token.name.expr, env)
                     index = self.eval(token.name.index, env)
@@ -1180,10 +1179,19 @@ class MainLoop(object):
                     return
 
                 try:
-                    env.find(token.name.name).value = expr
+                    var = env.find(token.name.name)
+                    if var.const:
+                        raise SyntaxError('{0} is defined as a constant'.format(token.name.name))
+
+                    var.value = expr
                 except KeyError:
                     env[token.name.name] = Environment.Variable(expr)
 
+                return
+
+            if isinstance(token, ConstStatement):
+                expr = self.eval(token.expr, env, first=first)
+                env[token.name.name] = Environment.Variable(expr, True)
                 return
 
             if isinstance(token, IfStatement):

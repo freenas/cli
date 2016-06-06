@@ -83,6 +83,7 @@ CommandCall = ASTObject('CommandCall', 'args')
 Subscript = ASTObject('Subscript', 'expr', 'index')
 IfStatement = ASTObject('IfStatement', 'expr', 'body', 'else_body')
 AssignmentStatement = ASTObject('AssignmentStatement', 'name', 'expr')
+ConstStatement = ASTObject('ConstStatement', 'name', 'expr')
 ForStatement = ASTObject('ForStatement', 'var', 'expr', 'body')
 WhileStatement = ASTObject('WhileStatement', 'expr', 'body')
 UndefStatement = ASTObject('UndefStatement', 'name')
@@ -107,6 +108,7 @@ reserved = {
     'or': 'OR',
     'not': 'NOT',
     'undef': 'UNDEF',
+    'const': 'CONST',
     'true': 'TRUE',
     'false': 'FALSE',
     'none': 'NULL',
@@ -380,6 +382,7 @@ def p_stmt(p):
     stmt : for_stmt
     stmt : while_stmt
     stmt : assignment_stmt
+    stmt : const_stmt
     stmt : function_definition_stmt
     stmt : return_stmt
     stmt : break_stmt
@@ -447,6 +450,13 @@ def p_assignment_stmt(p):
     assignment_stmt : expr ASSIGN expr
     """
     p[0] = AssignmentStatement(p[1], p[3], p=p)
+
+
+def p_const_stmt(p):
+    """
+    const_stmt : CONST symbol ASSIGN expr
+    """
+    p[0] = ConstStatement(p[2], p[4], p=p)
 
 
 def p_function_definition_stmt_1(p):

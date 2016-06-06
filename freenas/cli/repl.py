@@ -334,9 +334,7 @@ class Context(object):
         self.builtin_operators = functions.operators
         self.builtin_functions = functions.functions
         self.global_env = Environment(self)
-        self.global_env['_cli_src_path'] = Environment.Variable(
-            os.path.dirname(os.path.realpath(__file__))
-        )
+        self.global_env['_cli_src_path'] = Context.default_env()
         self.user = None
         self.pending_tasks = QueryDict()
         self.session_id = None
@@ -357,6 +355,14 @@ class Context(object):
             lambda t: t['parent'] is None and t['session'] == self.session_id,
             self.pending_tasks.values()
         )))
+
+    @staticmethod
+    def default_env():
+        return {
+            '_cli_src_path': Environment.Variable(os.path.dirname(os.path.realpath(__file__))),
+            'yes': Environment.Variable(True, True),
+            'no': Environment.Variable(False, True)
+        }
 
     def start(self, password=None):
         self.discover_plugins()

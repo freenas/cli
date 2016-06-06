@@ -805,6 +805,7 @@ class Function(object):
         self.param_names = param_names
         self.exp = exp
         self.env = env
+        self.const = False
 
     def __call__(self, *args):
         env = Environment(self.context, self.env, zip(self.param_names, args))
@@ -1504,6 +1505,8 @@ class MainLoop(object):
                     continue
 
                 if isinstance(ret, Command):
+                    ret.exec_path = self.path
+                    ret.current_env = self.context.global_env
                     ret = ret.run(self.context, [], [], [])
 
                 if ret is not None:

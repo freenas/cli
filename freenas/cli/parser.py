@@ -274,7 +274,7 @@ def t_EOPEN(t):
 
 def t_LPAREN(t):
     r'\('
-    if t.lexer.lexpos > 1 and t.lexer.lexdata[t.lexer.lexpos - 2] != ' ':
+    if t.lexer.lexpos > 1 and t.lexer.lexdata[t.lexer.lexpos - 2] not in (' ', '(', ',', '='):
         t.type = 'FCALL'
 
     return t
@@ -310,7 +310,7 @@ def t_NEWLINE(t):
 
 def t_LBRACKET(t):
     r'\['
-    if t.lexer.lexpos > 1 and t.lexer.lexdata[t.lexer.lexpos - 2] != ' ':
+    if t.lexer.lexpos > 1 and t.lexer.lexdata[t.lexer.lexpos - 2] not in (' ', '(', ',', '='):
         t.type = 'SUBSCRIPT'
 
     return t
@@ -669,28 +669,28 @@ def p_subscript_expr(p):
 
 def p_anon_function_expr_1(p):
     """
-    anon_function_expr : FUNCTION LPAREN RPAREN block
+    anon_function_expr : FUNCTION FCALL RPAREN block
     """
     p[0] = AnonymousFunction([], p[4], p=p)
 
 
 def p_anon_function_expr_2(p):
     """
-    anon_function_expr : FUNCTION LPAREN RPAREN NEWLINE block
+    anon_function_expr : FUNCTION FCALL RPAREN NEWLINE block
     """
     p[0] = AnonymousFunction([], p[5], p=p)
 
 
 def p_anon_function_expr_3(p):
     """
-    anon_function_expr : FUNCTION LPAREN function_argument_list RPAREN block
+    anon_function_expr : FUNCTION FCALL function_argument_list RPAREN block
     """
     p[0] = AnonymousFunction(p[3], p[5], p=p)
 
 
 def p_anon_function_expr_4(p):
     """
-    anon_function_expr : FUNCTION LPAREN function_argument_list RPAREN NEWLINE block
+    anon_function_expr : FUNCTION FCALL function_argument_list RPAREN NEWLINE block
     """
     p[0] = AnonymousFunction(p[3], p[6], p=p)
 

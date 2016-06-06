@@ -50,19 +50,18 @@ import re
 from six.moves.urllib.parse import urlparse
 from socket import gaierror as socket_error
 from freenas.cli.descriptions import events
-from freenas.cli.descriptions import tasks
 from freenas.cli.utils import PrintableNone, SIGTSTPException, SIGTSTP_setter, errors_by_path
 from freenas.cli import functions
 from freenas.cli import config
 from freenas.cli.namespace import (
     Namespace, EntityNamespace, RootNamespace, SingleItemNamespace, ConfigNamespace, Command,
-    FilteringCommand, PipeCommand, CommandException, EntitySubscriberBasedLoadMixin
+    FilteringCommand, PipeCommand, CommandException
 )
 from freenas.cli.parser import (
     parse, unparse, Symbol, Literal, BinaryParameter, UnaryExpr, BinaryExpr, PipeExpr, AssignmentStatement,
-    IfStatement, ForStatement, WhileStatement, FunctionCall, CommandCall, Subscript,
+    ConstStatement, IfStatement, ForStatement, WhileStatement, FunctionCall, CommandCall, Subscript,
     ExpressionExpansion, CommandExpansion, FunctionDefinition, ReturnStatement, BreakStatement,
-    UndefStatement, Redirection, AnonymousFunction, ShellEscape
+    UndefStatement, Redirection, AnonymousFunction, ShellEscape, Parentheses
 )
 from freenas.cli.output import (
     ValueType, ProgressBar, Sequence, output_lock, output_msg, read_value, format_value,
@@ -183,22 +182,6 @@ def expand_wildcards(context, args, kwargs, opargs, completions):
                 kwargs[name] = expand_one(kwargs[name], i)
 
     return args, kwargs, opargs
-
-
-def convert_to_literals(tokens):
-    def conv(t):
-        if isinstance(t, list):
-            return [conv(i) for i in t]
-
-        if isinstance(t, Symbol):
-            return Literal(t.name, str)
-
-        if isinstance(t, BinaryParameter):
-            t.right = conv(t.right)
-
-        return t
-
-    return [conv(i) for i in tokens]
 
 
 class FlowControlInstructionType(enum.Enum):
@@ -351,9 +334,7 @@ class Context(object):
         self.builtin_operators = functions.operators
         self.builtin_functions = functions.functions
         self.global_env = Environment(self)
-        self.global_env['_cli_src_path'] = Environment.Variable(
-            os.path.dirname(os.path.realpath(__file__))
-        )
+        self.global_env['_cli_src_path'] = Context.default_env()
         self.user = None
         self.pending_tasks = QueryDict()
         self.session_id = None
@@ -374,6 +355,14 @@ class Context(object):
             lambda t: t['parent'] is None and t['session'] == self.session_id,
             self.pending_tasks.values()
         )))
+
+    @staticmethod
+    def default_env():
+        return {
+            '_cli_src_path': Environment.Variable(os.path.dirname(os.path.realpath(__file__))),
+            'yes': Environment.Variable(True, True),
+            'no': Environment.Variable(False, True)
+        }
 
     def start(self, password=None):
         self.discover_plugins()
@@ -822,6 +811,7 @@ class Function(object):
         self.param_names = param_names
         self.exp = exp
         self.env = env
+        self.const = False
 
     def __call__(self, *args):
         env = Environment(self.context, self.env, zip(self.param_names, args))
@@ -858,8 +848,9 @@ class BuiltinFunction(object):
 
 class Environment(dict):
     class Variable(object):
-        def __init__(self, value):
+        def __init__(self, value, const=False):
             self.value = value
+            self.const = const
 
     def __init__(self, context, outer=None, iterable=None):
         super(Environment, self).__init__()
@@ -1132,6 +1123,9 @@ class MainLoop(object):
             if isinstance(token, list):
                 return [self.eval(i, env, path) for i in token]
 
+            if isinstance(token, Parentheses):
+                return self.eval(token.expr, env, path)
+
             if isinstance(token, UnaryExpr):
                 expr = self.eval(token.expr, env)
                 if token.op == '-':
@@ -1180,13 +1174,11 @@ class MainLoop(object):
             if isinstance(token, AssignmentStatement):
                 expr = self.eval(token.expr, env, first=first)
 
-                try:
-                    self.context.variables.variables[token.name]
+                if token.name in self.context.variables.variables:
                     raise SyntaxError(_(
-                        "{0} is an Environment Variable. Use `setenv` command to set it".format(token.name)
+                        "{0} is a configuration variable. Use `setopt` command to set it".format(token.name)
                     ))
-                except KeyError:
-                    pass
+
                 if isinstance(token.name, Subscript):
                     array = self.eval(token.name.expr, env)
                     index = self.eval(token.name.index, env)
@@ -1194,10 +1186,19 @@ class MainLoop(object):
                     return
 
                 try:
-                    env.find(token.name).value = expr
-                except KeyError:
-                    env[token.name] = Environment.Variable(expr)
+                    var = env.find(token.name.name)
+                    if var.const:
+                        raise SyntaxError('{0} is defined as a constant'.format(token.name.name))
 
+                    var.value = expr
+                except KeyError:
+                    env[token.name.name] = Environment.Variable(expr)
+
+                return
+
+            if isinstance(token, ConstStatement):
+                expr = self.eval(token.expr, env, first=first)
+                env[token.name.name] = Environment.Variable(expr, True)
                 return
 
             if isinstance(token, IfStatement):
@@ -1331,10 +1332,9 @@ class MainLoop(object):
 
                         if isinstance(item, Command):
                             completions = item.complete(self.context)
-                            token_args = convert_to_literals(token.args)
                             args, kwargs, opargs = expand_wildcards(
                                 self.context,
-                                *sort_args([self.eval(i, env) for i in token_args]),
+                                *sort_args([self.eval(i, env) for i in token.args]),
                                 completions=completions
                             )
 
@@ -1506,6 +1506,15 @@ class MainLoop(object):
 
                     return
 
+                if isinstance(ret, Namespace):
+                    self.cd(ret)
+                    continue
+
+                if isinstance(ret, Command):
+                    ret.exec_path = self.path
+                    ret.current_env = self.context.global_env
+                    ret = ret.run(self.context, [], [], [])
+
                 if ret is not None:
                     output = self.context.variables.get('output')
                     if output:
@@ -1605,9 +1614,12 @@ class MainLoop(object):
                             token = token.right
                             builtin_command_set = list(self.pipe_commands.keys())
 
-                        args = token.args
+                        if isinstance(token, Symbol):
+                            args = [token.name]
+                        else:
+                            args = token.args
 
-                if isinstance(token, CommandCall) or not args:
+                if isinstance(token, (CommandCall, Symbol)) or not args:
                     obj = self.get_relative_object(self.cwd, args)
                 else:
                     return None

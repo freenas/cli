@@ -50,18 +50,19 @@ import re
 from six.moves.urllib.parse import urlparse
 from socket import gaierror as socket_error
 from freenas.cli.descriptions import events
+from freenas.cli.descriptions import tasks
 from freenas.cli.utils import PrintableNone, SIGTSTPException, SIGTSTP_setter, errors_by_path
 from freenas.cli import functions
 from freenas.cli import config
 from freenas.cli.namespace import (
     Namespace, EntityNamespace, RootNamespace, SingleItemNamespace, ConfigNamespace, Command,
-    FilteringCommand, PipeCommand, CommandException
+    FilteringCommand, PipeCommand, CommandException, EntitySubscriberBasedLoadMixin
 )
 from freenas.cli.parser import (
     parse, unparse, Symbol, Literal, BinaryParameter, UnaryExpr, BinaryExpr, PipeExpr, AssignmentStatement,
-    ConstStatement, IfStatement, ForStatement, WhileStatement, FunctionCall, CommandCall, Subscript,
+    IfStatement, ForStatement, WhileStatement, FunctionCall, CommandCall, Subscript,
     ExpressionExpansion, CommandExpansion, FunctionDefinition, ReturnStatement, BreakStatement,
-    UndefStatement, Redirection, AnonymousFunction, ShellEscape, Parentheses
+    UndefStatement, Redirection, AnonymousFunction, ShellEscape
 )
 from freenas.cli.output import (
     ValueType, ProgressBar, Sequence, output_lock, output_msg, read_value, format_value,
@@ -185,6 +186,22 @@ def expand_wildcards(context, args, kwargs, opargs, completions):
                 kwargs[name] = expand_one(kwargs[name], i)
 
     return args, kwargs, opargs
+
+
+def convert_to_literals(tokens):
+    def conv(t):
+        if isinstance(t, list):
+            return [conv(i) for i in t]
+
+        if isinstance(t, Symbol):
+            return Literal(t.name, str)
+
+        if isinstance(t, BinaryParameter):
+            t.right = conv(t.right)
+
+        return t
+
+    return [conv(i) for i in tokens]
 
 
 class FlowControlInstructionType(enum.Enum):
@@ -337,7 +354,9 @@ class Context(object):
         self.builtin_operators = functions.operators
         self.builtin_functions = functions.functions
         self.global_env = Environment(self)
-        self.global_env.update(Context.default_env())
+        self.global_env['_cli_src_path'] = Environment.Variable(
+            os.path.dirname(os.path.realpath(__file__))
+        )
         self.user = None
         self.pending_tasks = QueryDict()
         self.session_id = None
@@ -358,14 +377,6 @@ class Context(object):
             lambda t: t['parent'] is None and t['session'] == self.session_id,
             self.pending_tasks.values()
         )))
-
-    @staticmethod
-    def default_env():
-        return {
-            '_cli_src_path': Environment.Variable(os.path.dirname(os.path.realpath(__file__))),
-            'yes': Environment.Variable(True, True),
-            'no': Environment.Variable(False, True)
-        }
 
     def start(self, password=None):
         self.discover_plugins()
@@ -814,7 +825,6 @@ class Function(object):
         self.param_names = param_names
         self.exp = exp
         self.env = env
-        self.const = False
 
     def __call__(self, *args):
         env = Environment(self.context, self.env, zip(self.param_names, args))
@@ -1335,9 +1345,10 @@ class MainLoop(object):
 
                         if isinstance(item, Command):
                             completions = item.complete(self.context)
+                            token_args = convert_to_literals(token.args)
                             args, kwargs, opargs = expand_wildcards(
                                 self.context,
-                                *sort_args([self.eval(i, env) for i in token.args]),
+                                *sort_args([self.eval(i, env) for i in token_args]),
                                 completions=completions
                             )
 
@@ -1509,15 +1520,6 @@ class MainLoop(object):
 
                     return
 
-                if isinstance(ret, Namespace):
-                    self.cd(ret)
-                    continue
-
-                if isinstance(ret, Command):
-                    ret.exec_path = self.path
-                    ret.current_env = self.context.global_env
-                    ret = ret.run(self.context, [], {}, [])
-
                 if ret is not None:
                     output = self.context.variables.get('output')
                     if output:
@@ -1617,12 +1619,9 @@ class MainLoop(object):
                             token = token.right
                             builtin_command_set = list(self.pipe_commands.keys())
 
-                        if isinstance(token, Symbol):
-                            args = [token.name]
-                        else:
-                            args = token.args
+                        args = token.args
 
-                if isinstance(token, (CommandCall, Symbol)) or not args:
+                if isinstance(token, CommandCall) or not args:
                     obj = self.get_relative_object(self.cwd, args)
                 else:
                     return None

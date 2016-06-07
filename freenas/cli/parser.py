@@ -423,6 +423,7 @@ def p_stmt(p):
     stmt : const_stmt
     stmt : command
     stmt : call
+    stmt : expr_parens
     stmt : shell
     """
     p[0] = p[1]

@@ -108,6 +108,7 @@ reserved = {
     'or': 'OR',
     'not': 'NOT',
     'undef': 'UNDEF',
+    'const': 'CONST',
     'true': 'TRUE',
     'false': 'FALSE',
     'none': 'NULL',
@@ -419,6 +420,7 @@ def p_stmt(p):
     stmt : return_stmt
     stmt : break_stmt
     stmt : undef_stmt
+    stmt : const_stmt
     stmt : command
     stmt : call
     stmt : shell
@@ -584,7 +586,7 @@ def p_expr(p):
     expr : subscript_expr
     expr : anon_function_expr
     expr : expr_expansion
-    expr : LPAREN expr RPAREN
+    expr : expr_parens
     expr : COPEN expr RBRACE
     """
     if len(p) == 4:
@@ -592,6 +594,13 @@ def p_expr(p):
         return
 
     p[0] = p[1]
+
+
+def p_expr_parens(p):
+    """
+    expr_parens : LPAREN expr RPAREN
+    """
+    p[0] = Parentheses(p[2])
 
 
 def p_expr_expansion(p):
@@ -925,7 +934,7 @@ def p_error(p):
 
 
 lexer = lex.lex()
-parser = yacc.yacc(debug=False, optimize=True, write_tables=False)
+parser = yacc.yacc(debug=True, optimize=True, write_tables=False)
 
 
 def parse(s, filename, recover_errors=False):

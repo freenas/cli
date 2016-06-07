@@ -50,19 +50,18 @@ import re
 from six.moves.urllib.parse import urlparse
 from socket import gaierror as socket_error
 from freenas.cli.descriptions import events
-from freenas.cli.descriptions import tasks
 from freenas.cli.utils import PrintableNone, SIGTSTPException, SIGTSTP_setter, errors_by_path
 from freenas.cli import functions
 from freenas.cli import config
 from freenas.cli.namespace import (
     Namespace, EntityNamespace, RootNamespace, SingleItemNamespace, ConfigNamespace, Command,
-    FilteringCommand, PipeCommand, CommandException, EntitySubscriberBasedLoadMixin
+    FilteringCommand, PipeCommand, CommandException,
 )
 from freenas.cli.parser import (
     parse, unparse, Symbol, Literal, BinaryParameter, UnaryExpr, BinaryExpr, PipeExpr, AssignmentStatement,
     IfStatement, ForStatement, WhileStatement, FunctionCall, CommandCall, Subscript,
     ExpressionExpansion, CommandExpansion, FunctionDefinition, ReturnStatement, BreakStatement,
-    UndefStatement, Redirection, AnonymousFunction, ShellEscape
+    UndefStatement, Redirection, AnonymousFunction, ShellEscape, Parentheses, ConstStatement
 )
 from freenas.cli.output import (
     ValueType, ProgressBar, Sequence, output_lock, output_msg, read_value, format_value,
@@ -1199,9 +1198,9 @@ class MainLoop(object):
                     return
 
                 try:
-                    var = env.find(token.name.name)
+                    var = env.find(token.name)
                     if var.const:
-                        raise SyntaxError('{0} is defined as a constant'.format(token.name.name))
+                        raise SyntaxError('{0} is defined as a constant'.format(token.name))
 
                     var.value = expr
                 except KeyError:

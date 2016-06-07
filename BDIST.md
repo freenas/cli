@@ -35,7 +35,8 @@ Requirements
 - pip
 - virtualenv
 
-## Setup environment (Mac)
+### Setup environment (Mac)
+
 You will need python (>3.4), pip and virtualenv to get your environment setup.  
 
 1. install macports [mac ports installer](https://www.macports.org/install.php)

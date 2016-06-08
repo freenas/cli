@@ -243,6 +243,7 @@ functions = {
     'unregister_command': unregister_command,
     'range': range_,
     'str': str,
+    'int': int,
     'length': len,
     'typeof': typeof,
     'rand': rand,

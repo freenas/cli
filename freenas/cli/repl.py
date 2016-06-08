@@ -1204,7 +1204,7 @@ class MainLoop(object):
 
                     var.value = expr
                 except KeyError:
-                    env[token.name.name] = Environment.Variable(expr)
+                    env[token.name] = Environment.Variable(expr)
 
                 return
 

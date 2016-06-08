@@ -33,6 +33,7 @@ import operator
 import time
 import random
 import json
+import re
 from threading import Timer
 from builtins import input
 from freenas.cli.namespace import Command
@@ -40,6 +41,7 @@ from freenas.cli.output import format_output, output_msg, Table
 from freenas.cli.parser import parse, unparse, FunctionDefinition
 from freenas.cli import config
 from freenas.utils import decode_escapes
+
 
 operators = {
     '+': operator.add,
@@ -223,6 +225,23 @@ def json_dump(obj, file=None):
     else:
         return json.dumps(obj)
 
+
+def re_match(regex, text):
+    m = re.match(regex, text)
+    if m:
+        return list(m.groups())
+
+    return None
+
+
+def re_search(regex, text):
+    m = re.search(regex, text)
+    if m:
+        return list(m.groups())
+
+    return None
+
+
 functions = {
     'print': print_,
     'printf': printf,
@@ -263,4 +282,6 @@ functions = {
     'eval': eval_,
     'join': strjoin,
     'enumerate': lambda a: list(enumerate(a)),
+    're_match': re_match,
+    're_search': re_search
 }

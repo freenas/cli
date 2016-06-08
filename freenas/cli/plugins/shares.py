@@ -32,7 +32,7 @@ from freenas.cli.namespace import (
     EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, description,
     CommandException, ListCommand
 )
-from freenas.cli.output import ValueType, Table, output_msg_locked
+from freenas.cli.output import ValueType, Table
 from freenas.cli.utils import post_save
 from freenas.utils import first_or_default
 

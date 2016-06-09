@@ -303,6 +303,7 @@ class PeerNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         self.context = context
         self.entity_subscriber_name = 'peer'
         self.primary_key_name = 'name'
+        self.allow_create = False
 
         self.add_property(
             descr='Peer Name',

@@ -95,9 +95,9 @@ class ImportShareCommand(Command):
 class SharesNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
     """
     The share namespace contains the namespaces
-    for managing afp, iscsi, nfs, smb, and webdav
-    shares.
+    for managing afp, iscsi, nfs, and smb shares
     """
+
     def __init__(self, name, context):
         super(SharesNamespace, self).__init__(name, context)
         self.context = context
@@ -174,7 +174,8 @@ class SharesNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             NFSSharesNamespace('nfs', self.context),
             AFPSharesNamespace('afp', self.context),
             SMBSharesNamespace('smb', self.context),
-            WebDAVSharesNamespace('webdav', self.context),
+            # Commenting out webdav shares for now, will restore when unbroken
+            # WebDAVSharesNamespace('webdav', self.context),
             ISCSISharesNamespace('iscsi', self.context)
         ]
 

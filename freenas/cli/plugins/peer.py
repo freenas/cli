@@ -105,7 +105,8 @@ class CreateReplicationPeerCommand(Command):
                 'credentials': {
                     'username': username,
                     'password': password,
-                    'port': port
+                    'port': port,
+                    'type': 'ssh'
                 }
             }
         )
@@ -134,7 +135,10 @@ class BasePeerNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Enti
         self.required_props = ['name', ['address', 'type', 'credentials']]
 
         self.skeleton_entity = {
-            'type': type_name
+            'type': type_name,
+            'credentials': {
+                'type': type_name
+            }
         }
 
         self.add_property(

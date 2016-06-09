@@ -138,7 +138,8 @@ ENTITY_SUBSCRIBERS = [
     'kerberos.realm',
     'kerberos.keytab',
     'directory',
-    'boot.environment'
+    'boot.environment',
+    'peer'
 ]
 
 

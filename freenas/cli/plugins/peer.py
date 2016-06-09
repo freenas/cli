@@ -140,10 +140,7 @@ class BasePeerNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Enti
         self.add_property(
             descr='Peer Name',
             name='name',
-            get='name',
-            set=None,
-            createsetable=False,
-            usersetable=False
+            get='name'
         )
 
         self.add_property(
@@ -155,10 +152,7 @@ class BasePeerNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Enti
         self.add_property(
             descr='Peer address',
             name='address',
-            get='address',
-            set=None,
-            createsetable=False,
-            usersetable=False
+            get='address'
         )
 
         self.primary_key = self.get_mapping('name')

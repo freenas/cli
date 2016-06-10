@@ -45,6 +45,7 @@ class ShutdownCommand(Command):
 
     Shuts the system down.
     """
+
     def run(self, context, args, kwargs, opargs):
         context.submit_task('system.shutdown')
         return _("The system will now shutdown...")
@@ -62,6 +63,7 @@ class RebootCommand(Command):
 
     Reboots the system.
     """
+
     def run(self, context, args, kwargs, opargs):
         delay = kwargs.get('delay', None)
         if delay:
@@ -77,16 +79,14 @@ class StatusCommand(Command):
 
     Displays status information about the server.
     """
+
     def run(self, context, args, kwargs, opargs):
         status_dict = context.call_sync('management.status')
         status_dict['up-since'] = format_value(status_dict['started-at'], vt=ValueType.TIME)
         return Object(
-                Object.Item(
-                    "Connected clients", 'connected-clients',
-                    status_dict['connected-clients']
-                ),
-                Object.Item("Uptime", 'up-since', status_dict['up-since']),
-                Object.Item("Started at", 'started-at', status_dict['started-at'])
+            Object.Item("Connected clients", 'connected-clients', status_dict['connected-clients']),
+            Object.Item("Uptime", 'up-since', status_dict['up-since']),
+            Object.Item("Started at", 'started-at', status_dict['started-at'])
         )
 
 
@@ -109,6 +109,7 @@ class InfoCommand(Command):
 
     Displays information about the system.
     """
+
     def run(self, context, args, kwargs, opargs):
         root_namespaces = context.root_ns.namespaces()
         output_dict = {}
@@ -156,11 +157,12 @@ class InfoCommand(Command):
                             output_dict[nested_namespace.name] = get_show(nested_namespace)
 
         hw_info_dict = context.call_sync('system.info.hardware')
-        output_dict['hardware'] = Object(Object.Item("CPU Clockrate", 'cpu_clockrate', hw_info_dict['cpu_clockrate']),
-                                         Object.Item("CPU Model", 'cpu_model', hw_info_dict['cpu_model']),
-                                         Object.Item("CPU Cores", 'cpu_cores', hw_info_dict['cpu_cores']),
-                                         Object.Item("Memory size", 'memory_size', hw_info_dict['memory_size'],
-                                                     vt=ValueType.SIZE))
+        output_dict['hardware'] = Object(
+            Object.Item("CPU Clockrate", 'cpu_clockrate', hw_info_dict['cpu_clockrate']),
+            Object.Item("CPU Model", 'cpu_model', hw_info_dict['cpu_model']),
+            Object.Item("CPU Cores", 'cpu_cores', hw_info_dict['cpu_cores']),
+            Object.Item("Memory size", 'memory_size', hw_info_dict['memory_size'], vt=ValueType.SIZE)
+        )
 
         ver_info = context.call_sync('system.info.version')
 
@@ -199,16 +201,17 @@ class VersionCommand(Command):
 
     Displays FreeNAS version information.
     """
+
     def run(self, context, args, kwargs, opargs):
         return Object(
             Object.Item(
                 'FreeNAS version', 'freenas_version', context.call_sync('system.info.version')
-                ),
+            ),
             Object.Item(
                 'System version',
                 'system_version',
                 ' '.join(context.call_sync('system.info.uname_full'))
-                )
+            )
         )
 
 
@@ -216,10 +219,11 @@ class VersionCommand(Command):
 class FactoryRestoreCommand(Command):
     """
     Usage: factory_restore
-    
+
     Resets the configuration database to the default FreeNAS base, deleting
     all configuration changes. Running this command will reboot the system.
     """
+
     def run(self, context, args, kwargs, opargs):
         context.call_task_sync('database.factory_restore')
 
@@ -228,6 +232,7 @@ class SystemDatasetImportCommand(Command):
     """
     Usage: import volume=<volume>
     """
+
     def __init__(self, parent):
         self.parent = parent
 
@@ -243,6 +248,7 @@ class SessionsNamespace(RpcBasedLoadMixin, EntityNamespace):
     """
     System sessions command, expands into commmands to show sessions.
     """
+
     def __init__(self, name, context):
         super(SessionsNamespace, self).__init__(name, context)
 
@@ -294,6 +300,7 @@ class EventsNamespace(RpcBasedLoadMixin, EntityNamespace):
     """
     System events command, expands into commands to show events.
     """
+
     def __init__(self, name, context):
         super(EventsNamespace, self).__init__(name, context)
         self.allow_create = False
@@ -342,6 +349,7 @@ class TimeNamespace(ConfigNamespace):
     """
     System time command, expands into commands for setting and getting time.
     """
+
     def __init__(self, name, context):
         super(TimeNamespace, self).__init__(name, context)
         self.config_call = 'system.info.time'
@@ -368,6 +376,7 @@ class MailNamespace(ConfigNamespace):
     """
     System mail command, expands into commands for configuring email settings.
     """
+
     def __init__(self, name, context):
         super(MailNamespace, self).__init__(name, context)
         self.context = context
@@ -513,6 +522,7 @@ class AdvancedNamespace(ConfigNamespace):
     Advanced system configuration command, expands into commands for settings
     for advanced users.
     """
+
     def __init__(self, name, context):
         super(AdvancedNamespace, self).__init__(name, context)
         self.context = context
@@ -685,6 +695,7 @@ class SystemNamespace(ConfigNamespace):
     The system namespace provides commands for configuring system
     settings and listing system information.
     """
+
     def __init__(self, name, context):
         super(SystemNamespace, self).__init__(name, context)
         self.context = context

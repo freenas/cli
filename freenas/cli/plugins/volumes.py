@@ -1044,6 +1044,18 @@ class SnapshotsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Ent
 
         self.primary_key = self.get_mapping('id')
 
+    def save(self, this, new=False, callback=None):
+        if new:
+            self.context.submit_task(
+                self.create_task,
+                this.entity, this.get_property('recursive'),
+                callback=callback or (lambda s, t: post_save(this, s, t))
+            )
+            return
+
+        super(SnapshotsNamespace, self).save(this, new, callback)
+
+
 
 @description("Filesystem contents")
 class FilesystemNamespace(EntityNamespace):

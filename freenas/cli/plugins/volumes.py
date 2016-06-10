@@ -1045,9 +1045,10 @@ class SnapshotsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Ent
 
     def save(self, this, new=False, callback=None):
         if new:
+            recursive = this.entity.pop('recursive', False)
             self.context.submit_task(
                 self.create_task,
-                this.entity, this.get_property('recursive'),
+                this.entity, recursive,
                 callback=callback or (lambda s, t: post_save(this, s, t))
             )
             return

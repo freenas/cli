@@ -1155,10 +1155,10 @@ class CreateVolumeCommand(Command):
                 disks = [disks]
 
         if read_value(kwargs.pop('encryption', False), ValueType.BOOLEAN) is True:
-            encryption = {'encryption': True}
+            encryption = True
             password = kwargs.get('password', None)
         else:
-            encryption = {'encryption': False}
+            encryption = False
             password = None
 
         cache_disks = kwargs.pop('cache', [])
@@ -1194,7 +1194,7 @@ class CreateVolumeCommand(Command):
                 if len(disks) < DISKS_PER_TYPE[VOLUME_LAYOUTS[layout]]:
                     raise CommandException(_("Volume layout {0} requires at least {1} disks".format(layout, DISKS_PER_TYPE[VOLUME_LAYOUTS[layout]])))
 
-            context.submit_task('volume.create_auto', name, 'zfs', layout, disks, cache_disks, log_disks, encryption['encryption'], password)
+            context.submit_task('volume.create_auto', name, 'zfs', layout, disks, cache_disks, log_disks, encryption, password)
         else:
             ns.entity['id'] = name
             ns.entity['topology'] = {}
@@ -1207,7 +1207,7 @@ class CreateVolumeCommand(Command):
                     'type': volume_type,
                     'children': [{'type': 'disk', 'path': correct_disk_path(disk)} for disk in disks]
                 })
-            ns.entity['params'] = encryption
+            ns.entity['encrypted'] = encryption
             if len(cache_disks) > 0:
                 if 'cache' not in ns.entity:
                     ns.entity['topology']['cache'] = []

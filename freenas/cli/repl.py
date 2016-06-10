@@ -216,13 +216,15 @@ class Alias(object):
 
 class VariableStore(object):
     class Variable(object):
-        def __init__(self, default, type, choices=None):
+        def __init__(self, default, type, choices=None, readonly=False):
             self.default = default
             self.type = type
             self.choices = choices
             self.value = default
+            self.readonly = readonly
 
         def set(self, value):
+            assert not self.readonly, _("Cannot set a readonly opt variable")
             value = read_value(value, self.type)
             if self.choices is not None and value not in self.choices:
                 raise ValueError(
@@ -247,7 +249,10 @@ class VariableStore(object):
             'abort_on_errors': self.Variable(True, ValueType.BOOLEAN),
             'output': self.Variable(None, ValueType.STRING),
             'verbosity': self.Variable(1, ValueType.NUMBER),
-            'vm.console_interrupt': self.Variable(r'\035',ValueType.STRING)
+            'vm.console_interrupt': self.Variable(r'\035',ValueType.STRING),
+            'cli_src_path': self.Variable(
+                os.path.dirname(os.path.realpath(__file__)), ValueType.STRING, None, True
+            )
         }
         self.variable_doc = {
             'output_format': _('Console output format. Can be set to \'ascii\', \'json\', or \'table\'.'),
@@ -261,7 +266,8 @@ class VariableStore(object):
             'abort_on_errors': _('Can be set to yes or no. When set to yes, command execution will abort on syntax or command errors.'),
             'output': _('Either send all output to specified file or set to \'none\' to display output on the console.'),
             'verbosity': _('Increasing verbosity of event messages. Can be set from 1 to 5.'),
-            'vm.console_interrupt': _(r'Set the console interrupt key sequence for virtual machines with support for octal characters of the form \nnn. Default is ^] or octal 035.')
+            'vm.console_interrupt': _(r'Set the console interrupt key sequence for virtual machines with support for octal characters of the form \nnn. Default is ^] or octal 035.'),
+            'cli_src_path': _('The absolute path of the cli source code on this machine')
         }
 
     def load(self, filename):
@@ -356,9 +362,6 @@ class Context(object):
         self.builtin_operators = functions.operators
         self.builtin_functions = functions.functions
         self.global_env = Environment(self)
-        self.global_env['_cli_src_path'] = Environment.Variable(
-            os.path.dirname(os.path.realpath(__file__))
-        )
         self.user = None
         self.pending_tasks = QueryDict()
         self.session_id = None
@@ -516,7 +519,7 @@ class Context(object):
             if hasattr(sys, '_MEIPASS'):
                 plug_dirs = os.path.join(sys._MEIPASS, 'freenas/cli/plugins')
             else:
-                plug_dirs = os.path.join(self.global_env.find('_cli_src_path').value, 'plugins')
+                plug_dirs = os.path.join(self.variables.get('cli_src_path'), 'plugins')
             self.plugin_dirs += [plug_dirs]
 
     def discover_plugins(self):

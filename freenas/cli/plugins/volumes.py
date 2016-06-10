@@ -25,7 +25,6 @@
 #
 #####################################################################
 
-import os
 import copy
 import gettext
 import six

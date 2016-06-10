@@ -1183,7 +1183,7 @@ class MainLoop(object):
                 # After all scope checks are done check if this is a
                 # config environment var of the cli
                 try:
-                    return self.context.variables.variables[token.name]
+                    return self.context.variables.variables[token.name].value
                 except KeyError:
                     pass
 

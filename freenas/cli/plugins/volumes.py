@@ -973,8 +973,7 @@ class SnapshotsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Ent
             ]
 
         self.skeleton_entity = {
-            'volume': self.parent.name if parent else None,
-            'recursive': False
+            'volume': self.parent.name if parent else None
         }
 
         self.add_property(

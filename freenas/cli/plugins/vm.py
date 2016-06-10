@@ -63,6 +63,17 @@ class VMConsole(object):
         self.conn.open()
 
     def start(self):
+        # support configurable escape sequence
+        eseq =  self.context.variables.get('vm.console_interrupt')
+        if len(eseq) == 0:
+            eseq = '\035'
+
+        # process escape characters using runtime
+        eseq = bytes(self.context.variables.get('vm.console_interrupt'),'utf-8').decode('unicode_escape')
+        esbytes = bytes(eseq,'utf-8')
+        eslen = len(esbytes) 
+        esidx = 0   # stack pointer for sequence match...
+
         stdin_fd = sys.stdin.fileno()
         old_stdin_settings = termios.tcgetattr(stdin_fd)
         try:
@@ -70,11 +81,20 @@ class VMConsole(object):
             self.connect()
             while True:
                 ch = sys.stdin.read(1)
-                if ch == '\x1d':
-                    self.conn.close()
-                    break
+                bch = bytes(ch,'utf-8')[0]
 
-                self.conn.write(ch)
+                if esbytes[esidx] == bch:
+                    esidx += 1
+                    if esidx == eslen:
+                        self.conn.close()
+                        break
+                elif esidx > 0:
+                    # reset stack pointer...no match
+                    # BW: possibly write out characters up to this point if sequence not matched?
+                    #     or maybe we write the chars all along?
+                    esidx = 0
+                else:
+                    self.conn.write(ch)
         finally:
             termios.tcsetattr(stdin_fd, termios.TCSADRAIN, old_stdin_settings)
             curses.wrapper(lambda x: x)

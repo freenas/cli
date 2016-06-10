@@ -246,7 +246,8 @@ class VariableStore(object):
             'debug': self.Variable(False, ValueType.BOOLEAN),
             'abort_on_errors': self.Variable(True, ValueType.BOOLEAN),
             'output': self.Variable(None, ValueType.STRING),
-            'verbosity': self.Variable(1, ValueType.NUMBER)
+            'verbosity': self.Variable(1, ValueType.NUMBER),
+            'vm.console_interrupt': self.Variable(r'\035',ValueType.STRING)
         }
         self.variable_doc = {
             'output_format': _('Console output format. Can be set to \'ascii\', \'json\', or \'table\'.'),
@@ -259,7 +260,8 @@ class VariableStore(object):
             'debug': _('Toggle display of debug messages. Can be set to yes or no.'),
             'abort_on_errors': _('Can be set to yes or no. When set to yes, command execution will abort on syntax or command errors.'),
             'output': _('Either send all output to specified file or set to \'none\' to display output on the console.'),
-            'verbosity': _('Increasing verbosity of event messages. Can be set from 1 to 5.')
+            'verbosity': _('Increasing verbosity of event messages. Can be set from 1 to 5.'),
+            'vm.console_interrupt': _(r'Set the console interrupt key sequence for virtual machines with support for octal characters of the form \nnn. Default is ^] or octal 035.')
         }
 
     def load(self, filename):

@@ -31,7 +31,6 @@ from freenas.cli.namespace import (
     EntityNamespace, Command, EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, description
 )
 from freenas.cli.output import ValueType
-from freenas.cli.utils import post_save
 from freenas.utils import extend
 
 

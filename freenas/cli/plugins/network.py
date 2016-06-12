@@ -202,6 +202,14 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
         )
 
         self.add_property(
+            descr='MTU',
+            name='mtu',
+            get='mtu',
+            type=ValueType.NUMBER,
+            list=False
+        )
+
+        self.add_property(
             descr='DHCP state',
             name='dhcp_state',
             get='status.dhcp.state',

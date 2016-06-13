@@ -848,18 +848,16 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
         self.add_property(
             descr='Access time',
             name='atime',
-            get='properties.atime.value',
-            set='properties.atime.value',
+            get='properties.atime.parsed',
             list=False,
-            enum=['on', 'off'],
+            type=ValueType.BOOLEAN,
             condition=lambda o: o['type'] == 'FILESYSTEM'
         )
 
         self.add_property(
             descr='Deduplication',
             name='dedup',
-            get='properties.dedup.value',
-            set='properties.dedup.value',
+            get='properties.dedup.parsed',
             list=False,
             enum=[
                 'on', 'off', 'verify', 'sha256', 'sha256,verify',
@@ -870,36 +868,36 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
         self.add_property(
             descr='Quota',
             name='refquota',
-            get='properties.refquota.value',
-            set='properties.refquota.value',
+            get='properties.refquota.parsed',
             list=False,
+            type=ValueType.SIZE,
             condition=lambda o: o['type'] == 'FILESYSTEM'
         )
 
         self.add_property(
             descr='Recursive quota',
             name='quota',
-            get='properties.quota.value',
-            set='properties.quota.value',
+            get='properties.quota.parsed',
             list=False,
+            type=ValueType.SIZE,
             condition=lambda o: o['type'] == 'FILESYSTEM'
         )
 
         self.add_property(
             descr='Space reservation',
             name='refreservation',
-            get='properties.refreservation.value',
-            set='properties.refreservation.value',
+            get='properties.refreservation.parsed',
             list=False,
+            type=ValueType.SIZE,
             condition=lambda o: o['type'] == 'FILESYSTEM'
         )
 
         self.add_property(
             descr='Recursive space reservation',
             name='reservation',
-            get='properties.reservation.value',
-            set='properties.reservation.value',
+            get='properties.reservation.parsed',
             list=False,
+            type=ValueType.SIZE,
             condition=lambda o: o['type'] == 'FILESYSTEM'
         )
 
@@ -916,8 +914,7 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
         self.add_property(
             descr='Block size',
             name='blocksize',
-            get='properties.volblocksize.value',
-            set='properties.volblocksize.value',
+            get='properties.volblocksize.parsed',
             list=False,
             condition=lambda o: o['type'] == 'VOLUME'
         )
@@ -1023,22 +1020,24 @@ class SnapshotsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Ent
         self.add_property(
             descr='Compression',
             name='compression',
-            get='properties.compression.value',
-            set='properties.compression.value',
+            get='properties.compression.parsed',
+            set='properties.compression.parsed',
             list=True)
 
         self.add_property(
             descr='Used',
             name='used',
-            get='properties.used.value',
+            get='properties.used.parsed',
             set=None,
+            type=ValueType.SIZE,
             list=True)
 
         self.add_property(
             descr='Available',
             name='available',
-            get='properties.available.value',
+            get='properties.available.parsed',
             set=None,
+            type=ValueType.SIZE,
             list=True)
 
         self.primary_key = self.get_mapping('id')

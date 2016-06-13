@@ -141,9 +141,14 @@ class InfoCommand(Command):
 
             elif namespace.name == 'directoryservice':
                 for nested_namespace in namespace.namespaces():
-                    if nested_namespace.name == 'activedirectory' or \
-                       nested_namespace.name == 'ldap':
-                            output_dict[nested_namespace.name] = get_show(nested_namespace)
+                    if nested_namespace.name == 'directories':
+                        output_dict[nested_namespace.name] = get_show(nested_namespace)
+                    if nested_namespace.name == 'kerberos':
+                        for kerberos_namespace in nested_namespace.namespaces():
+                            if kerberos_namespace.name == 'keytab' or \
+                               kerberos_namespace.name == 'realm':
+                                output_dict[kerberos_namespace.name] = get_show(kerberos_namespace)
+
             elif namespace.name == 'network':
                 for nested_namespace in namespace.namespaces():
                     if nested_namespace.name == 'config' or \
@@ -186,10 +191,13 @@ class InfoCommand(Command):
             append_out('vm')
         output.append("\n\nStatus of services:")
         append_out('service')
-        if len(output_dict['activedirectory']) > 0 or len(output_dict['ldap']) > 0:
-            output.append("\n\nStatus of directory services:")
-            append_out('activedirectory')
-            append_out('ldap')
+        if len(output_dict['directories']) > 0:
+            output.append("\n\nStatus of Active Directory:")
+            append_out('directories')
+        if len(output_dict['keytab']) > 0 or len(output_dict['realm']) > 0:
+            output.append("\n\nStatus of Kerberos:")
+            append_out('keytab')
+            append_out('realm')
 
         return output
 

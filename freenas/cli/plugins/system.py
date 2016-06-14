@@ -483,43 +483,44 @@ class SystemUINamespace(ConfigNamespace):
 
         self.add_property(
             descr='Redirect http to https',
-            name='http.redirect_https',
-            get='http.redirect_https',
+            name='redirect_https',
+            get='webui_http_redirect_https',
             type=ValueType.BOOLEAN
         )
 
         self.add_property(
-            descr='Enable http',
-            name='http.enable',
-            get='http.enable',
-            type=ValueType.BOOLEAN
+            descr='Web GUI Protocols in use',
+            name='protocols',
+            get='webui_protocol',
+            type=ValueType.SET,
+            enum=['HTTP', 'HTTPS']
         )
 
         self.add_property(
-            descr='http port',
-            name='http.port',
-            get='http.port',
+            descr='Web GUI IP Address (IPv4 and/or IPv6)',
+            name='ip_addresses',
+            get='webui_listen',
+            type=ValueType.SET
+        )
+
+        self.add_property(
+            descr='HTTP port',
+            name='http_port',
+            get='webui_http_port',
             type=ValueType.NUMBER
         )
 
         self.add_property(
-            descr='Enable https',
-            name='https.enable',
-            get='https.enable',
-            type=ValueType.BOOLEAN
-        )
-
-        self.add_property(
-            descr='https port',
-            name='https.port',
-            get='https.port',
+            descr='HTTPS port',
+            name='https_port',
+            get='webui_https_port',
             type=ValueType.NUMBER
         )
 
         self.add_property(
-            descr='Https certificate',
-            name='https.certificate',
-            get='https.certificate',
+            descr='HTTPS certificate',
+            name='https_certificate',
+            get='webui_https_certificate',
             type=ValueType.STRING
         )
 

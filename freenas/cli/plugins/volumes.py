@@ -1055,7 +1055,6 @@ class SnapshotsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Ent
         super(SnapshotsNamespace, self).save(this, new, callback)
 
 
-
 @description("Filesystem contents")
 class FilesystemNamespace(EntityNamespace):
     def __init__(self, name, context, parent):

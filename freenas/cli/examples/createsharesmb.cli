@@ -1,0 +1,8 @@
+volume create myvolume disks=auto
+wait
+account user create myuser password=123
+wait
+share smb create smbshare parent=myvolume
+wait
+service smb config set enable=yes
+share smb smbshare set owner=myuser

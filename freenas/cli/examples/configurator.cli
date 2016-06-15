@@ -1,0 +1,29 @@
+# CLI script to read a config from a json file
+# and configure the system (i.e. pool creation, layout, shares, etc)
+
+function read_json_config_from_file(file_path) {
+    fhandle = fopen(file_path, "r");
+    config_dict = json_load(fhandle);
+    fclose(fhandle);
+    return config_dict;
+}
+
+function create_pool(pool_dict) {
+    print("Creating your pool now...");
+    / volume create name=${pool_dict["name"]} disks=${pool_dict["disks"]} encryption=${pool_dict["encryption"]}  password=${pool_dict["password"]} cache=${pool_dict["cache"]} log=${pool_dict["log"]} layout=${pool_dict["layout"]};
+}
+
+function configurator() {
+    file_path = readline("Please specify the path to the config file: ");
+    config_dict = read_json_config_from_file(file_path);
+    printf("This is the config after being parsed into a dict\n");
+    print(config_dict);
+    continue=readline("Would you like to proceed?[yes]: ");
+    if (continue != "yes" ) {
+        printf("We are sorry to see you go!\n");
+        return
+    }
+    create_pool(config_dict["pool"]);
+}
+
+configurator();

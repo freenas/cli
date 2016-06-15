@@ -1,0 +1,11 @@
+# Sets up a FreeNAS 10 machine "from scratch" just to show how easy it is,
+# creating a sample share named smbtest and a test user (test / test) to
+# log in over SMB and verify that it works.
+
+printf("Creating pool named tank\n")
+volume create tank disks=auto; wait
+account user create username=test password=test
+share smb create smbtest owner=test target=tank
+service smb config set enable=yes
+printf("SMB test share created, please connect as user test password test\n")
+printf("smb://test@%s\n", $(showips)[1][0]["ip"])

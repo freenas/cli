@@ -1365,6 +1365,76 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
             list=False
         )
 
+        self.add_property(
+            descr='Total size',
+            name='size',
+            get='properties.size.parsed',
+            set=None,
+            type=ValueType.SIZE,
+            list=False
+        )
+
+        self.add_property(
+            descr='Allocated',
+            name='allocated',
+            get='properties.allocated.parsed',
+            set=None,
+            type=ValueType.SIZE,
+            list=False
+        )
+
+        self.add_property(
+            descr='Free',
+            name='free',
+            get='properties.free.parsed',
+            set=None,
+            type=ValueType.SIZE,
+            list=False
+        )
+
+        self.add_property(
+            descr='Capacity',
+            name='capacity',
+            get='properties.capacity.parsed',
+            set=None,
+            list=False
+        )
+
+        self.add_property(
+            descr='Fragmentation',
+            name='size',
+            get='properties.fragmentation.parsed',
+            set=None,
+            list=False
+        )
+
+        self.add_property(
+            descr='Read errors',
+            name='read_errors',
+            get='root_vdev.stats.read_errors',
+            set=None,
+            type=ValueType.NUMBER,
+            list=False
+        )
+
+        self.add_property(
+            descr='Write errors',
+            name='write_errors',
+            get='root_vdev.stats.write_errors',
+            set=None,
+            type=ValueType.NUMBER,
+            list=False
+        )
+
+        self.add_property(
+            descr='Checksum errors',
+            name='checksum_errors',
+            get='root_vdev.stats.checksum_errors',
+            set=None,
+            type=ValueType.NUMBER,
+            list=False
+        )
+
         self.primary_key = self.get_mapping('name')
         self.extra_commands = {
             'find': FindVolumesCommand(),

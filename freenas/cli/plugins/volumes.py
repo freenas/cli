@@ -1090,7 +1090,7 @@ def check_disks(context, disks, cache_disks=None, log_disks=None):
             else:
                 raise CommandException(_("Disk {0} is not available.".format(disk)))
     if 'auto' in disks:
-        return available_disks, cache_disks, log_disks
+        return 'auto', cache_disks, log_disks
     else:
         for disk in disks:
             disk = correct_disk_path(disk)
@@ -1187,11 +1187,14 @@ class CreateVolumeCommand(Command):
 
         disks, cache_disks, log_disks = check_disks(context, disks, cache_disks, log_disks)
 
-        if len(disks) < DISKS_PER_TYPE[volume_type]:
-            raise CommandException(_("Volume type {0} requires at least {1} disks".format(volume_type,
-                                                                                          DISKS_PER_TYPE[volume_type])))
-        if len(disks) > 1 and volume_type == 'disk':
-            raise CommandException(_("Cannot create a volume of type disk with multiple disks"))
+        if disks != 'auto':
+            if len(disks) < DISKS_PER_TYPE[volume_type]:
+                raise CommandException(_("Volume type {0} requires at least {1} disks".format(
+                    volume_type,
+                    DISKS_PER_TYPE[volume_type]
+                )))
+            if len(disks) > 1 and volume_type == 'disk':
+                raise CommandException(_("Cannot create a volume of type disk with multiple disks"))
 
         if volume_type == 'auto':
             layout = kwargs.pop('layout', 'auto')
@@ -1200,7 +1203,7 @@ class CreateVolumeCommand(Command):
                     "Invalid layout {0}.  Should be one of: {1}".format(layout, list(VOLUME_LAYOUTS.keys()))
                 ))
             else:
-                if len(disks) < DISKS_PER_TYPE[VOLUME_LAYOUTS[layout]]:
+                if disks != 'auto' and len(disks) < DISKS_PER_TYPE[VOLUME_LAYOUTS[layout]]:
                     raise CommandException(_("Volume layout {0} requires at least {1} disks".format(layout, DISKS_PER_TYPE[VOLUME_LAYOUTS[layout]])))
 
             context.submit_task('volume.create_auto', name, 'zfs', layout, disks, cache_disks, log_disks, encryption, password)

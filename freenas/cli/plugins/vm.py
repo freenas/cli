@@ -38,6 +38,7 @@ from freenas.cli.namespace import (
 )
 from freenas.cli.output import ValueType
 from freenas.cli.utils import post_save
+from freenas.utils import first_or_default
 
 
 t = gettext.translation('freenas-cli', fallback=True)
@@ -202,6 +203,28 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
         def set_memsize(o, v):
             o['config.memsize'] = int(v / 1024 / 1024)
 
+        def get_graphics(o):
+            return first_or_default(lambda d: d['type'] == 'GRAPHICS', o['devices']) is not None
+
+        def set_graphics(o, v):
+            if v:
+                if get_graphics(o):
+                    return
+
+                o['devices'].append({
+                    'name': 'framebuffer',
+                    'type': 'GRAPHICS',
+                    'properties': {
+                        'resolution': '1024x768'
+                    }
+                })
+            else:
+                if not get_graphics(o):
+                    return
+
+                dev = first_or_default(lambda d: d['type'] == 'GRAPHICS', o['devices'])
+                o['devices'].remove(dev)
+
         self.skeleton_entity = {
             'type': 'VM',
             'devices': [],
@@ -283,6 +306,15 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
         )
 
         self.add_property(
+            descr='Graphics support',
+            name='graphics',
+            get=get_graphics,
+            set=set_graphics,
+            list=False,
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
             descr='Cloud-init data',
             name='cloud_init',
             get='config.cloud_init',
@@ -319,7 +351,8 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
         self.entity_namespaces = lambda this: [
             VMDisksNamespace('disks', self.context, this),
             VMNicsNamespace('nic', self.context, this),
-            VMVolumesNamespace('volume', self.context, this)
+            VMVolumesNamespace('volume', self.context, this),
+            VMUSBNamespace('usb', self.context, this)
         ]
 
         self.entity_commands = lambda this: {
@@ -467,6 +500,34 @@ class VMVolumesNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNam
             name='auto',
             get='properties.auto',
             type=ValueType.BOOLEAN
+        )
+
+        self.primary_key = self.get_mapping('name')
+
+
+class VMUSBNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNamespace):
+    def __init__(self, name, context, parent):
+        super(VMUSBNamespace, self).__init__(name, context)
+        self.parent = parent
+        self.primary_key_name = 'name'
+        self.extra_query_params = [('type', '=', 'USB')]
+        self.parent_path = 'devices'
+        self.skeleton_entity = {
+            'type': 'USB',
+            'properties': {}
+        }
+
+        self.add_property(
+            descr='Device name',
+            name='name',
+            get='name'
+        )
+
+        self.add_property(
+            descr='Emulated device type',
+            name='device',
+            get='properties.device',
+            enum=['tablet']
         )
 
         self.primary_key = self.get_mapping('name')

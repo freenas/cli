@@ -293,6 +293,14 @@ class ShellCommand(Command):
 
         self.closed = False
         name = ' '.join(str(i) for i in args) if len(args) > 0 else '/bin/sh'
+        if name == '/bin/sh':
+            output_msg(context.connection.call_sync(
+                'system.general.cowsay',
+                "To make configuration changes, return to CLI and use the CLI command set.\n" +
+                " Any configuration changes used outside " +
+                "of the FreeNAS CLI are not saved to the configuration database.",
+                "/usr/local/share/cows/surgery.cow"
+             )[0])      
         token = context.call_sync('shell.spawn', name)
         shell = ShellClient(context.hostname, token)
         shell.on_data(read)

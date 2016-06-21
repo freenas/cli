@@ -820,8 +820,8 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
         self.add_property(
             descr='Compression',
             name='compression',
-            get='properties.compression.value',
-            set='properties.compression.value',
+            get='properties.compression.parsed',
+            set='properties.compression.parsed',
             list=True,
             enum=[
                 'on', 'off', 'gzip', 'gzip-1', 'gzip-2', 'gzip-3', 'gzip-4', 'gzip-5',

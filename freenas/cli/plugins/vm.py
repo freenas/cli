@@ -155,6 +155,10 @@ class ConsoleCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
+        if len(args) > 0 and args[0] == 'vga':
+            url = context.call_sync('containerd.management.request_webvnc_console', self.parent.entity['id'])
+            return url
+
         console = VMConsole(context, self.parent.entity['id'], self.parent.entity['name'])
         console.start()
 

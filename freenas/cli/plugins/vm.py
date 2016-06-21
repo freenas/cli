@@ -225,6 +225,20 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
                 dev = first_or_default(lambda d: d['type'] == 'GRAPHICS', o['devices'])
                 o['devices'].remove(dev)
 
+        def get_resolution(o):
+            fb = first_or_default(lambda d: d['type'] == 'GRAPHICS', o['devices'])
+            if not fb:
+                return None
+
+            return fb['properties.resolution']
+
+        def set_resolution(o, v):
+            fb = first_or_default(lambda d: d['type'] == 'GRAPHICS', o['devices'])
+            if not fb:
+                return None
+
+            fb['properties.resolution'] = v
+
         self.skeleton_entity = {
             'type': 'VM',
             'devices': [],
@@ -312,6 +326,27 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             set=set_graphics,
             list=False,
             type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
+            descr='Framebuffer resolution',
+            name='resolution',
+            get=get_resolution,
+            set=set_resolution,
+            list=False,
+            type=ValueType.STRING,
+            enum=[
+                '1920x1200',
+                '1920x1080',
+                '1600x1200',
+                '1600x900',
+                '1280x1024',
+                '1280x720',
+                '1024x768',
+                '800x600',
+                '640x480'
+            ],
+            condition=get_graphics
         )
 
         self.add_property(

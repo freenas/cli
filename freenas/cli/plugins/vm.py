@@ -230,14 +230,14 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             if not fb:
                 return None
 
-            return fb['properties.resolution']
+            return fb['properties']['resolution']
 
         def set_resolution(o, v):
             fb = first_or_default(lambda d: d['type'] == 'GRAPHICS', o['devices'])
             if not fb:
                 return None
 
-            fb['properties.resolution'] = v
+            fb['properties']['resolution'] = v
 
         self.skeleton_entity = {
             'type': 'VM',

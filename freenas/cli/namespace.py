@@ -59,7 +59,8 @@ def description(descr):
 
 def create_completer(prop):
     if prop.enum:
-        return EnumComplete(prop.name + '=', prop.enum)
+        enum_val = prop.enum() if callable(prop.enum) else prop.enum
+        return EnumComplete(prop.name + '=', enum_val)
 
     if prop.type == ValueType.BOOLEAN:
         return EnumComplete(prop.name + '=', ['yes', 'no'])

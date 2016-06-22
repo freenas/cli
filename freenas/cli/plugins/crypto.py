@@ -72,60 +72,11 @@ class CertificateBaseNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixi
         self.delete_task = 'crypto.certificate.delete'
         self.primary_key_name = 'name'
 
-    def get_ca_names(self):
-        return self.context.entity_subscribers[self.entity_subscriber_name].query(
-            ('type', 'in', ('CA_INTERNAL', 'CA_INTERMEDIATE')),
-            select='name'
-        )
-
-
-@description(_("Provides access to Certificate Authority actions"))
-class CertificateAuthorityNamespace(CertificateBaseNamespace):
-    """
-    The Certificate Authority namespace provides commands for listing and managing CAs.
-    """
-    def __init__(self, name, context):
-        super(CertificateAuthorityNamespace, self).__init__(name, context)
-
-        self.extra_query_params = [
-            ('type', 'in', ('CA_EXISTING', 'CA_INTERMEDIATE', 'CA_INTERNAL'))
-        ]
-        self.extra_commands = {
-            'import': ImportCertificateAuthorityCommand(self)
-        }
-
-        self.localdoc['CreateEntityCommand'] = ("""\
-            Examples:
-            Create root CA Certificate :
-            create type=CA_INTERNAL name=myRootCA key_length=2048 digest_algorithm=SHA256
-            lifetime=3650 country=PL state=Slaskie city=Czerwionka-Leszczyny
-            organization=myCAOrg email=a@b.c common=my_CA_Server
-
-            Create intermediate CA Certificate :
-            create type=CA_INTERMEDIATE signing_ca_name=myRootCA name=myInterCA key_length=2048 digest_algorithm=SHA256
-            lifetime=365 country=PL state=Slaskie city=Czerwionka-Leszczyny organization=myorg email=a@b.c
-            common=MyCommonName
-
-            Crates a Certificate Authority. For a list of properties, see 'help properties'.""")
-
         self.add_property(
             descr='Name',
             name='name',
             get='name',
             set='name',
-            list=True)
-
-        self.add_property(
-            descr='Type',
-            name='type',
-            get='type',
-            set='type',
-            enum=[
-                'CA_EXISTING',
-                'CA_INTERMEDIATE',
-                'CA_INTERNAL'
-            ],
-            usersetable=False,
             list=True)
 
         self.add_property(
@@ -156,6 +107,141 @@ class CertificateAuthorityNamespace(CertificateBaseNamespace):
             list=True)
 
         self.add_property(
+            descr="Self-signed",
+            name='selfsigned',
+            get='selfsigned',
+            set='selfsigned',
+            usersetable=False,
+            type=ValueType.BOOLEAN,
+            list=True)
+
+        self.add_property(
+            descr='Key length',
+            name='key_length',
+            get='key_length',
+            set='key_length',
+            type=ValueType.NUMBER,
+            usersetable=False,
+            list=True)
+
+        self.add_property(
+            descr='Digest algorithm',
+            name='digest_algorithm',
+            get='digest_algorithm',
+            set='digest_algorithm',
+            enum=['SHA1', 'SHA224', 'SHA256', 'SHA384', 'SHA512'],
+            usersetable=False,
+            list=True)
+
+        self.add_property(
+            descr='Lifetime',
+            name='lifetime',
+            get='lifetime',
+            set='lifetime',
+            usage=_("""\
+            Certificate lifetime in days, accepts number values"""),
+            type=ValueType.NUMBER,
+            usersetable=False,
+            list=True)
+
+        self.add_property(
+            descr='Country',
+            name='country',
+            get='country',
+            set='country',
+            usersetable=False,
+            list=True)
+
+        self.add_property(
+            descr='State',
+            name='state',
+            get='state',
+            set='state',
+            usersetable=False,
+            list=True)
+
+        self.add_property(
+            descr='City',
+            name='city',
+            get='city',
+            set='city',
+            usersetable=False,
+            list=True)
+
+        self.add_property(
+            descr='Organization',
+            name='organization',
+            get='organization',
+            set='organization',
+            usersetable=False,
+            list=True)
+
+        self.add_property(
+            descr='Common Name',
+            name='common',
+            get='common',
+            set='common',
+            usersetable=False,
+            list=True)
+
+        self.add_property(
+            descr='Email',
+            name='email',
+            get='email',
+            set='email',
+            usersetable=False,
+            list=True)
+
+    def get_ca_names(self):
+        return self.context.entity_subscribers[self.entity_subscriber_name].query(
+            ('type', 'in', ('CA_INTERNAL', 'CA_INTERMEDIATE')),
+            select='name'
+        )
+
+
+@description(_("Provides access to Certificate Authority actions"))
+class CertificateAuthorityNamespace(CertificateBaseNamespace):
+    """
+    The Certificate Authority namespace provides commands for listing and managing CAs.
+    """
+    def __init__(self, name, context):
+        super(CertificateAuthorityNamespace, self).__init__(name, context)
+
+        self.extra_query_params = [
+            ('type', 'in', ('CA_EXISTING', 'CA_INTERMEDIATE', 'CA_INTERNAL'))
+        ]
+        self.extra_commands = {
+            'import': ImportCertificateAuthorityCommand(self)
+        }
+
+        self.localdoc['CreateEntityCommand'] = ("""\
+            Examples:
+            Create root CA Certificate :
+            create type=CA_INTERNAL name=myRootCA selfsigned=yes key_length=2048 digest_algorithm=SHA256
+            lifetime=3650 country=PL state=Slaskie city=Czerwionka-Leszczyny
+            organization=myCAOrg email=a@b.c common=my_CA_Server
+
+            Create intermediate CA Certificate :
+            create type=CA_INTERMEDIATE signing_ca_name=myRootCA name=myInterCA key_length=2048 digest_algorithm=SHA256
+            lifetime=365 country=PL state=Slaskie city=Czerwionka-Leszczyny organization=myorg email=a@b.c
+            common=MyCommonName
+
+            Crates a Certificate Authority. For a list of properties, see 'help properties'.""")
+
+        self.add_property(
+            descr='Type',
+            name='type',
+            get='type',
+            set='type',
+            enum=[
+                'CA_EXISTING',
+                'CA_INTERMEDIATE',
+                'CA_INTERNAL'
+            ],
+            usersetable=False,
+            list=True)
+
+        self.add_property(
             descr="Signing CA's Name",
             name='signing_ca_name',
             get='signing_ca_name',
@@ -181,91 +267,6 @@ class CertificateAuthorityNamespace(CertificateBaseNamespace):
             set='passphrase',
             usersetable=False,
             list=False)
-
-        self.add_property(
-            descr='Key length',
-            name='key_length',
-            get='key_length',
-            set='key_length',
-            type=ValueType.NUMBER,
-            condition=lambda e: e['type'] != 'CA_EXISTING',
-            usersetable=False,
-            list=True)
-
-        self.add_property(
-            descr='Digest algorithm',
-            name='digest_algorithm',
-            get='digest_algorithm',
-            set='digest_algorithm',
-            enum=['SHA1', 'SHA224', 'SHA256', 'SHA384', 'SHA512'],
-            condition=lambda e: e['type'] != 'CA_EXISTING',
-            usersetable=False,
-            list=True)
-
-        self.add_property(
-            descr='Lifetime',
-            name='lifetime',
-            get='lifetime',
-            set='lifetime',
-            usage=_("""\
-            Certificate lifetime in days, accepts number values"""),
-            type=ValueType.NUMBER,
-            usersetable=False,
-            list=True)
-
-        self.add_property(
-            descr='Country Code',
-            name='country',
-            get='country',
-            set='country',
-            condition=lambda e: e['type'] != 'CA_EXISTING',
-            usersetable=False,
-            list=True)
-
-        self.add_property(
-            descr='State',
-            name='state',
-            get='state',
-            set='state',
-            condition=lambda e: e['type'] != 'CA_EXISTING',
-            usersetable=False,
-            list=True)
-
-        self.add_property(
-            descr='City',
-            name='city',
-            get='city',
-            set='city',
-            condition=lambda e: e['type'] != 'CA_EXISTING',
-            usersetable=False,
-            list=True)
-
-        self.add_property(
-            descr='Organization',
-            name='organization',
-            get='organization',
-            set='organization',
-            condition=lambda e: e['type'] != 'CA_EXISTING',
-            usersetable=False,
-            list=True)
-
-        self.add_property(
-            descr='Common Name',
-            name='common',
-            get='common',
-            set='common',
-            condition=lambda e: e['type'] != 'CA_EXISTING',
-            usersetable=False,
-            list=True)
-
-        self.add_property(
-            descr='Email',
-            name='email',
-            get='email',
-            set='email',
-            condition=lambda e: e['type'] != 'CA_EXISTING',
-            usersetable=False,
-            list=True)
 
         self.primary_key = self.get_mapping('name')
 
@@ -330,7 +331,7 @@ class CertificateNamespace(CertificateBaseNamespace):
         self.localdoc['CreateEntityCommand'] = ("""\
             Examples:
             Create self-signed server certificate without CA:
-            create type=CERT_INTERNAL name=mySelfSignedServerCert signing_ca_name=selfsigned key_length=2048
+            create type=CERT_INTERNAL name=mySelfSignedServerCert selfsigned=yes key_length=2048
             digest_algorithm=SHA256 lifetime=365 country=PL state=Slaskie city=Czerwionka-Leszczyny
             organization=myorg email=a@b.c common=www.myserver.com
 
@@ -340,13 +341,6 @@ class CertificateNamespace(CertificateBaseNamespace):
             organization=myorg email=a@b.c common=www.myserver.com
 
             Crates a certificate. For a list of properties, see 'help properties'.""")
-
-        self.add_property(
-            descr='Name',
-            name='name',
-            get='name',
-            set='name',
-            list=True)
 
         self.add_property(
             descr='Type',
@@ -363,40 +357,11 @@ class CertificateNamespace(CertificateBaseNamespace):
             list=True)
 
         self.add_property(
-            descr='Certificate',
-            name='certificate',
-            get='certificate',
-            set='certificate',
-            type=ValueType.STRING,
-            usersetable=False,
-            list=False)
-
-        self.add_property(
-            descr='Private Key',
-            name='privatekey',
-            get='privatekey',
-            set='privatekey',
-            type=ValueType.STRING,
-            usersetable=False,
-            list=False)
-
-        self.add_property(
-            descr='Serial',
-            name='serial',
-            get='serial',
-            set='serial',
-            type=ValueType.NUMBER,
-            usersetable=False,
-            list=True)
-
-        self.add_property(
             descr="Signing CA's Name",
             name='signing_ca_name',
             get='signing_ca_name',
             set='signing_ca_name',
             enum=self.get_ca_names,
-            usage=_("""\
-            Signing CA's name or 'selfsigned' - for self-signed certificate, accepts string values"""),
             condition=lambda e: e['type'] != 'CERT_EXISTING' and e['type'] != 'CERT_CSR',
             usersetable=False,
             list=True)
@@ -409,92 +374,6 @@ class CertificateNamespace(CertificateBaseNamespace):
             condition=lambda e: e['type'] != 'CERT_EXISTING' and e['type'] != 'CERT_CSR',
             usersetable=False,
             list=False)
-
-        self.add_property(
-            descr='Key length',
-            name='key_length',
-            get='key_length',
-            set='key_length',
-            type=ValueType.NUMBER,
-            condition=lambda e: e['type'] != 'CERT_EXISTING',
-            usersetable=False,
-            list=True)
-
-        self.add_property(
-            descr='Digest algorithm',
-            name='digest_algorithm',
-            get='digest_algorithm',
-            set='digest_algorithm',
-            enum=['SHA1', 'SHA224', 'SHA256', 'SHA384', 'SHA512'],
-            condition=lambda e: e['type'] != 'CERT_EXISTING',
-            usersetable=False,
-            list=True)
-
-        self.add_property(
-            descr='Lifetime',
-            name='lifetime',
-            get='lifetime',
-            set='lifetime',
-            usage=_("""\
-            Certificate lifetime in days, accepts number values"""),
-            type=ValueType.NUMBER,
-            condition=lambda e: e['type'] != 'CERT_EXISTING',
-            usersetable=False,
-            list=True)
-
-        self.add_property(
-            descr='Country',
-            name='country',
-            get='country',
-            set='country',
-            condition=lambda e: e['type'] != 'CERT_EXISTING',
-            usersetable=False,
-            list=True)
-
-        self.add_property(
-            descr='State',
-            name='state',
-            get='state',
-            set='state',
-            condition=lambda e: e['type'] != 'CERT_EXISTING',
-            usersetable=False,
-            list=True)
-
-        self.add_property(
-            descr='City',
-            name='city',
-            get='city',
-            set='city',
-            condition=lambda e: e['type'] != 'CERT_EXISTING',
-            usersetable=False,
-            list=True)
-
-        self.add_property(
-            descr='Organization',
-            name='organization',
-            get='organization',
-            set='organization',
-            condition=lambda e: e['type'] != 'CERT_EXISTING',
-            usersetable=False,
-            list=True)
-
-        self.add_property(
-            descr='Common Name',
-            name='common',
-            get='common',
-            set='common',
-            condition=lambda e: e['type'] != 'CERT_EXISTING',
-            usersetable=False,
-            list=True)
-
-        self.add_property(
-            descr='Email',
-            name='email',
-            get='email',
-            set='email',
-            condition=lambda e: e['type'] != 'CERT_EXISTING',
-            usersetable=False,
-            list=True)
 
         self.primary_key = self.get_mapping('name')
 

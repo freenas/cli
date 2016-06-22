@@ -118,6 +118,7 @@ class Namespace(object):
 
 class Command(object):
     def __init__(self):
+        self.cwd = None
         self.exec_path = None
         self.current_env = None
 

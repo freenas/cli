@@ -1358,6 +1358,7 @@ class MainLoop(object):
                             )
 
                             item.exec_path = path if len(path) >= 1 else self.path
+                            item.cwd = self.cwd
                             item.current_env = env
                             if dry_run:
                                 resultset.append((item, cwd, args, kwargs, opargs))

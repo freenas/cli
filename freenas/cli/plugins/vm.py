@@ -760,3 +760,4 @@ class DeleteImagesCommand(Command):
 
 def _init(context):
     context.attach_namespace('/', VMNamespace('vm', context))
+    context.map_tasks('container.*', VMNamespace)

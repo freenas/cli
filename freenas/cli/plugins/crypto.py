@@ -540,3 +540,5 @@ class ImportCertificateCommand(Command):
 
 def _init(context):
     context.attach_namespace('/', CryptoNamespace('crypto', context))
+    context.map_tasks('crypto.certificate.*', CertificateNamespace)
+    context.map_tasks('crypto.certificate.*', CertificateAuthorityNamespace)

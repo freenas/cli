@@ -602,7 +602,7 @@ class IndexCommand(Command):
         def convert_exec_path_to_strings(exec_path):
             return [e.name if isinstance(e,Namespace) else e for e in exec_path]
 
-        tokens = convert_exec_path_to_strings(self.exec_path) if self.exec_path[0] == ".." else []
+        tokens = convert_exec_path_to_strings(self.exec_path) if self.exec_path[-1] != self.cwd else []
         obj = context.ml.get_relative_object(self.cwd, tokens)
         nss = obj.namespaces()
         cmds = obj.commands()

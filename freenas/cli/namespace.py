@@ -128,6 +128,13 @@ class Command(object):
     def complete(self, context):
         return []
 
+    def convert_exec_path_to_strings(self):
+        return [e.name if isinstance(e,Namespace) else e for e in self.exec_path]
+
+    def get_relative_namespace(self, context):
+        tokens = self.convert_exec_path_to_strings() if self.exec_path[-1] != self.cwd else []
+        return context.ml.get_relative_object(self.cwd, tokens)
+
 
 class FilteringCommand(Command):
     def run(self, context, args, kwargs, opargs, filtering=None):

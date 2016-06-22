@@ -434,8 +434,9 @@ class HelpCommand(Command):
     """
 
     def run(self, context, args, kwargs, opargs):
+        ns = self.get_relative_namespace(context)
         arg = args[:]
-        obj = context.ml.get_relative_object(self.exec_path[-1], args)
+        obj = context.ml.get_relative_object(ns, args)
 
         if len(arg) > 0:
             if "/" in arg:
@@ -599,11 +600,7 @@ class IndexCommand(Command):
     """
 
     def run(self, context, args, kwargs, opargs):
-        def convert_exec_path_to_strings(exec_path):
-            return [e.name if isinstance(e,Namespace) else e for e in exec_path]
-
-        tokens = convert_exec_path_to_strings(self.exec_path) if self.exec_path[-1] != self.cwd else []
-        obj = context.ml.get_relative_object(self.cwd, tokens)
+        obj = self.get_relative_namespace(context)
         nss = obj.namespaces()
         cmds = obj.commands()
 

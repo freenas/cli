@@ -57,20 +57,36 @@ class CryptoNamespace(Namespace):
         ]
 
 
-@description(_("Provides access to Certificate Authority actions"))
-class CertificateAuthorityNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):
+class CertificateBaseNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):
     """
-    The Certificate Authority namespace provides commands for listing and managing CAs.
+    Base class for CertificateAuthority and Certificate Namespaces
     """
     def __init__(self, name, context):
-        super(CertificateAuthorityNamespace, self).__init__(name, context)
+        super(CertificateBaseNamespace, self).__init__(name, context)
 
+        self.context = context
         self.entity_subscriber_name = 'crypto.certificate'
         self.create_task = 'crypto.certificate.create'
         self.update_task = 'crypto.certificate.update'
         self.import_task = 'crypto.certificate.import'
         self.delete_task = 'crypto.certificate.delete'
         self.primary_key_name = 'name'
+
+    def get_ca_names(self):
+        return self.context.entity_subscribers[self.entity_subscriber_name].query(
+            ('type', 'in', ('CA_INTERNAL', 'CA_INTERMEDIATE')),
+            select='name'
+        )
+
+
+@description(_("Provides access to Certificate Authority actions"))
+class CertificateAuthorityNamespace(CertificateBaseNamespace):
+    """
+    The Certificate Authority namespace provides commands for listing and managing CAs.
+    """
+    def __init__(self, name, context):
+        super(CertificateAuthorityNamespace, self).__init__(name, context)
+
         self.extra_query_params = [
             ('type', 'in', ('CA_EXISTING', 'CA_INTERMEDIATE', 'CA_INTERNAL'))
         ]
@@ -144,6 +160,7 @@ class CertificateAuthorityNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoa
             name='signing_ca_name',
             get='signing_ca_name',
             set='signing_ca_name',
+            enum=[c for c in self.get_ca_names()]+["selfsigned"],
             condition=lambda e: e['type'] == 'CA_INTERMEDIATE',
             usersetable=False,
             list=True)
@@ -296,19 +313,13 @@ class ImportCertificateAuthorityCommand(Command):
 
 
 @description(_("Provides access to Certificate actions"))
-class CertificateNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):
+class CertificateNamespace(CertificateBaseNamespace):
     """
-    The certificates namespace provides commands for listing and managing cryptography certificates.
+    The Certificate namespace provides commands for listing and managing cryptography certificates.
     """
     def __init__(self, name, context):
         super(CertificateNamespace, self).__init__(name, context)
 
-        self.entity_subscriber_name = 'crypto.certificate'
-        self.create_task = 'crypto.certificate.create'
-        self.update_task = 'crypto.certificate.update'
-        self.import_task = 'crypto.certificate.import'
-        self.delete_task = 'crypto.certificate.delete'
-        self.primary_key_name = 'name'
         self.extra_query_params = [
             ('type', 'in', ('CERT_INTERNAL', 'CERT_CSR', 'CERT_INTERMEDIATE', 'CERT_EXISTING'))
         ]
@@ -383,6 +394,7 @@ class CertificateNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             name='signing_ca_name',
             get='signing_ca_name',
             set='signing_ca_name',
+            enum=[c for c in self.get_ca_names()]+["selfsigned"],
             usage=_("""\
             Signing CA's name or 'selfsigned' - for self-signed certificate, accepts string values"""),
             condition=lambda e: e['type'] != 'CERT_EXISTING' and e['type'] != 'CERT_CSR',

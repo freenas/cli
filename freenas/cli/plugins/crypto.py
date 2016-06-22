@@ -160,7 +160,7 @@ class CertificateAuthorityNamespace(CertificateBaseNamespace):
             name='signing_ca_name',
             get='signing_ca_name',
             set='signing_ca_name',
-            enum=[c for c in self.get_ca_names()]+["selfsigned"],
+            enum=self.get_ca_names(),
             condition=lambda e: e['type'] == 'CA_INTERMEDIATE',
             usersetable=False,
             list=True)
@@ -394,7 +394,7 @@ class CertificateNamespace(CertificateBaseNamespace):
             name='signing_ca_name',
             get='signing_ca_name',
             set='signing_ca_name',
-            enum=[c for c in self.get_ca_names()]+["selfsigned"],
+            enum=self.get_ca_names(),
             usage=_("""\
             Signing CA's name or 'selfsigned' - for self-signed certificate, accepts string values"""),
             condition=lambda e: e['type'] != 'CERT_EXISTING' and e['type'] != 'CERT_CSR',

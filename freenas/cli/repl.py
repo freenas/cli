@@ -1553,6 +1553,7 @@ class MainLoop(object):
                 output_msg(error_trace)
 
     def get_relative_object(self, ns, tokens):
+        path = self.path[:]
         ptr = ns
         first_len = len(tokens) - 1
 
@@ -1567,17 +1568,18 @@ class MainLoop(object):
                 name = token
 
             if name == '/' and len(tokens) == first_len:
-                ptr = self.path[0]
-            if name == '..' and len(self.path) > 1:
-                self.prev_path = self.path[:]
-                ptr = self.path[-2]
+                ptr = path[0]
+            if name == '..' and len(path) > 1:
+                del path[-1]
+                ptr = path[-1]
             if name == 'help':
                 continue
 
             if issubclass(type(ptr), Namespace):
                 for ns in ptr.namespaces():
                     if ns.get_name() == name:
-                        ptr = ns
+                        path.append(ns)
+                        ptr = path[-1]
                         break
 
                 cmds = ptr.commands()

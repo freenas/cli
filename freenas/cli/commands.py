@@ -503,7 +503,7 @@ class HelpCommand(Command):
             cmd_dict_list = []
             ns_cmds = obj.commands()
             for key, value in ns_cmds.items():
-                if hasattr(value,'description') and value.description is not None:
+                if hasattr(value, 'description') and value.description is not None:
                     description = value.description
                 else:
                     description = obj.get_name()
@@ -519,7 +519,7 @@ class HelpCommand(Command):
             # Then listing the namespaces available from this namespace
             for nss in obj.namespaces():
                 if not isinstance(nss, SingleItemNamespace):
-                    if hasattr(nss,'description') and nss.description is not None:
+                    if hasattr(nss, 'description') and nss.description is not None:
                         description = nss.description
                     else:
                         description = nss.name
@@ -539,7 +539,7 @@ class HelpCommand(Command):
             ]
             filtering_cmd_dict_list = []
             for key, value in context.ml.builtin_commands.items():
-                if hasattr(value,'description') and value.description is not None:
+                if hasattr(value, 'description') and value.description is not None:
                     description = value.description
                 else:
                     description = key

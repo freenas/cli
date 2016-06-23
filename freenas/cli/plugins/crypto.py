@@ -134,6 +134,22 @@ class CertificateBaseNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixi
             list=True)
 
         self.add_property(
+            descr='Not Before',
+            name='not_before',
+            get='not_before',
+            set='not_before',
+            usersetable=False,
+            list=True)
+
+        self.add_property(
+            descr='Not After',
+            name='not_after',
+            get='not_after',
+            set='not_after',
+            usersetable=False,
+            list=True)
+
+        self.add_property(
             descr='Lifetime',
             name='lifetime',
             get='lifetime',

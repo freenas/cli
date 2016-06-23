@@ -445,7 +445,7 @@ class VMDisksNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNames
             descr='Disk size',
             name='size',
             get='properties.size',
-            type=ValueType.STRING,
+            type=ValueType.SIZE,
             condition=lambda e: e['type'] == 'DISK'
         )
 

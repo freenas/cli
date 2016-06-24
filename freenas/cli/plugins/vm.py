@@ -240,7 +240,6 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             fb['properties']['resolution'] = v
 
         self.skeleton_entity = {
-            'type': 'VM',
             'devices': [],
             'config': {}
         }

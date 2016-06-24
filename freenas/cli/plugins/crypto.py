@@ -260,7 +260,7 @@ class CertificateAuthorityNamespace(CertificateBaseNamespace):
         self.add_property(
             descr="Signing CA's Name",
             name='signing_ca_name',
-            get='signing_ca_name',
+            get=lambda e: e['signing_ca_name'],
             set='signing_ca_name',
             enum=self.get_ca_names,
             condition=lambda e: e['type'] == 'CA_INTERMEDIATE',
@@ -375,7 +375,7 @@ class CertificateNamespace(CertificateBaseNamespace):
         self.add_property(
             descr="Signing CA's Name",
             name='signing_ca_name',
-            get='signing_ca_name',
+            get=lambda e: e['signing_ca_name'],
             set='signing_ca_name',
             enum=self.get_ca_names,
             condition=lambda e: e['type'] != 'CERT_EXISTING' and e['type'] != 'CERT_CSR',

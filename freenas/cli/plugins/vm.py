@@ -382,6 +382,22 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             type=ValueType.STRING_HEAD
         )
 
+        self.add_property(
+            descr='VNC server enabled',
+            name='vnc_enabled',
+            get='config.vnc_enabled',
+            list=False,
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
+            descr='VNC server port',
+            name='vnc_port',
+            get='config.vnc_port',
+            list=False,
+            type=ValueType.NUMBER
+        )
+
         self.primary_key = self.get_mapping('name')
         self.entity_namespaces = lambda this: [
             VMDisksNamespace('disks', self.context, this),

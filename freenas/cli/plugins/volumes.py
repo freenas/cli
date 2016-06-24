@@ -96,6 +96,7 @@ class AddVdevCommand(Command):
         disks_per_type.update({
             'log': 1,
             'cache': 1,
+            'spare': 1
         })
 
         typ = kwargs.pop('type')
@@ -137,14 +138,14 @@ class AddVdevCommand(Command):
                 'path': correct_disk_path(disks[0])
             })
 
-        if typ == 'log':
+        if typ in ('log', 'spare'):
             if len(disks) != 1:
-                raise CommandException(_("Log vdevs cannot be mirrored"))
+                raise CommandException(_("Log or spare vdevs cannot be mirrored"))
 
             if 'log' not in entity:
-                entity['topology']['log'] = []
+                entity['topology'][typ] = []
 
-            entity['topology']['log'].append({
+            entity['topology'][typ].append({
                 'type': 'disk',
                 'path': correct_disk_path(disks[0])
             })

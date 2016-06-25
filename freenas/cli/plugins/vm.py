@@ -106,7 +106,7 @@ class StartVMCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        context.submit_task('container.start', self.parent.entity['id'])
+        context.submit_task('vm.start', self.parent.entity['id'])
 
 
 class StopVMCommand(Command):
@@ -114,7 +114,7 @@ class StopVMCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        context.submit_task('container.stop', self.parent.entity['id'])
+        context.submit_task('vm.stop', self.parent.entity['id'])
 
 
 class KillVMCommand(Command):
@@ -122,7 +122,7 @@ class KillVMCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        context.submit_task('container.stop', self.parent.entity['id'], True)
+        context.submit_task('vm.stop', self.parent.entity['id'], True)
 
 
 class RebootVMCommand(Command):
@@ -133,14 +133,14 @@ class RebootVMCommand(Command):
         reboot
         reboot force=yes
 
-    Reboots container
+    Reboots VM
     """
     def __init__(self, parent):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
         force = kwargs.get('force', False)
-        context.submit_task('container.reboot', self.parent.entity['id'], force)
+        context.submit_task('vm.reboot', self.parent.entity['id'], force)
 
 
 class ConsoleCommand(Command):
@@ -150,7 +150,7 @@ class ConsoleCommand(Command):
     Examples:
         console
 
-    Connects to container serial console. ^] returns to CLI
+    Connects to VM serial console. ^] returns to CLI
     """
     def __init__(self, parent):
         self.parent = parent
@@ -182,7 +182,7 @@ class ImportVMCommand(Command):
         volume = kwargs.get('volume', None)
         if not volume:
             raise CommandException(_("Please specify which volume is containing a VM being imported."))
-        context.submit_task('container.import', name, volume, callback=lambda s, t: post_save(self.parent, t))
+        context.submit_task('vm.import', name, volume, callback=lambda s, t: post_save(self.parent, t))
 
 
 @description("Configure and manage virtual machines")
@@ -193,10 +193,10 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
     """
     def __init__(self, name, context):
         super(VMNamespace, self).__init__(name, context)
-        self.entity_subscriber_name = 'container'
-        self.create_task = 'container.create'
-        self.update_task = 'container.update'
-        self.delete_task = 'container.delete'
+        self.entity_subscriber_name = 'vm'
+        self.create_task = 'vm.create'
+        self.update_task = 'vm.update'
+        self.delete_task = 'vm.delete'
         self.required_props = ['name', 'volume']
         self.primary_key_name = 'name'
 
@@ -587,7 +587,7 @@ class VMUSBNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNamespa
 class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
     def __init__(self, name, context):
         super(TemplateNamespace, self).__init__(name, context)
-        self.query_call = 'container.template.query'
+        self.query_call = 'vm.template.query'
         self.primary_key_name = 'template.name'
         self.allow_create = False
 
@@ -718,24 +718,24 @@ class FetchShowCommand(ListCommand):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs, filtering=None):
-        context.call_task_sync('container.template.fetch')
+        context.call_task_sync('vm.template.fetch')
         return super(FetchShowCommand, self).run(context, args, kwargs, opargs, filtering)
 
 
-@description("Downloads container images to the local cache")
+@description("Downloads VM images to the local cache")
 class DownloadImagesCommand(Command):
     """
     Usage: download
 
     Example: download
 
-    Downloads container template images to the local cache.
+    Downloads VM template images to the local cache.
     """
     def __init__(self, parent):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs, filtering=None):
-        context.submit_task('container.cache.update', self.parent.entity['template']['name'])
+        context.submit_task('vm.cache.update', self.parent.entity['template']['name'])
 
 
 @description("Shows readme entry of selected VM template")
@@ -757,22 +757,22 @@ class ReadmeCommand(Command):
             return Sequence("Selected template does not have readme entry")
 
 
-@description("Deletes container images from the local cache")
+@description("Deletes VM images from the local cache")
 class DeleteImagesCommand(Command):
     """
     Usage: delete
 
     Example: delete
 
-    Deletes container template images from the local cache.
+    Deletes VM template images from the local cache.
     """
     def __init__(self, parent):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs, filtering=None):
-        context.submit_task('container.cache.delete', self.parent.entity['template']['name'])
+        context.submit_task('vm.cache.delete', self.parent.entity['template']['name'])
 
 
 def _init(context):
     context.attach_namespace('/', VMNamespace('vm', context))
-    context.map_tasks('container.*', VMNamespace)
+    context.map_tasks('vm.*', VMNamespace)

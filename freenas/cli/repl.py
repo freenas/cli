@@ -130,7 +130,7 @@ ENTITY_SUBSCRIBERS = [
     'crypto.certificate',
     'alert',
     'alert.filter',
-    'container',
+    'vm',
     'syslog',
     'replication.link',
     'replication.host',

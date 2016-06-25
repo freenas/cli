@@ -376,7 +376,7 @@ class ImportVolumeCommand(Command):
 @description("Imports items from a given volume")
 class ImportFromVolumeCommand(Command):
     """
-    Usage: import <all\containers\shares\system>
+    Usage: import <all\vms\shares\system>
 
     Imports a detached volume.
     When importing encrypted volume key and disks or key, password and disks must be provided.
@@ -390,8 +390,8 @@ class ImportFromVolumeCommand(Command):
 
         scope = args[0]
 
-        if scope not in ['all', 'containers', 'shares', 'system']:
-            raise CommandException('Import scope must be one of all\containers\shares\system')
+        if scope not in ['all', 'vms', 'shares', 'system']:
+            raise CommandException('Import scope must be one of all \ vms \ shares \ system')
 
         context.submit_task('volume.autoimport', self.parent.entity['id'], scope)
 

@@ -592,7 +592,6 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
         self.allow_create = False
 
         self.skeleton_entity = {
-            'type': 'VM',
             'devices': [],
             'config': {}
         }

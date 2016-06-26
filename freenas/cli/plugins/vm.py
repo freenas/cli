@@ -34,7 +34,7 @@ from freenas.cli.output import Sequence
 from freenas.dispatcher.shell import VMConsoleClient
 from freenas.cli.namespace import (
     EntityNamespace, Command, NestedObjectLoadMixin, NestedObjectSaveMixin, EntitySubscriberBasedLoadMixin,
-    RpcBasedLoadMixin, TaskBasedSaveMixin, description, ListCommand, CommandException
+    RpcBasedLoadMixin, TaskBasedSaveMixin, description, CommandException
 )
 from freenas.cli.output import ValueType
 from freenas.cli.utils import post_save
@@ -690,9 +690,6 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
         )
 
         self.primary_key = self.get_mapping('name')
-        self.extra_commands = {
-            'show': FetchShowCommand(self)
-        }
         self.entity_commands = self.get_entity_commands
 
     def get_entity_commands(self, this):
@@ -709,23 +706,6 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
                     commands['delete'] = DeleteImagesCommand(this)
 
         return commands
-
-
-@description("Downloads templates from git")
-class FetchShowCommand(ListCommand):
-    """
-    Usage: show
-
-    Example: show
-
-    Refreshes local cache of VM templates and then shows them.
-    """
-    def __init__(self, parent):
-        self.parent = parent
-
-    def run(self, context, args, kwargs, opargs, filtering=None):
-        context.call_task_sync('vm.template.fetch')
-        return super(FetchShowCommand, self).run(context, args, kwargs, opargs, filtering)
 
 
 @description("Downloads VM images to the local cache")

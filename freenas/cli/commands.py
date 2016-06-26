@@ -108,6 +108,30 @@ class SetoptCommand(Command):
         return [create_variable_completer(k, v) for k, v in context.variables.get_all()]
 
 
+@description("Changes the namespace to the specified one")
+class ChangeNamespaceCommand(Command):
+
+    """
+    Usage: cd namespace/namespace
+
+    Example: cd system/ui
+             cd ../..
+             cd ../config
+    This is basically a navigation command to facilitate unix-like navigation
+    """
+
+    def run(self, context, args, kwargs, opargs):
+        if kwargs:
+            raise CommandException(_(
+                'You cannot specify command like properties in this navigation command'
+            ))
+        if len(args) > 1:
+            raise CommandException(_('Invalid syntax: {0}.\n{1}'.format(args, inspect.getdoc(self))))
+        elif len(args) == 1:
+            path = args[0][0] + args[0][1:].replace('/', ' ').strip()
+            return context.ml.process(path)
+
+
 @description("Print configuration variable values")
 class PrintoptCommand(Command):
 

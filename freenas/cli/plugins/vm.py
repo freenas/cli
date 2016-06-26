@@ -297,6 +297,13 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
         )
 
         self.add_property(
+            descr='Start on boot',
+            name='autostart',
+            get='config.autostart',
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
             descr='Boot device',
             name='boot_device',
             get='config.boot_device',

@@ -889,8 +889,9 @@ class WaitCommand(Command):
             percentage = task['progress']['percentage'] if 'progress' in task else 0
             progress.update(percentage=percentage, message=message)
 
+        generator = None
+        progress = None
         try:
-            generator = None
             task = context.entity_subscribers['task'].get(tid, timeout=1)
             if task['state'] in ('FINISHED', 'FAILED', 'ABORTED'):
                 return _("The task with id: {0} ended in {1} state".format(tid, task['state']))
@@ -918,11 +919,15 @@ class WaitCommand(Command):
                     six.print_()
                     break
         except KeyboardInterrupt:
+            if progress:
+                progress.end()
             six.print_()
             output_msg(_("User requested task termination. Abort signal sent"))
             context.call_sync('task.abort', tid)
         except SIGTSTPException:
                 # The User backgrounded the task by sending SIGTSTP (Ctrl+Z)
+                if progress:
+                    progress.end()
                 six.print_()
                 output_msg(_("Task {0} will continue to run in the background.".format(tid)))
                 output_msg(_("To bring it back to the foreground execute 'wait {0}'".format(tid)))
@@ -930,7 +935,10 @@ class WaitCommand(Command):
         finally:
             # Now that we are done with the task unset the Ctrl+Z handler
             # lets set the SIGTSTP (Ctrl+Z) handler
-            del generator
+            if progress:
+                progress.end()
+            if generator:
+                del generator
             SIGTSTP_setter(set_flag=False)
 
 

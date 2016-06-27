@@ -30,7 +30,7 @@ import importlib
 import sys
 import gettext
 import enum
-from threading import Lock
+import time
 import contextlib
 import io
 import six
@@ -40,6 +40,7 @@ import collections
 from freenas.utils.permissions import get_unix_permissions, string_to_int
 from freenas.cli import config
 from freenas.utils import first_or_default
+from threading import Lock, Thread
 
 
 output_lock = Lock()
@@ -134,19 +135,45 @@ class ProgressBar(object):
     def __init__(self):
         self.message = None
         self.percentage = 0
+        self.draw_t = Thread(target=self.draw)
+        self.finished = False
         sys.stdout.write('\n')
+        self.draw_t.daemon = True
+        self.draw_t.start()
 
     def draw(self):
         progress_width = 40
-        filled_width = int(self.percentage * progress_width)
-        sys.stdout.write('\033[2K\033[A\033[2K\r')
-        sys.stdout.write('Status: {}\n'.format(self.message))
-        sys.stdout.write('Total task progress: [{}{}] {:.2%}'.format(
-            '#' * filled_width,
-            '_' * (progress_width - filled_width),
-            self.percentage))
+        none_fill = ''.join('#' if i < 8 else '_' for i in range(progress_width))
 
-        sys.stdout.flush()
+        def get_none_fill(f):
+            asc = True
+            while True:
+                yield f
+                if asc:
+                    f = f[-1] + f[:-1]
+                    if f[-1] == '#':
+                        asc = False
+                else:
+                    f = f[1:] + f[0]
+                    if f[0] == '#':
+                        asc = True
+
+        generator = get_none_fill(none_fill)
+        while not self.finished:
+            if self.percentage is None:
+                none_fill = next(generator)
+                fill = none_fill
+            else:
+                filled_width = int(self.percentage * progress_width)
+                fill = '#' * filled_width + '_' * (progress_width - filled_width)
+
+            sys.stdout.write('\033[2K\033[A\033[2K\r')
+            sys.stdout.write('Status: {}\n'.format(self.message))
+            sys.stdout.write('Total task progress: [{}] '.format(fill) +
+                             ('{:.2%}'.format(self.percentage) if self.percentage else ''))
+
+            sys.stdout.flush()
+            time.sleep(0.5)
 
     def update(self, percentage=None, message=None):
         if percentage:
@@ -155,11 +182,12 @@ class ProgressBar(object):
         if message:
             self.message = message
 
-        self.draw()
-
     def finish(self):
         self.percentage = 1
-        self.draw()
+
+    def end(self):
+        self.finished = True
+        self.draw_t.join()
         sys.stdout.write('\n')
 
 

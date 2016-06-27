@@ -886,7 +886,7 @@ class WaitCommand(Command):
 
         def update(progress, task):
             message = task['progress']['message'] if 'progress' in task else task['state']
-            percentage = task['progress']['percentage'] if 'progress' in task else 0
+            percentage = task['progress']['percentage'] if 'progress' in task else None
             progress.update(percentage=percentage, message=message)
 
         generator = None

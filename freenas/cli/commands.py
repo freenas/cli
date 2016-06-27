@@ -43,7 +43,7 @@ from freenas.cli.namespace import (
     SingleItemNamespace, Namespace, FilteringCommand
 )
 from freenas.cli.output import (
-    Table, ValueType, output_msg, output_lock, output_less, format_value,
+    Table, ValueType, output_msg, output_less, format_value,
     Sequence, read_value, format_output
 )
 from freenas.cli.output import Object as output_obj

@@ -171,7 +171,7 @@ def edit_in_editor(initial):
         f.flush()
         pty.spawn([editor, f.name])
         with open(f.name, 'r') as f2:
-            return f2.read()
+            return f2.read().rstrip()
 
 
 def netmask_to_cidr(entity, netmask):

@@ -170,7 +170,7 @@ class ProgressBar(object):
             sys.stdout.write('\033[2K\033[A\033[2K\r')
             sys.stdout.write('Status: {}\n'.format(self.message))
             sys.stdout.write('Total task progress: [{}] '.format(fill) +
-                             ('{:.2%}'.format(self.percentage) if self.percentage else ''))
+                             ('' if self.percentage is None else '{:.2%}'.format(self.percentage)))
 
             sys.stdout.flush()
             time.sleep(0.5)

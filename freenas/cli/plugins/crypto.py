@@ -308,12 +308,13 @@ class CertificateAuthorityNamespace(CertificateBaseNamespace):
 @description("Imports given CA")
 class ImportCertificateAuthorityCommand(Command):
     """
-    Usage: import type=CA_EXISTING name=<name> certificate=<certificate> privatekey=<privatekey>
-           [passphrase=<passphrase>] serial=<serial_number>
+    Usage: import type=CA_EXISTING name=<name>
 
     Examples:
     Import existing CA Certificate :
-    import type=CA_EXISTING name=myImportedCA certificate=<certificate> privatekey=<privatekey>
+    import type=CA_EXISTING name=myImportedCA
+    myImportedCA edit certificate
+    myImportedCA edit privatekey
 
     Imports a Certificate Authority.
     """
@@ -327,22 +328,12 @@ class ImportCertificateAuthorityCommand(Command):
             raise CommandException(_("Pleaes specify valid 'type' argument value"))
         if 'name' not in kwargs:
             raise CommandException(_("Please specify name of the imported CA"))
-        if 'certificate' not in kwargs:
-            raise CommandException(_("Please specify 'certificate' argument"))
-        if 'privatekey' not in kwargs:
-            raise CommandException(_("Please specify 'privatekey' argument"))
-        if 'serial' not in kwargs:
-            raise CommandException(_("Please specify 'serial' argument"))
 
         context.submit_task(self.parent.import_task, kwargs)
 
     def complete(self, context):
         return [
             NullComplete('name='),
-            NullComplete('certificate='),
-            NullComplete('privatekey='),
-            NullComplete('passphrase='),
-            NullComplete('serial='),
             EnumComplete('type=', ['CA_EXISTING'])
         ]
 
@@ -415,12 +406,13 @@ class CertificateNamespace(CertificateBaseNamespace):
 @description("Imports given CA")
 class ImportCertificateCommand(Command):
     """
-    Usage: import type=CERT_EXISTING name=<name> certificate=<certificate> privatekey=<privatekey>
-           [passphrase=<passphrase>]
+    Usage: import type=CERT_EXISTING name=<name>
 
     Examples:
     Import existing server certificate:
-    import type=CERT_EXISTING name=myImportedCert certificate=<certificate> privatekey=<privatekey>
+    import type=CERT_EXISTING name=myImportedServerCert
+    myImportedServerCert edit certificate
+    myImportedServerCert edit privatekey
 
     Imports a Certificate.
     """
@@ -434,19 +426,12 @@ class ImportCertificateCommand(Command):
             raise CommandException(_("Pleaes specify valid 'type' argument value"))
         if 'name' not in kwargs:
             raise CommandException(_("Please specify name of the imported Certificate"))
-        if 'certificate' not in kwargs:
-            raise CommandException(_("Please specify 'certificate' argument"))
-        if 'privatekey' not in kwargs:
-            raise CommandException(_("Please specify 'privatekey' argument"))
 
         context.submit_task(self.parent.import_task, kwargs)
 
     def complete(self, context):
         return [
             NullComplete('name='),
-            NullComplete('certificate='),
-            NullComplete('privatekey='),
-            NullComplete('passphrase='),
             EnumComplete('type=', ['CERT_EXISTING'])
         ]
 

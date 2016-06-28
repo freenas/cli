@@ -84,6 +84,15 @@ class CertificateBaseNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixi
             name='certificate',
             get='certificate',
             set='certificate',
+            type=ValueType.TEXT_FILE,
+            usersetable=lambda e: e['type'] in ('CA_EXISTING', 'CERT_EXISTING'),
+            list=False)
+
+        self.add_property(
+            descr='Certificate Path',
+            name='certificate_path',
+            get='certificate_path',
+            set='certificate_path',
             type=ValueType.STRING,
             usersetable=False,
             list=False)
@@ -93,6 +102,15 @@ class CertificateBaseNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixi
             name='privatekey',
             get='privatekey',
             set='privatekey',
+            type=ValueType.TEXT_FILE,
+            usersetable=lambda e: e['type'] in ('CA_EXISTING', 'CERT_EXISTING'),
+            list=False)
+
+        self.add_property(
+            descr='Private Key Path',
+            name='privatekey_path',
+            get='privatekey_path',
+            set='privatekey_path',
             type=ValueType.STRING,
             usersetable=False,
             list=False)

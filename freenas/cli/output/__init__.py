@@ -135,7 +135,7 @@ class ProgressBar(object):
     def __init__(self):
         self.message = None
         self.percentage = 0
-        self.draw_t = Thread(target=self.draw)
+        self.draw_t = Thread(target=self.draw) if sys.stdout.isatty() else Thread(target=self.draw_static)
         self.finished = False
         sys.stdout.write('\n')
         self.draw_t.daemon = True
@@ -159,7 +159,7 @@ class ProgressBar(object):
                         asc = True
 
         generator = get_none_fill(none_fill)
-        while not self.finished:
+        while True:
             if self.percentage is None:
                 none_fill = next(generator)
                 fill = none_fill
@@ -173,7 +173,32 @@ class ProgressBar(object):
                              ('' if self.percentage is None else '{:.2%}'.format(self.percentage)))
 
             sys.stdout.flush()
+            if self.finished:
+                break
             time.sleep(0.5)
+
+    def draw_static(self):
+        old_message = ''
+
+        while True:
+            status = ''
+
+            if self.percentage is not None:
+                if self.message:
+                    status = 'Status {}. '.format(self.message)
+                status += 'Progress {:.2%}\n'.format(self.percentage)
+            elif old_message != self.message:
+                old_message = self.message
+                status = 'Status {}\n'.format(self.message)
+
+            if status:
+                sys.stdout.write(status)
+                sys.stdout.flush()
+
+            if self.finished:
+                break
+
+            time.sleep(1)
 
     def update(self, percentage=None, message=None):
         self.percentage = None if percentage is None else float(percentage / 100.0)

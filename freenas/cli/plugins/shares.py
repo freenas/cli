@@ -1037,6 +1037,12 @@ class ISCSITargetsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespa
             get='auth_group'
         )
 
+        self.add_property(
+            descr='Portal group',
+            name='portal_group',
+            get='portal_group'
+        )
+
         self.primary_key = self.get_mapping('name')
         self.entity_namespaces = lambda this: [
             ISCSITargetMapingNamespace('luns', self.context, this)

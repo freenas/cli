@@ -50,7 +50,7 @@ _ = t.gettext
 
 class ValueType(enum.Enum):
     STRING = 1
-    STRING_HEAD = 2
+    TEXT_FILE = 2
     NUMBER = 3
     HEXNUMBER = 4
     OCTNUMBER = 5
@@ -233,7 +233,7 @@ def read_value(value, tv=ValueType.STRING):
 
         return value
 
-    if tv in (ValueType.STRING, ValueType.STRING_HEAD):
+    if tv in (ValueType.STRING, ValueType.TEXT_FILE):
         return str(value)
 
     if tv in (ValueType.NUMBER, ValueType.SIZE):

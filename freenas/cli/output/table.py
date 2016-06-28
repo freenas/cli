@@ -59,7 +59,7 @@ class TableOutputFormatter(object):
         if vt == ValueType.STRING:
             return str(value)
 
-        if vt == ValueType.STRING_HEAD:
+        if vt == ValueType.TEXT_FILE:
             return str(value[:10] + '(...)')
 
         if vt == ValueType.NUMBER:

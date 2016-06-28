@@ -385,7 +385,7 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             get='template.readme',
             set='template.readme',
             list=False,
-            type=ValueType.STRING_HEAD
+            type=ValueType.TEXT_FILE
         )
 
         self.add_property(

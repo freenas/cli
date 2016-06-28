@@ -164,14 +164,14 @@ def describe_task_state(task):
     return task['state']
 
 
-def edit_in_editor(initial):
+def edit_in_editor(initial, remove_newline_at_eof=False):
     editor = os.getenv('VISUAL') or os.getenv('EDITOR') or '/usr/bin/vi'
     with tempfile.NamedTemporaryFile('w') as f:
         f.write(initial or '')
         f.flush()
         pty.spawn([editor, f.name])
         with open(f.name, 'r') as f2:
-            return f2.read().rstrip()
+            return f2.read().rstrip() if remove_newline_at_eof else f2.read()
 
 
 def netmask_to_cidr(entity, netmask):

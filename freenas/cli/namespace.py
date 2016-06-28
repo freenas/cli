@@ -447,9 +447,12 @@ class ItemNamespace(Namespace):
             if len(args) < 1:
                 raise CommandException(_("Please provide a property to be edited.\n{0}".format(inspect.getdoc(self))))
             prop = self.parent.get_mapping(args[0])
-            if prop.type not in (ValueType.STRING, ValueType.STRING_HEAD):
-                raise CommandException(_("The edit command can only be used on string properties"))
-            value = edit_in_editor(prop.do_get(self.parent.entity))
+            if prop.type == ValueType.STRING:
+                value = edit_in_editor(prop.do_get(self.parent.entity), remove_newline_at_eof=True)
+            elif prop.type == ValueType.TEXT_FILE:
+                value = edit_in_editor(prop.do_get(self.parent.entity), remove_newline_at_eof=False)
+            else:
+                raise CommandException(_("The edit command can only be used on string or text file properties"))
             prop.do_set(self.parent.entity, value)
             self.parent.modified = True
             self.parent.save()
@@ -554,7 +557,7 @@ class ItemNamespace(Namespace):
 
     def has_editable_string(self):
         for prop in self.property_mappings:
-            if prop.set is not None and prop.is_usersetable(self.entity) and prop.type in (ValueType.STRING, ValueType.STRING_HEAD):
+            if prop.set is not None and prop.is_usersetable(self.entity) and prop.type in (ValueType.STRING, ValueType.TEXT_FILE):
                 if prop.condition and not prop.condition(self.entity):
                     continue
                 else:

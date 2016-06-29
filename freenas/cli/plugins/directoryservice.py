@@ -107,6 +107,13 @@ class DirectoriesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, E
         )
 
         self.add_property(
+            descr='State',
+            name='state',
+            get='status.state',
+            list=True,
+        )
+
+        self.add_property(
             descr='Minimum UID',
             name='uid_min',
             get='uid_range.0',

@@ -1235,6 +1235,15 @@ svc_cli_config = {
             'list': True,
         },
         {
+            'descr': 'Webdav SSL Certificate',
+            'name': 'certificate',
+            'usage': _("""The SSL certificate to be used for Secure WebDAV
+            connections. Enclose the certificate between double quotes"""),
+            'get': 'certificate',
+            'type': ValueType.STRING,
+            'list': True
+        },
+        {
             'descr': 'HTTP Port',
             'name': 'http_port',
             'usage': _("""

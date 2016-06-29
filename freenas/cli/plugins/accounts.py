@@ -67,6 +67,7 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
         self.delete_task = 'user.delete'
         self.save_key_name = 'id'
         self.required_props = ['username', ['password', 'password_disabled']]
+        self.extra_query_params = [['or',[('builtin', '=', False), ('username', '=', 'root')]]]
 
         if not UsersNamespace.shells:
             UsersNamespace.shells = context.call_sync('shell.get_shells')

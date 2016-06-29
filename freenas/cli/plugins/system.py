@@ -655,9 +655,14 @@ class AdvancedNamespace(ConfigNamespace):
             but only sends an email when the system reboots or
             encounters an error."""),
             get='periodic_notify_user',
+            set=self.check_legal_set_value,
             type=ValueType.NUMBER
         )
 
+    def check_legal_set_value(self, obj, v):
+        if v in range(1,1000):
+            raise ValueError(_('Invalid value, please specify value outside of range (1..999)'))
+        return
 
 @description("Configuration database operations")
 class ConfigDbNamespace(Namespace):

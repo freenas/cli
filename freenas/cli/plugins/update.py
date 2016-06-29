@@ -28,8 +28,9 @@
 
 import gettext
 import copy
+import inspect
 from datetime import datetime
-from freenas.cli.namespace import ConfigNamespace, Command, description
+from freenas.cli.namespace import ConfigNamespace, Command, description, CommandException
 from freenas.cli.output import output_msg, ValueType, Table, read_value
 
 
@@ -176,6 +177,10 @@ class UpdateNowCommand(Command):
                 ))
 
     def run(self, context, args, kwargs, opargs):
+        if (args or len(kwargs) > 1 or ('reboot' not in kwargs and len(kwargs) == 1)):
+            raise CommandException(_(
+                "Incorrect syntax {0} {1}\n{2}".format(args, kwargs, inspect.getdoc(self))
+            ))
         self.context = context
         self.reboot = read_value(kwargs.get('reboot', self.reboot), tv=ValueType.BOOLEAN)
         self.task_id = context.submit_task(

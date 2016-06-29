@@ -110,6 +110,7 @@ class DirectoriesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, E
             descr='State',
             name='state',
             get='status.state',
+            set=None,
             list=True,
         )
 

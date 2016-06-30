@@ -538,6 +538,12 @@ class AdvancedNamespace(ConfigNamespace):
         self.config_call = 'system.advanced.get_config'
         self.update_task = 'system.advanced.update'
 
+        def set_periodic_notify_user(obj, v):
+            if v in range(1, 1000):
+                raise ValueError(_('Invalid value, please specify value outside of range (1..999)'))
+            else:
+                obj['periodic_notify_user'] = v
+
         self.add_property(
             descr='Enable Console CLI',
             name='console_cli',
@@ -655,14 +661,10 @@ class AdvancedNamespace(ConfigNamespace):
             but only sends an email when the system reboots or
             encounters an error."""),
             get='periodic_notify_user',
-            set=self.check_legal_set_value,
+            set=set_periodic_notify_user,
             type=ValueType.NUMBER
         )
 
-    def check_legal_set_value(self, obj, v):
-        if v in range(1,1000):
-            raise ValueError(_('Invalid value, please specify value outside of range (1..999)'))
-        return
 
 @description("Configuration database operations")
 class ConfigDbNamespace(Namespace):

@@ -665,11 +665,14 @@ svc_cli_config = {
             'name': 'dos_charset',
             'usage': _("""
             Must be different from the 'Workgroup'."""),
+            'enum': ['CP437', 'CP850', 'CP852', 'CP866', 'CP932', 'CP949',
+                     'CP950', 'CP1029', 'CP1251', 'ASCII'],
             'get': 'dos_charset'
         },
         {
             'descr': 'UNIX Character Set',
             'name': 'unix_charset',
+            'enum': ['UTF-8', 'iso-8859-1', 'iso-8859-15', 'gb2312', 'EUC-JP', 'ASCII'],
             'get': 'unix_charset'
         },
         {

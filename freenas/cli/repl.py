@@ -1180,6 +1180,9 @@ class MainLoop(object):
                     item = self.find_in_scope(token.name, cwd=cwd)
                     if item is not None:
                         return item
+                    item = self.find_in_scope(token.name.split('/')[0], cwd=cwd)
+                    if item is not None:
+                        raise SyntaxError("Use of slashes as separators not allowed. Please use spaces instead.")
 
                 # After all scope checks are done check if this is a
                 # config environment var of the cli
@@ -1310,6 +1313,8 @@ class MainLoop(object):
 
                     top = token.args.pop(0)
                     if top == '..':
+                        if len(token.args) > 0 and isinstance(token.args[0], Symbol) and '/' in token.args[0].name:
+                            raise SyntaxError("Use of slashes as separators not allowed. Please use spaces instead.")
                         if len(path) == 0:
                             if len(self.path) > 1:
                                 self.path[-2].on_enter()

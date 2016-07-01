@@ -164,6 +164,13 @@ def _init(context):
     context.map_tasks('service.*', ServicesNamespace)
 
 
+def set_webdav_protocol(o, v):
+    if v == ['HTTP+HTTPS']:
+        o['protocol'] = ['HTTP','HTTPS']
+    else:
+        o['protocol'] = v
+
+
 # This is not ideal (but better than an if-else ladder)
 svc_cli_config = {
     'sshd': [
@@ -1234,7 +1241,9 @@ svc_cli_config = {
             (connection always encrypted), or HTTP+HTTPS (both
             types of connections allowed)."""),
             'get': 'protocol',
+            'set': set_webdav_protocol,
             'type': ValueType.SET,
+            'enum': ['HTTP', 'HTTPS', 'HTTP+HTTPS'],
             'list': True,
         },
         {

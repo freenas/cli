@@ -232,15 +232,14 @@ class PropertyMapping(object):
             raise ValueError(_("Property '{0}' is not settable for this entity".format(self.name)))
 
         value = read_value(value, self.type)
+
         if self.enum:
             enum_val = self.enum() if callable(self.enum) else self.enum
-            if (self.type == ValueType.SET and isinstance(value, (list, tuple))):
-                if bool(frozenset(value).symmetric_difference(enum_val)):
-                    raise ValueError(
-                        "Invalid value for property '{0}'. Should be one of: {1}".format(
-                            self.get_name, ', '.join(enum_val)
-                        )
-                    )
+            if (self.type == ValueType.SET):
+                for e in value:
+                    if e not in enum_val:
+                        raise ValueError("Invalid value for property '{0}'. "
+                                         "Should be one of: {1}".format(self.get_name, ', '.join(enum_val)))
             elif value not in enum_val:
                 raise ValueError(
                     "Invalid value for property '{0}'. Should be one of: {1}".format(

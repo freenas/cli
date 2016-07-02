@@ -198,6 +198,7 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
         self.update_task = 'vm.update'
         self.delete_task = 'vm.delete'
         self.required_props = ['name', 'volume']
+        self.extra_query_params = [('parent', '=', None)]
         self.primary_key_name = 'name'
 
         def set_memsize(o, v):

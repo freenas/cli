@@ -34,7 +34,6 @@ from freenas.cli.namespace import (
     ItemNamespace,
     EntityNamespace,
     EntitySubscriberBasedLoadMixin,
-    RpcBasedLoadMixin,
     TaskBasedSaveMixin,
     description
 )

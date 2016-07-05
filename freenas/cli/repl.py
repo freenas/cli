@@ -1366,11 +1366,16 @@ class MainLoop(object):
                         if isinstance(item, Command):
                             completions = item.complete(self.context)
                             token_args = convert_to_literals(token.args)
-                            args, kwargs, opargs = expand_wildcards(
-                                self.context,
-                                *sort_args([self.eval(i, env) for i in token_args]),
-                                completions=completions
-                            )
+                            if token_args[0] == '..':
+                                args = [token_args[0]]
+                                kwargs = None
+                                opargs = None
+                            else:
+                                args, kwargs, opargs = expand_wildcards(
+                                    self.context,
+                                    *sort_args([self.eval(i, env) for i in token_args]),
+                                    completions=completions
+                                )
 
                             item.exec_path = path if len(path) >= 1 else self.path
                             item.cwd = self.cwd

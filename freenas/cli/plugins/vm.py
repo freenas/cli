@@ -405,6 +405,15 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             type=ValueType.NUMBER
         )
 
+        self.add_property(
+            descr='NAT IP address',
+            name='nat_ip',
+            get='status.nat_lease.client_ip',
+            set=None,
+            list=False,
+            condition=lambda o: o['status'] and o['status.nat_lease']
+        )
+
         self.primary_key = self.get_mapping('name')
         self.entity_namespaces = lambda this: [
             VMDisksNamespace('disks', self.context, this),

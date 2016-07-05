@@ -341,8 +341,6 @@ class VariableStore(object):
             except ValueError as e:
                 raise ValueError(_("Invalid value: {0}, "
                                    "verbosity must be an integer value between 1 and 5.".format(value)))
-            except Exception as e:
-                raise e
 
 
 class Context(object):

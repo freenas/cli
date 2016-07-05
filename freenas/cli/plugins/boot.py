@@ -316,7 +316,7 @@ class BootPoolDetachDiskCommand(Command):
             raise CommandException("detach_disk requires more arguments.\n{0}".format(inspect.getdoc(self)))
         disk = args.pop(0)
         disk = correct_disk_path(disk)
-        context.submit_task('boot.detach_disk', disk)
+        context.submit_task('boot.disk.detach', disk)
         return
 
 

@@ -39,6 +39,7 @@ from freenas.cli.namespace import (
 from freenas.cli.output import ValueType
 from freenas.cli.utils import post_save
 from freenas.utils import first_or_default
+from freenas.cli.complete import NullComplete
 
 
 t = gettext.translation('freenas-cli', fallback=True)
@@ -198,7 +199,6 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
         self.update_task = 'vm.update'
         self.delete_task = 'vm.delete'
         self.required_props = ['name', 'volume']
-        self.extra_query_params = [('parent', '=', None)]
         self.primary_key_name = 'name'
 
         def set_memsize(o, v):
@@ -419,7 +419,8 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             VMDisksNamespace('disks', self.context, this),
             VMNicsNamespace('nic', self.context, this),
             VMVolumesNamespace('volume', self.context, this),
-            VMUSBNamespace('usb', self.context, this)
+            VMUSBNamespace('usb', self.context, this),
+            VMSnapshotsNamespace('snapshot', self.context, this)
         ]
 
         self.entity_commands = lambda this: {
@@ -606,6 +607,135 @@ class VMUSBNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNamespa
         )
 
         self.primary_key = self.get_mapping('name')
+
+
+class VMSnapshotsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):
+    def __init__(self, name, context, parent):
+        super(VMSnapshotsNamespace, self).__init__(name, context)
+        self.parent = parent
+        self.entity_subscriber_name = 'vm.snapshot'
+        self.create_task = 'vm.snapshot.create'
+        self.update_task = 'vm.snapshot.update'
+        self.delete_task = 'vm.snapshot.delete'
+        self.required_props = ['name']
+        self.primary_key_name = 'name'
+
+        self.skeleton_entity = {
+            'description': ''
+        }
+
+        self.add_property(
+            descr='VM snapshot name',
+            name='name',
+            get='name',
+            list=True
+        )
+
+        self.add_property(
+            descr='Description',
+            name='description',
+            get='description',
+            list=True
+        )
+
+        self.primary_key = self.get_mapping('name')
+
+        self.entity_commands = lambda this: {
+            'publish': PublishVMCommand(this),
+            'rollback': RollbackVMCommand(this)
+        }
+
+    def commands(self):
+        cmds = super(VMSnapshotsNamespace, self).commands()
+        cmds.update({'create': CreateVMSnapshotCommand(self)})
+        return cmds
+
+
+@description("Creates VM snapshot")
+class CreateVMSnapshotCommand(Command):
+    """
+    Usage: create <name> description=<description>
+
+    Example: create mysnap
+             create mysnap description="My first VM snapshot"
+
+    Creates a snapshot of configuration and state of selected VM.
+    """
+
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        if not args and not kwargs:
+            raise CommandException(_("create requires more arguments, see 'help create' for more information"))
+        if len(args) > 1:
+            raise CommandException(_("Wrong syntax for create, see 'help create' for more information"))
+
+        if len(args) == 1:
+            if 'name' in kwargs:
+                raise CommandException(_("Both implicit and explicit 'name' parameters are specified."))
+            else:
+                kwargs[self.parent.primary_key.name] = args.pop(0)
+
+        if 'name' not in kwargs:
+            raise CommandException(_('Please specify a name for your snapshot'))
+        else:
+            name = kwargs.pop('name')
+
+        descr = kwargs.pop('description', '')
+
+        context.submit_task(
+            self.parent.create_task,
+            self.parent.parent.entity['id'],
+            name,
+            descr
+        )
+
+    def complete(self, context):
+        return [
+            NullComplete('name='),
+            NullComplete('description=')
+        ]
+
+
+@description("Publishes VM snapshot")
+class PublishVMCommand(Command):
+    """
+    Usage: publish
+
+    Example: publish
+
+    Publishes VM snapshot over IPFS as an instantiable template.
+    """
+
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        context.submit_task(
+            'vm.snapshot.publish',
+            self.parent.entity['id']
+        )
+
+
+@description("Returns VM to previously saved state")
+class RollbackVMCommand(Command):
+    """
+    Usage: rollback
+
+    Example: rollback
+
+    Returns VM to previously saved state of VM snapshot.
+    """
+
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        context.submit_task(
+            'vm.snapshot.rollback',
+            self.parent.entity['id'],
+        )
 
 
 @description("Container templates operations")

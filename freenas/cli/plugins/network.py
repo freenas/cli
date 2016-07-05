@@ -28,7 +28,7 @@
 
 import gettext
 from freenas.cli.namespace import (
-    Namespace, EntityNamespace, ConfigNamespace, Command,
+    Namespace, EntityNamespace, ConfigNamespace, Command, NestedObjectLoadMixin, NestedObjectSaveMixin,
     EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, description, CommandException
 )
 from freenas.cli.output import ValueType
@@ -418,12 +418,14 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
 
 
 @description("Interface addresses")
-class AliasesNamespace(EntityNamespace):
+class AliasesNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNamespace):
     def __init__(self, name, context, parent):
         super(AliasesNamespace, self).__init__(name, context)
         self.parent = parent
         self.allow_edit = False
+        self.parent_path = 'aliases'
         self.required_props = ['address', 'netmask']
+        self.primary_key_name = 'address'
         self.localdoc['CreateEntityCommand'] = ("""\
             Usage: create <address> netmask=<netmask> type=<type> <property>=<value> ...
 
@@ -471,46 +473,6 @@ class AliasesNamespace(EntityNamespace):
         )
 
         self.primary_key = self.get_mapping('address')
-
-    def get_one(self, name):
-        f = [a for a in self.parent.entity['aliases'] if a['address'] == name]
-        return f[0] if f else None
-
-    def query(self, params, options):
-        return self.parent.entity.get('aliases', [])
-
-    def my_post_save(self, this, status):
-        if status == 'FINISHED':
-            this.saved = True
-        if status in ['FINISHED', 'FAILED', 'ABORTED', 'CANCELLED']:
-            this.modified = False
-            self.parent.load()
-
-    def my_post_delete(self, status):
-        if status in ['FINISHED', 'FAILED', 'ABORTED', 'CANCELLED']:
-            self.parent.load()
-
-    def save(self, this, new=False):
-        if 'aliases' not in self.parent.entity:
-            self.parent.entity['aliases'] = []
-
-        self.parent.entity['aliases'].append(this.entity)
-        self.parent.parent.save(
-            self.parent,
-            callback=lambda s, t: self.my_post_save(this, s)
-        )
-
-    def delete(self, address, kwargs):
-        self.parent.entity['aliases'] = [a for a in self.parent.entity['aliases'] if a['address'] != address]
-        self.parent.parent.save(
-            self.parent,
-            callback=lambda s, t: self.my_post_delete(s)
-        )
-
-
-class MembersNamespace(EntityNamespace):
-    def __init__(self, name, context, parent):
-        pass
 
 
 @description("Configure hosts entries")

@@ -274,7 +274,7 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
         self.add_property(
             descr='Type',
             name='type',
-            get=lambda row: TASK_TYPES_REVERSE[row['name']],
+            get='type',
             usage=_("""\
             Indicates the type of task. Allowable values are scrub, smart,
             snapshot, replication, and check_updates."""),
@@ -323,7 +323,7 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
         self.add_property(
             descr='Volume',
             name='volume',
-            get=lambda e: self.get_args(e, 'volume'),
+            get='volume',
             list=False,
             set=self.set_volume,
             condition=lambda e: self.meets_condition(e, 'volume')
@@ -332,7 +332,7 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
         self.add_property(
             descr='Send Email',
             name='send_email',
-            get=lambda e: self.get_args(e, 'send_email'),
+            get='send_email',
             list=False,
             set=lambda obj, value: self.set_args(obj, value, 'send_email'),
             type=ValueType.BOOLEAN,
@@ -342,7 +342,7 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
         self.add_property(
             descr='Disks',
             name='disks',
-            get=lambda e: self.get_args(e, 'disks'),
+            get='disks',
             list=False,
             type=ValueType.SET,
             set=self.set_disks,
@@ -352,9 +352,9 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
         self.add_property(
             descr='SMART Test Type',
             name='test_type',
-            get=lambda e: self.get_args(e, 'test_type'),
+            get='test_type',
             list=False,
-            enum=['short','long','conveyance','offline'],
+            enum=['short', 'long', 'conveyance', 'offline'],
             set=lambda obj, value: self.set_args(obj, value, 'test_type'),
             condition=lambda e: self.meets_condition(e, 'test_type')
         )
@@ -362,7 +362,7 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
         self.add_property(
             descr='Username',
             name='username',
-            get=lambda e: self.get_args(e, 'username'),
+            get='username',
             list=False,
             set=self.set_username,
             condition=lambda e: self.meets_condition(e, 'username')
@@ -371,7 +371,7 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
         self.add_property(
             descr='Command',
             name='command',
-            get=lambda e: self.get_args(e, 'command'),
+            get='command',
             list=False,
             set=lambda obj, value: self.set_args(obj, value, 'command'),
             condition=lambda e: self.meets_condition(e, 'command')
@@ -380,7 +380,7 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
         self.add_property(
             descr='Dataset',
             name='dataset',
-            get=lambda e: self.get_args(e, 'dataset'),
+            get='dataset',
             list=False,
             set=lambda obj, value: self.set_args(obj, value, 'dataset'),
             condition=lambda e: self.meets_condition(e, 'dataset')
@@ -389,7 +389,7 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
         self.add_property(
             descr='Lifetime',
             name='lifetime',
-            get=lambda e: self.get_args(e, 'lifetime'),
+            get='lifetime',
             list=False,
             set=lambda obj, value: self.set_args(obj, value, 'lifetime'),
             condition=lambda e: self.meets_condition(e, 'lifetime'),
@@ -399,7 +399,7 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
         self.add_property(
             descr='Recursive',
             name='recursive',
-            get=lambda e: self.get_args(e, 'recursive'),
+            get='recursive',
             list=False,
             set=lambda obj, value: self.set_args(obj, value, 'recursive'),
             condition=lambda e: self.meets_condition(e, 'recursive'),
@@ -409,7 +409,7 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
         self.add_property(
             descr='Prefix',
             name='prefix',
-            get=lambda e: self.get_args(e, 'prefix'),
+            get='prefix',
             list=False,
             set=lambda obj, value: self.set_args(obj, value, 'prefix'),
             condition=lambda e: self.meets_condition(e, 'prefix')
@@ -418,7 +418,7 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
         self.add_property(
             descr='Replicable',
             name='replicable',
-            get=lambda e: self.get_args(e, 'replicable'),
+            get='replicable',
             list=False,
             set=lambda obj, value: self.set_args(obj, value, 'replicable'),
             condition=lambda e: self.meets_condition(e, 'replicable'),
@@ -461,7 +461,7 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
 
     def get_schedule(self, entity):
         row = entity['schedule']
-        sched = dict({k:v for k, v in row.items() if v != "*" and not isinstance(v, bool)})
+        sched = dict({k: v for k, v in row.items() if v != "*" and not isinstance(v, bool)})
         sched.pop('timezone')
 
         return sched
@@ -471,12 +471,6 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamesp
             return True
         else:
             return False
-
-    def get_args(self, entity, prop):
-        if prop in TASK_ARG_MAPPING[entity['name']]:
-            return entity['args'][TASK_ARG_MAPPING[entity['name']].index(prop)]
-        else:
-            return None
 
     def set_args(self, entity, args, name):
         if 'args' not in entity:

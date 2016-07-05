@@ -139,7 +139,9 @@ ENTITY_SUBSCRIBERS = [
     'kerberos.keytab',
     'directory',
     'boot.environment',
-    'peer'
+    'peer',
+    'docker.host',
+    'docker.container'
 ]
 
 

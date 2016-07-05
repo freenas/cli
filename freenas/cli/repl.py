@@ -1366,7 +1366,7 @@ class MainLoop(object):
                         if isinstance(item, Command):
                             completions = item.complete(self.context)
                             token_args = convert_to_literals(token.args)
-                            if token_args[0] == '..':
+                            if len(token_args) > 0 and token_args[0] == '..':
                                 args = [token_args[0]]
                                 kwargs = None
                                 opargs = None

@@ -1068,6 +1068,11 @@ class MainLoop(object):
         if not cwd:
             cwd = self.cwd
 
+        if hasattr(cwd, 'namespace_by_name'):
+            ns = cwd.namespace_by_name(token)
+            if ns:
+                return ns
+
         cwd_namespaces = cwd.namespaces()
         cwd_commands = list(cwd.commands().items())
 

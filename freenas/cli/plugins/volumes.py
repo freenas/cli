@@ -953,6 +953,52 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
         )
 
 
+class RollbackCommand(Command):
+    """
+    Usage: rollback force=<force>
+
+    Example: rollback
+             rollback force=yes
+
+    Returns filesystem to the state saved in selected snapshot.
+    """
+
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        force = kwargs.get('force', False)
+        context.submit_task(
+            'volume.snapshot.rollback',
+            self.parent.entity['id'],
+            force
+        )
+
+
+class CloneCommand(Command):
+    """
+    Usage: clone new_name=<new_name>
+
+    Example: clone new_name=my_new_dataset
+
+    Creates a clone of snapshot in new dataset.
+    New dataset must belong to the same pool as snapshot.
+    """
+
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        new_name = kwargs.get('new_name')
+        if not new_name:
+            raise CommandException('Name of clone have to be specified')
+        context.submit_task(
+            'volume.snapshot.clone',
+            self.parent.entity['id'],
+            new_name
+        )
+
+
 @description("Snapshots")
 class SnapshotsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
     def __init__(self, name, context, parent=None):
@@ -1042,6 +1088,10 @@ class SnapshotsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Ent
             list=True)
 
         self.primary_key = self.get_mapping('id')
+        self.entity_commands = lambda this: {
+            'rollback': RollbackCommand(this),
+            'clone': CloneCommand(this)
+        }
 
     def save(self, this, new=False, callback=None):
         if new:

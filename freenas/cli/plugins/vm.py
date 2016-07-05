@@ -517,6 +517,14 @@ class VMNicsNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNamesp
         )
 
         self.add_property(
+            descr='Emulated device type',
+            name='device',
+            get='properties.device',
+            enum=['VIRTIO', 'E1000', 'NE2K']
+        )
+
+
+        self.add_property(
             descr='Bridge with',
             name='bridge',
             get='properties.bridge'

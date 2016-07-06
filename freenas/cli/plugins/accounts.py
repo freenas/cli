@@ -67,7 +67,7 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
         self.delete_task = 'user.delete'
         self.save_key_name = 'id'
         self.required_props = ['username', ['password', 'password_disabled']]
-        self.extra_query_params = [['or',[('builtin', '=', False), ('username', '=', 'root')]]]
+        self.extra_query_params = [['or', [('builtin', '=', False), ('username', '=', 'root')]]]
 
         if not UsersNamespace.shells:
             UsersNamespace.shells = context.call_sync('shell.get_shells')
@@ -312,6 +312,7 @@ class GroupsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
         self.update_task = 'group.update'
         self.delete_task = 'group.delete'
         self.required_props = ['name']
+        self.extra_query_params = [['or', [('builtin', '=', False), ('name', '=', 'wheel')]]]
         self.localdoc['CreateEntityCommand'] = ("""\
             Usage: create <name>
 

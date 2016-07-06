@@ -595,6 +595,9 @@ class AdvancedNamespace(ConfigNamespace):
             Use set to specify the speed of the serial port
             used for console access."""),
             get='serial_speed',
+            set='serial_speed',
+            enum=['110', '300', '600', '1200', '2400', '4800',
+                  '9600', '14400', '19200', '38400', '57600', '115200'],
             type=ValueType.NUMBER
         )
 

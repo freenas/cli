@@ -411,7 +411,7 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             get='status.nat_lease.client_ip',
             set=None,
             list=False,
-            condition=lambda o: o['status'] and o['status.nat_lease']
+            condition=lambda o: o['status.state'] != 'STOPPED' and o['status.nat_lease']
         )
 
         self.primary_key = self.get_mapping('name')

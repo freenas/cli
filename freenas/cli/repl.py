@@ -142,7 +142,8 @@ ENTITY_SUBSCRIBERS = [
     'boot.environment',
     'peer',
     'docker.host',
-    'docker.container'
+    'docker.container',
+    'docker.image'
 ]
 
 

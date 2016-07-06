@@ -144,7 +144,8 @@ class DockerImageNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             name='size',
             get='size',
             set=None,
-            list=True
+            list=True,
+            type=ValueType.SIZE
         )
 
         self.add_property(
@@ -164,6 +165,21 @@ class DockerImageNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         )
 
         self.primary_key = self.get_mapping('name')
+        self.extra_commands = {
+            'pull': DockerImagePullCommand()
+        }
+
+
+class DockerImagePullCommand(Command):
+    def run(self, context, args, kwargs, opargs):
+        if len(args) != 2:
+            raise CommandException("Please specify image name and docker host name")
+
+        hostid = context.entity_subscribers['docker.host'].query(('name', '=', args[1]), single=True)
+        if not hostid:
+            raise CommandException("Docker host {0} not found".format(args[1]))
+
+        context.submit_task('docker.image.pull', args[0], hostid['id'])
 
 
 class DockerNamespace(Namespace):

@@ -96,6 +96,7 @@ class AlertNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         super(AlertNamespace, self).__init__(name, context)
         self.entity_subscriber_name = 'alert'
         self.primary_key_name = 'id'
+        self.extra_query_params = [('active', '=', True)]
         self.allow_edit = False
         self.allow_create = False
         self.localdoc['ListCommand'] = ("""\

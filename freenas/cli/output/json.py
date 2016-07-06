@@ -34,6 +34,9 @@ from freenas.cli.output import ValueType, resolve_cell
 class JsonOutputFormatter(object):
     @staticmethod
     def format_value(value, vt):
+        if value is None and vt == ValueType.STRING:
+            return "none"
+
         if value is None:
             return None
 

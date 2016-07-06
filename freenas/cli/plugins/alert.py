@@ -27,10 +27,9 @@
 
 import gettext
 from freenas.cli.namespace import (
-    EntityNamespace, Command, EntitySubscriberBasedLoadMixin,
-    TaskBasedSaveMixin, CommandException, description
+    EntityNamespace, Command, EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, description
 )
-from freenas.cli.output import ValueType, Table
+from freenas.cli.output import ValueType
 
 
 t = gettext.translation('freenas-cli', fallback=True)

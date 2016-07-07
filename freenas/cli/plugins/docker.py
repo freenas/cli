@@ -76,17 +76,27 @@ class DockerHostNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         self.primary_key = self.get_mapping('name')
 
 
-class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
+class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
     def __init__(self, name, context):
         super(DockerContainerNamespace, self).__init__(name, context)
         self.entity_subscriber_name = 'docker.container'
+        self.create_task = 'docker.container.create'
+        self.delete_task = 'docker.container.delete'
         self.primary_key_name = 'id'
+
+        def get_host(o):
+            h = context.entity_subscribers['docker.host'].query(('id', '=', o['host']), single=True)
+            return h['name'] if h else None
+
+        def set_host(o, v):
+            h = context.entity_subscribers['docker.host'].query(('name', '=', v), single=True)
+            if h:
+                o['host'] = h['id']
 
         self.add_property(
             descr='Name',
             name='name',
             get='names.0',
-            set=None,
             list=True
         )
 
@@ -94,7 +104,6 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             descr='Image name',
             name='image',
             get='image',
-            set=None,
             list=True
         )
 
@@ -102,7 +111,6 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             descr='Command',
             name='command',
             get='command',
-            set=None,
             list=True
         )
 
@@ -117,8 +125,8 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         self.add_property(
             descr='Host',
             name='host',
-            get='host',
-            set=None,
+            get=get_host,
+            set=set_host,
             list=True
         )
 

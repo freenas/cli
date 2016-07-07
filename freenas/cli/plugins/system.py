@@ -586,6 +586,8 @@ class AdvancedNamespace(ConfigNamespace):
             Use set or edit to specify the serial port
             to use for console access."""),
             get='serial_port',
+            set='serial_port',
+            enum=[e['name'] for e in self.context.call_sync('system.advanced.serial_ports')]
         )
 
         self.add_property(

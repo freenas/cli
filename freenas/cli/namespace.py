@@ -1042,25 +1042,26 @@ class EntityNamespace(Namespace):
         self.property_mappings.append(PropertyMapping(index=len(self.property_mappings), **kwargs))
 
     def commands(self):
-        base = {
-            'show': ListCommand(self)
-        }
+        base = {'show': ListCommand(self)}
 
         if self.extra_commands:
             base.update(self.extra_commands)
 
         if self.allow_create:
-            base.update({
-                'create': CreateEntityCommand(self)
-            })
+            base['create'] = CreateEntityCommand(self)
 
         return base
 
-    def namespaces(self):
+    def namespace_by_name(self, name):
+        item = self.get_one(name)
+        if item:
+            return SingleItemNamespace(name, self, leaf_entity=self.leaf_harborer)
+
+    def namespaces(self, name=None):
         if self.primary_key is None:
             return
 
-        for i in self.query([], {}):
+        for i in self.query([], {'limit': 100}):
             name = self.primary_key.do_get(i)
             yield SingleItemNamespace(name, self, leaf_entity=self.leaf_harborer)
 
@@ -1078,7 +1079,8 @@ class RpcBasedLoadMixin(object):
         return self.context.call_sync(
             self.query_call,
             self.extra_query_params + [(self.primary_key_name, '=', name)],
-            {'single': True})
+            {'single': True}
+        )
 
 
 class EntitySubscriberBasedLoadMixin(object):

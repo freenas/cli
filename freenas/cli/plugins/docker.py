@@ -82,7 +82,7 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
         self.entity_subscriber_name = 'docker.container'
         self.create_task = 'docker.container.create'
         self.delete_task = 'docker.container.delete'
-        self.primary_key_name = 'id'
+        self.primary_key_name = 'names.0'
 
         def get_host(o):
             h = context.entity_subscribers['docker.host'].query(('id', '=', o['host']), single=True)
@@ -131,6 +131,10 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
         )
 
         self.primary_key = self.get_mapping('name')
+        self.entity_commands = lambda this: {
+            'start': DockerContainerStartStopCommand(this, 'start'),
+            'stop': DockerContainerStartStopCommand(this, 'stop')
+        }
 
 
 class DockerImageNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
@@ -188,6 +192,15 @@ class DockerImagePullCommand(Command):
             raise CommandException("Docker host {0} not found".format(args[1]))
 
         context.submit_task('docker.image.pull', args[0], hostid['id'])
+
+
+class DockerContainerStartStopCommand(Command):
+    def __init__(self, parent, action):
+        self.action = action
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        context.submit_task('docker.container.{0}'.format(self.action), self.parent.entity['id'])
 
 
 class DockerNamespace(Namespace):

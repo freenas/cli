@@ -524,7 +524,6 @@ class VMNicsNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNamesp
             enum=['VIRTIO', 'E1000', 'NE2K']
         )
 
-
         self.add_property(
             descr='Bridge with',
             name='bridge',

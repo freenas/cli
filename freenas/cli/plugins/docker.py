@@ -93,6 +93,18 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             if h:
                 o['host'] = h['id']
 
+        def get_ports(o):
+            return ['{0}:{1}'.format(i['container_port'], i['host_port']) for i in o['ports']]
+
+        def set_ports(o, v):
+            o['ports'] = [{'container_port': c, 'host_port': h} for c, h in (x.split(':') for x in v)]
+
+        def get_volumes(o):
+            return ['{0}:{1}'.format(i['container_path'], i['host_path']) for i in o['volumes']]
+
+        def set_volumes(o, v):
+            o['volumes'] = [{'container_path': c, 'host_path': h} for c, h in (x.split(':') for x in v)]
+
         self.add_property(
             descr='Name',
             name='name',
@@ -128,6 +140,32 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             get=get_host,
             set=set_host,
             list=True
+        )
+
+        self.add_property(
+            descr='Ports',
+            name='ports',
+            get=get_ports,
+            set=set_ports,
+            list=True,
+            type=ValueType.SET
+        )
+
+        self.add_property(
+            descr='Expose ports',
+            name='expose_ports',
+            get='expose_ports',
+            list=True,
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
+            descr='Volumes',
+            name='volumes',
+            get=get_volumes,
+            set=set_volumes,
+            list=True,
+            type=ValueType.SET
         )
 
         self.primary_key = self.get_mapping('name')

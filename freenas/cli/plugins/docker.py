@@ -103,7 +103,7 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             return ['{0}:{1}'.format(i['container_path'], i['host_path']) for i in o['volumes']]
 
         def set_volumes(o, v):
-            o['volumes'] = [{'container_path': c, 'host_path': h} for c, h in (x.split(':') for x in v)]
+            o['volumes'] = [{'container_path': c, 'host_path': h, 'readonly': False} for c, h in (x.split(':') for x in v)]
 
         self.add_property(
             descr='Name',

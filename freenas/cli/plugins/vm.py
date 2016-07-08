@@ -857,6 +857,9 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
                 if template.get('cached', False):
                     commands['delete_cache'] = DeleteImagesCommand(this)
 
+                if template.get('driver') != 'git':
+                    commands['delete'] = DeleteTemplateCommand(this)
+
         return commands
 
 
@@ -909,6 +912,23 @@ class DeleteImagesCommand(Command):
 
     def run(self, context, args, kwargs, opargs, filtering=None):
         context.submit_task('vm.cache.delete', self.parent.entity['template']['name'])
+
+
+@description("Deletes VM images and VM template from the local cache")
+class DeleteTemplateCommand(Command):
+    """
+    Usage: delete
+
+    Example: delete
+
+    Deletes VM template images and VM template from the local cache.
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs, filtering=None):
+        context.submit_task('vm.template.delete', self.parent.entity['template']['name'])
+        self.parent.context.ml.cd_up()
 
 
 def _init(context):

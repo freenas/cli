@@ -705,21 +705,52 @@ class CreateVMSnapshotCommand(Command):
 @description("Publishes VM snapshot")
 class PublishVMCommand(Command):
     """
-    Usage: publish
+    Usage: publish name=<name> author=<author> mail=<mail>
+                   description=<description>
 
-    Example: publish
+    Example: publish my_template
+             publish name=my_template author=Author mail=author@authormail.com
+                     description="My template"
 
     Publishes VM snapshot over IPFS as an instantiable template.
+    After publishing shareable IPFS link can be found by typing:
+    /vm template my_template get hash
     """
 
     def __init__(self, parent):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
+        if not args and not kwargs:
+            raise CommandException(_("publish requires more arguments, see 'help publish' for more information"))
+        if len(args) > 1:
+            raise CommandException(_("Wrong syntax for publish, see 'help publish' for more information"))
+
+        if len(args) == 1:
+            if 'name' in kwargs:
+                raise CommandException(_("Both implicit and explicit 'name' parameters are specified."))
+            else:
+                kwargs['name'] = args.pop(0)
+
+        if 'name' not in kwargs:
+            raise CommandException(_('Please specify a name for your template'))
+
         context.submit_task(
             'vm.snapshot.publish',
-            self.parent.entity['id']
+            self.parent.entity['id'],
+            kwargs.get('name', ''),
+            kwargs.get('author', ''),
+            kwargs.get('mail', ''),
+            kwargs.get('description', ''),
         )
+
+    def complete(self, context):
+        return [
+            NullComplete('name='),
+            NullComplete('author='),
+            NullComplete('mail='),
+            NullComplete('description=')
+        ]
 
 
 @description("Returns VM to previously saved state")

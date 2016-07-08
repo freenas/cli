@@ -772,6 +772,23 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
         )
 
         self.add_property(
+            descr='Source',
+            name='source',
+            get='template.driver',
+            usersetable=False,
+            list=False
+        )
+
+        self.add_property(
+            descr='IPFS hash',
+            name='hash',
+            get='template.hash',
+            usersetable=False,
+            list=False,
+            condition=lambda e: e['template.driver'] == 'ipfs'
+        )
+
+        self.add_property(
             descr='Created at',
             name='created_at',
             get='template.created_at',

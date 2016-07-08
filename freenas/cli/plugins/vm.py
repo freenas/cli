@@ -415,13 +415,7 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
         )
 
         self.primary_key = self.get_mapping('name')
-        self.entity_namespaces = lambda this: [
-            VMDisksNamespace('disks', self.context, this),
-            VMNicsNamespace('nic', self.context, this),
-            VMVolumesNamespace('volume', self.context, this),
-            VMUSBNamespace('usb', self.context, this),
-            VMSnapshotsNamespace('snapshot', self.context, this)
-        ]
+        self.entity_namespaces = self.get_entity_namespaces
 
         self.entity_commands = lambda this: {
             'start': StartVMCommand(this),
@@ -440,6 +434,16 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
         yield TemplateNamespace('template', self.context)
         for namespace in super(VMNamespace, self).namespaces():
             yield namespace
+
+    def get_entity_namespaces(self, this):
+        this.load()
+        return [
+            VMDisksNamespace('disks', self.context, this),
+            VMNicsNamespace('nic', self.context, this),
+            VMVolumesNamespace('volume', self.context, this),
+            VMUSBNamespace('usb', self.context, this),
+            VMSnapshotsNamespace('snapshot', self.context, this)
+        ]
 
 
 class VMDisksNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNamespace):
@@ -618,6 +622,7 @@ class VMSnapshotsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
         self.delete_task = 'vm.snapshot.delete'
         self.required_props = ['name']
         self.primary_key_name = 'name'
+        self.extra_query_params = [('parent.id', '=', self.parent.entity['id'])]
 
         self.skeleton_entity = {
             'description': ''

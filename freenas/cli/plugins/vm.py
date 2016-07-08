@@ -976,7 +976,7 @@ class DeleteTemplateCommand(Command):
 
     def run(self, context, args, kwargs, opargs, filtering=None):
         context.submit_task('vm.template.delete', self.parent.entity['template']['name'])
-        self.parent.context.ml.cd_up()
+        context.ml.cd_up()
 
 
 def _init(context):

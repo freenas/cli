@@ -855,7 +855,7 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
             template = this.entity.get('template')
             if template:
                 if template.get('cached', False):
-                    commands['delete'] = DeleteImagesCommand(this)
+                    commands['delete_cache'] = DeleteImagesCommand(this)
 
         return commands
 
@@ -898,9 +898,9 @@ class ReadmeCommand(Command):
 @description("Deletes VM images from the local cache")
 class DeleteImagesCommand(Command):
     """
-    Usage: delete
+    Usage: delete_cache
 
-    Example: delete
+    Example: delete_cache
 
     Deletes VM template images from the local cache.
     """

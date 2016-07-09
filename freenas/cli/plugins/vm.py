@@ -148,8 +148,7 @@ class ConsoleCommand(Command):
     """
     Usage: console
 
-    Examples:
-        console
+    Examples: console
 
     Connects to VM serial console. ^] returns to CLI
     """
@@ -157,12 +156,24 @@ class ConsoleCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        if len(args) > 0 and args[0] == 'vga':
-            url = context.call_sync('containerd.management.request_webvnc_console', self.parent.entity['id'])
-            return url
-
         console = VMConsole(context, self.parent.entity['id'], self.parent.entity['name'])
         console.start()
+
+
+class ConsoleVGACommand(Command):
+    """
+    Usage: console_vga
+
+    Examples: console_vga
+
+    Returns link to VM VGA console.
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        url = context.call_sync('containerd.management.request_webvnc_console', self.parent.entity['id'])
+        return url
 
 
 @description("Import virtual machine from volume")
@@ -417,14 +428,7 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
         self.primary_key = self.get_mapping('name')
         self.entity_namespaces = self.get_entity_namespaces
 
-        self.entity_commands = lambda this: {
-            'start': StartVMCommand(this),
-            'stop': StopVMCommand(this),
-            'kill': KillVMCommand(this),
-            'reboot': RebootVMCommand(this),
-            'console': ConsoleCommand(this),
-            'readme': ReadmeCommand(this)
-        }
+        self.entity_commands = self.get_entity_commands
 
         self.extra_commands = {
             'import': ImportVMCommand(self)
@@ -444,6 +448,24 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             VMUSBNamespace('usb', self.context, this),
             VMSnapshotsNamespace('snapshot', self.context, this)
         ]
+
+    def get_entity_commands(self, this):
+        this.load()
+
+        commands = {
+            'start': StartVMCommand(this),
+            'stop': StopVMCommand(this),
+            'kill': KillVMCommand(this),
+            'reboot': RebootVMCommand(this),
+            'console': ConsoleCommand(this),
+            'readme': ReadmeCommand(this)
+        }
+
+        if this.entity is not None:
+            if first_or_default(lambda d: d['type'] == 'GRAPHICS', this.entity['devices']):
+                commands['console_vga'] = ConsoleVGACommand(this)
+
+        return commands
 
 
 class VMDisksNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNamespace):

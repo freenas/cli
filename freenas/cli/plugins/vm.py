@@ -66,13 +66,13 @@ class VMConsole(object):
 
     def start(self):
         # support configurable escape sequence
-        eseq =  self.context.variables.get('vm.console_interrupt')
+        eseq = self.context.variables.get('vm.console_interrupt')
         if len(eseq) == 0:
             eseq = '\035'
 
         # process escape characters using runtime
-        eseq = bytes(self.context.variables.get('vm.console_interrupt'),'utf-8').decode('unicode_escape')
-        esbytes = bytes(eseq,'utf-8')
+        eseq = bytes(self.context.variables.get('vm.console_interrupt'), 'utf-8').decode('unicode_escape')
+        esbytes = bytes(eseq, 'utf-8')
         eslen = len(esbytes) 
         esidx = 0   # stack pointer for sequence match...
 
@@ -83,7 +83,7 @@ class VMConsole(object):
             self.connect()
             while True:
                 ch = sys.stdin.read(1)
-                bch = bytes(ch,'utf-8')[0]
+                bch = bytes(ch, 'utf-8')[0]
 
                 if esbytes[esidx] == bch:
                     esidx += 1

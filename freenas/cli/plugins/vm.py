@@ -622,7 +622,8 @@ class VMSnapshotsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
         self.delete_task = 'vm.snapshot.delete'
         self.required_props = ['name']
         self.primary_key_name = 'name'
-        self.extra_query_params = [('parent.id', '=', self.parent.entity['id'])]
+        if self.parent.entity:
+            self.extra_query_params = [('parent.id', '=', self.parent.entity['id'])]
 
         self.skeleton_entity = {
             'description': ''

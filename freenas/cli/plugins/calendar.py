@@ -26,8 +26,11 @@
 #####################################################################
 
 import gettext
-from freenas.cli.namespace import Namespace, EntityNamespace, ConfigNamespace, Command, RpcBasedLoadMixin, TaskBasedSaveMixin, description, CommandException, FilteringCommand
-from freenas.cli.output import ValueType, Table, format_value
+from freenas.cli.namespace import (
+    EntityNamespace, ConfigNamespace, Command, RpcBasedLoadMixin, TaskBasedSaveMixin,
+    description, CommandException
+)
+from freenas.cli.output import ValueType, format_value
 from freenas.cli.utils import post_save, correct_disk_path
 
 

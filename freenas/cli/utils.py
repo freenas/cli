@@ -34,7 +34,6 @@ import ipaddress
 import gettext
 import signal
 import dateutil.tz
-from freenas.cli import config
 from datetime import timedelta, datetime
 
 

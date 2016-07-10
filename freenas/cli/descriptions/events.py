@@ -27,7 +27,6 @@
 
 
 import gettext
-from . import tasks
 
 
 t = gettext.translation('freenas-cli', fallback=True)

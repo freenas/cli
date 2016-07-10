@@ -25,14 +25,11 @@
 #
 #####################################################################
 
-from freenas.dispatcher.shell import VMConsoleClient
 from freenas.cli.namespace import (
-    Namespace, EntityNamespace, Command, NestedObjectLoadMixin, NestedObjectSaveMixin, EntitySubscriberBasedLoadMixin,
-    RpcBasedLoadMixin, TaskBasedSaveMixin, description, ListCommand, CommandException
+    Namespace, EntityNamespace, Command, EntitySubscriberBasedLoadMixin,
+    TaskBasedSaveMixin, CommandException
 )
 from freenas.cli.output import ValueType
-from freenas.cli.utils import post_save
-from freenas.utils import first_or_default
 
 
 class DockerHostNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):

@@ -25,7 +25,6 @@
 #
 #####################################################################
 
-import copy
 import gettext
 from freenas.cli.output import Sequence, Object, format_value
 from freenas.cli.namespace import (

@@ -41,8 +41,8 @@ from freenas.cli.parser import CommandCall, Literal, Symbol, BinaryParameter, Co
 from freenas.cli.complete import NullComplete, EnumComplete
 from freenas.cli.utils import post_save, edit_in_editor, PrintableNone
 from freenas.cli.output import (
-    ValueType, Object, Table, Sequence, output_list,
-    output_msg, read_value, format_value
+    ValueType, Object, Table, Sequence,
+    output_msg, read_value
 )
 
 t = gettext.translation('freenas-cli', fallback=True)

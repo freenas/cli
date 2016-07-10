@@ -26,8 +26,8 @@
 #####################################################################
 
 import gettext
-from freenas.cli.namespace import Namespace, EntityNamespace, Command, RpcBasedLoadMixin, TaskBasedSaveMixin, description
-from freenas.cli.output import ValueType, output_msg_locked
+from freenas.cli.namespace import Namespace, EntityNamespace, RpcBasedLoadMixin, TaskBasedSaveMixin, description
+from freenas.cli.output import ValueType
 from freenas.cli.utils import post_save
 
 

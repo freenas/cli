@@ -51,6 +51,17 @@ class EnumComplete(NullComplete):
         return self.data
 
 
+class ArrayComplete(NullComplete):
+    def __init__(self, name, choices, **kwargs):
+        super(ArrayComplete, self).__init__(name, **kwargs)
+        self.data = []
+        for choice in choices:
+            self.data.append(','.join(str(i) for i in choice))
+
+    def choices(self, context, token):
+        return self.data
+
+
 class EntitySubscriberComplete(NullComplete):
     def __init__(self, name, datasource, mapper=None, extra=None, **kwargs):
         super(EntitySubscriberComplete, self).__init__(name, **kwargs)

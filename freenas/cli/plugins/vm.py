@@ -242,14 +242,14 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             if not fb:
                 return None
 
-            return fb['properties']['resolution']
+            return list(fb['properties']['resolution'].split('x'))
 
         def set_resolution(o, v):
             fb = first_or_default(lambda d: d['type'] == 'GRAPHICS', o['devices'])
             if not fb:
                 return None
 
-            fb['properties']['resolution'] = v
+            fb['properties']['resolution'] = '{0}x{1}'.format(v[0], v[1])
 
         self.skeleton_entity = {
             'devices': [],
@@ -352,17 +352,17 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             get=get_resolution,
             set=set_resolution,
             list=False,
-            type=ValueType.STRING,
-            enum=[
-                '1920x1200',
-                '1920x1080',
-                '1600x1200',
-                '1600x900',
-                '1280x1024',
-                '1280x720',
-                '1024x768',
-                '800x600',
-                '640x480'
+            type=ValueType.ARRAY,
+            array=[
+                [1920, 1200],
+                [1920, 1080],
+                [1600, 1200],
+                [1600, 900],
+                [1280, 1024],
+                [1280, 720],
+                [1024, 768],
+                [800, 600],
+                [640, 480]
             ],
             condition=get_graphics
         )

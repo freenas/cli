@@ -210,7 +210,7 @@ class AlertFilterNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             descr='Predicates',
             name='predicates',
             get=self.get_predicates,
-            type=ValueType.SET
+            type=ValueType.ARRAY
         )
 
         self.primary_key = self.get_mapping('name')

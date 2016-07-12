@@ -830,7 +830,7 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
             name='source',
             get='template.driver',
             usersetable=False,
-            list=False
+            list=True
         )
 
         self.add_property(

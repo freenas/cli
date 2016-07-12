@@ -60,6 +60,7 @@ class ValueType(enum.Enum):
     SET = 9
     DICT = 10
     PERMISSIONS = 11
+    ARRAY = 12
 
 
 class Object(list):
@@ -250,10 +251,10 @@ def resolve_cell(row, spec):
 
 def read_value(value, tv=ValueType.STRING):
     if value is None:
-        if tv == ValueType.SET:
+        if tv == ValueType.ARRAY:
             return []
 
-        if tv == ValueType.DICT:
+        if tv in [ValueType.DICT, ValueType.SET]:
             return {}
 
         return value
@@ -275,6 +276,12 @@ def read_value(value, tv=ValueType.STRING):
             return False
 
     if tv == ValueType.SET:
+        if type(value) is set:
+            return value
+        else:
+            return set(value)
+
+    if tv == ValueType.ARRAY:
         if type(value) is list:
             return value
         else:

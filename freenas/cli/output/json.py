@@ -50,6 +50,9 @@ class JsonOutputFormatter(object):
             return str(value[:10] + '(...)')
 
         if vt == ValueType.SET:
+            return set(value)
+
+        if vt == ValueType.ARRAY:
             return list(value)
 
         return json.dumps(value)

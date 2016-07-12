@@ -86,6 +86,13 @@ class AsciiOutputFormatter(object):
             return _("none")
 
         if vt == ValueType.SET:
+            value = set(value)
+            if len(value) == 0:
+                return _("empty")
+
+            return '\n'.join(value)
+
+        if vt == ValueType.ARRAY:
             value = list(value)
             if len(value) == 0:
                 return _("empty")

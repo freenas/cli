@@ -38,7 +38,7 @@ import inspect
 from freenas.utils import first_or_default
 from freenas.utils.query import wrap
 from freenas.cli.parser import CommandCall, Literal, Symbol, BinaryParameter, Comment
-from freenas.cli.complete import NullComplete, EnumComplete
+from freenas.cli.complete import NullComplete, EnumComplete, ArrayComplete
 from freenas.cli.utils import post_save, edit_in_editor, PrintableNone
 from freenas.cli.output import (
     ValueType, Object, Table, Sequence,
@@ -61,6 +61,10 @@ def create_completer(prop):
     if prop.enum:
         enum_val = prop.enum() if callable(prop.enum) else prop.enum
         return EnumComplete(prop.name + '=', enum_val)
+
+    if prop.array:
+        array_val = prop.array() if callable(prop.array) else prop.array
+        return ArrayComplete(prop.name + '=', array_val)
 
     if prop.type == ValueType.BOOLEAN:
         return EnumComplete(prop.name + '=', ['yes', 'no'])
@@ -206,6 +210,7 @@ class PropertyMapping(object):
         self.type = kwargs.pop('type', ValueType.STRING)
         self.usage = kwargs.pop('usage', None)
         self.enum = kwargs.pop('enum', None)
+        self.array = kwargs.pop('array', None)
         self.usersetable = kwargs.pop('usersetable', True)
         self.createsetable = kwargs.pop('createsetable', True)
         self.regex = kwargs.pop('regex', None)
@@ -252,6 +257,18 @@ class PropertyMapping(object):
                         self.get_name, ', '.join(enum_val))
                 )
 
+        if self.array:
+            if self.type == ValueType.ARRAY:
+                array_vals = self.array() if callable(self.array) else self.array
+                if not any(value == array_val for array_val in array_vals):
+                    raise ValueError(
+                        "Invalid value for property '{0}'. "
+                        "Should be one of: {1}".format(
+                            self.get_name,
+                            str(array_vals).replace(' ', '').replace(']', '').replace('[', ' ')[2:]
+                        )
+                    )
+
         if isinstance(self.set, collections.Callable):
             self.set(obj, value)
             return
@@ -259,8 +276,8 @@ class PropertyMapping(object):
         obj.set(self.set, value)
 
     def do_append(self, obj, value):
-        if self.type != ValueType.SET:
-            raise ValueError('Property is not a set')
+        if self.type not in [ValueType.SET, ValueType.ARRAY]:
+            raise ValueError('Property is not a set or array')
 
         value = read_value(value, self.type)
         oldvalues = obj.get(self.set)
@@ -276,8 +293,8 @@ class PropertyMapping(object):
         obj.set(self.set, newvalues)
 
     def do_remove(self, obj, value):
-        if self.type != ValueType.SET:
-            raise ValueError('Property is not a set')
+        if self.type not in [ValueType.SET, ValueType.ARRAY]:
+            raise ValueError('Property is not a set or array')
 
         value = read_value(value, self.type)
         oldvalues = obj.get(self.set)
@@ -765,6 +782,9 @@ class SingleItemNamespace(ItemNamespace):
             value = mapping.do_get(self.entity)
 
             if mapping.type == ValueType.SET and value is not None:
+                value = set(value)
+
+            if mapping.type == ValueType.ARRAY and value is not None:
                 value = list(value)
 
             return_args.append(BinaryParameter(mapping.name, '=', self.literalize_value(value)))
@@ -783,6 +803,9 @@ class SingleItemNamespace(ItemNamespace):
                 value = mapping.do_get(self.entity)
 
                 if mapping.type == ValueType.SET and value is not None:
+                    value = set(value)
+
+                if mapping.type == ValueType.ARRAY and value is not None:
                     value = list(value)
 
                 ret.args.append(BinaryParameter(mapping.name, '=', self.literalize_value(value)))

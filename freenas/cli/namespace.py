@@ -38,11 +38,11 @@ import inspect
 from freenas.utils import first_or_default
 from freenas.utils.query import wrap
 from freenas.cli.parser import CommandCall, Literal, Symbol, BinaryParameter, Comment
-from freenas.cli.complete import NullComplete, EnumComplete, ArrayComplete
+from freenas.cli.complete import NullComplete, EnumComplete
 from freenas.cli.utils import post_save, edit_in_editor, PrintableNone
 from freenas.cli.output import (
     ValueType, Object, Table, Sequence,
-    output_msg, read_value
+    output_msg, read_value, format_value
 )
 
 t = gettext.translation('freenas-cli', fallback=True)
@@ -61,10 +61,6 @@ def create_completer(prop):
     if prop.enum:
         enum_val = prop.enum() if callable(prop.enum) else prop.enum
         return EnumComplete(prop.name + '=', enum_val)
-
-    if prop.array:
-        array_val = prop.array() if callable(prop.array) else prop.array
-        return ArrayComplete(prop.name + '=', array_val)
 
     if prop.type == ValueType.BOOLEAN:
         return EnumComplete(prop.name + '=', ['yes', 'no'])
@@ -210,7 +206,6 @@ class PropertyMapping(object):
         self.type = kwargs.pop('type', ValueType.STRING)
         self.usage = kwargs.pop('usage', None)
         self.enum = kwargs.pop('enum', None)
-        self.array = kwargs.pop('array', None)
         self.usersetable = kwargs.pop('usersetable', True)
         self.createsetable = kwargs.pop('createsetable', True)
         self.regex = kwargs.pop('regex', None)
@@ -240,37 +235,18 @@ class PropertyMapping(object):
 
         if self.enum:
             enum_val = self.enum() if callable(self.enum) else self.enum
-            if self.type == ValueType.SET:
+            if self.type in (ValueType.SET, ValueType.ARRAY):
                 for e in value:
                     if e not in enum_val:
-                        raise ValueError("Invalid value for property '{0}'. "
-                                         "Should be one of: {1}".format(self.get_name, '; '.join(enum_val)))
-            elif self.type == ValueType.NUMBER:
-                if str(value) not in enum_val:
-                    raise ValueError(
-                        "Invalid value for property '{0}'. Should be one of: {1}".format(
-                            self.get_name, ', '.join(enum_val))
-                    )
-            elif value not in enum_val:
-                raise ValueError(
-                    "Invalid value for property '{0}'. Should be one of: {1}".format(
-                        self.get_name, ', '.join(enum_val))
-                )
-
-        if self.array:
-            if self.type == ValueType.ARRAY:
-                array_vals = self.array() if callable(self.array) else self.array
-                allowed_inputs_arr = []
-                for val in array_vals:
-                    allowed_inputs_arr.append(','.join(str(i) for i in val))
-                if not any(value == array_val for array_val in array_vals):
-                    raise ValueError(
-                        "Invalid value for property '{0}'. "
-                        "Should be one of: {1}".format(
+                        raise ValueError("Invalid value for property '{0}'. Should be one of: {1}".format(
                             self.get_name,
-                            '; '.join(allowed_inputs_arr)
+                            '; '.join(format_value(i) for i in enum_val))
                         )
-                    )
+            elif str(value) not in enum_val:
+                raise ValueError("Invalid value for property '{0}'. Should be one of: {1}".format(
+                    self.get_name,
+                    ', '.join(enum_val))
+                )
 
         if isinstance(self.set, collections.Callable):
             self.set(obj, value)
@@ -279,7 +255,7 @@ class PropertyMapping(object):
         obj.set(self.set, value)
 
     def do_append(self, obj, value):
-        if self.type not in [ValueType.SET, ValueType.ARRAY]:
+        if self.type not in (ValueType.SET, ValueType.ARRAY):
             raise ValueError('Property is not a set or array')
 
         value = read_value(value, self.type)
@@ -296,7 +272,7 @@ class PropertyMapping(object):
         obj.set(self.set, newvalues)
 
     def do_remove(self, obj, value):
-        if self.type not in [ValueType.SET, ValueType.ARRAY]:
+        if self.type not in (ValueType.SET, ValueType.ARRAY):
             raise ValueError('Property is not a set or array')
 
         value = read_value(value, self.type)

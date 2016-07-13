@@ -62,7 +62,10 @@ def format_literal(value, **kwargs):
         return '<open file "{0}">'.format(value.name)
 
     if isinstance(value, list):
-        return '[' + ', '.join(format_literal(i, quoted=True) for i in value) + ']'
+        if kwargs.get('quoted'):
+            return '[' + ', '.join(format_literal(i, quoted=True) for i in value) + ']'
+
+        return ','.join(format_literal(i, quoted=True) for i in value)
 
     if isinstance(value, dict):
         return '{' + ', '.join('{0}: {1}'.format(

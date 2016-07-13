@@ -353,7 +353,7 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             set=set_resolution,
             list=False,
             type=ValueType.ARRAY,
-            array=[
+            enum=[
                 [1920, 1200],
                 [1920, 1080],
                 [1600, 1200],

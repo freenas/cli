@@ -25,6 +25,8 @@
 #
 #####################################################################
 
+from freenas.cli.output import format_value
+
 
 class NullComplete(object):
     def __init__(self, name, **kwargs):
@@ -48,18 +50,7 @@ class EnumComplete(NullComplete):
         self.data = list(map(quote, choices))
 
     def choices(self, context, token):
-        return self.data
-
-
-class ArrayComplete(NullComplete):
-    def __init__(self, name, choices, **kwargs):
-        super(ArrayComplete, self).__init__(name, **kwargs)
-        self.data = []
-        for choice in choices:
-            self.data.append(','.join(str(i) for i in choice))
-
-    def choices(self, context, token):
-        return self.data
+        return [format_value(i) for i in self.data]
 
 
 class EntitySubscriberComplete(NullComplete):

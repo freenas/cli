@@ -265,7 +265,7 @@ class PropertyMapping(object):
                         "Invalid value for property '{0}'. "
                         "Should be one of: {1}".format(
                             self.get_name,
-                            str(array_vals).replace(' ', '').replace(']', '').replace('[', ' ')[2:]
+                            str(array_vals).replace(' ', '').replace(']', '').replace('[', ' ').replace("'", '')[2:]
                         )
                     )
 

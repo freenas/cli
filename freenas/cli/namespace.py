@@ -260,12 +260,15 @@ class PropertyMapping(object):
         if self.array:
             if self.type == ValueType.ARRAY:
                 array_vals = self.array() if callable(self.array) else self.array
+                allowed_inputs_arr = []
+                for val in array_vals:
+                    allowed_inputs_arr.append(','.join(str(i) for i in val))
                 if not any(value == array_val for array_val in array_vals):
                     raise ValueError(
                         "Invalid value for property '{0}'. "
                         "Should be one of: {1}".format(
                             self.get_name,
-                            str(array_vals).replace(' ', '').replace(']', '').replace('[', ' ').replace("'", '')[2:]
+                            '; '.join(allowed_inputs_arr)
                         )
                     )
 

@@ -204,7 +204,7 @@ class PropertyMapping(object):
         self.name = kwargs.pop('name')
         self.descr = kwargs.pop('descr', None)
         self.get = kwargs.pop('get')
-        self.get_name = kwargs.pop('get_name', self.get)
+        self.get_name = kwargs.pop('get_name', self.name)
         self.set = kwargs.pop('set', None) if 'set' in kwargs else self.get
         self.list = kwargs.pop('list', True)
         self.type = kwargs.pop('type', ValueType.STRING)
@@ -244,7 +244,7 @@ class PropertyMapping(object):
                 for e in value:
                     if e not in enum_val:
                         raise ValueError("Invalid value for property '{0}'. "
-                                         "Should be one of: {1}".format(self.get_name, ', '.join(enum_val)))
+                                         "Should be one of: {1}".format(self.get_name, '; '.join(enum_val)))
             elif self.type == ValueType.NUMBER:
                 if str(value) not in enum_val:
                     raise ValueError(

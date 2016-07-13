@@ -1235,7 +1235,7 @@ svc_cli_config = {
             types of connections allowed)."""),
             'get': 'protocol',
             'type': ValueType.ARRAY,
-            'array': [['HTTP'],
+            'enum': [['HTTP'],
                       ['HTTPS'],
                       ['HTTP', 'HTTPS']
             ],

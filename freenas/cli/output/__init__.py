@@ -98,10 +98,11 @@ class Object(list):
 
 class Table(object):
     class Column(object):
-        def __init__(self, label, accessor, vt=ValueType.STRING):
+        def __init__(self, label, accessor, vt=ValueType.STRING, display_width_percentage=None):
             self.label = label
             self.accessor = accessor
             self.vt = vt
+            self.display_width_percentage = display_width_percentage
 
     def __init__(self, data, columns):
         self.data = data

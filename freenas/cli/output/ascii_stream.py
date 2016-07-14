@@ -148,7 +148,8 @@ def _formatter():
 
 class AsciiStreamTablePrinter(object):
     def __init__(self):
-        self.display_width = 120
+        self.display_size = get_terminal_size()[1]
+        self.print_line_length = self.display_size
         self._cleanup_all()
 
     def _cleanup_all(self):
@@ -177,11 +178,13 @@ class AsciiStreamTablePrinter(object):
         self._print_lines()
 
     def _compute_cols_widths(self, columns):
-        default_col_width_percentage = int(100 / len(columns))  #-borders
+        default_col_width_percentage = int(100 / len(columns))
+        self.borders_space = len(columns) * 2
         for col in columns:
             if not col.display_width_percentage:
                 col.display_width_percentage = default_col_width_percentage
-        self.cols_widths = [int(self.display_width*(col.display_width_percentage/100)) for col in columns]
+        self.cols_widths = [int((self.display_size-self.borders_space)*(col.display_width_percentage/100)) for col in columns]
+        self.print_line_length = sum(self.cols_widths) + self.borders_space
 
     def _load_accessors(self, columns):
         self.accessors = [col.accessor for col in columns]
@@ -264,7 +267,7 @@ class AsciiStreamTablePrinter(object):
 
     def _add_vertical_separator_line(self):
         def get_vertical_separator():
-            return "="*self.display_width
+            return "="*self.print_line_length
         self.ordered_lines.append(get_vertical_separator())
 
     def _print_lines(self):

@@ -236,17 +236,17 @@ class PropertyMapping(object):
 
         if self.enum:
             enum_val = self.enum() if callable(self.enum) else self.enum
-            if self.type in (ValueType.SET, ValueType.ARRAY):
+            if self.type == ValueType.SET:
                 for e in value:
                     if e not in enum_val:
                         raise ValueError("Invalid value for property '{0}'. Should be one of: {1}".format(
                             self.get_name,
                             '; '.join(format_value(i) for i in enum_val))
                         )
-            elif str(value) not in enum_val:
+            elif value not in enum_val:
                 raise ValueError("Invalid value for property '{0}'. Should be one of: {1}".format(
                     self.get_name,
-                    ', '.join(enum_val))
+                    ', '.join(format_value(i) for i in enum_val))
                 )
 
         if isinstance(self.set, collections.Callable):

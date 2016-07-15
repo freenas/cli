@@ -1,132 +1,15 @@
-import io
-import six
 import sys
-import datetime
-import time
-import gettext
-import natural.date
+import six
 
-from dateutil.parser import parse
-from freenas.cli import config
-from freenas.cli.output import ValueType, get_terminal_size, resolve_cell, get_humanized_size, Table
-from freenas.cli.utils import get_localtime_offset
-from freenas.utils.permissions import int_to_string
+from freenas.cli.output.ascii import *
+from freenas.cli.output import get_terminal_size
 
 
-t = gettext.translation('freenas-cli', fallback=True)
-_ = t.gettext
-
-
-def format_literal(value, **kwargs):
-    if isinstance(value, six.string_types):
-        if kwargs.get('quoted'):
-            return '"{0}"'.format(value)
-        else:
-            return value
-
-    if isinstance(value, bool):
-        return 'true' if value else 'false'
-
-    if isinstance(value, six.integer_types):
-        return str(value)
-
-    if isinstance(value, io.TextIOWrapper):
-        return '<open file "{0}">'.format(value.name)
-
-    if isinstance(value, list):
-        return '[' + ', '.join(format_literal(i, quoted=True) for i in value) + ']'
-
-    if isinstance(value, dict):
-        return '{' + ', '.join('{0}: {1}'.format(
-            format_literal(k, quoted=True),
-            format_literal(v, quoted=True)
-        ) for k, v in value.items()) + '}'
-
-    if value is None:
-        return 'none'
-
-    return str(value)
-
-
-class AsciiStreamOutputFormatter(object):
-
-    @staticmethod
-    def format_value(value, vt):
-        if vt == ValueType.BOOLEAN:
-            return _("yes") if value else _("no")
-
-        if value is None:
-            return _("none")
-
-        if vt == ValueType.SET:
-            value = set(value)
-            if len(value) == 0:
-                return _("empty")
-
-            return '\n'.join(value)
-
-        if vt == ValueType.ARRAY:
-            value = list(value)
-            if len(value) == 0:
-                return _("empty")
-
-            return '\n'.join(value)
-
-        if vt == ValueType.DICT:
-            if not bool(value):
-                return _("empty")
-
-            return value
-
-        if vt == ValueType.STRING:
-            return format_literal(value)
-
-        if vt == ValueType.TEXT_FILE:
-            return format_literal(value[:10] + '(...)')
-
-        if vt == ValueType.NUMBER:
-            return str(value)
-
-        if vt == ValueType.HEXNUMBER:
-            return hex(value)
-
-        if vt == ValueType.OCTNUMBER:
-            return oct(value)
-
-        if vt == ValueType.PERMISSIONS:
-            return '{0} ({1})'.format(oct(value['value']).zfill(3), int_to_string(value['value']))
-
-        if vt == ValueType.SIZE:
-            return get_humanized_size(value)
-
-        if vt == ValueType.TIME:
-            fmt = config.instance.variables.get('datetime_format')
-
-            delta = datetime.timedelta(seconds=get_localtime_offset())
-            if isinstance(value, str):
-                value = parse(value)
-            if isinstance(value, float):
-                delta = delta.total_seconds()
-            if fmt == 'natural':
-                return natural.date.duration(value + delta)
-
-            return time.strftime(fmt, time.localtime(value))
-
-    @staticmethod
-    def output_msg(message, **kwargs):
-        six.print_(
-            format_literal(message, **kwargs),
-            end=('\n' if kwargs.get('newline', True) else ' '),
-            file=kwargs.pop('file', sys.stdout)
-        )
-
+class AsciiStreamOutputFormatter(AsciiOutputFormatter):
     @staticmethod
     def output_table(tab, file=sys.stdout):
+        #TODO deal with hidden indexes here
         AsciiStreamOutputFormatter._print_table(tab, file)
-
-    @staticmethod
-    def output_object(tab, file=sys.stdout):
-        pass
 
     @staticmethod
     def _print_table(tab, file):

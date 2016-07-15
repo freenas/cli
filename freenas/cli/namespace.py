@@ -211,6 +211,7 @@ class PropertyMapping(object):
         self.regex = kwargs.pop('regex', None)
         self.condition = kwargs.pop('condition', None)
         self.ns = kwargs.pop('ns', None)
+        self.display_width_percentage = kwargs.pop('display_width_percentage', None)
 
     def is_usersetable(self, obj):
         if callable(self.usersetable):
@@ -906,7 +907,7 @@ class BaseListCommand(FilteringCommand):
             if not col.list:
                 continue
 
-            cols.append(Table.Column(col.descr, col.do_get, col.type))
+            cols.append(Table.Column(col.descr, col.do_get, col.type, col.display_width_percentage))
 
         return Table(self.parent.query(params, options), cols)
 

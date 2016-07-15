@@ -7,21 +7,21 @@ from freenas.cli.output import get_terminal_size
 
 class AsciiStreamOutputFormatter(AsciiOutputFormatter):
     @staticmethod
-    def output_table(tab, file=sys.stdout):
-        AsciiStreamOutputFormatter._print_table(tab, file)
+    def output_table(tab, file=sys.stdout, **kwargs):
+        AsciiStreamOutputFormatter._print_table(tab, file, end=('\n' if kwargs.get('newline', True) else ' '))
 
     @staticmethod
-    def _print_table(tab, file):
-        def _print_header(columns, file, printer=None):
-            printer.print_header(columns, file) if printer else six.print_([col.label for col in columns], file=file)
+    def _print_table(tab, file, end):
+        def _print_header(columns, file, end, printer=None):
+            printer.print_header(columns, file, end) if printer else six.print_([col.label for col in columns], file=file, end=end)
 
-        def _print_rows(rows, columns, file, printer=None):
+        def _print_rows(rows, columns, file, end, printer=None):
             for row in rows:
-                printer.print_row(row, file) if printer else six.print_([row[col.accessor] for col in columns], file=file)
+                printer.print_row(row, file, end) if printer else six.print_([row[col.accessor] for col in columns], file=file, end=end)
 
         printer = AsciiStreamTablePrinter()
-        _print_header(tab.columns, file, printer=printer)
-        _print_rows(tab.data, tab.columns, file, printer=printer)
+        _print_header(tab.columns, file, end, printer=printer)
+        _print_rows(tab.data, tab.columns, file, end, printer=printer)
 
 
 def _formatter():
@@ -43,7 +43,7 @@ class AsciiStreamTablePrinter(object):
         self.ordered_lines_elements = []
         self.ordered_lines = []
 
-    def print_header(self, columns, file):
+    def print_header(self, columns, file, end):
         self._compute_cols_widths(columns)
         self._load_accessors(columns)
         self._load_value_types(columns)
@@ -51,13 +51,13 @@ class AsciiStreamTablePrinter(object):
         self._trim_elements()
         self._render_lines()
         self._add_vertical_separator_line()
-        self._print_lines(file)
+        self._print_lines(file, end)
 
-    def print_row(self, row, file):
+    def print_row(self, row, file, end):
         self._load_row_elements(row)
         self._trim_elements()
         self._render_lines()
-        self._print_lines(file)
+        self._print_lines(file, end)
 
     def _compute_cols_widths(self, columns):
         default_col_width_percentage = int(100 / len(columns))
@@ -152,7 +152,7 @@ class AsciiStreamTablePrinter(object):
             return "="*self.print_line_length
         self.ordered_lines.append(get_vertical_separator())
 
-    def _print_lines(self, file=sys.stdout):
+    def _print_lines(self, file, end):
         for line in self.ordered_lines:
-            six.print_(line, file=file)
+            six.print_(line, file=file, end=end)
         self._cleanup_lines()

@@ -732,6 +732,51 @@ class OpenFilesCommand(Command):
         ])
 
 
+@description("Mounts readonly dataset under selected system path")
+class MountCommand(Command):
+    """
+    Usage: mount path=<path>
+
+    Example: mount path=/path/to/my/temporary/mountpoint
+
+    Mounts readonly dataset under selected system path.
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        path = kwargs.get('path')
+        if not path:
+            raise CommandException('You have to specify path to your mountpoint')
+
+        context.submit_task(
+            'volume.dataset.temporary.mount',
+            self.parent.entity['id'],
+            path,
+            callback=lambda s, t: post_save(self.parent, s, t)
+        )
+
+
+@description("Unmounts readonly dataset")
+class UmountCommand(Command):
+    """
+    Usage: unmount
+
+    Example: unmount
+
+    Unmounts readonly dataset.
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        context.submit_task(
+            'volume.dataset.temporary.umount',
+            self.parent.entity['id'],
+            callback=lambda s, t: post_save(self.parent, s, t)
+        )
+
+
 @description("Datasets")
 class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
     def __init__(self, name, context, parent=None):
@@ -920,11 +965,17 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
             condition=lambda o: o['type'] == 'VOLUME'
         )
 
+        self.add_property(
+            descr='Temporary mountpoint',
+            name='temp_mount',
+            get='temp_mountpoint',
+            list=False,
+            usersetable=False,
+            condition=lambda o: o['temp_mountpoint']
+        )
+
         self.primary_key = self.get_mapping('name')
-        self.entity_commands = lambda this: {
-            'replicate': ReplicateCommand(this),
-            'open_files': OpenFilesCommand(this)
-        }
+        self.entity_commands = self.get_entity_commands
 
     def delete(self, this, kwargs):
         self.context.submit_task(
@@ -951,6 +1002,22 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
             this.get_diff(),
             callback=lambda s, t: post_save(this, s, t)
         )
+
+    def get_entity_commands(self, this):
+        this.load()
+        commands = {
+            'replicate': ReplicateCommand(this),
+            'open_files': OpenFilesCommand(this)
+        }
+
+        if this.entity:
+            if this.entity['properties']['readonly']['parsed']:
+                if this.entity['mounted']:
+                    commands['umount'] = UmountCommand(this)
+                else:
+                    commands['mount'] = MountCommand(this)
+
+        return commands
 
 
 class RollbackCommand(Command):

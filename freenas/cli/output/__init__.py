@@ -255,8 +255,11 @@ def read_value(value, tv=ValueType.STRING):
         if tv == ValueType.ARRAY:
             return []
 
-        if tv in [ValueType.DICT, ValueType.SET]:
+        if tv == ValueType.DICT:
             return {}
+
+        if tv == ValueType.SET:
+            return set()
 
         return value
 
@@ -277,10 +280,10 @@ def read_value(value, tv=ValueType.STRING):
             return False
 
     if tv == ValueType.SET:
-        if type(value) is set:
-            return value
-        else:
+        if type(value) is list:
             return set(value)
+        else:
+            return {value}
 
     if tv == ValueType.ARRAY:
         if type(value) is list:

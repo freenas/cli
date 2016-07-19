@@ -131,18 +131,25 @@ class AsciiStreamTablePrinter(object):
     def _render_lines(self):
         def render_line(ordered_line_elements):
             ordered_line_elements_with_spaces = [
-                surround_with_spaces(e, i) for i, e in enumerate(ordered_line_elements)
+                surround_with_spaces(e, i, left_aligned=True) for i, e in enumerate(ordered_line_elements)
             ]
             line = ""
             for e in ordered_line_elements_with_spaces:
                 line += "|"+e+"|"
             self.ordered_lines.append(line)
 
-        def surround_with_spaces(element, index):
+        def surround_with_spaces(element, index, left_aligned=False, right_aligned=False):
             num_of_spaces = self.cols_widths[index] - len(element)
             if num_of_spaces < 1:
                 return element
-            return " "*int(num_of_spaces/2)+element+" "*int(num_of_spaces/2)+" "*int(num_of_spaces % 2)
+            left_spaces = right_spaces = " " * int(num_of_spaces / 2)
+            odd_spaces = " " * int(num_of_spaces % 2)
+            if left_aligned:
+                return element + left_spaces + right_spaces + odd_spaces
+            elif right_aligned:
+                return left_spaces + right_spaces + odd_spaces + element
+            else:
+                return left_spaces + element + right_spaces + odd_spaces
 
         for ordered_line_elements in self.ordered_lines_elements:
             render_line(ordered_line_elements)

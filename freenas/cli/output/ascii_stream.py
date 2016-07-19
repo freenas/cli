@@ -31,7 +31,7 @@ def _formatter():
 class AsciiStreamTablePrinter(object):
     def __init__(self):
         self.display_size = get_terminal_size()[1]
-        self.print_line_length = self.display_size
+        self.usable_display_width = self.display_size
         self._cleanup_all()
 
     def _cleanup_all(self):
@@ -66,7 +66,7 @@ class AsciiStreamTablePrinter(object):
             if not col.display_width_percentage:
                 col.display_width_percentage = default_col_width_percentage
         self.cols_widths = [int((self.display_size-self.borders_space)*(col.display_width_percentage/100)) for col in columns]
-        self.print_line_length = sum(self.cols_widths) + self.borders_space
+        self.usable_display_width = sum(self.cols_widths) + self.borders_space
 
     def _load_accessors(self, columns):
         self.accessors = [col.accessor for col in columns]
@@ -98,11 +98,11 @@ class AsciiStreamTablePrinter(object):
 
             def do_pretty_split(curr_line, next_line, elem_index):
                 all_words = curr_line[elem_index].split()
-                words_to_curr_line = ""
+                words_to_curr_line = all_words.pop(0)
                 words_to_next_line = ""
                 for i, word in enumerate(all_words):
-                    if len(words_to_curr_line + " " +word) < self.cols_widths[elem_index]:
-                        words_to_curr_line += " " + word if words_to_curr_line else word
+                    if len(words_to_curr_line + " " + word) < self.cols_widths[elem_index]:
+                        words_to_curr_line += " " + word
                     else:
                         words_to_next_line += " ".join(all_words[i:])
                         break
@@ -165,7 +165,7 @@ class AsciiStreamTablePrinter(object):
 
     def _add_vertical_separator_line(self):
         def get_vertical_separator():
-            return "="*self.print_line_length
+            return "=" * self.usable_display_width
         self.ordered_lines.append(get_vertical_separator())
 
     def _print_lines(self, file, end):

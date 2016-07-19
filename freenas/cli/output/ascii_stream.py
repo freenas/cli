@@ -97,9 +97,18 @@ class AsciiStreamTablePrinter(object):
                 return len(element.split()[0]) < self.cols_widths[index]
 
             def do_pretty_split(curr_line, next_line, elem_index):
-                splitted = curr_line[elem_index].split()
-                curr_line[elem_index] = splitted[0]
-                next_line[elem_index] = " ".join(splitted[1:])
+                all_words = curr_line[elem_index].split()
+                words_to_curr_line = ""
+                words_to_next_line = ""
+                for i, word in enumerate(all_words):
+                    if len(words_to_curr_line + " " +word) < self.cols_widths[elem_index]:
+                        words_to_curr_line += " " + word if words_to_curr_line else word
+                    else:
+                        words_to_next_line += " ".join(all_words[i:])
+                        break
+
+                curr_line[elem_index] = words_to_curr_line
+                next_line[elem_index] = words_to_next_line
                 return curr_line, next_line
 
             def do_ugly_split(curr_line, next_line, elem_index, element):

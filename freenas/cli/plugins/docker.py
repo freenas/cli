@@ -29,7 +29,7 @@ from freenas.cli.namespace import (
     Namespace, EntityNamespace, Command, EntitySubscriberBasedLoadMixin,
     TaskBasedSaveMixin, CommandException
 )
-from freenas.cli.output import ValueType
+from freenas.cli.output import ValueType, Table
 
 
 class DockerHostNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
@@ -213,7 +213,8 @@ class DockerImageNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
 
         self.primary_key = self.get_mapping('name')
         self.extra_commands = {
-            'pull': DockerImagePullCommand()
+            'pull': DockerImagePullCommand(),
+            'search': DockerImageSearchCommand()
         }
 
 
@@ -227,6 +228,17 @@ class DockerImagePullCommand(Command):
             raise CommandException("Docker host {0} not found".format(args[1]))
 
         context.submit_task('docker.image.pull', args[0], hostid['id'])
+
+
+class DockerImageSearchCommand(Command):
+    def run(self, context, args, kwargs, opargs):
+        if len(args) != 1:
+            raise CommandException("Please specify fragment of the image name")
+
+        return Table(context.call_sync('docker.image.search', args[0]), [
+            Table.Column('Name', 'name'),
+            Table.Column('Description', 'description')
+        ])
 
 
 class DockerContainerStartStopCommand(Command):

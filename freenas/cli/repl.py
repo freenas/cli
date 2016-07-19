@@ -1561,6 +1561,8 @@ class MainLoop(object):
                         format_output(ret)
         except SyntaxError as e:
             output_msg(_('Syntax error: {0}'.format(str(e))))
+        except KeyboardInterrupt:
+            output_msg(_('Interrupted'))
         except CommandException as e:
             output_msg(_('Error: {0}'.format(str(e))))
             self.context.logger.error(e.stacktrace)

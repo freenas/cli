@@ -491,7 +491,8 @@ class HelpCommand(Command):
                             prop_usage = prop.usage
                         else:
                             if prop.enum:
-                                prop_type = "enum [" + ", ".join(prop.enum) + "]"
+                                enum_values = prop.enum() if callable(prop.enum) else prop.enum
+                                prop_type = "enum [" + ", ".join(enum_values) + "]"
                             else:
                                 prop_type = str(prop.type).split('ValueType.')[-1].lower()
                             if not prop.set:

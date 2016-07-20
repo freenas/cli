@@ -461,10 +461,7 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
     def get_entity_namespaces(self, this):
         this.load()
         return [
-            VMDisksNamespace('disks', self.context, this),
-            VMNicsNamespace('nic', self.context, this),
-            VMVolumesNamespace('volume', self.context, this),
-            VMUSBNamespace('usb', self.context, this),
+            VMDeviceNamespace('device', self.context, this),
             VMSnapshotsNamespace('snapshot', self.context, this)
         ]
 
@@ -487,155 +484,133 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
         return commands
 
 
-class VMDisksNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNamespace):
-    def __init__(self, name, context, parent):
-        super(VMDisksNamespace, self).__init__(name, context)
-        self.parent = parent
-        self.primary_key_name = 'name'
-        self.extra_query_params = [('type', 'in', ['DISK', 'CDROM'])]
-        self.parent_path = 'devices'
-        self.skeleton_entity = {
-            'type': 'DISK',
-            'properties': {}
-        }
-
-        self.add_property(
-            descr='Disk name',
-            name='name',
-            get='name'
-        )
+class VMDeviceDiskMixin(EntityNamespace):
+    def __init__(self, name, context):
+        super(VMDeviceDiskMixin, self).__init__(name, context)
 
         self.add_property(
             descr='Disk type',
-            name='type',
+            name='disk_type',
             get='type',
-            enum=['DISK', 'CDROM']
+            enum=['DISK', 'CDROM'],
+            list=False,
+            condition=lambda e: e['type'] in ('DISK', 'CDROM')
         )
 
         self.add_property(
             descr='Disk mode',
-            name='mode',
+            name='disk_mode',
             get='properties.mode',
-            enum=['AHCI', 'VIRTIO']
+            enum=['AHCI', 'VIRTIO'],
+            list=False,
+            condition=lambda e: e['type'] in ('DISK', 'CDROM')
         )
 
         self.add_property(
             descr='Disk size',
-            name='size',
+            name='disk_size',
             get='properties.size',
             type=ValueType.SIZE,
+            list=False,
             condition=lambda e: e['type'] == 'DISK'
         )
 
         self.add_property(
             descr='Image path',
-            name='path',
+            name='disk_image_path',
             get='properties.path',
+            list=False,
             condition=lambda e: e['type'] == 'CDROM'
         )
 
-        self.primary_key = self.get_mapping('name')
 
-
-class VMNicsNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNamespace):
-    def __init__(self, name, context, parent):
-        super(VMNicsNamespace, self).__init__(name, context)
-        self.parent = parent
-        self.primary_key_name = 'name'
-        self.extra_query_params = [('type', '=', 'NIC')]
-        self.parent_path = 'devices'
-        self.skeleton_entity = {
-            'type': 'NIC',
-            'properties': {}
-        }
-
-        self.add_property(
-            descr='NIC name',
-            name='name',
-            get='name'
-        )
+class VMDeviceNicMixin(EntityNamespace):
+    def __init__(self, name, context):
+        super(VMDeviceNicMixin, self).__init__(name, context)
 
         self.add_property(
             descr='NIC type',
-            name='type',
+            name='nic_type',
             get='properties.type',
-            enum=['NAT', 'BRIDGE', 'MANAGEMENT']
+            enum=['NAT', 'BRIDGE', 'MANAGEMENT'],
+            list=False,
+            condition=lambda e: e['type'] == 'NIC'
         )
 
         self.add_property(
             descr='Emulated device type',
-            name='device',
+            name='nic_device_type',
             get='properties.device',
-            enum=['VIRTIO', 'E1000', 'NE2K']
+            enum=['VIRTIO', 'E1000', 'NE2K'],
+            list=False,
+            condition=lambda e: e['type'] == 'NIC'
         )
 
         self.add_property(
             descr='Bridge with',
-            name='bridge',
-            get='properties.bridge'
+            name='nic_bridge',
+            get='properties.bridge',
+            list=False,
+            condition=lambda e: e['type'] == 'NIC'
         )
 
         self.add_property(
             descr='MAC address',
-            name='macaddr',
-            get='properties.link_address'
+            name='nic_macaddr',
+            get='properties.link_address',
+            list=False,
+            condition=lambda e: e['type'] == 'NIC'
         )
 
-        self.primary_key = self.get_mapping('name')
 
-
-class VMVolumesNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNamespace):
-    def __init__(self, name, context, parent):
-        super(VMVolumesNamespace, self).__init__(name, context)
-        self.parent = parent
-        self.primary_key_name = 'name'
-        self.extra_query_params = [('type', '=', 'VOLUME')]
-        self.parent_path = 'devices'
-        self.skeleton_entity = {
-            'type': 'VOLUME',
-            'properties': {}
-        }
-
-        self.add_property(
-            descr='Volume name',
-            name='name',
-            get='name'
-        )
+class VMDeviceVolumeMixin(EntityNamespace):
+    def __init__(self, name, context):
+        super(VMDeviceVolumeMixin, self).__init__(name, context)
 
         self.add_property(
             descr='Volume type',
-            name='type',
+            name='volume_type',
             get='properties.type',
-            enum=['VT9P']
+            enum=['VT9P'],
+            list=False,
+            condition=lambda e: e['type'] == 'VOLUME'
         )
 
         self.add_property(
             descr='Destination path',
-            name='destination',
-            get='properties.destination'
+            name='volume_destination',
+            get='properties.destination',
+            list=False,
+            condition=lambda e: e['type'] == 'VOLUME'
         )
 
         self.add_property(
             descr='Automatically create storage',
-            name='auto',
+            name='volume_auto',
             get='properties.auto',
-            type=ValueType.BOOLEAN
+            type=ValueType.BOOLEAN,
+            list=False,
+            condition=lambda e: e['type'] == 'VOLUME'
         )
 
-        self.primary_key = self.get_mapping('name')
+
+class VMDeviceUSBMixin(EntityNamespace):
+    def __init__(self, name, context):
+        super(VMDeviceUSBMixin, self).__init__(name, context)
+
+        self.add_property(
+            descr='Emulated device type',
+            name='usb_device_type',
+            get='properties.device',
+            enum=['tablet'],
+            list=False,
+            condition=lambda e: e['type'] == 'USB'
+        )
 
 
-class VMUSBNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNamespace):
-    def __init__(self, name, context, parent):
-        super(VMUSBNamespace, self).__init__(name, context)
-        self.parent = parent
-        self.primary_key_name = 'name'
-        self.extra_query_params = [('type', '=', 'USB')]
-        self.parent_path = 'devices'
-        self.skeleton_entity = {
-            'type': 'USB',
-            'properties': {}
-        }
+class VMDeviceBaseMixin(EntityNamespace):
+    def __init__(self, name, context):
+        super(VMDeviceBaseMixin, self).__init__(name, context)
 
         self.add_property(
             descr='Device name',
@@ -644,12 +619,26 @@ class VMUSBNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNamespa
         )
 
         self.add_property(
-            descr='Emulated device type',
-            name='device',
-            get='properties.device',
-            enum=['tablet']
+            descr='Device type',
+            name='type',
+            get='type',
+            set='type',
+            enum=['DISK', 'CDROM', 'NIC', 'VOLUME', 'USB']
         )
 
+
+class VMDeviceNamespace(NestedObjectLoadMixin,
+                        NestedObjectSaveMixin,
+                        VMDeviceUSBMixin,
+                        VMDeviceVolumeMixin,
+                        VMDeviceNicMixin,
+                        VMDeviceDiskMixin,
+                        VMDeviceBaseMixin):
+    def __init__(self, name, context, parent):
+        super(VMDeviceNamespace, self).__init__(name, context)
+        self.parent = parent
+        self.primary_key_name = 'name'
+        self.parent_path = 'devices'
         self.primary_key = self.get_mapping('name')
 
 

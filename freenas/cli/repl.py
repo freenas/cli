@@ -242,7 +242,7 @@ class VariableStore(object):
     def __init__(self):
         self.save_to_file = DEFAULT_CLI_CONFIGFILE
         self.variables = {
-            'output_format': self.Variable('ascii_stream', ValueType.STRING, ['ascii', 'json', 'ascii_stream']),
+            'output_format': self.Variable('ascii', ValueType.STRING, ['ascii', 'json']),
             'datetime_format': self.Variable('natural', ValueType.STRING),
             'language': self.Variable(os.getenv('LANG', 'C'), ValueType.STRING),
             'prompt': self.Variable('{jobs_short}{host}:{path}>', ValueType.STRING),

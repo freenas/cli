@@ -142,9 +142,9 @@ class AsciiStreamTablePrinter(object):
             ordered_line_elements_with_spaces = [
                 surround_with_spaces(e, i, left_aligned=True) for i, e in enumerate(ordered_line_elements)
             ]
-            line = ""
+            line = " "
             for e in ordered_line_elements_with_spaces:
-                line += "|"+e+"|"
+                line += e+" "
             self.ordered_lines.append(line)
 
         def surround_with_spaces(element, index, left_aligned=False, right_aligned=False):
@@ -165,7 +165,7 @@ class AsciiStreamTablePrinter(object):
 
     def _add_vertical_separator_line(self):
         def get_vertical_separator():
-            return "=" * self.usable_display_width
+            return " " * self.usable_display_width
         self.ordered_lines.append(get_vertical_separator())
 
     def _print_lines(self, file, end):

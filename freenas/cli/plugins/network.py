@@ -613,10 +613,6 @@ class GlobalConfigNamespace(ConfigNamespace):
             type=ValueType.BOOLEAN
         )
 
-    # def load(self):
-    #    self.entity = self.context.call_sync('')
-    #    self.orig_entity = copy.deepcopy(self.entity)
-
 
 @description("Manage routing table")
 class RoutesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):

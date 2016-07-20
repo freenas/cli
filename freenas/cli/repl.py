@@ -374,6 +374,7 @@ class Context(object):
         self.pending_tasks = QueryDict()
         self.session_id = None
         self.user_commands = []
+        self.local_connection = False
         config.instance = self
 
         self.output_thread = threading.Thread(target=self.output_thread)
@@ -583,15 +584,22 @@ class Context(object):
                             self.hostname, e)))
                     continue
                 try:
-                    if self.hostname in ('127.0.0.1', 'localhost') \
-                            or self.parsed_uri.scheme == 'unix':
+                    if self.local_connection:
                         self.connection.login_user(self.user, '')
                     else:
                         self.connection.login_token(self.connection.token)
 
                     self.connection.subscribe_events(*EVENT_MASKS)
-                except RpcException:
-                    output_msg(_("Reauthentication failed (most likely token expired or server was restarted), use the 'login' command to log back in."))
+                except RpcException as e:
+                    output_msg(_(
+                        "Reauthentication failed (most likely token expired or server was"
+                        " restarted), use the 'login' command to log back in."
+                    ))
+                    if self.local_connection:
+                        # we might've gotten an EACCESS on the local connection if the dispatcher
+                        # just barely started but still was not initiated enough for auth
+                        # so we should just retry in that case
+                        continue
                 break
             except Exception as e:
                 output_msg(_('Cannot reconnect: {0}'.format(str(e))))
@@ -1778,19 +1786,16 @@ def main():
         context.hostname = 'localhost'
     else:
         context.hostname = context.parsed_uri.hostname
-    if context.parsed_uri.scheme != 'unix' \
-            and context.parsed_uri.netloc not in (
-                    'localhost', '127.0.0.1', None):
+    if (
+        context.parsed_uri.scheme != 'unix' and
+        context.parsed_uri.netloc not in ('localhost', '127.0.0.1', None)
+    ):
         if context.parsed_uri.username is None:
             username = six.moves.input('Please provide a username: ')
             if context.parsed_uri.scheme == 'ssh':
-                context.uri = 'ssh://{0}@{1}'.format(
-                        username,
-                        context.parsed_uri.hostname)
+                context.uri = 'ssh://{0}@{1}'.format(username, context.parsed_uri.hostname)
                 if context.parsed_uri.port is not None:
-                    context.uri = "{0}:{1}".format(
-                            context.uri,
-                            context.parsed_uri.port)
+                    context.uri = "{0}:{1}".format(context.uri, context.parsed_uri.port)
                 context.parsed_uri = urlparse(context.uri)
         else:
             username = context.parsed_uri.username
@@ -1802,6 +1807,8 @@ def main():
                 return
         else:
             args.p = args.p
+    else:
+        context.local_connection = True
 
     context.read_middleware_config_file(args.m)
     context.variables.load(args.c)
@@ -1813,8 +1820,7 @@ def main():
     if username is not None:
         context.login(username, args.p)
         context.user = username
-    elif context.parsed_uri.netloc in ('127.0.0.1', 'localhost') \
-            or context.parsed_uri.scheme == 'unix':
+    elif context.local_connection:
         context.user = getpass.getuser()
         context.login(context.user, '')
 

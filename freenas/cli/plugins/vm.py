@@ -334,8 +334,8 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
 
         self.add_property(
             descr='Guest type',
-            name='type',
-            get='type',
+            name='guest_type',
+            get='guest_type',
             list=False,
             enum=[
                 'boot2docker',

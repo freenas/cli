@@ -65,11 +65,6 @@ class VMConsole(object):
         self.conn.open()
 
     def start(self):
-        # support configurable escape sequence
-        eseq = self.context.variables.get('vm.console_interrupt')
-        if len(eseq) == 0:
-            eseq = '\035'
-
         # process escape characters using runtime
         eseq = bytes(self.context.variables.get('vm.console_interrupt'), 'utf-8').decode('unicode_escape')
         esbytes = bytes(eseq, 'utf-8')

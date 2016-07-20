@@ -36,7 +36,7 @@ from freenas.cli.namespace import (
     EntityNamespace, Command, NestedObjectLoadMixin, NestedObjectSaveMixin, EntitySubscriberBasedLoadMixin,
     RpcBasedLoadMixin, TaskBasedSaveMixin, description, CommandException
 )
-from freenas.cli.output import ValueType
+from freenas.cli.output import ValueType, get_humanized_size
 from freenas.cli.utils import post_save
 from freenas.utils import first_or_default
 from freenas.cli.complete import NullComplete
@@ -486,7 +486,13 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
 
 class VMDeviceDiskMixin(EntityNamespace):
     def __init__(self, name, context):
+        def get_humanized_summary(o):
+            size = get_humanized_size(o['properties']['size']) + " " if o['type'] == 'DISK' else ""
+            return size + o['properties']['mode'] + " " + o['type']
+
         super(VMDeviceDiskMixin, self).__init__(name, context)
+        self.humanized_summaries['DISK'] = get_humanized_summary
+        self.humanized_summaries['CDROM'] = get_humanized_summary
 
         self.add_property(
             descr='Disk type',
@@ -526,7 +532,11 @@ class VMDeviceDiskMixin(EntityNamespace):
 
 class VMDeviceNicMixin(EntityNamespace):
     def __init__(self, name, context):
+        def get_humanized_summary(o):
+            return o['properties']['device'] + " NIC bridged to " + o['properties']['bridge']
+
         super(VMDeviceNicMixin, self).__init__(name, context)
+        self.humanized_summaries['NIC'] = get_humanized_summary
 
         self.add_property(
             descr='NIC type',
@@ -565,7 +575,11 @@ class VMDeviceNicMixin(EntityNamespace):
 
 class VMDeviceVolumeMixin(EntityNamespace):
     def __init__(self, name, context):
+        def get_humanized_summary(o):
+            return o['properties']['type'] + " VOLUME mounted at " + o['properties']['destination']
+
         super(VMDeviceVolumeMixin, self).__init__(name, context)
+        self.humanized_summaries['VOLUME'] = get_humanized_summary
 
         self.add_property(
             descr='Volume type',
@@ -596,7 +610,11 @@ class VMDeviceVolumeMixin(EntityNamespace):
 
 class VMDeviceUSBMixin(EntityNamespace):
     def __init__(self, name, context):
+        def get_humanized_summary(o):
+            return "USB " + o['properties']['device'] + " device"
+
         super(VMDeviceUSBMixin, self).__init__(name, context)
+        self.humanized_summaries['USB'] = get_humanized_summary
 
         self.add_property(
             descr='Emulated device type',
@@ -608,9 +626,13 @@ class VMDeviceUSBMixin(EntityNamespace):
         )
 
 
-class VMDeviceBaseMixin(EntityNamespace):
+class VMDeviceListMixin(EntityNamespace):
     def __init__(self, name, context):
-        super(VMDeviceBaseMixin, self).__init__(name, context)
+        def get_humanized_summary(o):
+            return self.humanized_summaries[o['type']](o)
+
+        super(VMDeviceListMixin, self).__init__(name, context)
+        self.humanized_summaries = {}
 
         self.add_property(
             descr='Device name',
@@ -626,6 +648,13 @@ class VMDeviceBaseMixin(EntityNamespace):
             enum=['DISK', 'CDROM', 'NIC', 'VOLUME', 'USB']
         )
 
+        self.add_property(
+            descr="Device summary",
+            name='device_summary',
+            get=get_humanized_summary,
+            set=None,
+        )
+
 
 class VMDeviceNamespace(NestedObjectLoadMixin,
                         NestedObjectSaveMixin,
@@ -633,7 +662,7 @@ class VMDeviceNamespace(NestedObjectLoadMixin,
                         VMDeviceVolumeMixin,
                         VMDeviceNicMixin,
                         VMDeviceDiskMixin,
-                        VMDeviceBaseMixin):
+                        VMDeviceListMixin):
     def __init__(self, name, context, parent):
         super(VMDeviceNamespace, self).__init__(name, context)
         self.parent = parent

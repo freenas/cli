@@ -333,6 +333,30 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
         )
 
         self.add_property(
+            descr='Guest type',
+            name='type',
+            get='type',
+            list=False,
+            enum=[
+                'boot2docker',
+                'centos',
+                'debian',
+                'fedora',
+                'freebsd',
+                'freenas',
+                'netbsd',
+                'openbsd',
+                'opensuse',
+                'pfsense',
+                'solaris',
+                'ubuntu',
+                'other-linux',
+                'other-unix',
+                'other'
+            ]
+        )
+
+        self.add_property(
             descr='Graphics support',
             name='graphics',
             get=get_graphics,

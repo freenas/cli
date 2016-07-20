@@ -233,6 +233,9 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityN
             single=True
         )
 
+        if not ret:
+            return None
+
         ret['allocation'] = self.context.call_sync(
             'volume.get_disks_allocation',
             [ret['path']]

@@ -449,10 +449,10 @@ class VMDeviceNicMixin(EntityNamespace):
         self.humanized_summaries['NIC'] = get_humanized_summary
 
         self.add_property(
-            descr='NIC type',
-            name='nic_type',
-            get='properties.type',
-            enum=['NAT', 'BRIDGE', 'MANAGEMENT'],
+            descr='NIC mode',
+            name='nic_mode',
+            get='properties.mode',
+            enum=['NAT', 'BRIDGED', 'MANAGEMENT'],
             list=False,
             condition=lambda e: e['type'] == 'NIC'
         )

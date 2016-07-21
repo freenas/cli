@@ -210,42 +210,6 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
         def set_memsize(o, v):
             o['config.memsize'] = int(v / 1024 / 1024)
 
-        def get_graphics(o):
-            return first_or_default(lambda d: d['type'] == 'GRAPHICS', o['devices']) is not None
-
-        def set_graphics(o, v):
-            if v:
-                if get_graphics(o):
-                    return
-
-                o['devices'].append({
-                    'name': 'framebuffer',
-                    'type': 'GRAPHICS',
-                    'properties': {
-                        'resolution': '1024x768'
-                    }
-                })
-            else:
-                if not get_graphics(o):
-                    return
-
-                dev = first_or_default(lambda d: d['type'] == 'GRAPHICS', o['devices'])
-                o['devices'].remove(dev)
-
-        def get_resolution(o):
-            fb = first_or_default(lambda d: d['type'] == 'GRAPHICS', o['devices'])
-            if not fb:
-                return None
-
-            return list(fb['properties']['resolution'].split('x'))
-
-        def set_resolution(o, v):
-            fb = first_or_default(lambda d: d['type'] == 'GRAPHICS', o['devices'])
-            if not fb:
-                return None
-
-            fb['properties']['resolution'] = '{0}x{1}'.format(v[0], v[1])
-
         self.skeleton_entity = {
             'devices': [],
             'config': {}
@@ -357,36 +321,6 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
         )
 
         self.add_property(
-            descr='Graphics support',
-            name='graphics',
-            get=get_graphics,
-            set=set_graphics,
-            list=False,
-            type=ValueType.BOOLEAN
-        )
-
-        self.add_property(
-            descr='Framebuffer resolution',
-            name='resolution',
-            get=get_resolution,
-            set=set_resolution,
-            list=False,
-            type=ValueType.ARRAY,
-            enum=[
-                [1920, 1200],
-                [1920, 1080],
-                [1600, 1200],
-                [1600, 900],
-                [1280, 1024],
-                [1280, 720],
-                [1024, 768],
-                [800, 600],
-                [640, 480]
-            ],
-            condition=get_graphics
-        )
-
-        self.add_property(
             descr='Cloud-init data',
             name='cloud_init',
             get='config.cloud_init',
@@ -417,22 +351,6 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             set='template.readme',
             list=False,
             type=ValueType.TEXT_FILE
-        )
-
-        self.add_property(
-            descr='VNC server enabled',
-            name='vnc_enabled',
-            get='config.vnc_enabled',
-            list=False,
-            type=ValueType.BOOLEAN
-        )
-
-        self.add_property(
-            descr='VNC server port',
-            name='vnc_port',
-            get='config.vnc_port',
-            list=False,
-            type=ValueType.NUMBER
         )
 
         self.add_property(
@@ -494,15 +412,6 @@ class VMDeviceDiskMixin(EntityNamespace):
         super(VMDeviceDiskMixin, self).__init__(name, context)
         self.humanized_summaries['DISK'] = get_humanized_summary
         self.humanized_summaries['CDROM'] = get_humanized_summary
-
-        self.add_property(
-            descr='Disk type',
-            name='disk_type',
-            get='type',
-            enum=['DISK', 'CDROM'],
-            list=False,
-            condition=lambda e: e['type'] in ('DISK', 'CDROM')
-        )
 
         self.add_property(
             descr='Disk mode',
@@ -592,6 +501,60 @@ class VMDeviceUSBMixin(EntityNamespace):
         )
 
 
+class VMDeviceVGAMixin(EntityNamespace):
+    def __init__(self, name, context):
+        def get_humanized_summary(o):
+            return "VGA device with resolution " + o['properties']['resolution']
+
+        def set_resolution(o ,v):
+            if 'properties' in o:
+                o['properties'].update({'resolution': '{0}x{1}'.format(v[0], v[1])})
+            else:
+                o.update({'properties': {'resolution': '{0}x{1}'.format(v[0], v[1])}})
+
+        super(VMDeviceVGAMixin, self).__init__(name, context)
+        self.humanized_summaries['GRAPHICS'] = get_humanized_summary
+
+        self.add_property(
+            descr='Framebuffer resolution',
+            name='resolution',
+            get=lambda o: list(o['properties']['resolution'].split('x')),
+            set=set_resolution,
+            list=False,
+            type=ValueType.ARRAY,
+            enum=[
+                [1920, 1200],
+                [1920, 1080],
+                [1600, 1200],
+                [1600, 900],
+                [1280, 1024],
+                [1280, 720],
+                [1024, 768],
+                [800, 600],
+                [640, 480]
+            ],
+            condition=lambda e: e['type'] == 'GRAPHICS'
+        )
+
+        self.add_property(
+            descr='VNC server enabled',
+            name='vnc_enabled',
+            get='config.vnc_enabled',
+            list=False,
+            type=ValueType.BOOLEAN,
+            condition=lambda e: e['type'] == 'GRAPHICS'
+        )
+
+        self.add_property(
+            descr='VNC server port',
+            name='vnc_port',
+            get='config.vnc_port',
+            list=False,
+            type=ValueType.NUMBER,
+            condition=lambda e: e['type'] == 'GRAPHICS'
+        )
+
+
 class VMDeviceListMixin(EntityNamespace):
     def __init__(self, name, context):
         def get_humanized_summary(o):
@@ -611,7 +574,7 @@ class VMDeviceListMixin(EntityNamespace):
             name='type',
             get='type',
             set='type',
-            enum=['DISK', 'CDROM', 'NIC', 'USB']
+            enum=['DISK', 'CDROM', 'NIC', 'USB', 'GRAPHICS']
         )
 
         self.add_property(
@@ -624,6 +587,7 @@ class VMDeviceListMixin(EntityNamespace):
 
 class VMDeviceNamespace(NestedObjectLoadMixin,
                         NestedObjectSaveMixin,
+                        VMDeviceVGAMixin,
                         VMDeviceUSBMixin,
                         VMDeviceNicMixin,
                         VMDeviceDiskMixin,

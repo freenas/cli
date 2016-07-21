@@ -307,7 +307,7 @@ class ShellCommand(Command):
     def __init__(self):
         super(ShellCommand, self).__init__()
         self.closed = False
-        self.resize = True
+        self.resize = False
 
     def run(self, context, args, kwargs, opargs):
         def resize(signo, frame):
@@ -322,7 +322,8 @@ class ShellCommand(Command):
 
         self.closed = False
         name = ' '.join(str(i) for i in args) if len(args) > 0 else '/bin/sh'
-        token = context.call_sync('shell.spawn', name)
+        size = get_terminal_size()
+        token = context.call_sync('shell.spawn', name, size[1], size[0])
         shell = ShellClient(context.hostname, token)
         shell.on_data(read)
         shell.on_close(close)

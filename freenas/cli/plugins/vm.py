@@ -462,6 +462,7 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
         this.load()
         return [
             VMDeviceNamespace('device', self.context, this),
+            VMVolumeNamespace('volume', self.context, this),
             VMSnapshotsNamespace('snapshot', self.context, this)
         ]
 
@@ -573,41 +574,6 @@ class VMDeviceNicMixin(EntityNamespace):
         )
 
 
-class VMDeviceVolumeMixin(EntityNamespace):
-    def __init__(self, name, context):
-        def get_humanized_summary(o):
-            return o['properties']['type'] + " VOLUME mounted at " + o['properties']['destination']
-
-        super(VMDeviceVolumeMixin, self).__init__(name, context)
-        self.humanized_summaries['VOLUME'] = get_humanized_summary
-
-        self.add_property(
-            descr='Volume type',
-            name='volume_type',
-            get='properties.type',
-            enum=['VT9P'],
-            list=False,
-            condition=lambda e: e['type'] == 'VOLUME'
-        )
-
-        self.add_property(
-            descr='Destination path',
-            name='volume_destination',
-            get='properties.destination',
-            list=False,
-            condition=lambda e: e['type'] == 'VOLUME'
-        )
-
-        self.add_property(
-            descr='Automatically create storage',
-            name='volume_auto',
-            get='properties.auto',
-            type=ValueType.BOOLEAN,
-            list=False,
-            condition=lambda e: e['type'] == 'VOLUME'
-        )
-
-
 class VMDeviceUSBMixin(EntityNamespace):
     def __init__(self, name, context):
         def get_humanized_summary(o):
@@ -659,7 +625,6 @@ class VMDeviceListMixin(EntityNamespace):
 class VMDeviceNamespace(NestedObjectLoadMixin,
                         NestedObjectSaveMixin,
                         VMDeviceUSBMixin,
-                        VMDeviceVolumeMixin,
                         VMDeviceNicMixin,
                         VMDeviceDiskMixin,
                         VMDeviceListMixin):
@@ -668,6 +633,47 @@ class VMDeviceNamespace(NestedObjectLoadMixin,
         self.parent = parent
         self.primary_key_name = 'name'
         self.parent_path = 'devices'
+        self.primary_key = self.get_mapping('name')
+
+
+class VMVolumeNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNamespace):
+    def __init__(self, name, context, parent):
+        super(VMVolumeNamespace, self).__init__(name, context)
+        self.parent = parent
+        self.primary_key_name = 'name'
+        self.extra_query_params = [('type', '=', 'VOLUME')]
+        self.parent_path = 'devices'
+        self.skeleton_entity = {
+            'type': 'VOLUME',
+            'properties': {}
+        }
+
+        self.add_property(
+            descr='Volume name',
+            name='name',
+            get='name'
+        )
+
+        self.add_property(
+            descr='Volume type',
+            name='type',
+            get='properties.type',
+            enum=['VT9P']
+        )
+
+        self.add_property(
+            descr='Destination path',
+            name='destination',
+            get='properties.destination'
+        )
+
+        self.add_property(
+            descr='Automatically create storage',
+            name='auto',
+            get='properties.auto',
+            type=ValueType.BOOLEAN
+        )
+
         self.primary_key = self.get_mapping('name')
 
 

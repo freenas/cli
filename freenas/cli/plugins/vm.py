@@ -611,7 +611,7 @@ class VMDeviceListMixin(EntityNamespace):
             name='type',
             get='type',
             set='type',
-            enum=['DISK', 'CDROM', 'NIC', 'VOLUME', 'USB']
+            enum=['DISK', 'CDROM', 'NIC', 'USB']
         )
 
         self.add_property(

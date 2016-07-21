@@ -930,6 +930,15 @@ svc_cli_config = {
             'name': 'path',
             'get': 'path'
         },
+        {
+            'descr': 'IPFS WebUI toggle',
+            'name': 'webui',
+            'get': 'webui',
+            'usage': _(
+                "Flag to enable/disable ipfs webui over at http(s)://freenas_machine_ip/ipfsui."
+            ),
+            'type': ValueType.BOOLEAN
+        }
     ],
     "nfs": [
         {

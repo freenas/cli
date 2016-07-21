@@ -443,7 +443,8 @@ class VMDeviceDiskMixin(EntityNamespace):
 class VMDeviceNicMixin(EntityNamespace):
     def __init__(self, name, context):
         def get_humanized_summary(o):
-            return o['properties']['device'] + " NIC bridged to " + o['properties']['bridge']
+            bridge = " bridged to " + o['properties']['bridge'] if 'bridge' in o['properties'] else ""
+            return o['properties']['device'] + " NIC" + bridge
 
         super(VMDeviceNicMixin, self).__init__(name, context)
         self.humanized_summaries['NIC'] = get_humanized_summary

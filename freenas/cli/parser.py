@@ -682,7 +682,7 @@ def p_literal(p):
 def p_symbol(p):
     """
     symbol : ATOM
-
+    symbol : UP
     """
     p[0] = Symbol(p[1], p=p)
 
@@ -801,7 +801,6 @@ def p_command_item_1(p):
 
 def p_command_item_2(p):
     """
-    command_item : UP
     command_item : symbol
     """
     p[0] = p[1]

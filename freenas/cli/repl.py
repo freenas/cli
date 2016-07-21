@@ -1334,7 +1334,7 @@ class MainLoop(object):
                         return
 
                     top = token.args.pop(0)
-                    if top == '..':
+                    if isinstance(top, Symbol) and top.name == '..':
                         if len(token.args) > 0 and isinstance(token.args[0], Symbol) and '/' in token.args[0].name:
                             raise SyntaxError("Use of slashes as separators not allowed. Please use spaces instead or "
                                               "use the 'cd' command to navigate")

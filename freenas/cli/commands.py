@@ -28,6 +28,7 @@
 import os
 import inspect
 import sys
+import signal
 import select
 import readline
 import six
@@ -46,7 +47,7 @@ from freenas.cli.output import (
     Table, ValueType, output_msg, output_less, format_value,
     Sequence, read_value, format_output
 )
-from freenas.cli.output import Object as output_obj
+from freenas.cli.output import Object as output_obj, get_terminal_size
 from freenas.cli.output import ProgressBar
 from freenas.cli.descriptions.tasks import translate as translate_task
 from freenas.cli.utils import (
@@ -306,8 +307,12 @@ class ShellCommand(Command):
     def __init__(self):
         super(ShellCommand, self).__init__()
         self.closed = False
+        self.resize = True
 
     def run(self, context, args, kwargs, opargs):
+        def resize(signo, frame):
+            self.resize = True
+
         def read(data):
             sys.stdout.write(data.decode('utf8'))
             sys.stdout.flush()
@@ -326,16 +331,27 @@ class ShellCommand(Command):
         fd = sys.stdin.fileno()
 
         if platform.system() != 'Windows':
+            signal.signal(signal.SIGWINCH, resize)
             old_settings = termios.tcgetattr(fd)
             tty.setraw(fd)
 
         while not self.closed:
+            if self.resize:
+                try:
+                    size = get_terminal_size(fd)
+                    context.call_sync('shell.resize', token, size[1], size[0])
+                except:
+                    pass
+
+                self.resize = False
+
             r, w, x = select.select([fd], [], [], 0.1)
             if fd in r:
                 ch = os.read(fd, 1)
                 shell.write(ch)
 
         if platform.system() != 'Windows':
+            signal.signal(signal.SIGWINCH, signal.SIG_DFL)
             termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
 
 

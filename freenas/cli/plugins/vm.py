@@ -539,7 +539,7 @@ class VMDeviceVGAMixin(EntityNamespace):
         self.add_property(
             descr='VNC server enabled',
             name='vnc_enabled',
-            get='config.vnc_enabled',
+            get='properties.vnc_enabled',
             list=False,
             type=ValueType.BOOLEAN,
             condition=lambda e: e['type'] == 'GRAPHICS'
@@ -548,7 +548,7 @@ class VMDeviceVGAMixin(EntityNamespace):
         self.add_property(
             descr='VNC server port',
             name='vnc_port',
-            get='config.vnc_port',
+            get='properties.vnc_port',
             list=False,
             type=ValueType.NUMBER,
             condition=lambda e: e['type'] == 'GRAPHICS'

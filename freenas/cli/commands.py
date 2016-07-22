@@ -1186,7 +1186,7 @@ class SelectPipeCommand(PipeCommand):
 
         field = args[0]
         if ns.has_property(field):
-            field = ns.get_mapping(field).get_name
+            mapping = ns.get_mapping(field)
         else:
             raise CommandException(_(
                 "Please specify a property field. Available properties are: {0}".format(
@@ -1195,7 +1195,7 @@ class SelectPipeCommand(PipeCommand):
             ))
 
         if isinstance(input, Table):
-            input.data = [{'result': x.get(field)} for x in input.data]
+            input.data = ({'result': mapping.do_get(x)} for x in input.data)
             input.columns = [Table.Column('Result', 'result')]
 
             return input

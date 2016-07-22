@@ -1114,10 +1114,8 @@ class EntitySubscriberBasedLoadMixin(object):
                 self.context.ml.cd_up()
 
     def query(self, params, options):
-        if not params and not options:
-            return self.context.entity_subscribers[self.entity_subscriber_name].viewport(
-                *self.extra_query_params
-            )
+        if self.default_sort:
+            options['sort'] = self.default_sort
 
         return self.context.entity_subscribers[self.entity_subscriber_name].query(
             *(self.extra_query_params + params),

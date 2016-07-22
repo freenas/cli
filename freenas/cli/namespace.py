@@ -1114,7 +1114,7 @@ class EntitySubscriberBasedLoadMixin(object):
                 self.context.ml.cd_up()
 
     def query(self, params, options):
-        if self.default_sort:
+        if hasattr(self, 'default_sort'):
             options['sort'] = self.default_sort
 
         return self.context.entity_subscribers[self.entity_subscriber_name].query(

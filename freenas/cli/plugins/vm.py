@@ -842,6 +842,15 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
         )
 
         self.add_property(
+            descr='Size',
+            name='size',
+            get='template.fetch_size',
+            usersetable=False,
+            list=True,
+            type=ValueType.SIZE
+        )
+
+        self.add_property(
             descr='IPFS hash',
             name='hash',
             get='template.hash',

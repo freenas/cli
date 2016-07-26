@@ -302,7 +302,7 @@ class AsciiStreamTablePrinter(object):
 
     def _compute_cols_widths(self, columns):
         default_col_width_percentage = int(100 / len(columns))
-        self.borders_space = len(columns) * 2
+        self.borders_space = len(columns) + 1
         for col in columns:
             if not col.display_width_percentage:
                 col.display_width_percentage = default_col_width_percentage

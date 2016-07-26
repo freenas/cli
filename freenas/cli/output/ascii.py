@@ -275,6 +275,7 @@ class AsciiStreamTablePrinter(object):
         self.display_size = get_terminal_size()[1]
         self.usable_display_width = self.display_size
         self._cleanup_all()
+        self.visible_separators = False
 
     def _cleanup_all(self):
         self.cols_widths = []
@@ -304,10 +305,10 @@ class AsciiStreamTablePrinter(object):
     def _compute_cols_widths(self, columns):
         def extend_cols_widths(additional_space):
             for i, col in enumerate(self.cols_widths):
-                self.cols_widths[i] += 1
-                additional_space -= 1
                 if not additional_space:
                     return
+                self.cols_widths[i] += 1
+                additional_space -= 1
 
         default_col_width_percentage = int(100 / len(columns))
         self.borders_space = len(columns) + 1
@@ -395,9 +396,9 @@ class AsciiStreamTablePrinter(object):
             ordered_line_elements_with_spaces = [
                 surround_with_spaces(e, i, left_aligned=True) for i, e in enumerate(ordered_line_elements)
                 ]
-            line = " "
+            line = " " if not self.visible_separators else "|"
             for e in ordered_line_elements_with_spaces:
-                line += e+" "
+                line += e+" " if not self.visible_separators else e+"|"
             self.ordered_lines.append(line)
 
         def surround_with_spaces(element, index, left_aligned=False, right_aligned=False):
@@ -418,7 +419,7 @@ class AsciiStreamTablePrinter(object):
 
     def _add_vertical_separator_line(self):
         def get_vertical_separator():
-            return " " * self.usable_display_width
+            return " " * self.usable_display_width if not self.visible_separators else "=" * self.usable_display_width
         self.ordered_lines.append(get_vertical_separator())
 
     def _print_lines(self, file, end):

@@ -140,7 +140,7 @@ class CertificateBaseNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixi
             set='key_length',
             type=ValueType.NUMBER,
             usersetable=False,
-            list=True)
+            list=False)
 
         self.add_property(
             descr='Digest algorithm',
@@ -149,7 +149,7 @@ class CertificateBaseNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixi
             set='digest_algorithm',
             enum=['SHA1', 'SHA224', 'SHA256', 'SHA384', 'SHA512'],
             usersetable=False,
-            list=True)
+            list=False)
 
         self.add_property(
             descr='Not Before',
@@ -176,7 +176,7 @@ class CertificateBaseNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixi
             Certificate lifetime in days, accepts number values"""),
             type=ValueType.NUMBER,
             usersetable=False,
-            list=True)
+            list=False)
 
         self.add_property(
             descr='Country',
@@ -184,7 +184,7 @@ class CertificateBaseNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixi
             get='country',
             set='country',
             usersetable=False,
-            list=True)
+            list=False)
 
         self.add_property(
             descr='State',
@@ -192,7 +192,7 @@ class CertificateBaseNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixi
             get='state',
             set='state',
             usersetable=False,
-            list=True)
+            list=False)
 
         self.add_property(
             descr='City',
@@ -200,7 +200,7 @@ class CertificateBaseNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixi
             get='city',
             set='city',
             usersetable=False,
-            list=True)
+            list=False)
 
         self.add_property(
             descr='Organization',
@@ -208,7 +208,7 @@ class CertificateBaseNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixi
             get='organization',
             set='organization',
             usersetable=False,
-            list=True)
+            list=False)
 
         self.add_property(
             descr='Common Name',
@@ -216,7 +216,7 @@ class CertificateBaseNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixi
             get='common',
             set='common',
             usersetable=False,
-            list=True)
+            list=False)
 
         self.add_property(
             descr='Email',
@@ -224,7 +224,7 @@ class CertificateBaseNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixi
             get='email',
             set='email',
             usersetable=False,
-            list=True)
+            list=False)
 
     def get_ca_names(self):
         return self.context.entity_subscribers[self.entity_subscriber_name].query(

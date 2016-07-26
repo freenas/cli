@@ -32,6 +32,7 @@ import datetime
 import time
 import gettext
 import natural.date
+import math
 from dateutil.parser import parse
 from texttable import Texttable
 from columnize import columnize
@@ -301,12 +302,23 @@ class AsciiStreamTablePrinter(object):
         self._print_lines(file, end)
 
     def _compute_cols_widths(self, columns):
+        def extend_cols_widths(additional_space):
+            for i, col in enumerate(self.cols_widths):
+                self.cols_widths[i] += 1
+                additional_space -= 1
+                if not additional_space:
+                    return
+
         default_col_width_percentage = int(100 / len(columns))
         self.borders_space = len(columns) + 1
         for col in columns:
             if not col.display_width_percentage:
                 col.display_width_percentage = default_col_width_percentage
-        self.cols_widths = [int((self.display_size-self.borders_space)*(col.display_width_percentage/100)) for col in columns]
+        cols_widths_fracts_ints = [math.modf((self.display_size-self.borders_space)*(col.display_width_percentage/100))
+                                  for col in columns]
+        space_from_fracts = int(sum([col[0] for col in cols_widths_fracts_ints]))
+        self.cols_widths = [int(col[1]) for col in cols_widths_fracts_ints]
+        extend_cols_widths(space_from_fracts)
         self.usable_display_width = sum(self.cols_widths) + self.borders_space
 
     def _load_accessors(self, columns):

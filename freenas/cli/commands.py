@@ -390,7 +390,8 @@ class ShowUrlsCommand(Command):
     """
 
     def run(self, context, args, kwargs, opargs):
-        my_ips = context.call_sync('network.config.get_my_ips')
+        # Enclose ipv6 urls in '[]' according to ipv6 url spec
+        my_ips = ['[{}]'.format(ip) if ':' in ip else ip for ip in context.call_sync('network.config.get_my_ips')]
         my_protocols = context.call_sync('system.ui.get_config')
         urls = []
         for proto in my_protocols['webui_protocol']:

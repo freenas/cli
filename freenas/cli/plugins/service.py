@@ -27,7 +27,7 @@
 
 import gettext
 from freenas.cli.namespace import (
-    Namespace, ItemNamespace, EntityNamespace, RpcBasedLoadMixin, TaskBasedSaveMixin,
+    Namespace, ItemNamespace, EntityNamespace, EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin,
     Command, NestedEntityMixin, description
 )
 from freenas.cli.output import ValueType
@@ -66,14 +66,14 @@ class ServiceManageCommand(Command):
 
 
 @description("Configure and manage services")
-class ServicesNamespace(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamespace):
+class ServicesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):
     """
     The service namespace is used to configure, start, and
     stop system services.
     """
     def __init__(self, name, context):
         super(ServicesNamespace, self).__init__(name, context)
-        self.query_call = 'service.query'
+        self.entity_subscriber_name = 'service'
         self.save_key_name = 'id'
         self.update_task = 'service.update'
         self.extra_query_params = [('builtin', '=', False)]

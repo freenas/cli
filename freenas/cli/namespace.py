@@ -1104,14 +1104,14 @@ class EntitySubscriberBasedLoadMixin(object):
             self.context.ml.cd_up()
 
     def on_update(self, old_entity, new_entity):
-        cwd = self.context.ml.cwd
-        if isinstance(cwd, SingleItemNamespace) and cwd.parent == self:
-            if old_entity[self.primary_key_name] == cwd.entity[self.primary_key_name]:
-                cwd.entity[self.primary_key_name] = new_entity[self.primary_key_name]
-                cwd.load()
+        for cwd in self.context.ml.path:
+            if isinstance(cwd, SingleItemNamespace) and cwd.parent == self:
+                if old_entity[self.primary_key_name] == cwd.entity[self.primary_key_name]:
+                    cwd.entity[self.primary_key_name] = new_entity[self.primary_key_name]
+                    cwd.load()
 
-            if not cwd.entity:
-                self.context.ml.cd_up()
+                if not cwd.entity:
+                    self.context.ml.cd_up()
 
     def query(self, params, options):
         if hasattr(self, 'default_sort'):

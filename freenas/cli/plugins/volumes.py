@@ -378,8 +378,7 @@ class ImportFromVolumeCommand(Command):
     """
     Usage: import <all\vms\shares\system>
 
-    Imports a detached volume.
-    When importing encrypted volume key and disks or key, password and disks must be provided.
+    Imports services from a volume.
     """
     def __init__(self, parent):
         self.parent = parent

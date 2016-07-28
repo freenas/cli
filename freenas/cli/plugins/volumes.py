@@ -333,7 +333,7 @@ class ImportVolumeCommand(Command):
              import mypool key="dasfer34tadsf23d/adf" password=abcd disks=da1,da2
 
     Imports a detached volume.
-    When importing encrypted volume key and disks or key, password and disks must be provided.
+    When importing encrypted volume key and/or password and disks must be provided.
     """
     def run(self, context, args, kwargs, opargs):
         if len(args) < 1:
@@ -342,7 +342,7 @@ class ImportVolumeCommand(Command):
         id = args[0]
         oldname = args[0]
 
-        if 'key' in kwargs:
+        if 'key' in kwargs or 'password' in kwargs:
             if 'disks' not in kwargs:
                 raise CommandException('You have to provide list of disks when importing an encrypted volume')
 
@@ -354,9 +354,9 @@ class ImportVolumeCommand(Command):
             for dname in disks:
                 correct_disks.append(correct_disk_path(dname))
 
-            encryption = {'key': kwargs['key'],
+            encryption = {'key': kwargs.get('key'),
                           'disks': correct_disks}
-            password = kwargs.get('password', None)
+            password = kwargs.get('password')
         else:
             encryption = {}
             password = None
@@ -475,13 +475,17 @@ class LockVolumeCommand(Command):
 @description("Generates new user key for encrypted volume")
 class RekeyVolumeCommand(Command):
     """
-    Usage: rekey password=<password>
+    Usage: rekey key_encrypted=<key_encrypted> password=<password>
 
     Example: rekey
+             rekey key_encrypted=yes
+             rekey key_encrypted=yes password=new_password
              rekey password=new_password
+             rekey key_encrypted=no password=new_password
 
     Generates a new user key for an encrypted volume.
     Your volume must be unlocked to perform this operation.
+    Rekey command with no arguments defaults to key_encrypted=yes.
     """
     def __init__(self, parent):
         self.parent = parent
@@ -490,8 +494,9 @@ class RekeyVolumeCommand(Command):
         if self.parent.entity.get('providers_presence', 'NONE') != 'ALL':
             raise CommandException('You must unlock your volume first')
         password = kwargs.get('password', None)
+        key_encrypted = kwargs.get('key_encrypted', True)
         name = self.parent.entity['id']
-        context.submit_task('volume.rekey', name, password)
+        context.submit_task('volume.rekey', name, key_encrypted, password)
 
 
 @description("Creates an encrypted file containing copy of metadatas of all disks related to an encrypted volume")
@@ -1221,12 +1226,13 @@ def check_disks(context, disks, cache_disks=None, log_disks=None):
 @description("Creates new volume")
 class CreateVolumeCommand(Command):
     """
-    Usage: create <name> disks=<disks> layout=<layout> encryption=<encryption>
+    Usage: create <name> disks=<disks> layout=<layout> key_encryption=<key_encryption>
             password=<password> cache=<disks> log=<disks>
 
     Example: create mypool disks=ada1,ada2
-             create mypool disks=ada1,ada2 encryption=yes
-             create mypool disks=ada1,ada2 encryption=yes password=1234
+             create mypool disks=ada1,ada2 key_encryption=yes
+             create mypool disks=ada1,ada2 key_encryption=yes password=1234
+             create mypool disks=ada1,ada2 password=1234
              create mypool disks=auto layout=virtualization
              create mypool disks=ada1,ada2 cache=ada3 log=ada4
              create mypool disks=auto cache=ada3 log=ada4
@@ -1280,12 +1286,8 @@ class CreateVolumeCommand(Command):
             if isinstance(disks, six.string_types):
                 disks = [disks]
 
-        if read_value(kwargs.pop('encryption', False), ValueType.BOOLEAN) is True:
-            encryption = True
-            password = kwargs.get('password', None)
-        else:
-            encryption = False
-            password = None
+        key_encryption = read_value(kwargs.pop('key_encryption', False), ValueType.BOOLEAN)
+        password = kwargs.get('password')
 
         cache_disks = kwargs.pop('cache', [])
         log_disks = kwargs.pop('log', [])
@@ -1323,7 +1325,18 @@ class CreateVolumeCommand(Command):
                 if disks != 'auto' and len(disks) < DISKS_PER_TYPE[VOLUME_LAYOUTS[layout]]:
                     raise CommandException(_("Volume layout {0} requires at least {1} disks".format(layout, DISKS_PER_TYPE[VOLUME_LAYOUTS[layout]])))
 
-            context.submit_task('volume.create_auto', name, 'zfs', layout, disks, cache_disks, log_disks, encryption, password)
+            context.submit_task(
+                'volume.create_auto',
+                name,
+                'zfs',
+                layout,
+                disks,
+                cache_disks,
+                log_disks,
+                key_encryption,
+                password
+            )
+
         else:
             ns.entity['id'] = name
             ns.entity['topology'] = {}
@@ -1336,7 +1349,8 @@ class CreateVolumeCommand(Command):
                     'type': volume_type,
                     'children': [{'type': 'disk', 'path': correct_disk_path(disk)} for disk in disks]
                 })
-            ns.entity['encrypted'] = encryption
+            ns.entity['key_encrypted'] = key_encryption
+            ns.entity['password_encrypted'] = True if password else False
             if len(cache_disks) > 0:
                 if 'cache' not in ns.entity:
                     ns.entity['topology']['cache'] = []
@@ -1373,7 +1387,7 @@ class CreateVolumeCommand(Command):
             NullComplete('name='),
             EnumComplete('layout=', VOLUME_LAYOUTS.keys()),
             EnumComplete('type=', VOLUME_LAYOUTS.keys()),
-            EnumComplete('encryption=', ['yes', 'no']),
+            EnumComplete('key_encryption=', ['yes', 'no']),
             NullComplete('password='),
             EntitySubscriberComplete('disks=', 'disk', lambda d: d['name'], ['auto'], list=True),
             EntitySubscriberComplete('cache=', 'disk', lambda d: d['name'], ['auto'], list=True),

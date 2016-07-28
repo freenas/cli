@@ -333,13 +333,19 @@ class AsciiStreamTablePrinter(object):
         self.ordered_lines_elements = [self.ordered_line_elements]
 
     def _load_row_elements(self, row):
+        def convert_nested_dict_to_string(dict):
+            return ", ".join([":".join([k, v]) for k, v in dict.items()])
+
         for i, acc in enumerate(self.accessors):
             if callable(acc):
                 elem = acc(row)
             else:
                 elem = row[acc]
 
+            if isinstance(elem, dict):
+                elem = convert_nested_dict_to_string(elem)
             self.ordered_line_elements.append(AsciiOutputFormatter.format_value(elem, self.value_types[i]))
+
         self.ordered_lines_elements = [self.ordered_line_elements]
 
     def _trim_elements(self):

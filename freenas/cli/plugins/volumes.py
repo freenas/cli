@@ -1455,9 +1455,16 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
             list=True)
 
         self.add_property(
-            descr='Encrypted',
-            name='encrypted',
-            get='encrypted',
+            descr='Encrypted by key',
+            name='key_encrypted',
+            get='key_encrypted',
+            type=ValueType.BOOLEAN,
+            set=None)
+
+        self.add_property(
+            descr='Encrypted by password',
+            name='password_encrypted',
+            get='password_encrypted',
             type=ValueType.BOOLEAN,
             set=None)
 
@@ -1603,7 +1610,7 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
         }
 
         if this.entity is not None:
-            if this.entity.get('encrypted', False) is True:
+            if this.entity.get('key_encrypted') or this.entity.get('password_encrypted'):
                 commands['password'] = SetPasswordCommand(this)
                 prov_presence = this.entity.get('providers_presence', 'NONE')
                 if prov_presence == 'NONE':

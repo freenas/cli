@@ -132,7 +132,8 @@ class SwitchCommand(Command):
 class CreateReplicationCommand(Command):
     """
     Usage: create <name> master=<master> slave=<slave> recursive=<recursive>
-            bidirectional=<bidirectional> replicate_services=<replicate_services>
+            bidirectional=<bidirectional> auto_recover=<auto_recover>
+            replicate_services=<replicate_services>
 
     Example: create my_replication master=10.0.0.2 slave=10.0.0.3
                                    datasets=mypool,mypool/dataset
@@ -146,12 +147,17 @@ class CreateReplicationCommand(Command):
              create my_replication master=10.0.0.2 slave=10.0.0.3
                                    datasets=mypool,mypool2 bidirectional=yes
                                    recursive=yes replicate_services=yes
+             create my_replication master=10.0.0.2 slave=10.0.0.3
+                                   datasets=mypool,mypool2 bidirectional=yes
+                                   recursive=yes replicate_services=yes
+                                   auto_recover=yes
 
     Creates a replication link entry. Link contains configuration data
     used in later replication process.
 
-    Created replication is implicitly: unidirectional, non-recursive
-    and does not replicate services along with datasets.
+    Created replication is implicitly: unidirectional, non-recursive,
+    does not recover automatically and does not replicate services
+    along with datasets.
 
     One of: master, slave parameters must represent one of current machine's
     IP addresses. Both these parameters must be defined,
@@ -162,7 +168,12 @@ class CreateReplicationCommand(Command):
     of datasets defined in 'datasets' parameter will be replicated
     along with provided parents.
 
-    Only in bi-directional replication service replication is available.
+    Only in bi-directional replication service replication
+    and automatic recovery are available.
+
+    When automatic recovery is selected it is not possible to switch
+    hosts roles manually. It's being done automatically each time
+    'master' goes down or up again.
     """
 
     def __init__(self, parent):
@@ -198,6 +209,7 @@ class CreateReplicationCommand(Command):
         if isinstance(datasets, six.string_types):
             datasets = [datasets]
         bidirectional = read_value(kwargs.pop('bidirectional', False), ValueType.BOOLEAN)
+        auto_recover = read_value(kwargs.pop('auto_recover', False), ValueType.BOOLEAN)
         recursive = read_value(kwargs.pop('recursive', False), ValueType.BOOLEAN)
         replicate_services = read_value(kwargs.pop('replicate_services', False), ValueType.BOOLEAN)
 
@@ -215,6 +227,7 @@ class CreateReplicationCommand(Command):
         ns.entity['partners'] = partners
         ns.entity['datasets'] = datasets
         ns.entity['bidirectional'] = bidirectional
+        ns.entity['auto_recover'] = auto_recover
         ns.entity['recursive'] = recursive
         ns.entity['replicate_services'] = replicate_services
 
@@ -232,6 +245,7 @@ class CreateReplicationCommand(Command):
             NullComplete('datasets='),
             EnumComplete('recursive=', ['yes', 'no']),
             EnumComplete('bidirectional=', ['yes', 'no']),
+            EnumComplete('auto_recover=', ['yes', 'no']),
             EnumComplete('replicate_services=', ['yes', 'no'])
         ]
 
@@ -304,6 +318,22 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             type=ValueType.BOOLEAN)
 
         self.add_property(
+            descr='Automatic recovery',
+            name='auto_recover',
+            get='auto_recover',
+            set='auto_recover',
+            list=False,
+            type=ValueType.BOOLEAN)
+
+        self.add_property(
+            descr='Initial master side',
+            name='initial_master',
+            get='initial_master',
+            usersetable=False,
+            list=False,
+            type=ValueType.BOOLEAN)
+
+        self.add_property(
             descr='Recursive',
             name='recursive',
             get='recursive',
@@ -367,7 +397,7 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
         }
 
         if this.entity:
-            if this.entity.get('bidirectional'):
+            if this.entity.get('bidirectional') and not this.entity.get('auto_recover'):
                 commands['switch_roles'] = SwitchCommand(this)
 
         return commands

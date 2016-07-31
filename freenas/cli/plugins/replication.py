@@ -213,10 +213,16 @@ class CreateReplicationCommand(Command):
         recursive = read_value(kwargs.pop('recursive', False), ValueType.BOOLEAN)
         replicate_services = read_value(kwargs.pop('replicate_services', False), ValueType.BOOLEAN)
 
-        if replicate_services and not bidirectional:
-            raise CommandException(_(
-                'Replication of services is available only when bi-directional replication is selected'
-            ))
+        if not bidirectional:
+            if replicate_services:
+                raise CommandException(_(
+                    'Replication of services is available only when bi-directional replication is selected'
+                ))
+
+            if auto_recover:
+                raise CommandException(_(
+                    'Automatic recovery is available only when bi-directional replication is selected'
+                ))
 
         ns = SingleItemNamespace(None, self.parent)
         ns.orig_entity = query.wrap(copy.deepcopy(self.parent.skeleton_entity))

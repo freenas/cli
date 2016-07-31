@@ -336,8 +336,7 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             name='initial_master',
             get='initial_master',
             usersetable=False,
-            list=False,
-            type=ValueType.BOOLEAN)
+            list=False)
 
         self.add_property(
             descr='Recursive',

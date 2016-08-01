@@ -1064,7 +1064,7 @@ class EntityNamespace(Namespace):
         if self.primary_key is None:
             return
 
-        for i in self.query([], {'limit': 100}):
+        for i in self.query([], {}):
             name = self.primary_key.do_get(i)
             yield SingleItemNamespace(name, self, leaf_entity=self.leaf_harborer)
 

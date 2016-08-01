@@ -36,6 +36,7 @@ import gettext
 import platform
 import textwrap
 import re
+from collections import deque
 from datetime import datetime
 from freenas.cli.parser import parse, unparse
 from freenas.cli.complete import NullComplete, EnumComplete
@@ -648,7 +649,7 @@ class IndexCommand(Command):
 
     def run(self, context, args, kwargs, opargs):
         obj = self.get_relative_namespace(context)
-        nss = obj.namespaces()
+        nss = deque(obj.namespaces(), 100)
         cmds = obj.commands()
 
         # Only display builtin items if in the RootNamespace

@@ -654,7 +654,10 @@ class IndexCommand(Command):
         # Only display builtin items if in the RootNamespace
         outseq = None
         if obj.__class__.__name__ == 'RootNamespace':
-            outseq = Sequence(_("Global commands:"), sorted(['/','..','-'] + list(context.ml.base_builtin_commands.keys())))
+            outseq = Sequence(
+                _("Global commands:"),
+                sorted(['/', '..', '-'] + list(context.ml.base_builtin_commands.keys()))
+            )
             outseq += Sequence(_("Filtering commands:"), sorted(list(context.ml.pipe_commands.keys())))
 
         ns_seq = Sequence(

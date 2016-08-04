@@ -1542,7 +1542,7 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
 
         self.add_property(
             descr='Fragmentation',
-            name='size',
+            name='fragmentation',
             get='properties.fragmentation.parsed',
             set=None,
             list=False

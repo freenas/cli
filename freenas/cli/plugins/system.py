@@ -394,7 +394,7 @@ class MailNamespace(ConfigNamespace):
         self.add_property(
             descr='Email address',
             name='email',
-            usage=_("""
+            usage=_("""\
             Use set or edit to set the from email address to be
             used when sending email notifications. When using set,
             enclose the email address between double quotes."""),
@@ -405,7 +405,7 @@ class MailNamespace(ConfigNamespace):
         self.add_property(
             descr='Email server',
             name='server',
-            usage=_("""
+            usage=_("""\
             Use set or edit to set the hostname or IP address of
             the SMTP server. When using set, enclose the value
             between double quotes."""),
@@ -415,7 +415,7 @@ class MailNamespace(ConfigNamespace):
         self.add_property(
             descr='SMTP port',
             name='port',
-            usage=_("""
+            usage=_("""\
             Use set or edit to set the number of the SMTP port.
             Typically set to 25, 465 (secure SMTP), or 587
             (submission)."""),
@@ -426,7 +426,7 @@ class MailNamespace(ConfigNamespace):
         self.add_property(
             descr='Authentication required',
             name='auth',
-            usage=_("""
+            usage=_("""\
             Can be set to yes or no. When set to yes,
             enables SMTP AUTH using PLAIN SASL and requires both
             'username' and 'password' to be set."""),
@@ -437,7 +437,7 @@ class MailNamespace(ConfigNamespace):
         self.add_property(
             descr='Encryption type',
             name='encryption',
-            usage=_("""
+            usage=_("""\
             Use set or edit to set to PLAIN (no encryption),
             TLS, or SSL.."""),
             get='encryption',
@@ -447,7 +447,7 @@ class MailNamespace(ConfigNamespace):
         self.add_property(
             descr='Username for Authentication',
             name='username',
-            usage=_("""
+            usage=_("""\
             Use set or edit to set the username used by
             SMTP authentication. Requires 'auth' to be set
             to yes."""),
@@ -458,7 +458,7 @@ class MailNamespace(ConfigNamespace):
         self.add_property(
             descr='Password for Authentication',
             name='password',
-            usage=_("""
+            usage=_("""\
             Use set to set the password used by
             SMTP authentication. Requires 'auth' to be set
             to yes. For security reasons, the password is
@@ -547,7 +547,7 @@ class AdvancedNamespace(ConfigNamespace):
         self.add_property(
             descr='Enable Console CLI',
             name='console_cli',
-            usage=_("""
+            usage=_("""\
             Can be set to yes or no. When set to yes,
             the system will boot into a login prompt instead
             of the CLI. You can still start the CLI by
@@ -559,7 +559,7 @@ class AdvancedNamespace(ConfigNamespace):
         self.add_property(
             descr='Enable Console Screensaver',
             name='console_screensaver',
-            usage=_("""
+            usage=_("""\
             Can be set to yes or no. When set to yes,
             a screensaver will start after a period of
             CLI inactivity."""),
@@ -570,7 +570,7 @@ class AdvancedNamespace(ConfigNamespace):
         self.add_property(
             descr='Enable Serial Console',
             name='serial_console',
-            usage=_("""
+            usage=_("""\
             Can be set to yes or no. Only set to yes,
             if the system has an active serial port and
             you want to access the system using that serial
@@ -582,7 +582,7 @@ class AdvancedNamespace(ConfigNamespace):
         self.add_property(
             descr='Serial Console Port',
             name='serial_port',
-            usage=_("""
+            usage=_("""\
             Use set or edit to specify the serial port
             to use for console access."""),
             get='serial_port',
@@ -593,7 +593,7 @@ class AdvancedNamespace(ConfigNamespace):
         self.add_property(
             descr='Serial Port Speed',
             name='serial_speed',
-            sage=_("""
+            usage=_("""\
             Use set to specify the speed of the serial port
             used for console access."""),
             get='serial_speed',
@@ -606,7 +606,7 @@ class AdvancedNamespace(ConfigNamespace):
         self.add_property(
             descr='Enable powerd',
             name='powerd',
-            usage=_("""
+            usage=_("""\
             Can be set to yes or no. When set to yes,
             enables powerd(8) which monitors the system state and
             sets the CPU frequency accordingly."""),
@@ -617,7 +617,7 @@ class AdvancedNamespace(ConfigNamespace):
         self.add_property(
             descr='Default swap on drives',
             name='swapondrive',
-            usage=_("""
+            usage=_("""\
             Non-zero number representing the default swap size, for each
             formatted disk, in GiB."""),
             get='swapondrive',
@@ -627,7 +627,7 @@ class AdvancedNamespace(ConfigNamespace):
         self.add_property(
             descr='Enable Debug Kernel',
             name='debugkernel',
-            usage=_("""
+            usage=_("""\
             Can be set to yes or no. When set to yes, the
             next boot will boot into a debug version of the kernel which
             can be useful when troubleshooting."""),
@@ -638,7 +638,7 @@ class AdvancedNamespace(ConfigNamespace):
         self.add_property(
             descr='Automatically upload crash dumps to iXsystems',
             name='uploadcrash',
-            usage=_("""
+            usage=_("""\
             Can be set to yes or no. When set to yes, kernel
             crash dumps and telemetry (some system statatistics and syslog
             messages) are automatically sent to the FreeNAS development
@@ -650,7 +650,7 @@ class AdvancedNamespace(ConfigNamespace):
         self.add_property(
             descr='Message of the day',
             name='motd',
-            usage=_("""
+            usage=_("""\
             Use set or edit to modify the message to be seen when a user
             logs in over SSH. When using set, enclose the message between
             double quotes"""),
@@ -660,7 +660,7 @@ class AdvancedNamespace(ConfigNamespace):
         self.add_property(
             descr='Periodic Notify User UID',
             name='periodic_notify_user',
-            usage=_("""
+            usage=_("""\
             Set to the number representing the UID of the user to
             receive security output emails. This output runs nightly,
             but only sends an email when the system reboots or
@@ -726,7 +726,7 @@ class SystemNamespace(ConfigNamespace):
         self.add_property(
             descr='Time zone',
             name='timezone',
-            usage=_("""
+            usage=_("""\
             Use set or edit to change the timezone. Type
             timezones to see the list of valid timezones."""),
             get='timezone',
@@ -735,7 +735,7 @@ class SystemNamespace(ConfigNamespace):
         self.add_property(
             descr='Hostname',
             name='hostname',
-            usage=_("""
+            usage=_("""\
             Use set or edit to change the system's hostname. The
             hostname must include the domain name. If the network does
             not use a domain name add .local to the end of the
@@ -746,7 +746,7 @@ class SystemNamespace(ConfigNamespace):
         self.add_property(
             descr='Syslog Server',
             name='syslog_server',
-            usage=_("""
+            usage=_("""\
             Use set or edit to set the IP address or
             hostname:optional_port_number of remote syslog server to
             send logs to. If set, log entries will be written to both
@@ -757,7 +757,7 @@ class SystemNamespace(ConfigNamespace):
         self.add_property(
             descr='Language',
             name='language',
-            usage=_("""
+            usage=_("""\
             Use set or edit to change the localization to the
             two-letter ISO 3166 country code."""),
             get='language'
@@ -766,7 +766,7 @@ class SystemNamespace(ConfigNamespace):
         self.add_property(
             descr='Console Keymap',
             name='console_keymap',
-            usage=_("""
+            usage=_("""\
             Use set or edit to change the console keyboard
             layout."""),
             get='console_keymap'

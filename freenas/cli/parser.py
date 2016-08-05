@@ -302,7 +302,7 @@ precedence = (
 
 
 def t_ESCAPENL(t):
-    r'\\\s*[\n\#]'
+    r'\s*[\n\#]'
     t.lexer.lineno += 1
 
 

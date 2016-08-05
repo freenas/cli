@@ -86,7 +86,7 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
                       set groups=wheel, ftp, operator
 
             Sets a user property. For a list of properties, see 'help properties'.""")
-        self.localdoc['DeleteEntityCommand'] = ("""\
+        self.entity_localdoc['DeleteEntityCommand'] = ("""\
             Usage: delete <username>
 
             Example: delete myuser
@@ -330,7 +330,7 @@ class GroupsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
 
             Sets the "name" property in order to rename the group. This
             will fail for builtin groups.""")
-        self.localdoc['DeleteEntityCommand'] = ("""\
+        self.entity_localdoc['DeleteEntityCommand'] = ("""\
             Usage: delete <groupname>
 
             Example: delete smbusers

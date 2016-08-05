@@ -86,7 +86,7 @@ class BootEnvironmentNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             descr='Name',
             name='name',
             get='id',
-            usage=_("""
+            usage=_("""\
             Editable value. This is the name of the entry which
             appears in the boot menu."""),
             set='id',
@@ -97,7 +97,7 @@ class BootEnvironmentNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             descr='Active',
             name='active',
             get='active',
-            usage=_("""
+            usage=_("""\
             Can be set to yes or no. Yes indicates which boot
             entry was used at last system boot. Only one entry
             can be set to yes."""),
@@ -110,7 +110,7 @@ class BootEnvironmentNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             descr='Real Name',
             name='realname',
             get='realname',
-            usage=_("""
+            usage=_("""\
             Read-only name issued when boot environment
             is created."""),
             list=True,
@@ -121,7 +121,7 @@ class BootEnvironmentNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             descr='On Reboot',
             name='onreboot',
             get='on_reboot',
-            usage=_("""
+            usage=_("""\
             Can be set to yes or no. Yes indicates the default
             boot entry for the next system boot. Only one entry
             can be set to yes."""),
@@ -134,7 +134,7 @@ class BootEnvironmentNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             descr='Space used',
             name='space',
             get='space',
-            usage=_("""
+            usage=_("""\
             Read-only value indicating how much space the boot
             environment occupies."""),
             list=True,
@@ -146,7 +146,7 @@ class BootEnvironmentNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             descr='Date created',
             name='created',
             get='created',
-            usage=_("""
+            usage=_("""\
             Read-only timestamp indicating when the boot
             environment was created."""),
             list=True,

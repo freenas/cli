@@ -249,18 +249,19 @@ class CertificateAuthorityNamespace(CertificateBaseNamespace):
         }
 
         self.localdoc['CreateEntityCommand'] = ("""\
+            Crates a Certificate Authority. For a list of properties, see 'help properties'.
+
+            Usage:
+
             Examples:
             Create root CA Certificate :
-            create type=CA_INTERNAL name=myRootCA selfsigned=yes key_length=2048 digest_algorithm=SHA256
-            lifetime=3650 country=PL state=Slaskie city=Czerwionka-Leszczyny
-            organization=myCAOrg email=a@b.c common=my_CA_Server
-
+                create type=CA_INTERNAL name=myRootCA selfsigned=yes key_length=2048 digest_algorithm=SHA256
+                lifetime=3650 country=PL state=Slaskie city=Czerwionka-Leszczyny
+                organization=myCAOrg email=a@b.c common=my_CA_Server
             Create intermediate CA Certificate :
-            create type=CA_INTERMEDIATE signing_ca_name=myRootCA name=myInterCA key_length=2048 digest_algorithm=SHA256
-            lifetime=365 country=PL state=Slaskie city=Czerwionka-Leszczyny organization=myorg email=a@b.c
-            common=MyCommonName
-
-            Crates a Certificate Authority. For a list of properties, see 'help properties'.""")
+                create type=CA_INTERMEDIATE signing_ca_name=myRootCA name=myInterCA key_length=2048 digest_algorithm=SHA256
+                lifetime=365 country=PL state=Slaskie city=Czerwionka-Leszczyny organization=myorg email=a@b.c
+                common=MyCommonName""")
 
         self.add_property(
             descr='Type',
@@ -354,18 +355,19 @@ class CertificateNamespace(CertificateBaseNamespace):
         }
 
         self.localdoc['CreateEntityCommand'] = ("""\
+            Crates a certificate. For a list of properties, see 'help properties'.
+
+            Usage:
+
             Examples:
             Create self-signed server certificate without CA:
-            create type=CERT_INTERNAL name=mySelfSignedServerCert selfsigned=yes key_length=2048
-            digest_algorithm=SHA256 lifetime=365 country=PL state=Slaskie city=Czerwionka-Leszczyny
-            organization=myorg email=a@b.c common=www.myserver.com
-
+                create type=CERT_INTERNAL name=mySelfSignedServerCert selfsigned=yes key_length=2048
+                digest_algorithm=SHA256 lifetime=365 country=PL state=Slaskie city=Czerwionka-Leszczyny
+                organization=myorg email=a@b.c common=www.myserver.com
             Create server certificate signed by internal root CA Certificate:
-            create type=CERT_INTERNAL name=myCASignedServerCert signing_ca_name=myRootCA key_length=2048
-            digest_algorithm=SHA256 lifetime=365 country=PL state=Slaskie city=Czerwionka-Leszczyny
-            organization=myorg email=a@b.c common=www.myserver.com
-
-            Crates a certificate. For a list of properties, see 'help properties'.""")
+                create type=CERT_INTERNAL name=myCASignedServerCert signing_ca_name=myRootCA key_length=2048
+                digest_algorithm=SHA256 lifetime=365 country=PL state=Slaskie city=Czerwionka-Leszczyny
+                organization=myorg email=a@b.c common=www.myserver.com""")
 
         self.add_property(
             descr='Type',

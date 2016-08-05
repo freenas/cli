@@ -69,7 +69,7 @@ class DisksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
 
             Sets a simulated disk property. For a list of
             properties, see 'help properties'.""")
-        self.localdoc['DeleteEntityCommand'] = ("""\
+        self.entity_localdoc['DeleteEntityCommand'] = ("""\
             Usage: delete <name>
 
             Example:

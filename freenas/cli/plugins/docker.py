@@ -27,7 +27,7 @@
 
 from freenas.cli.namespace import (
     Namespace, EntityNamespace, Command, EntitySubscriberBasedLoadMixin,
-    TaskBasedSaveMixin, CommandException
+    TaskBasedSaveMixin, CommandException, description
 )
 from freenas.cli.output import ValueType, Table
 

@@ -340,6 +340,7 @@ class GroupsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
             Usage: show
 
             Lists groups, optionally doing filtering and sorting.
+
             Examples:
                 show
                 show | search name == wheel

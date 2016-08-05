@@ -192,12 +192,15 @@ class _RestructuredTextFormatter(object):
 
         def _get_namespace_commands_subsection_contents(commands):
             def _extract_command_data(text=None):
+                def preserve_blank_lines_in_docstring():
+                    return "\n\n" if description else ""
+
                 description = usage = examples = ""
                 if not text:
                     return description, usage, examples
                 for lines in text.split("\n\n"):
-                    if not description:
-                        description = lines if 'Usage' not in lines and 'Example' not in lines else None
+                    if 'Usage' not in lines and 'Example' not in lines:
+                        description += preserve_blank_lines_in_docstring() + lines
                     if not usage:
                         usage = lines.split("Usage:")[1] if 'Usage' in lines else None
                     if not examples:

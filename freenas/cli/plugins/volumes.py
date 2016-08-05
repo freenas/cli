@@ -806,7 +806,7 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
 
             Creates a dataset.""")
 
-        self.localdoc['DeleteEntityCommand'] = ("""\
+        self.entity_localdoc['DeleteEntityCommand'] = ("""\
             Usage: delete <volume>/<dataset>
 
             Example: delete mypool/mydataset
@@ -1425,7 +1425,7 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
         self.create_task = 'volume.create'
         self.update_task = 'volume.update'
         self.delete_task = 'volume.delete'
-        self.localdoc['DeleteEntityCommand'] = ("""\
+        self.entity_localdoc['DeleteEntityCommand'] = ("""\
             Usage: delete <volume>
 
             Example: delete mypool

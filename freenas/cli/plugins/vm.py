@@ -377,7 +377,7 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             yield namespace
 
     def get_entity_namespaces(self, this):
-        this.load()
+        this.load() if hasattr(this, 'load') else None
         return [
             VMDeviceNamespace('device', self.context, this),
             VMVolumeNamespace('volume', self.context, this),
@@ -385,7 +385,7 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
         ]
 
     def get_entity_commands(self, this):
-        this.load()
+        this.load() if hasattr(this, 'load') else None
 
         commands = {
             'start': StartVMCommand(this),
@@ -396,7 +396,7 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             'readme': ReadmeCommand(this)
         }
 
-        if this.entity is not None:
+        if hasattr(this, 'entity') and this.entity is not None:
             if first_or_default(lambda d: d['type'] == 'GRAPHICS', this.entity['devices']):
                 commands['console_vga'] = ConsoleVGACommand(this)
 
@@ -600,6 +600,13 @@ class VMDeviceNamespace(NestedObjectLoadMixin,
         self.parent_path = 'devices'
         self.primary_key = self.get_mapping('name')
 
+    def namespaces(self):
+        if not hasattr(self.parent, 'entity') or not self.parent.entity:
+            raise StopIteration
+
+        for namespace in super(VMDeviceNamespace, self).namespaces():
+            yield namespace
+
 
 class VMVolumeNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNamespace):
     def __init__(self, name, context, parent):
@@ -640,6 +647,13 @@ class VMVolumeNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityName
         )
 
         self.primary_key = self.get_mapping('name')
+
+    def namespaces(self):
+        if not hasattr(self.parent, 'entity') or not self.parent.entity:
+            raise StopIteration
+
+        for namespace in super(VMVolumeNamespace, self).namespaces():
+            yield namespace
 
 
 class VMSnapshotsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):
@@ -933,13 +947,13 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
         self.entity_commands = self.get_entity_commands
 
     def get_entity_commands(self, this):
-        this.load()
+        this.load() if hasattr(this, 'load') else None
         commands = {
             'download': DownloadImagesCommand(this),
             'readme': ReadmeCommand(this)
         }
 
-        if this.entity is not None:
+        if hasattr(this, 'entity') and this.entity is not None:
             template = this.entity.get('template')
             if template:
                 if template.get('cached', False):

@@ -165,7 +165,7 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             name='groups',
             get=self.display_aux_groups,
             get_name='groups',
-            usage=_("""
+            usage=_("""\
             List of additional groups the user is a member of. To add
             the user to other groups, enclose a space delimited list
             between double quotes and ensure the groups already exist."""),
@@ -178,7 +178,7 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             descr='Login shell',
             name='shell',
             get='shell',
-            usage=_("""
+            usage=_("""\
             Default is "/bin/sh". Can be set to full path of an
             existing shell. Type 'shells' to see the list of
             available shells."""),
@@ -238,7 +238,7 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             descr='Email address',
             name='email',
             get='email',
-            usage=_("""
+            usage=_("""\
             Specify email address, enclosed between double quotes,
             to send that user's notifications to."""),
             list=False
@@ -248,7 +248,7 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             descr='Sudo allowed',
             name='sudo',
             get='sudo',
-            usage=_("""
+            usage=_("""\
             Can be set to true or false. When set to true, the
             user is allowed to use sudo to run commands
             with administrative permissions."""),
@@ -260,7 +260,7 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             descr='SSH public key',
             name='pubkey',
             get='sshpubkey',
-            usage=_("""
+            usage=_("""\
             To configure key-based authentication, use the 'set' command
             to paste the user's SSH public key."""),
             type=ValueType.STRING,

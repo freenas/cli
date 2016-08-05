@@ -52,11 +52,10 @@ class ShellsCommand(Command):
 
 @description(_("Manage local users"))
 class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):
-    shells = None
-
     """
     The user namespace provides commands for listing and managing local user accounts.
     """
+    shells = None
     def __init__(self, name, context):
         super(UsersNamespace, self).__init__(name, context)
 

@@ -349,6 +349,7 @@ class GroupsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
 
         self.skeleton_entity = {
             'name': None,
+            'builtin': False,
         }
 
         self.createable = lambda entity: not entity['builtin']

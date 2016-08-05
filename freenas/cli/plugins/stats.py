@@ -49,7 +49,7 @@ class StatisticNamespaceBase(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamesp
         self.add_property(
             descr='Name',
             name='name',
-            usage=_("""
+            usage=_("""\
             Read-only name assigned by the operating system."""),
             get='short_name',
             usersetable=False,
@@ -58,7 +58,7 @@ class StatisticNamespaceBase(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamesp
         self.add_property(
             descr='Value',
             name='value',
-            usage=_("""
+            usage=_("""\
             Read-only value assigned by the operating system."""),
             get='normalized_value',
             type=ValueType.NUMBER,
@@ -68,7 +68,7 @@ class StatisticNamespaceBase(TaskBasedSaveMixin, RpcBasedLoadMixin, EntityNamesp
         self.add_property(
             descr='Unit',
             name='unit',
-            usage=_("""
+            usage=_("""\
             Read-only unit name assigned by the operating system."""),
             get='unit',
             usersetable=False,

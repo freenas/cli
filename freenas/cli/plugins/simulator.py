@@ -80,7 +80,7 @@ class DisksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
         self.add_property(
             descr='Disk name',
             name='name',
-            usage=_("""
+            usage=_("""\
             Mandatory. Name of simulated disk."""),
             get='id',
             list=True
@@ -96,7 +96,7 @@ class DisksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
         self.add_property(
             descr='Online',
             name='online',
-            usage=_("""
+            usage=_("""\
             Can be set to yes or no. When set to yes,
             simulates a disk that is online."""),
             get='online',
@@ -107,7 +107,7 @@ class DisksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
         self.add_property(
             descr='Size',
             name='mediasize',
-            usage=_("""
+            usage=_("""\
             Mandatory. specify a number and the alphabetic
             value. For example, 20G sets a size of 20GiB."""),
             get='mediasize',
@@ -118,7 +118,7 @@ class DisksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
         self.add_property(
             descr='Serial number',
             name='serial',
-            usage=_("""
+            usage=_("""\
             Optional alphanumeric value."""),
             get='serial',
             list=False
@@ -127,7 +127,7 @@ class DisksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
         self.add_property(
             descr='Vendor name',
             name='vendor',
-            usage=_("""
+            usage=_("""\
             Optional name. It it contains a space, place it
             within double quotes."""),
             get='vendor',
@@ -137,7 +137,7 @@ class DisksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
         self.add_property(
             descr='Model name',
             name='model',
-            usage=_("""
+            usage=_("""\
             Optional model name. It it contains a space, place
             it within double quotes."""),
             get='model',
@@ -147,7 +147,7 @@ class DisksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
         self.add_property(
             descr='RPM',
             name='rpm',
-            usage=_("""
+            usage=_("""\
             Optional. Can be set to UNKNOWN, SSD, 7200, 10000,
             or 15000."""),
             get='rpm',

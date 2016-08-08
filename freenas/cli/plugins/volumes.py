@@ -1021,6 +1021,10 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
                 else:
                     commands['mount'] = MountCommand(this)
 
+        if hasattr(self, 'is_docgen_instance') and self.is_docgen_instance:
+            commands['umount'] = UmountCommand(this)
+            commands['mount'] = MountCommand(this)
+
         return commands
 
 
@@ -1623,6 +1627,16 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
                 else:
                     commands['unlock'] = UnlockVolumeCommand(this)
                     commands['lock'] = LockVolumeCommand(this)
+
+        if hasattr(self, 'is_docgen_instance') and self.is_docgen_instance:
+            commands['password'] = SetPasswordCommand(this)
+            commands['unlock'] = UnlockVolumeCommand(this)
+            commands['restore_key'] = RestoreVolumeMasterKeyCommand(this)
+            commands['lock'] = LockVolumeCommand(this)
+            commands['rekey'] = RekeyVolumeCommand(this)
+            commands['backup_key'] = BackupVolumeMasterKeyCommand(this)
+            commands['unlock'] = UnlockVolumeCommand(this)
+            commands['lock'] = LockVolumeCommand(this)
 
         return commands
 

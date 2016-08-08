@@ -379,6 +379,7 @@ class _NamespaceProcessor(object):
         return _get_localdoc(instance) if _parent_has_localdoc(instance) else _get_docstring(instance)
 
     def _instantiate_entity_namespace(self, parent_ns):
+        parent_ns.is_docgen_instance = True
         entity = SingleItemNamespace(None, parent_ns)
         entity.orig_entity = wrap(copy.deepcopy(parent_ns.skeleton_entity))
         entity.entity = wrap(copy.deepcopy(parent_ns.skeleton_entity))

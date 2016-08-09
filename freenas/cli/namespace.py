@@ -1199,7 +1199,10 @@ class NestedObjectSaveMixin(object):
 class NestedEntityMixin(object):
     @property
     def entity(self):
-        return self.parent.entity[self.parent_entity_path]
+        if hasattr(self.parent, 'entity') and self.parent_entity_path in self.parent.entity:
+            return self.parent.entity[self.parent_entity_path]
+        else:
+            return None
 
     @entity.setter
     def entity(self, value):

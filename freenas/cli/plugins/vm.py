@@ -600,13 +600,6 @@ class VMDeviceNamespace(NestedObjectLoadMixin,
         self.parent_path = 'devices'
         self.primary_key = self.get_mapping('name')
 
-    def namespaces(self):
-        if not hasattr(self.parent, 'entity') or not self.parent.entity:
-            raise StopIteration
-
-        for namespace in super(VMDeviceNamespace, self).namespaces():
-            yield namespace
-
 
 class VMVolumeNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNamespace):
     def __init__(self, name, context, parent):
@@ -647,13 +640,6 @@ class VMVolumeNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityName
         )
 
         self.primary_key = self.get_mapping('name')
-
-    def namespaces(self):
-        if not hasattr(self.parent, 'entity') or not self.parent.entity:
-            raise StopIteration
-
-        for namespace in super(VMVolumeNamespace, self).namespaces():
-            yield namespace
 
 
 class VMSnapshotsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):

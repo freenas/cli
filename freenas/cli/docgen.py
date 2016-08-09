@@ -333,6 +333,7 @@ class _NamespaceProcessor(object):
                 ret.append([p.name, p.usage])
             return ret
 
+        namespace.is_docgen_instance = True
         name = namespace.name
         description = _get_namespace_description(namespace)
         commands = _get_namespace_commands(namespace)
@@ -359,6 +360,7 @@ class _NamespaceProcessor(object):
             entity_ns = self._instantiate_entity_namespace(ns)
             return [n for n in entity_ns.namespaces()]
 
+        namespace.is_docgen_instance = True
         nested_namespaces = _get_nested_namespaces(namespace)
         entity_commands = _get_entity_commands(namespace)
         entity_namespaces = _get_entity_namespaces(namespace)
@@ -379,7 +381,6 @@ class _NamespaceProcessor(object):
         return _get_localdoc(instance) if _parent_has_localdoc(instance) else _get_docstring(instance)
 
     def _instantiate_entity_namespace(self, parent_ns):
-        parent_ns.is_docgen_instance = True
         entity = SingleItemNamespace(None, parent_ns)
         entity.orig_entity = wrap(copy.deepcopy(parent_ns.skeleton_entity))
         entity.entity = wrap(copy.deepcopy(parent_ns.skeleton_entity))

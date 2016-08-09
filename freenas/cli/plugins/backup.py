@@ -113,7 +113,7 @@ class BackupNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
                 return [PROVIDERS[this.entity['provider']]('properties', self.context, this)]
 
             if hasattr(self, 'is_docgen_instance') and self.is_docgen_instance:
-                return [namespace('<{0}>properties'.format(name), self.context, this) for name, namespace in
+                return [namespace('<entity=={0}>properties'.format(name), self.context, this) for name, namespace in
                     PROVIDERS.items()]
 
             return []

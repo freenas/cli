@@ -30,6 +30,7 @@ from freenas.cli.namespace import (
     TaskBasedSaveMixin, CommandException
 )
 from freenas.cli.output import ValueType, Table
+from freenas.cli.output import Sequence
 
 
 class DockerHostNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
@@ -170,7 +171,8 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
         self.primary_key = self.get_mapping('name')
         self.entity_commands = lambda this: {
             'start': DockerContainerStartStopCommand(this, 'start'),
-            'stop': DockerContainerStartStopCommand(this, 'stop')
+            'stop': DockerContainerStartStopCommand(this, 'stop'),
+            'readme': DockerContainerReadmeCommand(this)
         }
 
 
@@ -250,6 +252,18 @@ class DockerContainerStartStopCommand(Command):
 
     def run(self, context, args, kwargs, opargs):
         context.submit_task('docker.container.{0}'.format(self.action), self.parent.entity['id'])
+
+
+class DockerContainerReadmeCommand(Command):
+    def __init__(self, parent, action):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        readme = context.call_sync('docker.image.readme', self.parent.entity['image'])
+        if readme:
+            return Sequence(readme)
+        else:
+            return Sequence("Selected container does not have readme entry")
 
 
 class DockerNamespace(Namespace):

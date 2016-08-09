@@ -895,6 +895,10 @@ class ISCSIAuthGroupsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityName
             Sets a iSCSI auth group property. For a list of properties, see
             'help properties'.""")
 
+        self.skeleton_entity = {
+            'users': None
+        }
+
         self.add_property(
             descr='Portal name',
             name='name',

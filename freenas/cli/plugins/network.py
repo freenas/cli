@@ -153,7 +153,7 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
 
         self.skeleton_entity = {
             'type': 'LAGG',
-            'aliases': {}
+            'aliases': []
         }
 
         self.createable = lambda entity: entity['type'] != 'ETHER'

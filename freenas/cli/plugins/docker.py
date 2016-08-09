@@ -37,6 +37,8 @@ class DockerHostNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         super(DockerHostNamespace, self).__init__(name, context)
         self.entity_subscriber_name = 'docker.host'
         self.primary_key_name = 'name'
+        self.allow_create = False
+        self.allow_edit = False
 
         self.add_property(
             descr='VM name',

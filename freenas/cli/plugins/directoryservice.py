@@ -154,6 +154,10 @@ class DirectoriesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, E
                 if provider:
                     return [provider('properties', self.context, this)]
 
+            if hasattr(self, 'is_docgen_instance') and self.is_docgen_instance:
+                return [namespace('<entity=={0}>properties'.format(name), self.context, this) for name, namespace in
+                        PROVIDERS.items()]
+
             return []
 
         self.entity_namespaces = get_entity_namespaces
@@ -167,8 +171,9 @@ class BaseDirectoryPropertiesNamespace(ItemNamespace):
         self.parent = parent
 
     def load(self):
-        self.entity = self.parent.entity['parameters']
-        self.orig_entity = copy.deepcopy(self.entity)
+        if hasattr(self.parent, 'entity') and 'parameters' in self.parent.entity:
+            self.entity = self.parent.entity['parameters']
+            self.orig_entity = copy.deepcopy(self.entity)
 
     def save(self):
         return self.parent.save()

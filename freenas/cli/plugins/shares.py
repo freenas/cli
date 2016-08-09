@@ -392,7 +392,7 @@ class NFSSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='All directories',
             name='alldirs',
-            usage=_("""
+            usage=_("""\
             Can be set to yes or no. When set to yes, the NFS client
             can mount any subdirectory within the 'path'."""),
             get='properties.alldirs',
@@ -403,7 +403,7 @@ class NFSSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Read only',
             name='read_only',
-            usage=_("""
+            usage=_("""\
             Can be set to yes or no. When set to yes, NFS clients are
             prohibited from writing to the share."""),
             get='properties.read_only',
@@ -414,7 +414,7 @@ class NFSSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Root user',
             name='root_user',
-            usage=_("""
+            usage=_("""\
             If set, the root user is limited to the specified user's
             permissions. This setting prevents 'all_user' from being
             set."""),
@@ -425,7 +425,7 @@ class NFSSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Root group',
             name='root_group',
-            usage=_("""
+            usage=_("""\
             If set, the root user is limited to the specified group's
             permissions. This setting prevents 'all_group' from being
             set."""),
@@ -436,7 +436,7 @@ class NFSSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='All user',
             name='all_user',
-            usage=_("""
+            usage=_("""\
             If set, the specified user's permissions are used by all
             NFS clients. This setting prevents 'root_user' from being
             set."""),
@@ -447,7 +447,7 @@ class NFSSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='All group',
             name='all_group',
-            usage=_("""
+            usage=_("""\
             If set, the specified group's permissions are used by all
             NFS clients. This setting prevents root_group' from being
             set."""),
@@ -458,7 +458,7 @@ class NFSSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Allowed hosts/networks',
             name='hosts',
-            usage=_("""
+            usage=_("""\
             Space delimited list of allowed IP addresses or hostnames,
             enclosed between double quotes."""),
             get='properties.hosts',
@@ -469,7 +469,7 @@ class NFSSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Security',
             name='security',
-            usage=_("""
+            usage=_("""\
             Allowed values are sys, krb5 (Kerberos authentication only),
             krb5i (Kerberos authentication and integrity), and krb5p
             (Kerberos authentication and privacy). Requires 'v4' to be
@@ -511,7 +511,7 @@ class AFPSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Allowed hosts/networks',
             name='hosts_allow',
-            usage=_("""
+            usage=_("""\
             Space delimited list, enclosed within double quotes, of
             allowed hostnames or IP addresses. Note that setting this
             property will deny any host/IP that is not specified."""),
@@ -523,7 +523,7 @@ class AFPSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Denied hosts/networks',
             name='hosts_deny',
-            usage=_("""
+            usage=_("""\
             Space delimited list, enclosed within double quotes, of
             denied hostnames or IP addresses. Note that setting this
             property will allow any host/IP that is not specified."""),
@@ -535,7 +535,7 @@ class AFPSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Allowed users',
             name='users_allow',
-            usage=_("""
+            usage=_("""\
             Space delimited list, enclosed within double quotes, of
             allowed users. Note that setting this property will deny
             any user that is not specified."""),
@@ -547,7 +547,7 @@ class AFPSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Allowed groups',
             name='groups_allow',
-            usage=_("""
+            usage=_("""\
             Space delimited list, enclosed within double quotes, of
             allowed groups. Note that setting this property will deny
             any group that is not specified."""),
@@ -559,7 +559,7 @@ class AFPSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Denied users',
             name='users_deny',
-            usage=_("""
+            usage=_("""\
             Space delimited list, enclosed within double quotes, of
             denied users. Note that setting this property will allow
             any user that is not specified."""),
@@ -571,7 +571,7 @@ class AFPSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Denied groups',
             name='groups_deny',
-            usage=_("""
+            usage=_("""\
             Space delimited list, enclosed within double quotes, of
             denied groups. Note that setting this property will allow
             any group that is not specified."""),
@@ -623,7 +623,7 @@ class AFPSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Time machine',
             name='time_machine',
-            usage=_("""
+            usage=_("""\
             Can be set to yes or no. When set to yes, FreeNAS will
             advertise itself as a Time Machine disk so it can be
             found by Macs."""),
@@ -664,7 +664,7 @@ class SMBSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Allowed hosts',
             name='hosts_allow',
-            usage=_("""
+            usage=_("""\
             Space delimited list, enclosed within double quotes, of
             allowed hostnames or IP addresses. Note that setting this
             property will deny any host/IP that is not specified."""),
@@ -676,7 +676,7 @@ class SMBSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Denied hosts',
             name='hosts_deny',
-            usage=_("""
+            usage=_("""\
             Space delimited list, enclosed within double quotes, of
             denied hostnames or IP addresses. Note that setting this
             property will allow any host/IP that is not specified."""),
@@ -688,7 +688,7 @@ class SMBSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Read only',
             name='read_only',
-            usage=_("""
+            usage=_("""\
             Can be set to yes or no. When set to yes, write access to
             the share is not allowed."""),
             get='properties.read_only',
@@ -699,7 +699,7 @@ class SMBSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Guest OK',
             name='guest_ok',
-            usage=_("""
+            usage=_("""\
             Can be set to yes or no. When set to yes, no password is
             required to connect to the share and all users share the
             permissions of the guest user set by 'guest_user' in
@@ -712,7 +712,7 @@ class SMBSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Guest only',
             name='guest_only',
-            usage=_("""
+            usage=_("""\
             Can be set to yes or no. When set to yes, guest access is
             forced for all connections."""),
             get='properties.guest_only',
@@ -723,7 +723,7 @@ class SMBSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Browseable',
             name='browseable',
-            usage=_("""
+            usage=_("""\
             Can be set to yes or no. When set to yes, users see the
             contents of other users' home directories. When set to no,
             users see only their own home directory."""),
@@ -735,7 +735,7 @@ class SMBSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Show hidden files',
             name='show_hidden_files',
-            usage=_("""
+            usage=_("""\
             Can be set to yes or no. When set to yes, filenames that
             begin with a dot will be listed."""),
             get='properties.show_hidden_files',
@@ -773,7 +773,7 @@ class WebDAVSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Read only',
             name='read_only',
-            usage=_("""
+            usage=_("""\
             Can be set to yes or no. When set to yes, users cannot write
             to the share."""),
             get='properties.read_only',
@@ -784,7 +784,7 @@ class WebDAVSharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Webdav user permission',
             name='permission',
-            usage=_("""
+            usage=_("""\
             Can be set to yes or no. When set to yes, it automatically sets
             the share's permissions to the webdav user and group."""),
             get='properties.permission',
@@ -823,7 +823,7 @@ class ISCSIPortalsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespa
         self.add_property(
             descr='Portal name',
             name='name',
-            usage=_("""
+            usage=_("""\
             Mandatory setting. Name of the portal."""),
             get='id'
         )
@@ -831,7 +831,7 @@ class ISCSIPortalsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespa
         self.add_property(
             descr='Discovery auth group',
             name='discovery_auth_group',
-            usage=_("""
+            usage=_("""\
             Only set when using CHAP or Mutual CHAP."""),
             get='discovery_auth_group',
             type=ValueType.STRING,
@@ -840,7 +840,7 @@ class ISCSIPortalsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespa
         self.add_property(
             descr='Listen addresses and ports',
             name='listen',
-            usage=_("""
+            usage=_("""\
             Mandatory setting. IP address or wildcard of 0.0.0.0.
             Separate multiple listen addresses with a space and enclose
             between double quotes. To change the default listen port of

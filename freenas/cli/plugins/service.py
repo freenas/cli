@@ -83,7 +83,7 @@ class ServicesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Enti
             descr='Service name',
             name='name',
             get='name',
-            usage=_("""
+            usage=_("""\
             Name of the service. Read-only value assigned by
             the operating system."""),
             set=None,
@@ -94,7 +94,7 @@ class ServicesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Enti
             descr='State',
             name='state',
             get='state',
-            usage=_("""
+            usage=_("""\
             Indicates whether the service is RUNNING or STOPPED.
             Read-only value assigned by the operating system."""),
             set=None,
@@ -105,7 +105,7 @@ class ServicesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Enti
             descr='Process ID',
             name='pid',
             get='pid',
-            usage=_("""
+            usage=_("""\
             Process ID of the RUNNING service. Read-only value assigned
             by the operating system."""),
             set=None,

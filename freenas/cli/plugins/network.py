@@ -151,6 +151,11 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
             'ETHER': _("Ethernet")
         }
 
+        self.skeleton_entity = {
+            'type': 'LAGG',
+            'aliases': {}
+        }
+
         self.createable = lambda entity: entity['type'] != 'ETHER'
 
         self.add_property(

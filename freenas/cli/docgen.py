@@ -47,12 +47,19 @@ class CliDocGen(object):
     def load_root_namespaces(self, namespaces):
         self.namespaces_doc_gen.load_root_namespaces(namespaces)
 
-    def load_global_commands(self, commands):
-        self.global_commands_doc_gen.load_commands(commands)
+    def load_global_base_commands(self, commands):
+        self.global_commands_doc_gen.load_base_commands(commands)
+
+    def load_global_filtering_commands(self, commands):
+        self.global_commands_doc_gen.load_filtering_commands(commands)
 
     def write_docs(self):
         self.global_commands_doc_gen.generate_doc_files()
         self.namespaces_doc_gen.generate_doc_files()
+        self._generate_index_files()
+
+    def _generate_index_files(self):
+        pass
 
 
 class NamespacesDocGen(object):
@@ -63,7 +70,7 @@ class NamespacesDocGen(object):
         self.index_file_name = 'tmp_index'
         self.output_file_ext = '.rst'
         self.curr_output_file_name = ""
-        self.processor = _NamespaceProcessor()
+        self.processor = _CliEntitiesProcessor()
         self.generator = _RestructuredTextFormatter(namespace_title_heading_size='h2',
                                                     commands_section_title_heading_size='h3',
                                                     properties_section_title_heading_size='h3',
@@ -129,15 +136,46 @@ class NamespacesDocGen(object):
 
 class GlobalCommandsDocGen(object):
     def __init__(self):
-        self.commands = []
-        '''self.processor = _NamespaceProcessor()'''
+        self.base_commands = []
+        self.filtering_commands = []
+        self.output_file_path = '/var/tmp/'
+        self.output_file_ext = '.rst'
+        self.curr_output_file_name = ""
+        self.processor = _CliEntitiesProcessor()
         self.generator = _RestructuredTextFormatter()
 
-    def load_commands(self, commands):
-        self.commands.extend(commands)
+    def load_base_commands(self, commands):
+        self.base_commands.extend(commands)
+
+    def load_filtering_commands(self, commands):
+        self.filtering_commands.extend(commands)
 
     def generate_doc_files(self):
-        pass
+        type = 'base'
+        self.curr_output_file_name = "cmds_" + type
+        contents = self._get_commands_file_contents(commands=self.base_commands,
+                                                    type=type)
+        self._write_output_file(contents)
+
+        type = 'filtering'
+        self.curr_output_file_name = "cmds_" + type
+        contents = self._get_commands_file_contents(commands=self.filtering_commands,
+                                                    type=type)
+        self._write_output_file(contents)
+
+    def _get_commands_file_contents(self, commands=[], type='base'):
+        ret = ""
+        ret += self.generator.get_global_commands_file_top_title(commands_type=type)
+        for name, instance in commands:
+            description = self.processor.extract_command_data(instance)
+            ret += self.generator.get_global_command_section(name=name,
+                                                             text=description)
+        return ret
+
+    def _write_output_file(self, contents):
+        print("PGLOG_write_output_file:")
+        with open(self.output_file_path+self.curr_output_file_name+self.output_file_ext, 'w') as f:
+            f.write(contents)
 
 
 class _RestructuredTextFormatter(object):
@@ -146,7 +184,9 @@ class _RestructuredTextFormatter(object):
                  commands_section_title_heading_size='h3',
                  properties_section_title_heading_size='h3',
                  command_name_heading_size='h4',
-                 property_name_heading_size='h4'):
+                 property_name_heading_size='h4',
+                 global_commands_file_top_title_size='h2',
+                 global_command_name_heading_size='h3'):
         self.heading_markup_chars = {
             'h1': '#',
             'h2': '*',
@@ -164,6 +204,12 @@ class _RestructuredTextFormatter(object):
         self.property_name_markup_char = self.heading_markup_chars[property_name_heading_size]
         self.namespace_commands_section_title = "Commands"
         self.namespace_properties_section_title = "Properties"
+        self.global_commands_files_top_titles = {
+            'base': 'Base Commands',
+            'filtering': 'Filtering Commands'
+        }
+        self.global_commands_file_top_title_markup_char = self.heading_markup_chars[global_commands_file_top_title_size]
+        self.global_command_name_markup_char = self.heading_markup_chars[global_command_name_heading_size]
         self.single_indent = "    "
         self.double_indent = 2 * self.single_indent
         self.missing_description = "^^^^^^_____DESCRIPTION_MISSING_____^^^^^^"
@@ -302,12 +348,96 @@ class _RestructuredTextFormatter(object):
                                                                  properties) if properties else ""
         return section
 
+    def get_global_commands_file_top_title(self, commands_type=None):
+        contents = self.global_commands_files_top_titles[commands_type]
+        markup = self.global_commands_file_top_title_markup_char * len(contents)
+        return markup + '\n' + contents + '\n' + markup + '\n\n'
+
+    def get_global_command_section(self, name, text):
+        def _get_command_section_title(name):
+            contents = "**" + name + "**"
+            markup = self.global_command_name_markup_char * len(contents)
+            return contents + '\n' + markup + '\n\n'
+
+        def _get_command_section_contents(text):
+            def _extract_command_data(text=None):
+                def preserve_blank_lines_in_docstring():
+                    return "\n\n" if description else ""
+
+                description = usage = examples = ""
+                if not text:
+                    return description, usage, examples
+                for lines in text.split("\n\n"):
+                    if 'Usage' not in lines and 'Example' not in lines:
+                        description += preserve_blank_lines_in_docstring() + lines
+                    if not usage:
+                        usage = lines.split("Usage:")[1] if 'Usage' in lines else None
+                    if not examples:
+                        examples = re.split("Examples?:", lines)[1] if 'Example' in lines else None
+                return description, usage, examples
+
+
+            def _get_command_description(content):
+                content = self.missing_description if not content else content
+                ret = ""
+                for l in content.split("\n"):
+                    ret += self.single_indent + textwrap.dedent(l) + "\n"
+                return ret + "\n"
+
+            def _get_command_usage(content):
+                def _get_title():
+                    content = "**Usage:**"
+                    markup = "::"
+                    return self.single_indent + content + "\n" + self.single_indent + markup + "\n\n"
+
+                def _get_usage(content):
+                    content = self.missing_usage if not content else content
+                    ret = ""
+                    for l in content.split("\n"):
+                        ret += self.double_indent + textwrap.dedent(l) + "\n"
+                    return ret + "\n"
+
+                return _get_title() + _get_usage(content)
+
+            def _get_command_examples(content):
+                def _get_title():
+                    content = "**Examples:**"
+                    markup = "::"
+                    return self.single_indent + content + "\n" + self.single_indent + markup + "\n\n"
+
+                def _get_examples(content):
+                    content = self.missing_examples if not content else content
+                    ret = ""
+                    for l in content.split("\n"):
+                        if l :
+                            ret += self.double_indent + textwrap.dedent(l) + "\n"
+                    return ret + "\n"
+
+                return _get_title() + _get_examples(content)
+
+            def _get_command_related_properties():
+                return ""
+
+            ret = ""
+            description, usage, examples = _extract_command_data(text)
+            ret += _get_command_description(description)
+            ret += _get_command_usage(usage)
+            ret += _get_command_examples(examples)
+            ret += _get_command_related_properties()
+            return ret
+
+        ret = ""
+        ret += _get_command_section_title(name)
+        ret += _get_command_section_contents(text)
+
+        return ret
+
     @staticmethod
     def _get_qualified_name(name, qualifiers):
         return ".".join([".".join(qualifiers), name]) if qualifiers else name
 
 
-class _NamespaceProcessor(object):
+class _CliEntitiesProcessor(object):
     def __init__(self):
         pass
 
@@ -365,6 +495,9 @@ class _NamespaceProcessor(object):
         entity_commands = _get_entity_commands(namespace)
         entity_namespaces = _get_entity_namespaces(namespace)
         return nested_namespaces, entity_commands, entity_namespaces
+
+    def extract_command_data(self, instance):
+        return self._get_command_doctext(instance)
 
     def _get_command_doctext(self, instance):
         def _parent_has_localdoc(cmd):

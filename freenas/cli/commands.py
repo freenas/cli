@@ -119,6 +119,7 @@ class ChangeNamespaceCommand(Command):
     Example: cd system/ui
              cd ../..
              cd ../config
+
     This is basically a navigation command to facilitate unix-like navigation
     """
 

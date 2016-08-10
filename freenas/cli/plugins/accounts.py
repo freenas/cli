@@ -33,7 +33,6 @@ from freenas.cli.namespace import (
     EntitySubscriberBasedLoadMixin, description, CommandException
 )
 from freenas.cli.output import ValueType, Sequence
-from freenas.utils.query import query
 
 t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
@@ -274,7 +273,7 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
         }
 
     def display_group(self, entity):
-        group = query(
+        group = self.context.entity_subscribers['group'].query(
             self.context.entity_subscribers['group'],
             ('id', '=', entity['group']),
             single=True
@@ -289,7 +288,7 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             raise CommandException(_('Group {0} does not exist.'.format(value)))
 
     def display_aux_groups(self, entity):
-        groups = query(
+        groups = self.context.entity_subscribers['group'].query(
             self.context.entity_subscribers['group'],
             ('id', 'in', entity['groups'])
         )
@@ -297,7 +296,7 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             yield group['name'] if group else '<unknown group>'
 
     def set_aux_groups(self, entity, value):
-        groups = query(self.context.entity_subscribers['group'], ('name', 'in', list(value)))
+        groups = self.context.entity_subscribers['group'].query(('name', 'in', list(value)))
         diff_groups = set.difference(set(value), set(x['name'] for x in groups))
         if len(diff_groups):
             raise CommandException(_('Groups {0} do not exist.'.format(', '.join(diff_groups))))

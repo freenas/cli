@@ -35,7 +35,7 @@ from freenas.cli.namespace import (
 from freenas.cli.output import ValueType, Table
 from freenas.cli.utils import post_save
 from freenas.utils import first_or_default
-from freenas.utils.query import query, get
+from freenas.utils.query import get
 
 
 t = gettext.translation('freenas-cli', fallback=True)
@@ -1192,7 +1192,7 @@ def find_share_namespace(context, task):
 
     elif task['name'] == 'share.update':
         share_id = get(task, 'args.0')
-        share_type = query(context.entity_subscribers['share'], ('id', '=', share_id), single=True)
+        share_type = context.entity_subscribers['share'].query(('id', '=', share_id), single=True)
 
     else:
         return

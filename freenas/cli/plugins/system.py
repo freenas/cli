@@ -360,7 +360,7 @@ class TimeNamespace(ConfigNamespace):
 
     def __init__(self, name, context):
         super(TimeNamespace, self).__init__(name, context)
-        self.config_call = 'system.info.time'
+        self.config_call = 'system.time.get_config'
         self.update_task = 'system.time.update'
 
         self.add_property(

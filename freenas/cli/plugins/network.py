@@ -33,6 +33,7 @@ from freenas.cli.namespace import (
 )
 from freenas.cli.output import ValueType
 from freenas.cli.utils import post_save, netmask_to_cidr
+from freenas.utils.query import get
 
 
 t = gettext.translation('freenas-cli', fallback=True)
@@ -410,10 +411,10 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
         self.leaf_harborer = True
 
     def get_link_state(self, entity):
-        return self.link_states[entity['status.link_state']]
+        return self.link_states[get(entity, 'status.link_state')]
 
     def get_iface_state(self, entity):
-        return _("up") if 'UP' in entity['status.flags'] else _("down")
+        return _("up") if 'UP' in get(entity, 'status.flags') else _("down")
 
     def get_ip_config(self, entity):
         for i in entity['status']['aliases']:

@@ -71,7 +71,7 @@ from freenas.dispatcher.client import Client, ClientError
 from freenas.dispatcher.entity import EntitySubscriber
 from freenas.dispatcher.rpc import RpcException
 from freenas.utils import first_or_default, include, best_match
-from freenas.utils.query import QueryDict, wrap
+from freenas.utils.query import get
 from freenas.cli.commands import (
     ExitCommand, PrintoptCommand, SetoptCommand, SetenvCommand, PrintenvCommand,
     ShellCommand, HelpCommand, ShowUrlsCommand, ShowIpsCommand, TopCommand, ClearCommand,
@@ -371,7 +371,7 @@ class Context(object):
         self.builtin_functions = functions.functions
         self.global_env = Environment(self)
         self.user = None
-        self.pending_tasks = QueryDict()
+        self.pending_tasks = {}
         self.session_id = None
         self.user_commands = []
         self.local_connection = False
@@ -446,7 +446,7 @@ class Context(object):
                         )
                     ))
 
-                    self.print_validation_errors(wrap(task))
+                    self.print_validation_errors(task)
 
             if task['state'] == 'ABORTED':
                 self.output_queue.put(_("Task #{0} aborted".format(task['id'])))
@@ -675,11 +675,11 @@ class Context(object):
             if task['name'] == entityns.update_task:
                 # Update tasks have updated_params as second argument
                 errors = errors_by_path(task['error']['extra'], [1])
-                obj_id = task.get('args.0')
+                obj_id = get(task, 'args.0')
             elif task['name'] == entityns.create_task:
                 # Create tasks have object as first argument
                 errors = errors_by_path(task['error']['extra'], [0])
-                obj_id = task.get('args.0.id')
+                obj_id = get(task, 'args.0.id')
             else:
                 return
         elif isinstance(entityns, ConfigNamespace):
@@ -705,7 +705,7 @@ class Context(object):
             yield property.name if property else pathname, i['code'], i['message']
 
     def print_validation_errors(self, task):
-        if task.get('error.type') == 'ValidationException':
+        if get(task, 'error.type') == 'ValidationException':
             errors = self.get_validation_errors(task)
             if not errors:
                 return
@@ -737,10 +737,10 @@ class Context(object):
             self.output_queue.put(translation)
 
     def call_sync(self, name, *args, **kwargs):
-        return wrap(self.connection.call_sync(name, *args, **kwargs))
+        return self.connection.call_sync(name, *args, **kwargs)
 
     def call_task_sync(self, name, *args, **kwargs):
-        return wrap(self.connection.call_task_sync(name, *args))
+        return self.connection.call_task_sync(name, *args)
 
     def submit_task_common_routine(self, name, callback, *args):
         """

@@ -35,7 +35,6 @@ from freenas.cli.namespace import (
 from freenas.cli.complete import NullComplete, EnumComplete
 from freenas.cli.output import ValueType, read_value
 from freenas.cli.utils import post_save
-from freenas.utils import query
 
 t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
@@ -225,8 +224,8 @@ class CreateReplicationCommand(Command):
                 ))
 
         ns = SingleItemNamespace(None, self.parent)
-        ns.orig_entity = query.wrap(copy.deepcopy(self.parent.skeleton_entity))
-        ns.entity = query.wrap(copy.deepcopy(self.parent.skeleton_entity))
+        ns.orig_entity = copy.deepcopy(self.parent.skeleton_entity)
+        ns.entity = copy.deepcopy(self.parent.skeleton_entity)
 
         ns.entity['name'] = name
         ns.entity['master'] = master

@@ -34,6 +34,7 @@ from freenas.cli.namespace import (
 )
 from freenas.cli.output import ValueType
 from freenas.cli.complete import EnumComplete, NullComplete
+from freenas.utils.query import get, query
 
 
 t = gettext.translation('freenas-cli', fallback=True)
@@ -227,7 +228,8 @@ class CertificateBaseNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixi
             list=False)
 
     def get_ca_names(self):
-        return self.context.entity_subscribers[self.entity_subscriber_name].query(
+        return query(
+            get(self.context.entity_subscribers, self.entity_subscriber_name),
             ('type', 'in', ('CA_INTERNAL', 'CA_INTERMEDIATE')),
             select='name'
         )

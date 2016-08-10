@@ -35,7 +35,7 @@ from freenas.cli.namespace import (
 from freenas.cli.complete import NullComplete, EnumComplete, EntitySubscriberComplete
 from freenas.cli.output import Table, ValueType, output_tree, format_value, read_value, Sequence
 from freenas.cli.utils import post_save, iterate_vdevs, to_list, correct_disk_path
-from freenas.utils import first_or_default, extend, query
+from freenas.utils import first_or_default, extend
 
 
 t = gettext.translation('freenas-cli', fallback=True)
@@ -1305,8 +1305,8 @@ class CreateVolumeCommand(Command):
             log_disks = [log_disks]
 
         ns = SingleItemNamespace(None, self.parent)
-        ns.orig_entity = query.wrap(copy.deepcopy(self.parent.skeleton_entity))
-        ns.entity = query.wrap(copy.deepcopy(self.parent.skeleton_entity))
+        ns.orig_entity = copy.deepcopy(self.parent.skeleton_entity)
+        ns.entity = copy.deepcopy(self.parent.skeleton_entity)
 
         disks, cache_disks, log_disks = check_disks(context, disks, cache_disks, log_disks)
 

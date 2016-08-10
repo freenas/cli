@@ -35,6 +35,7 @@ from freenas.cli.namespace import (
 from freenas.cli.output import ValueType, Table
 from freenas.cli.utils import post_save
 from freenas.utils import first_or_default
+from freenas.utils.query import query, get
 
 
 t = gettext.translation('freenas-cli', fallback=True)
@@ -1187,11 +1188,11 @@ class ISCSISharesNamespace(BaseSharesNamespace):
 
 def find_share_namespace(context, task):
     if task['name'] == 'share.create':
-        share_type = task.get('args.0.type')
+        share_type = get(task, 'args.0.type')
 
     elif task['name'] == 'share.update':
-        share_id = task.get('args.0')
-        share_type = context.entity_subscribers['share'].query(('id', '=', share_id), single=True)
+        share_id = get(task, 'args.0')
+        share_type = query(context.entity_subscribers['share'], ('id', '=', share_id), single=True)
 
     else:
         return

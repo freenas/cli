@@ -31,6 +31,7 @@ from freenas.cli.namespace import (
 )
 from freenas.cli.output import ValueType, Table
 from freenas.cli.output import Sequence
+from freenas.utils.query import get, query
 
 
 class DockerHostNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
@@ -85,11 +86,11 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
         self.primary_key_name = 'names.0'
 
         def get_host(o):
-            h = context.entity_subscribers['docker.host'].query(('id', '=', o['host']), single=True)
+            h = query(get(context.entity_subscribers, 'docker.host'), ('id', '=', o['host']), single=True)
             return h['name'] if h else None
 
         def set_host(o, v):
-            h = context.entity_subscribers['docker.host'].query(('name', '=', v), single=True)
+            h = query(get(context.entity_subscribers, 'docker.host'), ('name', '=', v), single=True)
             if h:
                 o['host'] = h['id']
 
@@ -227,7 +228,7 @@ class DockerImagePullCommand(Command):
         if len(args) != 2:
             raise CommandException("Please specify image name and docker host name")
 
-        hostid = context.entity_subscribers['docker.host'].query(('name', '=', args[1]), single=True)
+        hostid = query(get(context.entity_subscribers, 'docker.host'), ('name', '=', args[1]), single=True)
         if not hostid:
             raise CommandException("Docker host {0} not found".format(args[1]))
 

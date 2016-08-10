@@ -31,8 +31,6 @@ import textwrap
 import inspect
 import re
 import copy
-
-from freenas.utils.query import wrap
 from freenas.cli.namespace import SingleItemNamespace, EntityNamespace
 
 
@@ -515,6 +513,6 @@ class _CliEntitiesProcessor(object):
 
     def _instantiate_entity_namespace(self, parent_ns):
         entity = SingleItemNamespace(None, parent_ns)
-        entity.orig_entity = wrap(copy.deepcopy(parent_ns.skeleton_entity))
-        entity.entity = wrap(copy.deepcopy(parent_ns.skeleton_entity))
+        entity.orig_entity = copy.deepcopy(parent_ns.skeleton_entity)
+        entity.entity = copy.deepcopy(parent_ns.skeleton_entity)
         return entity

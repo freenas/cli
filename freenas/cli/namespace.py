@@ -36,7 +36,7 @@ import collections
 import six
 import inspect
 from freenas.utils import first_or_default
-from freenas.utils.query import wrap
+from freenas.utils.query import set
 from freenas.cli.parser import CommandCall, Literal, Symbol, BinaryParameter, Comment
 from freenas.cli.complete import NullComplete, EnumComplete
 from freenas.cli.utils import post_save, edit_in_editor, PrintableNone
@@ -253,7 +253,7 @@ class PropertyMapping(object):
             self.set(obj, value)
             return
 
-        obj.set(self.set, value)
+        set(obj, self.set, value)
 
     def do_append(self, obj, value):
         if self.type not in (ValueType.SET, ValueType.ARRAY):
@@ -270,7 +270,7 @@ class PropertyMapping(object):
             self.set(obj, newvalues)
             return
 
-        obj.set(self.set, newvalues)
+        set(obj, self.set, newvalues)
 
     def do_remove(self, obj, value):
         if self.type not in (ValueType.SET, ValueType.ARRAY):
@@ -289,7 +289,7 @@ class PropertyMapping(object):
             self.set(obj, newvalues)
             return
 
-        obj.set(self.set, newvalues)
+        set(obj, self.set, newvalues)
 
 
 class ItemNamespace(Namespace):
@@ -936,8 +936,8 @@ class CreateEntityCommand(Command):
 
     def run(self, context, args, kwargs, opargs):
         ns = SingleItemNamespace(None, self.parent)
-        ns.orig_entity = wrap(copy.deepcopy(self.parent.skeleton_entity))
-        ns.entity = wrap(copy.deepcopy(self.parent.skeleton_entity))
+        ns.orig_entity = copy.deepcopy(self.parent.skeleton_entity)
+        ns.entity = copy.deepcopy(self.parent.skeleton_entity)
         kwargs = collections.OrderedDict(kwargs)
 
         if len(args) > 0:

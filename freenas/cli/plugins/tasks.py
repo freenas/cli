@@ -31,6 +31,7 @@ from freenas.cli.descriptions import tasks
 from freenas.cli.namespace import EntityNamespace, EntitySubscriberBasedLoadMixin, Command, BaseListCommand, description
 from freenas.cli.complete import NullComplete
 from freenas.cli.utils import describe_task_state
+from freenas.utils.query import get
 
 
 t = gettext.translation('freenas-cli', fallback=True)
@@ -216,7 +217,7 @@ class TasksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             type=ValueType.SET,
             set=None,
             list=False,
-            condition=lambda t: t.get('error.type') == 'ValidationException'
+            condition=lambda t: get(t, 'error.type') == 'ValidationException'
         )
 
         self.primary_key = self.get_mapping('id')

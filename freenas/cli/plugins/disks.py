@@ -32,6 +32,7 @@ from freenas.cli.namespace import (
 )
 from freenas.cli.output import ValueType
 from freenas.utils import extend
+from freenas.utils.query import query, get
 
 
 t = gettext.translation('freenas-cli', fallback=True)
@@ -219,7 +220,7 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityN
         }
 
     def query(self, params, options):
-        ret = super(DisksNamespace, self).query(params, options)
+        ret = query(super(DisksNamespace, self), params, options)
         disks = [d['path'] for d in ret]
         allocations = self.context.call_sync('volume.get_disks_allocation', disks)
 
@@ -228,7 +229,8 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityN
             }) for d in ret]
 
     def get_one(self, name):
-        ret = self.context.entity_subscribers[self.entity_subscriber_name].query(
+        ret = query(
+            get(self.context.entity_subscribers, self.entity_subscriber_name),
             ('name', '=', name), *self.extra_query_params,
             single=True
         )

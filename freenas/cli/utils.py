@@ -34,6 +34,7 @@ import ipaddress
 import gettext
 import signal
 import dateutil.tz
+from freenas.utils.query import get
 from datetime import timedelta, datetime
 
 
@@ -150,12 +151,12 @@ def describe_task_state(task):
         if 'progress' not in task:
             return task['state']
 
-        progress = task['progress.percentage']
+        progress = get(task, 'progress.percentage')
         if progress is None:
             progress = 0
 
         return '{0:2.0f}% ({1})'.format(
-            progress, task['progress.message'])
+            progress, get(task, 'progress.message'))
 
     if task['state'] == 'FAILED':
         return 'Failed: {0}'.format(task['error']['message'])

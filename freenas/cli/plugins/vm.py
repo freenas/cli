@@ -39,6 +39,7 @@ from freenas.cli.namespace import (
 from freenas.cli.output import ValueType, get_humanized_size
 from freenas.cli.utils import post_save
 from freenas.utils import first_or_default
+from freenas.utils.query import get, set
 from freenas.cli.complete import NullComplete
 
 
@@ -66,7 +67,7 @@ class VMConsole(object):
 
     def start(self):
         # process escape characters using runtime
-        eseq = bytes(self.context.variables.get('vm.console_interrupt'), 'utf-8').decode('unicode_escape')
+        eseq = bytes(get(self.context.variables, 'vm.console_interrupt'), 'utf-8').decode('unicode_escape')
         esbytes = bytes(eseq, 'utf-8')
         eslen = len(esbytes) 
         esidx = 0   # stack pointer for sequence match...
@@ -208,7 +209,7 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
         self.primary_key_name = 'name'
 
         def set_memsize(o, v):
-            o['config.memsize'] = int(v / 1024 / 1024)
+            set(o, 'config.memsize', int(v / 1024 / 1024))
 
         self.skeleton_entity = {
             'devices': [],
@@ -253,7 +254,7 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
         self.add_property(
             descr='Memory size (MB)',
             name='memsize',
-            get=lambda o: o['config.memsize'] * 1024 * 1024,
+            get=lambda o: get(o, 'config.memsize') * 1024 * 1024,
             set=set_memsize,
             list=True,
             type=ValueType.SIZE
@@ -359,7 +360,7 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             get='status.nat_lease.client_ip',
             set=None,
             list=False,
-            condition=lambda o: o['status.state'] != 'STOPPED' and o['status.nat_lease']
+            condition=lambda o: get(o, 'status.state') != 'STOPPED' and get(o, 'status.nat_lease')
         )
 
         self.primary_key = self.get_mapping('name')
@@ -857,7 +858,7 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
             get='template.hash',
             usersetable=False,
             list=False,
-            condition=lambda e: e['template.driver'] == 'ipfs'
+            condition=lambda e: get(e, 'template.driver') == 'ipfs'
         )
 
         self.add_property(

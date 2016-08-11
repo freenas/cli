@@ -99,29 +99,29 @@ class NamespacesDocGen(object):
 
     def _recursive_get_namespace_file_contents(self, namespace, name_qualifiers=list()):
         ret = ""
-        name, description, commands, properties = self.processor.extract_namespace_self_data(namespace)
-        ret += self.generator.get_namespace_section(name=name,
-                                                    description=description,
-                                                    commands=commands,
-                                                    properties=properties,
+        nsname, nsdescription, nscommand_name_and_docstrings_pairs, nsproperties = self.processor.extract_namespace_self_data(namespace)
+        ret += self.generator.get_namespace_section(name=nsname,
+                                                    description=nsdescription,
+                                                    cmd_name_and_docstrings_pairs=nscommand_name_and_docstrings_pairs,
+                                                    properties=nsproperties,
                                                     name_qualifiers=name_qualifiers)
         nested_namespaces, entity_commands, entity_namespaces = self.processor.extract_namespace_child_data(namespace)
         if entity_commands:
             qualifiers = name_qualifiers[:]
-            qualifiers.append(name)
+            qualifiers.append(nsname)
             ret += self.generator.get_namespace_section(name='<entity>',
                                                         description="",
-                                                        commands=entity_commands,
+                                                        cmd_name_and_docstrings_pairs=entity_commands,
                                                         properties=None,
                                                         name_qualifiers=qualifiers)
         if entity_namespaces:
             qualifiers = name_qualifiers[:]
-            qualifiers.extend([name, '<entity>'])
+            qualifiers.extend([nsname, '<entity>'])
             for n in entity_namespaces:
                 ret += self._recursive_get_namespace_file_contents(n, name_qualifiers=qualifiers)
         if nested_namespaces:
             qualifiers = name_qualifiers[:]
-            qualifiers.append(name)
+            qualifiers.append(nsname)
             for n in nested_namespaces:
                 ret += self._recursive_get_namespace_file_contents(n, name_qualifiers=qualifiers)
         return ret
@@ -165,9 +165,9 @@ class GlobalCommandsDocGen(object):
         ret = ""
         ret += self.generator.get_global_commands_file_top_title(commands_type=type)
         for name, instance in commands:
-            description = self.processor.extract_command_data(instance)
+            docstrings = instance.get_docstrings()
             ret += self.generator.get_global_command_section(name=name,
-                                                             text=description)
+                                                             docstrings=docstrings)
         return ret
 
     def _write_output_file(self, contents):
@@ -214,56 +214,40 @@ class _RestructuredTextFormatter(object):
         self.missing_usage = "^^^^^^_____USAGE_MISSING_____^^^^^^"
         self.missing_examples = "^^^^^^_____EXAMPLES_MISSING_____^^^^^^"
 
-    def get_namespace_section(self, name, description="", commands=None, properties=None, name_qualifiers=list()):
-        def _get_namespace_section_label(n, q=list()):
+    def get_namespace_section(self, name, description="", cmd_name_and_docstrings_pairs=None, properties=None, name_qualifiers=list()):
+        def _get_section_label(n, q=list()):
             return ".. _{0}:".format(self._get_qualified_name(n, q)) + "\n\n"
 
-        def _get_namespace_section_title(n, q=list()):
+        def _get_section_title(n, q=list()):
             contents = "**" + self._get_qualified_name(n, q) + "**"
             markup = self.namespace_section_title_markup_char * len(contents)
             return markup + "\n" + contents + "\n" + markup + "\n\n"
 
-        def _get_namespace_section_description(d=""):
+        def _get_section_description(d=""):
             ret = self.missing_description if not d else ""
             for line in d.split("\n"):
                 ret += self.single_indent + textwrap.dedent(line) + "\n"
             return ret + "\n"
 
-        def _get_namespace_commands_subsection_title():
+        def _get_commands_subsection_title():
             contents = "*" + self.namespace_commands_section_title + "*"
             markup = self.namespace_commands_section_title_markup_char * len(contents)
             return contents + "\n" + markup + "\n\n"
 
-        def _get_namespace_commands_subsection_contents(commands):
-            def _extract_command_data(text=None):
-                def preserve_blank_lines_in_docstring():
-                    return "\n\n" if description else ""
-
-                description = usage = examples = ""
-                if not text:
-                    return description, usage, examples
-                for lines in text.split("\n\n"):
-                    if 'Usage' not in lines and 'Example' not in lines:
-                        description += preserve_blank_lines_in_docstring() + lines
-                    if not usage:
-                        usage = lines.split("Usage:")[1] if 'Usage' in lines else None
-                    if not examples:
-                        examples = re.split("Examples?:", lines)[1] if 'Example' in lines else None
-                return description, usage, examples
-
-            def _get_command_name(name):
+        def _get_commands_subsection_contents(name_and_docstrings_pairs):
+            def _get_formatted_name(name):
                 content = "**" + name + "**"
                 markup = self.command_name_markup_char * len(content)
                 return content + "\n" + markup + "\n\n"
 
-            def _get_command_description(content):
+            def _get_formatted_description(content):
                 content = self.missing_description if not content else content
                 ret = ""
                 for l in content.split("\n"):
                     ret += self.single_indent + textwrap.dedent(l) + "\n"
                 return ret + "\n"
 
-            def _get_command_usage(content):
+            def _get_formatted_usage(content):
                 def _get_title():
                     content = "**Usage:**"
                     markup = "::"
@@ -278,7 +262,7 @@ class _RestructuredTextFormatter(object):
 
                 return _get_title() + _get_usage(content)
 
-            def _get_command_examples(content):
+            def _get_formatted_examples(content):
                 def _get_title():
                     content = "**Examples:**"
                     markup = "::"
@@ -294,25 +278,25 @@ class _RestructuredTextFormatter(object):
 
                 return _get_title() + _get_examples(content)
 
-            def _get_command_related_properties():
+            def _get_formatted_related_properties():
                 return ""
 
             ret = ""
-            for name, text in commands:
-                description, usage, examples = _extract_command_data(text)
-                ret += _get_command_name(name)
-                ret += _get_command_description(description)
-                ret += _get_command_usage(usage)
-                ret += _get_command_examples(examples)
-                ret += _get_command_related_properties()
+            for name, docstrings in name_and_docstrings_pairs:
+                description, usage, examples = docstrings['description'], docstrings['usage'], docstrings['examples']
+                ret += _get_formatted_name(name)
+                ret += _get_formatted_description(description)
+                ret += _get_formatted_usage(usage)
+                ret += _get_formatted_examples(examples)
+                ret += _get_formatted_related_properties()
             return ret
 
-        def _get_namespace_properties_subsection_tile():
+        def _get_properties_subsection_tile():
             content = "*" + self.namespace_properties_section_title + "*"
             markup = self.namespace_properties_section_title_markup_char * len(content)
             return content + "\n" + markup + "\n\n"
 
-        def _get_namespace_properties_subsection_contents(namespace_name, properties):
+        def _get_properties_subsection_contents(namespace_name, properties):
             def _get_property_label(namespace_name, property_name):
                 return ".. _{0}_{1}_property:".format(namespace_name, property_name) + "\n\n"
 
@@ -336,13 +320,13 @@ class _RestructuredTextFormatter(object):
             return ret
 
         section = ""
-        section += _get_namespace_section_label(name, name_qualifiers)
-        section += _get_namespace_section_title(name, name_qualifiers)
-        section += _get_namespace_section_description(description)
-        section += _get_namespace_commands_subsection_title() if commands else ""
-        section += _get_namespace_commands_subsection_contents(commands) if commands else ""
-        section += _get_namespace_properties_subsection_tile() if properties else ""
-        section += _get_namespace_properties_subsection_contents(self._get_qualified_name(name, name_qualifiers),
+        section += _get_section_label(name, name_qualifiers)
+        section += _get_section_title(name, name_qualifiers)
+        section += _get_section_description(description)
+        section += _get_commands_subsection_title() if cmd_name_and_docstrings_pairs else ""
+        section += _get_commands_subsection_contents(cmd_name_and_docstrings_pairs) if cmd_name_and_docstrings_pairs else ""
+        section += _get_properties_subsection_tile() if properties else ""
+        section += _get_properties_subsection_contents(self._get_qualified_name(name, name_qualifiers),
                                                                  properties) if properties else ""
         return section
 
@@ -351,38 +335,21 @@ class _RestructuredTextFormatter(object):
         markup = self.global_commands_file_top_title_markup_char * len(contents)
         return markup + '\n' + contents + '\n' + markup + '\n\n'
 
-    def get_global_command_section(self, name, text):
-        def _get_command_section_title(name):
+    def get_global_command_section(self, name, docstrings):
+        def _get_section_title(name):
             contents = "**" + name + "**"
             markup = self.global_command_name_markup_char * len(contents)
             return contents + '\n' + markup + '\n\n'
 
-        def _get_command_section_contents(text):
-            def _extract_command_data(text=None):
-                def preserve_blank_lines_in_docstring():
-                    return "\n\n" if description else ""
-
-                description = usage = examples = ""
-                if not text:
-                    return description, usage, examples
-                for lines in text.split("\n\n"):
-                    if 'Usage' not in lines and 'Example' not in lines:
-                        description += preserve_blank_lines_in_docstring() + lines
-                    if not usage:
-                        usage = lines.split("Usage:")[1] if 'Usage' in lines else None
-                    if not examples:
-                        examples = re.split("Examples?:", lines)[1] if 'Example' in lines else None
-                return description, usage, examples
-
-
-            def _get_command_description(content):
+        def _get_section_contents(docstrings):
+            def _get_formatted_description(content):
                 content = self.missing_description if not content else content
                 ret = ""
                 for l in content.split("\n"):
                     ret += self.single_indent + textwrap.dedent(l) + "\n"
                 return ret + "\n"
 
-            def _get_command_usage(content):
+            def _get_formatted_usage(content):
                 def _get_title():
                     content = "**Usage:**"
                     markup = "::"
@@ -397,7 +364,7 @@ class _RestructuredTextFormatter(object):
 
                 return _get_title() + _get_usage(content)
 
-            def _get_command_examples(content):
+            def _get_formatted_examples(content):
                 def _get_title():
                     content = "**Examples:**"
                     markup = "::"
@@ -413,20 +380,20 @@ class _RestructuredTextFormatter(object):
 
                 return _get_title() + _get_examples(content)
 
-            def _get_command_related_properties():
+            def _get_formatted_related_properties():
                 return ""
 
             ret = ""
-            description, usage, examples = _extract_command_data(text)
-            ret += _get_command_description(description)
-            ret += _get_command_usage(usage)
-            ret += _get_command_examples(examples)
-            ret += _get_command_related_properties()
+            description, usage, examples = docstrings['description'], docstrings['usage'], docstrings['examples']
+            ret += _get_formatted_description(description)
+            ret += _get_formatted_usage(usage)
+            ret += _get_formatted_examples(examples)
+            ret += _get_formatted_related_properties()
             return ret
 
         ret = ""
-        ret += _get_command_section_title(name)
-        ret += _get_command_section_contents(text)
+        ret += _get_section_title(name)
+        ret += _get_section_contents(docstrings)
 
         return ret
 
@@ -449,10 +416,10 @@ class _CliEntitiesProcessor(object):
                 ret = ""
             return ret
 
-        def _get_namespace_commands(ns):
+        def _get_namespace_commands_name_docstrings_pairs(ns):
             ret = []
             for name, instance in ns.commands().items():
-                ret.append([name, self._get_command_doctext(instance)])
+                ret.append([name, instance.get_docstrings()])
             return ret
 
         def _get_namespace_properties(ns):
@@ -464,9 +431,9 @@ class _CliEntitiesProcessor(object):
         namespace.is_docgen_instance = True
         name = namespace.name
         description = _get_namespace_description(namespace)
-        commands = _get_namespace_commands(namespace)
+        command_name_and_docstrings_pairs = _get_namespace_commands_name_docstrings_pairs(namespace)
         properties = _get_namespace_properties(namespace)
-        return name, description, commands, properties
+        return name, description, command_name_and_docstrings_pairs, properties
 
     def extract_namespace_child_data(self, namespace):
         def _get_nested_namespaces(ns):
@@ -478,7 +445,7 @@ class _CliEntitiesProcessor(object):
                 return ret
             entity_ns = self._instantiate_entity_namespace(ns)
             for name, instance in entity_ns.commands().items():
-                ret.append([name, self._get_command_doctext(instance)])
+                ret.append([name, instance.get_docstrings()])
             return ret
 
         def _get_entity_namespaces(ns):
@@ -493,23 +460,6 @@ class _CliEntitiesProcessor(object):
         entity_commands = _get_entity_commands(namespace)
         entity_namespaces = _get_entity_namespaces(namespace)
         return nested_namespaces, entity_commands, entity_namespaces
-
-    def extract_command_data(self, instance):
-        return self._get_command_doctext(instance)
-
-    def _get_command_doctext(self, instance):
-        def _parent_has_localdoc(cmd):
-            if not hasattr(cmd, 'parent') or not hasattr(cmd.parent, 'localdoc'):
-                return False
-            return cmd.__class__.__name__ in cmd.parent.localdoc.keys()
-
-        def _get_localdoc(cmd):
-            return textwrap.dedent(cmd.parent.localdoc[cmd.__class__.__name__])
-
-        def _get_docstring(cmd):
-            return inspect.getdoc(cmd)
-
-        return _get_localdoc(instance) if _parent_has_localdoc(instance) else _get_docstring(instance)
 
     def _instantiate_entity_namespace(self, parent_ns):
         entity = SingleItemNamespace(None, parent_ns)

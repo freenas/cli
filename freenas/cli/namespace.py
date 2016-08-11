@@ -31,6 +31,7 @@ import copy
 import traceback
 import errno
 import gettext
+import textwrap
 import sys
 import collections
 import six
@@ -134,6 +135,38 @@ class Command(object):
     def get_relative_namespace(self, context):
         tokens = self.convert_exec_path_to_strings() if self.exec_path[-1] != self.cwd else []
         return context.ml.get_relative_object(self.cwd, tokens)
+
+    def get_docstrings(self):
+        def _parent_has_localdoc():
+            if not hasattr(self, 'parent') or not hasattr(self.parent, 'localdoc'):
+                return False
+            return self.__class__.__name__ in self.parent.localdoc.keys()
+
+        def _get_parent_localdoc():
+            return textwrap.dedent(self.parent.localdoc[self.__class__.__name__])
+
+        def _get_self_docstring():
+            return inspect.getdoc(self)
+
+        def _preserve_blank_lines_in_description():
+            return "\n\n" if docstrings['description'] else ""
+
+        docstrings = {'description': '',
+                      'usage': '',
+                      'examples': ''}
+        doctext = _get_parent_localdoc() if _parent_has_localdoc() else _get_self_docstring()
+        if not doctext:
+            return docstrings
+
+        for lines in doctext.split("\n\n"):
+            if 'Usage' not in lines and 'Example' not in lines:
+                docstrings['description'] += _preserve_blank_lines_in_description() + lines
+            if not docstrings['usage']:
+                docstrings['usage'] = lines.split("Usage:")[1] if 'Usage' in lines else None
+            if not docstrings['examples']:
+                docstrings['examples'] = re.split("Examples?:", lines)[1] if 'Example' in lines else None
+
+        return docstrings
 
 
 class FilteringCommand(Command):

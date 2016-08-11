@@ -172,7 +172,6 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
         self.entity_commands = lambda this: {
             'start': DockerContainerStartStopCommand(this, 'start'),
             'stop': DockerContainerStartStopCommand(this, 'stop'),
-            'readme': DockerContainerReadmeCommand(this)
         }
 
 
@@ -218,7 +217,8 @@ class DockerImageNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         self.primary_key = self.get_mapping('name')
         self.extra_commands = {
             'pull': DockerImagePullCommand(),
-            'search': DockerImageSearchCommand()
+            'search': DockerImageSearchCommand(),
+            'readme': DockerImageReadmeCommand()
         }
 
 
@@ -245,6 +245,18 @@ class DockerImageSearchCommand(Command):
         ])
 
 
+class DockerImageReadmeCommand(Command):
+    def run(self, context, args, kwargs, opargs):
+        if len(args) != 1:
+            raise CommandException("Please specify the image name")
+
+        readme = context.call_sync('docker.image.readme', args[0])
+        if readme:
+            return Sequence(readme)
+        else:
+            return Sequence("Image {0} readme does not exist".format(args[0]))
+
+
 class DockerContainerStartStopCommand(Command):
     def __init__(self, parent, action):
         self.action = action
@@ -252,18 +264,6 @@ class DockerContainerStartStopCommand(Command):
 
     def run(self, context, args, kwargs, opargs):
         context.submit_task('docker.container.{0}'.format(self.action), self.parent.entity['id'])
-
-
-class DockerContainerReadmeCommand(Command):
-    def __init__(self, parent, action):
-        self.parent = parent
-
-    def run(self, context, args, kwargs, opargs):
-        readme = context.call_sync('docker.image.readme', self.parent.entity['image'])
-        if readme:
-            return Sequence(readme)
-        else:
-            return Sequence("Selected container does not have readme entry")
 
 
 class DockerNamespace(Namespace):

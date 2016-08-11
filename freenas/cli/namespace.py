@@ -36,7 +36,7 @@ import collections
 import six
 import inspect
 from freenas.utils import first_or_default
-from freenas.utils.query import set
+from freenas.utils.query import set, get
 from freenas.cli.parser import CommandCall, Literal, Symbol, BinaryParameter, Comment
 from freenas.cli.complete import NullComplete, EnumComplete
 from freenas.cli.utils import post_save, edit_in_editor, PrintableNone
@@ -226,7 +226,7 @@ class PropertyMapping(object):
         if isinstance(self.get, collections.Callable):
             return self.get(obj)
 
-        return obj.get(self.get)
+        return get(obj, self.get)
 
     def do_set(self, obj, value):
         if self.condition and not self.condition(obj):
@@ -260,7 +260,7 @@ class PropertyMapping(object):
             raise ValueError('Property is not a set or array')
 
         value = read_value(value, self.type)
-        oldvalues = obj.get(self.set)
+        oldvalues = get(obj, self.set)
         if oldvalues is not None:
             newvalues = oldvalues + value
         else:
@@ -277,7 +277,7 @@ class PropertyMapping(object):
             raise ValueError('Property is not a set or array')
 
         value = read_value(value, self.type)
-        oldvalues = obj.get(self.set)
+        oldvalues = get(obj, self.set)
         newvalues = oldvalues
         for v in value:
             if v in newvalues:

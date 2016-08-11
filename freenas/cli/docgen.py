@@ -134,41 +134,37 @@ class NamespacesDocGen(object):
 
 class GlobalCommandsDocGen(object):
     def __init__(self):
-        self.base_commands = []
-        self.filtering_commands = []
+        self.commands_type_and_list_pairs = {'base': [],
+                                             'filtering': []}
         self.output_file_path = '/var/tmp/'
         self.output_file_ext = '.rst'
         self.curr_output_file_name = ""
         self.processor = _CliEntitiesProcessor()
         self.generator = _RestructuredTextFormatter()
 
-    def load_base_commands(self, commands):
-        self.base_commands.extend(commands)
+    def load_base_commands(self, command_name_and_instance_pairs):
+        self.commands_type_and_list_pairs['base'].extend(command_name_and_instance_pairs)
 
-    def load_filtering_commands(self, commands):
-        self.filtering_commands.extend(commands)
+    def load_filtering_commands(self, command_name_and_instance_pairs):
+        self.commands_type_and_list_pairs['filtering'].extend(command_name_and_instance_pairs)
 
     def generate_doc_files(self):
-        type = 'base'
-        self.curr_output_file_name = "cmds_" + type
-        contents = self._get_commands_file_contents(commands=self.base_commands,
-                                                    type=type)
-        self._write_output_file(contents)
+        for type, name_and_instance_pairs in self.commands_type_and_list_pairs.items():
+            self.curr_output_file_name = "cmds_" + type
+            contents = self._get_commands_file_contents(cmd_name_and_instance_pairs=name_and_instance_pairs,
+                                                        cmds_type=type)
+            self._write_output_file(contents) if contents else None
 
-        type = 'filtering'
-        self.curr_output_file_name = "cmds_" + type
-        contents = self._get_commands_file_contents(commands=self.filtering_commands,
-                                                    type=type)
-        self._write_output_file(contents)
-
-    def _get_commands_file_contents(self, commands=[], type='base'):
-        ret = ""
-        ret += self.generator.get_global_commands_file_top_title(commands_type=type)
-        for name, instance in commands:
+    def _get_commands_file_contents(self, cmd_name_and_instance_pairs=None, cmds_type='base'):
+        contents = ""
+        if not cmd_name_and_instance_pairs:
+            return contents
+        contents += self.generator.get_commands_file_top_title(commands_type=cmds_type)
+        for name, instance in cmd_name_and_instance_pairs:
             docstrings = instance.get_docstrings()
-            ret += self.generator.get_global_command_section(name=name,
+            contents += self.generator.get_global_command_section(name=name,
                                                              docstrings=docstrings)
-        return ret
+        return contents
 
     def _write_output_file(self, contents):
         print("PGLOG_write_output_file:")
@@ -330,7 +326,7 @@ class _RestructuredTextFormatter(object):
                                                                  properties) if properties else ""
         return section
 
-    def get_global_commands_file_top_title(self, commands_type=None):
+    def get_commands_file_top_title(self, commands_type=None):
         contents = self.global_commands_files_top_titles[commands_type]
         markup = self.global_commands_file_top_title_markup_char * len(contents)
         return markup + '\n' + contents + '\n' + markup + '\n\n'

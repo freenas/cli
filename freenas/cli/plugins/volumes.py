@@ -1085,6 +1085,7 @@ class SnapshotsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Ent
         self.delete_task = 'volume.snapshot.delete'
         self.primary_key_name = 'id'
         self.required_props = ['name', 'dataset']
+        self.large = True
 
         if parent:
             self.extra_query_params = [

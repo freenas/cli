@@ -1021,6 +1021,7 @@ class EntityNamespace(Namespace):
         self.entity_localdoc = {}
         self.leaf_harborer = False
         self.leaf_entity_namespace = None
+        self.large = False
 
     def has_property(self, prop):
         return any([x for x in self.property_mappings if x.name == prop])
@@ -1061,7 +1062,7 @@ class EntityNamespace(Namespace):
             return SingleItemNamespace(name, self, leaf_entity=self.leaf_harborer)
 
     def namespaces(self, name=None):
-        if self.primary_key is None:
+        if self.primary_key is None or self.large:
             return
 
         for i in self.query([], {'limit': 100}):

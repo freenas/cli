@@ -148,6 +148,7 @@ class TasksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         self.allow_edit = False
         self.entity_subscriber_name = 'task'
         self.default_sort = 'id'
+        self.large = True
 
         self.add_property(
             descr='ID',

@@ -68,7 +68,7 @@ class NamespacesDocGen(object):
         self.index_file_name = 'tmp_index'
         self.output_file_ext = '.rst'
         self.curr_output_file_name = ""
-        self.processor = _CliEntitiesProcessor()
+        self.processor = _NamespaceProcessor()
         self.generator = _RestructuredTextFormatter(namespace_title_heading_size='h2',
                                                     commands_section_title_heading_size='h3',
                                                     properties_section_title_heading_size='h3',
@@ -139,7 +139,6 @@ class GlobalCommandsDocGen(object):
         self.output_file_path = '/var/tmp/'
         self.output_file_ext = '.rst'
         self.curr_output_file_name = ""
-        self.processor = _CliEntitiesProcessor()
         self.generator = _RestructuredTextFormatter()
 
     def load_base_commands(self, command_name_and_instance_pairs):
@@ -159,7 +158,7 @@ class GlobalCommandsDocGen(object):
         contents = ""
         if not cmd_name_and_instance_pairs:
             return contents
-        contents += self.generator.get_commands_file_top_title(commands_type=cmds_type)
+        contents += self.generator.get_global_commands_file_top_title(commands_type=cmds_type)
         for name, instance in cmd_name_and_instance_pairs:
             docstrings = instance.get_docstrings()
             contents += self.generator.get_global_command_section(name=name,
@@ -194,8 +193,8 @@ class _RestructuredTextFormatter(object):
             commands_section_title_heading_size]
         self.namespace_properties_section_title_markup_char = self.heading_markup_chars[
             properties_section_title_heading_size]
-        self.command_name_markup_char = self.heading_markup_chars[command_name_heading_size]
-        self.property_name_markup_char = self.heading_markup_chars[property_name_heading_size]
+        self.namespace_command_name_markup_char = self.heading_markup_chars[command_name_heading_size]
+        self.namespace_property_name_markup_char = self.heading_markup_chars[property_name_heading_size]
         self.namespace_commands_section_title = "Commands"
         self.namespace_properties_section_title = "Properties"
         self.global_commands_files_top_titles = {
@@ -204,11 +203,13 @@ class _RestructuredTextFormatter(object):
         }
         self.global_commands_file_top_title_markup_char = self.heading_markup_chars[global_commands_file_top_title_size]
         self.global_command_name_markup_char = self.heading_markup_chars[global_command_name_heading_size]
+        self.missing_description = "^^^^^^_____DESCRIPTION_MISSING_____^^^^^^"
         self.single_indent = "    "
         self.double_indent = 2 * self.single_indent
-        self.missing_description = "^^^^^^_____DESCRIPTION_MISSING_____^^^^^^"
-        self.missing_usage = "^^^^^^_____USAGE_MISSING_____^^^^^^"
-        self.missing_examples = "^^^^^^_____EXAMPLES_MISSING_____^^^^^^"
+        self.global_command_section_formatter = _CommandSectionFormatter(
+            command_name_markup_char=self.namespace_command_name_markup_char)
+        self.namespace_command_section_formatter = _CommandSectionFormatter(
+            command_name_markup_char=self.global_command_name_markup_char)
 
     def get_namespace_section(self, name, description="", cmd_name_and_docstrings_pairs=None, properties=None, name_qualifiers=list()):
         def _get_section_label(n, q=list()):
@@ -231,61 +232,10 @@ class _RestructuredTextFormatter(object):
             return contents + "\n" + markup + "\n\n"
 
         def _get_commands_subsection_contents(name_and_docstrings_pairs):
-            def _get_formatted_name(name):
-                content = "**" + name + "**"
-                markup = self.command_name_markup_char * len(content)
-                return content + "\n" + markup + "\n\n"
-
-            def _get_formatted_description(content):
-                content = self.missing_description if not content else content
-                ret = ""
-                for l in content.split("\n"):
-                    ret += self.single_indent + textwrap.dedent(l) + "\n"
-                return ret + "\n"
-
-            def _get_formatted_usage(content):
-                def _get_title():
-                    content = "**Usage:**"
-                    markup = "::"
-                    return self.single_indent + content + "\n" + self.single_indent + markup + "\n\n"
-
-                def _get_usage(content):
-                    content = self.missing_usage if not content else content
-                    ret = ""
-                    for l in content.split("\n"):
-                        ret += self.double_indent + textwrap.dedent(l) + "\n"
-                    return ret + "\n"
-
-                return _get_title() + _get_usage(content)
-
-            def _get_formatted_examples(content):
-                def _get_title():
-                    content = "**Examples:**"
-                    markup = "::"
-                    return self.single_indent + content + "\n" + self.single_indent + markup + "\n\n"
-
-                def _get_examples(content):
-                    content = self.missing_examples if not content else content
-                    ret = ""
-                    for l in content.split("\n"):
-                        if l :
-                            ret += self.double_indent + textwrap.dedent(l) + "\n"
-                    return ret + "\n"
-
-                return _get_title() + _get_examples(content)
-
-            def _get_formatted_related_properties():
-                return ""
-
-            ret = ""
+            subsection = ""
             for name, docstrings in name_and_docstrings_pairs:
-                description, usage, examples = docstrings['description'], docstrings['usage'], docstrings['examples']
-                ret += _get_formatted_name(name)
-                ret += _get_formatted_description(description)
-                ret += _get_formatted_usage(usage)
-                ret += _get_formatted_examples(examples)
-                ret += _get_formatted_related_properties()
-            return ret
+                subsection += self.namespace_command_section_formatter.get_command_section(name, docstrings)
+            return subsection
 
         def _get_properties_subsection_tile():
             content = "*" + self.namespace_properties_section_title + "*"
@@ -298,7 +248,7 @@ class _RestructuredTextFormatter(object):
 
             def _get_property_name(name):
                 content = "**" + name + "**"
-                markup = self.command_name_markup_char * len(content)
+                markup = self.namespace_property_name_markup_char * len(content)
                 return content + "\n" + markup + "\n\n"
 
             def _get_property_description(descr):
@@ -326,79 +276,85 @@ class _RestructuredTextFormatter(object):
                                                                  properties) if properties else ""
         return section
 
-    def get_commands_file_top_title(self, commands_type=None):
+    def get_global_commands_file_top_title(self, commands_type=None):
         contents = self.global_commands_files_top_titles[commands_type]
         markup = self.global_commands_file_top_title_markup_char * len(contents)
         return markup + '\n' + contents + '\n' + markup + '\n\n'
 
     def get_global_command_section(self, name, docstrings):
-        def _get_section_title(name):
-            contents = "**" + name + "**"
-            markup = self.global_command_name_markup_char * len(contents)
-            return contents + '\n' + markup + '\n\n'
-
-        def _get_section_contents(docstrings):
-            def _get_formatted_description(content):
-                content = self.missing_description if not content else content
-                ret = ""
-                for l in content.split("\n"):
-                    ret += self.single_indent + textwrap.dedent(l) + "\n"
-                return ret + "\n"
-
-            def _get_formatted_usage(content):
-                def _get_title():
-                    content = "**Usage:**"
-                    markup = "::"
-                    return self.single_indent + content + "\n" + self.single_indent + markup + "\n\n"
-
-                def _get_usage(content):
-                    content = self.missing_usage if not content else content
-                    ret = ""
-                    for l in content.split("\n"):
-                        ret += self.double_indent + textwrap.dedent(l) + "\n"
-                    return ret + "\n"
-
-                return _get_title() + _get_usage(content)
-
-            def _get_formatted_examples(content):
-                def _get_title():
-                    content = "**Examples:**"
-                    markup = "::"
-                    return self.single_indent + content + "\n" + self.single_indent + markup + "\n\n"
-
-                def _get_examples(content):
-                    content = self.missing_examples if not content else content
-                    ret = ""
-                    for l in content.split("\n"):
-                        if l :
-                            ret += self.double_indent + textwrap.dedent(l) + "\n"
-                    return ret + "\n"
-
-                return _get_title() + _get_examples(content)
-
-            def _get_formatted_related_properties():
-                return ""
-
-            ret = ""
-            description, usage, examples = docstrings['description'], docstrings['usage'], docstrings['examples']
-            ret += _get_formatted_description(description)
-            ret += _get_formatted_usage(usage)
-            ret += _get_formatted_examples(examples)
-            ret += _get_formatted_related_properties()
-            return ret
-
-        ret = ""
-        ret += _get_section_title(name)
-        ret += _get_section_contents(docstrings)
-
-        return ret
+        return self.global_command_section_formatter.get_command_section(name, docstrings)
 
     @staticmethod
     def _get_qualified_name(name, qualifiers):
         return ".".join([".".join(qualifiers), name]) if qualifiers else name
 
 
-class _CliEntitiesProcessor(object):
+class _CommandSectionFormatter(object):
+    def __init__(self, command_name_markup_char=""):
+        self.command_name_markup_char = command_name_markup_char
+        self.missing_description = "^^^^^^_____DESCRIPTION_MISSING_____^^^^^^"
+        self.missing_usage = "^^^^^^_____USAGE_MISSING_____^^^^^^"
+        self.missing_examples = "^^^^^^_____EXAMPLES_MISSING_____^^^^^^"
+        self.single_indent = "    "
+        self.double_indent = 2 * self.single_indent
+
+    def get_command_section(self, name, docstrings):
+        ret = ""
+        description, usage, examples = docstrings['description'], docstrings['usage'], docstrings['examples']
+        ret += self._get_formatted_name(name)
+        ret += self._get_formatted_description(description)
+        ret += self._get_formatted_usage(usage)
+        ret += self._get_formatted_examples(examples)
+        ret += self._get_formatted_related_properties()
+        return ret
+
+    def _get_formatted_name(self, name):
+        content = "**" + name + "**"
+        markup = self.command_name_markup_char * len(content)
+        return content + "\n" + markup + "\n\n"
+
+    def _get_formatted_description(self, content):
+        content = self.missing_description if not content else content
+        ret = ""
+        for l in content.split("\n"):
+            ret += self.single_indent + textwrap.dedent(l) + "\n"
+        return ret + "\n"
+
+    def _get_formatted_usage(self, content):
+        def _get_title():
+            content = "**Usage:**"
+            markup = "::"
+            return self.single_indent + content + "\n" + self.single_indent + markup + "\n\n"
+
+        def _get_usage(content):
+            content = self.missing_usage if not content else content
+            ret = ""
+            for l in content.split("\n"):
+                ret += self.double_indent + textwrap.dedent(l) + "\n"
+            return ret + "\n"
+
+        return _get_title() + _get_usage(content)
+
+    def _get_formatted_examples(self, content):
+        def _get_title():
+            content = "**Examples:**"
+            markup = "::"
+            return self.single_indent + content + "\n" + self.single_indent + markup + "\n\n"
+
+        def _get_examples(content):
+            content = self.missing_examples if not content else content
+            ret = ""
+            for l in content.split("\n"):
+                if l :
+                    ret += self.double_indent + textwrap.dedent(l) + "\n"
+            return ret + "\n"
+
+        return _get_title() + _get_examples(content)
+
+    def _get_formatted_related_properties(self):
+        return ""
+
+class _NamespaceProcessor(object):
     def __init__(self):
         pass
 

@@ -56,11 +56,8 @@ class CliDocGen(object):
         self.global_commands_doc_gen.generate_doc_files()
         print("Generating Namespaces documentation")
         self.namespaces_doc_gen.generate_doc_files()
-        self._generate_index_files()
+        self.namespaces_doc_gen.generate_top_index_file()
         print("Finished")
-
-    def _generate_index_files(self):
-        pass
 
 
 class NamespacesDocGen(object):
@@ -68,11 +65,13 @@ class NamespacesDocGen(object):
         self.root_namespaces = []
         self.namespaces_filenames = []
         self.output_file_path = '/var/tmp/'
-        self.index_file_name = 'tmp_index'
+        self.top_index_filename = 'index'
+        self.namespaces_index_filename = 'idx_namespaces'
         self.output_file_ext = '.rst'
-        self.curr_output_file_name = ""
+        self.curr_output_filename = ""
         self.processor = _NamespaceProcessor()
-        self.generator = _RestructuredTextFormatter(namespace_title_heading_size='h2',
+        self.generator = _RestructuredTextFormatter(index_page_title_heading_size='h1',
+                                                    namespace_title_heading_size='h2',
                                                     commands_section_title_heading_size='h3',
                                                     properties_section_title_heading_size='h3',
                                                     command_name_heading_size='h4',
@@ -86,16 +85,22 @@ class NamespacesDocGen(object):
 
     def generate_doc_files(self):
         for ns in self.root_namespaces:
-            self.curr_output_file_name = "ns_" + ns.name
-            self.namespaces_filenames.append(self.curr_output_file_name)
+            self.curr_output_filename = "ns_" + ns.name
+            self.namespaces_filenames.append(self.curr_output_filename)
             contents = self._recursive_get_namespace_file_contents(ns)
             self._write_output_file(contents)
         self._generate_index_file()
 
     def _generate_index_file(self):
-        'TODO finish that'
-        contents = ""
-        self.curr_output_file_name = self.index_file_name
+        contents = self.generator.get_sub_index_file(section_title='Namespaces',
+                                                     section_filenames=self.namespaces_filenames,
+                                                     section_maxdepth='1')
+        self.curr_output_filename = self.namespaces_index_filename
+        self._write_output_file(contents)
+
+    def generate_top_index_file(self):
+        contents = self.generator.get_top_index_file()
+        self.curr_output_filename = self.top_index_filename
         self._write_output_file(contents)
 
     def _recursive_get_namespace_file_contents(self, namespace, name_qualifiers=list()):
@@ -128,7 +133,7 @@ class NamespacesDocGen(object):
         return ret
 
     def _write_output_file(self, contents):
-        with open(self.output_file_path+self.curr_output_file_name+self.output_file_ext, 'w') as f:
+        with open(self.output_file_path+self.curr_output_filename+self.output_file_ext, 'w') as f:
             f.write(contents)
 
 
@@ -136,9 +141,12 @@ class GlobalCommandsDocGen(object):
     def __init__(self):
         self.commands_type_and_list_pairs = {'base': [],
                                              'filtering': []}
+        self.global_commands_filenames = []
         self.output_file_path = '/var/tmp/'
         self.output_file_ext = '.rst'
-        self.curr_output_file_name = ""
+        self.top_index_filename = 'index'
+        self.global_commands_index_filename = 'idx_global_commands'
+        self.curr_output_filename = ""
         self.generator = _RestructuredTextFormatter()
 
     def load_base_commands(self, command_name_and_instance_pairs):
@@ -149,12 +157,23 @@ class GlobalCommandsDocGen(object):
 
     def generate_doc_files(self):
         for type, name_and_instance_pairs in self.commands_type_and_list_pairs.items():
-            self.curr_output_file_name = "cmds_" + type
+            self.curr_output_filename = "cmds_" + type
+            self.global_commands_filenames.append(self.curr_output_filename)
             contents = self._get_commands_file_contents(cmd_name_and_instance_pairs=name_and_instance_pairs,
                                                         cmds_type=type)
             self._write_output_file(contents) if contents else None
+        self._generate_index_file()
 
-    def _get_commands_file_contents(self, cmd_name_and_instance_pairs=None, cmds_type='base'):
+    def _generate_index_file(self):
+        contents = self.generator.get_sub_index_file(
+            section_title='Global Commands',
+            section_filenames=self.global_commands_filenames,
+            section_maxdepth='2')
+        self.curr_output_filename = self.global_commands_index_filename
+        self._write_output_file(contents)
+
+
+    def _get_commands_file_contents(self, cmd_name_and_instance_pairs=list(), cmds_type='base'):
         contents = ""
         if not cmd_name_and_instance_pairs:
             return contents
@@ -166,12 +185,13 @@ class GlobalCommandsDocGen(object):
         return contents
 
     def _write_output_file(self, contents):
-        with open(self.output_file_path+self.curr_output_file_name+self.output_file_ext, 'w') as f:
+        with open(self.output_file_path+self.curr_output_filename+self.output_file_ext, 'w') as f:
             f.write(contents)
 
 
 class _RestructuredTextFormatter(object):
     def __init__(self,
+                 index_page_title_heading_size='h1',
                  namespace_title_heading_size='h2',
                  commands_section_title_heading_size='h3',
                  properties_section_title_heading_size='h3',
@@ -187,6 +207,7 @@ class _RestructuredTextFormatter(object):
             'h5': '^',
             'h6': '"',
         }
+        self.index_page_title_heading_markup_char = self.heading_markup_chars[index_page_title_heading_size]
         self.namespace_section_title_markup_char = self.heading_markup_chars[namespace_title_heading_size]
         self.namespace_commands_section_title_markup_char = self.heading_markup_chars[
             commands_section_title_heading_size]
@@ -209,6 +230,48 @@ class _RestructuredTextFormatter(object):
             command_name_markup_char=self.namespace_command_name_markup_char)
         self.namespace_command_section_formatter = _CommandSectionFormatter(
             command_name_markup_char=self.global_command_name_markup_char)
+
+    def get_top_index_file(self):
+        ret = ""
+        ret += "Welcome to cli.freenas.org 's documentation!\n"
+        ret += "============================================\n\n"
+        ret += "Contents:\n\n"
+        ret += ".. toctree::\n"
+        ret += self.single_indent + ":maxdepth: 2\n\n"
+        ret += self.single_indent + "idx_global_commands\n"
+        ret += self.single_indent + "idx_namespaces\n\n"
+        ret += "Indices and tables\n"
+        ret += "==================\n\n"
+        ret += "* :ref:`genindex`\n"
+        ret += "* :ref:`modindex`\n"
+        ret += "* :ref:`search`\n"
+        return ret
+
+    def get_sub_index_file(self, section_title="", section_title_markup_char="",
+                           section_filenames=list(), section_maxdepth='1'):
+        def _get_formatted_label(label):
+            def replace_spaces_with_unders(input=""):
+                return '_'.join(input.split(' '))
+            return ".. _idx_{0}:".format(replace_spaces_with_unders(label.lower())) + '\n\n'
+
+        def _get_formatted_title(title):
+            markup = self.index_page_title_heading_markup_char * len(title)
+            return markup + "\n" + title + "\n" + markup + "\n\n"
+
+        def _get_formatted_toc(filenames, maxdepth):
+            ret = ""
+            ret += "Contents:\n\n"
+            ret += ".. toctree::\n"
+            ret += self.single_indent + ":maxdepth: " + maxdepth + '\n\n'
+            for f in sorted(filenames):
+                ret += self.single_indent + f + '\n'
+            return ret
+
+        ret = ""
+        ret += _get_formatted_label(section_title)
+        ret += _get_formatted_title(section_title)
+        ret += _get_formatted_toc(section_filenames, section_maxdepth)
+        return ret
 
     def get_namespace_section(self, name, description="", cmd_name_and_docstrings_pairs=None, properties=None, name_qualifiers=list()):
         def _get_section_label(n, q=list()):

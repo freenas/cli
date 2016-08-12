@@ -29,7 +29,7 @@
 import gettext
 from freenas.cli.namespace import (
     Namespace, EntityNamespace, ConfigNamespace, Command, NestedObjectLoadMixin, NestedObjectSaveMixin,
-    EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, description, CommandException
+    RpcBasedLoadMixin, EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, description, CommandException
 )
 from freenas.cli.output import ValueType
 from freenas.cli.utils import post_save, netmask_to_cidr
@@ -715,10 +715,11 @@ class RoutesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Entity
 
 
 @description("Set IPMI configuration")
-class IPMINamespace(EntityNamespace):
+class IPMINamespace(RpcBasedLoadMixin, EntityNamespace):
     def __init__(self, name, context):
         super(IPMINamespace, self).__init__(name, context)
         self.context = context
+        self.query_call = 'ipmi.query'
         self.allow_create = False
 
         self.add_property(
@@ -795,13 +796,7 @@ class IPMINamespace(EntityNamespace):
             list=False
         )
 
-        self.primary_key = self.get_mapping('channel')
-
-    def query(self, params, options):
-        return self.context.call_sync('ipmi.query')
-
-    def get_one(self, chan):
-        return self.context.call_sync('ipmi.get_config', chan)
+        self.primary_key = self.get_mapping('id')
 
     def save(self, this, new=False):
         assert not new

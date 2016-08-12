@@ -54,6 +54,7 @@ from freenas.cli.utils import (
     describe_task_state, parse_timedelta, SIGTSTPException, SIGTSTP_setter
 )
 from freenas.dispatcher.shell import ShellClient
+from freenas.cli.docgen import CliDocGen
 
 
 if platform.system() != 'Windows':
@@ -632,6 +633,34 @@ class HelpCommand(Command):
                 output_seq.append(help_message)
             output_seq.append("")
             return output_seq
+
+
+@description("Create cli documentation")
+class MakeDocsCommand(Command):
+    """
+    Usage: make_docs
+
+    Example: make_docs
+
+    Creates CLI documentation in form of reStructuredText files.
+    The output .rst files will be available at /var/tmp/www/sources/
+    They should be converted to .html using Sphinx tool.
+    """
+
+    def run(self, context, args, kwargs, opargs):
+        builtin_cmds = context.ml.base_builtin_commands
+        filtering_cmds = context.ml.pipe_commands
+        plugins = context.plugins
+
+        base_commands = [[name, instance] for name, instance in builtin_cmds.items()]
+        filtering_commands = [[name, instance] for name, instance in filtering_cmds.items()]
+        root_namespaces = [p.get_top_namespace(context) for _, p in plugins.items() if hasattr(p, 'get_top_namespace')]
+
+        docgen = CliDocGen()
+        docgen.load_global_base_commands(base_commands)
+        docgen.load_global_filtering_commands(filtering_commands)
+        docgen.load_root_namespaces(root_namespaces)
+        docgen.write_docs()
 
 
 @description("List available commands or items in this namespace")

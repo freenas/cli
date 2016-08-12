@@ -45,16 +45,19 @@ class CliDocGen(object):
     def load_root_namespaces(self, namespaces):
         self.namespaces_doc_gen.load_root_namespaces(namespaces)
 
-    def load_global_base_commands(self, commands):
-        self.global_commands_doc_gen.load_base_commands(commands)
+    def load_global_base_commands(self, command_name_and_instance_pairs):
+        self.global_commands_doc_gen.load_base_commands(command_name_and_instance_pairs)
 
-    def load_global_filtering_commands(self, commands):
-        self.global_commands_doc_gen.load_filtering_commands(commands)
+    def load_global_filtering_commands(self, command_name_and_instance_pairs):
+        self.global_commands_doc_gen.load_filtering_commands(command_name_and_instance_pairs)
 
     def write_docs(self):
+        print("Generating Global Commands documentation")
         self.global_commands_doc_gen.generate_doc_files()
+        print("Generating Namespaces documentation")
         self.namespaces_doc_gen.generate_doc_files()
         self._generate_index_files()
+        print("Finished")
 
     def _generate_index_files(self):
         pass
@@ -83,7 +86,7 @@ class NamespacesDocGen(object):
 
     def generate_doc_files(self):
         for ns in self.root_namespaces:
-            self.curr_output_file_name = ns.name
+            self.curr_output_file_name = "ns_" + ns.name
             self.namespaces_filenames.append(self.curr_output_file_name)
             contents = self._recursive_get_namespace_file_contents(ns)
             self._write_output_file(contents)

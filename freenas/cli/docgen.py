@@ -93,8 +93,6 @@ class NamespacesDocGen(object):
         'TODO finish that'
         contents = ""
         self.curr_output_file_name = self.index_file_name
-        for fn in self.namespaces_filenames:
-            print(fn)
         self._write_output_file(contents)
 
     def _recursive_get_namespace_file_contents(self, namespace, name_qualifiers=list()):
@@ -127,7 +125,6 @@ class NamespacesDocGen(object):
         return ret
 
     def _write_output_file(self, contents):
-        print("PGLOG_write_output_file:")
         with open(self.output_file_path+self.curr_output_file_name+self.output_file_ext, 'w') as f:
             f.write(contents)
 
@@ -166,7 +163,6 @@ class GlobalCommandsDocGen(object):
         return contents
 
     def _write_output_file(self, contents):
-        print("PGLOG_write_output_file:")
         with open(self.output_file_path+self.curr_output_file_name+self.output_file_ext, 'w') as f:
             f.write(contents)
 

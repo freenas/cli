@@ -1216,3 +1216,7 @@ def find_share_namespace(context, task):
 def _init(context):
     context.attach_namespace('/', SharesNamespace('share', context))
     context.map_tasks('share.*', find_share_namespace)
+
+
+def get_top_namespace(context):
+    return SharesNamespace('share', context)

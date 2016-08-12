@@ -210,3 +210,7 @@ class SimulatorNamespace(Namespace):
 
 def _init(context):
     context.attach_namespace('/', SimulatorNamespace('simulator', context))
+
+
+def get_top_namespace(context):
+    return SimulatorNamespace('simulator', context)

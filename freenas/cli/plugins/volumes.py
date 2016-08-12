@@ -1663,3 +1663,7 @@ def _init(context):
     context.map_tasks('volume.dataset.*', DatasetsNamespace)
     context.map_tasks('volume.snapshot.*', SnapshotsNamespace)
     context.map_tasks('volume.*', VolumesNamespace)
+
+
+def get_top_namespace(context):
+    return VolumesNamespace('volume', context)

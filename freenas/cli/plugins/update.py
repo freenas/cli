@@ -276,3 +276,7 @@ class UpdateNamespace(ConfigNamespace):
 
 def _init(context):
     context.attach_namespace('/', UpdateNamespace('update', context))
+
+
+def get_top_namespace(context):
+    return UpdateNamespace('update', context)

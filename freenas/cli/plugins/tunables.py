@@ -102,3 +102,7 @@ class TunablesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Enti
 def _init(context):
     context.attach_namespace('/', TunablesNamespace('tunable', context))
     context.map_tasks('tunable.*', TunablesNamespace)
+
+
+def get_top_namespace(context):
+    return TunablesNamespace('tunable', context)

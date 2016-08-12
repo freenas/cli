@@ -339,3 +339,7 @@ class BootNamespace(Namespace):
 
 def _init(context):
     context.attach_namespace('/', BootNamespace('boot', context))
+
+
+def get_top_namespace(context):
+    return BootNamespace('boot', context)

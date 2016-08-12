@@ -281,3 +281,7 @@ class DockerNamespace(Namespace):
 
 def _init(context):
     context.attach_namespace('/', DockerNamespace('docker', context))
+
+
+def get_top_namespace(context):
+    return DockerNamespace('docker', context)

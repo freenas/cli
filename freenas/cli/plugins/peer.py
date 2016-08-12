@@ -340,3 +340,7 @@ class PeerNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
 
 def _init(context):
     context.attach_namespace('/', PeerNamespace('peer', context))
+
+
+def get_top_namespace(context):
+    return PeerNamespace('peer', context)

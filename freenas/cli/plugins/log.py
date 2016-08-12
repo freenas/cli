@@ -113,3 +113,7 @@ class LogNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
 
 def _init(context):
     context.attach_namespace('/', LogNamespace('log', context))
+
+
+def get_top_namespace(context):
+    return LogNamespace('log', context)

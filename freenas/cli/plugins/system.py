@@ -807,3 +807,7 @@ def _init(context):
     context.map_tasks('system.advanced.*', AdvancedNamespace)
     context.map_tasks('system.ui.*', SystemUINamespace)
     context.map_tasks('mail.*', MailNamespace)
+
+
+def get_top_namespace(context):
+    return SystemNamespace('system', context)

@@ -178,3 +178,7 @@ class StatisticNamespace(Namespace):
 
 def _init(context):
     context.attach_namespace('/', StatisticNamespace('statistic', context))
+
+
+def get_top_namespace(context):
+    return StatisticNamespace('statistic', context)

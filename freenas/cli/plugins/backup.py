@@ -304,3 +304,7 @@ class BackupRestoreCommand(Command):
 
 def _init(context):
     context.attach_namespace('/', BackupNamespace('backup', context))
+
+
+def get_top_namespace(context):
+    return BackupNamespace('backup', context)

@@ -164,6 +164,10 @@ def _init(context):
     context.map_tasks('service.*', ServicesNamespace)
 
 
+def get_top_namespace(context):
+    return ServicesNamespace('service', context)
+
+
 # This is not ideal (but better than an if-else ladder)
 svc_cli_config = {
     'sshd': [

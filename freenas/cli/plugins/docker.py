@@ -180,6 +180,8 @@ class DockerImageNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         super(DockerImageNamespace, self).__init__(name, context)
         self.entity_subscriber_name = 'docker.image'
         self.primary_key_name = 'id'
+        self.allow_create = False
+        self.allow_edit = False
 
         self.add_property(
             descr='Name',

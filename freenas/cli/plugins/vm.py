@@ -67,7 +67,7 @@ class VMConsole(object):
 
     def start(self):
         # process escape characters using runtime
-        eseq = bytes(self.context.variables['vm.console_interrupt'], 'utf-8').decode('unicode_escape')
+        eseq = bytes(self.context.variables.get('vm.console_interrupt'), 'utf-8').decode('unicode_escape')
         esbytes = bytes(eseq, 'utf-8')
         eslen = len(esbytes) 
         esidx = 0   # stack pointer for sequence match...

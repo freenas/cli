@@ -37,7 +37,7 @@ import collections
 import six
 import inspect
 from freenas.utils import first_or_default
-from freenas.utils.query import set, get
+from freenas.utils.query import set, get, query
 from freenas.cli.parser import CommandCall, Literal, Symbol, BinaryParameter, Comment
 from freenas.cli.complete import NullComplete, EnumComplete
 from freenas.cli.utils import post_save, edit_in_editor, PrintableNone
@@ -1196,36 +1196,40 @@ class NestedObjectLoadMixin(object):
         self.extra_query_params = []
 
     def query(self, params, options):
-        return self.parent.entity.get(self.parent_path, []).query(*(self.extra_query_params + params), **options)
+        return query(
+            get(self.parent.entity, self.parent_path, []),
+            *(self.extra_query_params + params),
+            **options
+        )
 
     def get_one(self, name):
         return first_or_default(
             lambda a: a[self.primary_key_name] == name,
-            self.parent.entity.get(self.parent_path, [])
+            get(self.parent.entity, self.parent_path, [])
         )
 
 
 class NestedObjectSaveMixin(object):
     def save(self, this, new=False):
         if new:
-            if self.parent.entity[self.parent_path] is None:
-                 self.parent.entity[self.parent_path] = []
+            if not exists(self.parent.entity, self.parent_path):
+                set(self.parent.entity, self.parent_path, [])
 
-            self.parent.entity[self.parent_path].append(this.entity)
+            get(self.parent.entity, self.parent_path).append(this.entity)
         else:
             entity = first_or_default(
                 lambda a: a[self.primary_key_name] == this.entity['name'],
-                self.parent.entity[self.parent_path]
+                get(self.parent.entity, self.parent_path)
             )
             entity.update(this.entity)
 
         self.parent.save()
 
     def delete(self, this, kwargs):
-        self.parent.entity[self.parent_path] = list(filter(
+        set(self.parent_path, list(filter(
             lambda i: i[self.primary_key_name] != this.entity[self.primary_key_name],
-            self.parent.entity[self.parent_path]
-        ))
+            get(self.parent.entity, self.parent_path)
+        )))
 
         self.parent.save()
 

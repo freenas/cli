@@ -230,7 +230,7 @@ class UpdateNamespace(ConfigNamespace):
             descr='Update Available',
             name='available',
             type=ValueType.BOOLEAN,
-            get=lambda x: True if self.update_info else False,
+            get=lambda x: self.update_info['available'],
             set=None
         )
 
@@ -238,7 +238,7 @@ class UpdateNamespace(ConfigNamespace):
             descr='Update Changelog',
             name='changelog',
             type=ValueType.STRING,
-            get=lambda x: self.update_info['changelog'] if self.update_info else [''],
+            get=lambda x: self.update_info['changelog'],
             list=True,
             set=None
         )
@@ -247,7 +247,7 @@ class UpdateNamespace(ConfigNamespace):
             descr='Updates already Downloaded',
             name='downloaded',
             type=ValueType.BOOLEAN,
-            get=lambda x: self.update_info['downloaded'] if self.update_info else False,
+            get=lambda x: self.update_info['downloaded'],
             set=None
         )
 
@@ -255,7 +255,7 @@ class UpdateNamespace(ConfigNamespace):
             descr='Version of the Update',
             name='version',
             type=ValueType.STRING,
-            get=lambda x: self.update_info['version'] if self.update_info else '',
+            get=lambda x: self.update_info['version'],
             set=None
         )
 
@@ -263,7 +263,7 @@ class UpdateNamespace(ConfigNamespace):
             descr='An Update is installed and activated for next boot',
             name='installed',
             type=ValueType.BOOLEAN,
-            get=lambda x: self.update_info['installed'] if self.update_info else False,
+            get=lambda x: self.update_info['installed'],
             set=None
         )
 
@@ -271,7 +271,7 @@ class UpdateNamespace(ConfigNamespace):
             descr='Version of the Installed Update (if any)',
             name='installed_version',
             type=ValueType.STRING,
-            get=lambda x: self.update_info['installed_version'] if self.update_info else '',
+            get=lambda x: self.update_info['installed_version'],
             set=None
         )
 

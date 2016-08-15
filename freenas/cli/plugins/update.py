@@ -251,6 +251,30 @@ class UpdateNamespace(ConfigNamespace):
             set=None
         )
 
+        self.add_property(
+            descr='Version of the Update',
+            name='version',
+            type=ValueType.STRING,
+            get=lambda x: self.update_info['version'] if self.update_info else '',
+            set=None
+        )
+
+        self.add_property(
+            descr='An Update is installed and activated for next boot',
+            name='installed',
+            type=ValueType.BOOLEAN,
+            get=lambda x: self.update_info['installed'] if self.update_info else False,
+            set=None
+        )
+
+        self.add_property(
+            descr='Version of the Installed Update (if any)',
+            name='installed_version',
+            type=ValueType.STRING,
+            get=lambda x: self.update_info['installed_version'] if self.update_info else '',
+            set=None
+        )
+
         self.subcommands = {
             'check_now': CheckNowCommand(self)
         }

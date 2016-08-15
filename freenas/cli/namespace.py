@@ -36,8 +36,7 @@ import sys
 import collections
 import six
 import inspect
-from freenas.utils import first_or_default
-from freenas.utils.query import set, get, contains, query
+from freenas.utils import first_or_default, query as q
 from freenas.cli.parser import CommandCall, Literal, Symbol, BinaryParameter, Comment
 from freenas.cli.complete import NullComplete, EnumComplete
 from freenas.cli.utils import post_save, edit_in_editor, PrintableNone
@@ -259,7 +258,7 @@ class PropertyMapping(object):
         if isinstance(self.get, collections.Callable):
             return self.get(obj)
 
-        return get(obj, self.get)
+        return q.get(obj, self.get)
 
     def do_set(self, obj, value):
         if self.condition and not self.condition(obj):
@@ -286,14 +285,14 @@ class PropertyMapping(object):
             self.set(obj, value)
             return
 
-        set(obj, self.set, value)
+        q.set(obj, self.set, value)
 
     def do_append(self, obj, value):
         if self.type not in (ValueType.SET, ValueType.ARRAY):
             raise ValueError('Property is not a set or array')
 
         value = read_value(value, self.type)
-        oldvalues = get(obj, self.set)
+        oldvalues = q.get(obj, self.set)
         if oldvalues is not None:
             newvalues = oldvalues + value
         else:
@@ -303,14 +302,14 @@ class PropertyMapping(object):
             self.set(obj, newvalues)
             return
 
-        set(obj, self.set, newvalues)
+        q.set(obj, self.set, newvalues)
 
     def do_remove(self, obj, value):
         if self.type not in (ValueType.SET, ValueType.ARRAY):
             raise ValueError('Property is not a set or array')
 
         value = read_value(value, self.type)
-        oldvalues = get(obj, self.set)
+        oldvalues = q.get(obj, self.set)
         newvalues = oldvalues
         for v in value:
             if v in newvalues:
@@ -322,7 +321,7 @@ class PropertyMapping(object):
             self.set(obj, newvalues)
             return
 
-        set(obj, self.set, newvalues)
+        q.set(obj, self.set, newvalues)
 
 
 class ItemNamespace(Namespace):
@@ -1196,8 +1195,8 @@ class NestedObjectLoadMixin(object):
         self.extra_query_params = []
 
     def query(self, params, options):
-        return query(
-            get(self.parent.entity, self.parent_path, []),
+        return q.query(
+            q.get(self.parent.entity, self.parent_path, []),
             *(self.extra_query_params + params),
             **options
         )
@@ -1205,30 +1204,30 @@ class NestedObjectLoadMixin(object):
     def get_one(self, name):
         return first_or_default(
             lambda a: a[self.primary_key_name] == name,
-            get(self.parent.entity, self.parent_path, [])
+            q.get(self.parent.entity, self.parent_path, [])
         )
 
 
 class NestedObjectSaveMixin(object):
     def save(self, this, new=False):
         if new:
-            if not contains(self.parent.entity, self.parent_path):
-                set(self.parent.entity, self.parent_path, [])
+            if not q.contains(self.parent.entity, self.parent_path):
+                q.set(self.parent.entity, self.parent_path, [])
 
-            get(self.parent.entity, self.parent_path).append(this.entity)
+            q.get(self.parent.entity, self.parent_path).append(this.entity)
         else:
             entity = first_or_default(
                 lambda a: a[self.primary_key_name] == this.entity['name'],
-                get(self.parent.entity, self.parent_path)
+                q.get(self.parent.entity, self.parent_path)
             )
             entity.update(this.entity)
 
         self.parent.save()
 
     def delete(self, this, kwargs):
-        set(self.parent_path, list(filter(
+        q.set(self.parent_path, list(filter(
             lambda i: i[self.primary_key_name] != this.entity[self.primary_key_name],
-            get(self.parent.entity, self.parent_path)
+            q.get(self.parent.entity, self.parent_path)
         )))
 
         self.parent.save()

@@ -37,7 +37,7 @@ import collections
 import six
 import inspect
 from freenas.utils import first_or_default
-from freenas.utils.query import set, get, query
+from freenas.utils.query import set, get, contains, query
 from freenas.cli.parser import CommandCall, Literal, Symbol, BinaryParameter, Comment
 from freenas.cli.complete import NullComplete, EnumComplete
 from freenas.cli.utils import post_save, edit_in_editor, PrintableNone
@@ -1212,7 +1212,7 @@ class NestedObjectLoadMixin(object):
 class NestedObjectSaveMixin(object):
     def save(self, this, new=False):
         if new:
-            if not exists(self.parent.entity, self.parent_path):
+            if not contains(self.parent.entity, self.parent_path):
                 set(self.parent.entity, self.parent_path, [])
 
             get(self.parent.entity, self.parent_path).append(this.entity)

@@ -41,14 +41,47 @@ _ = t.gettext
 
 
 @description(_("Provides access to Cryptography options"))
-class CryptoNamespace(Namespace):
+class CryptoNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
     """
     The cryptography namespace is used to manage crypthography related
     aspects of the system.
     """
     def __init__(self, name, context):
-        super(CryptoNamespace, self).__init__(name)
+        super(CryptoNamespace, self).__init__(name, context)
         self.context = context
+        self.entity_subscriber_name = 'crypto.certificate'
+        self.primary_key_name = 'name'
+        self.allow_create = False
+
+        self.localdoc['ListCommand'] = ("""\
+            Usage: show
+
+            Lists all certificates, optionally doing filtering and sorting.
+            """)
+
+        self.add_property(
+            descr='Name',
+            name='name',
+            get='name',
+            set='name',
+            list=True)
+
+        self.add_property(
+            descr='Type',
+            name='type',
+            get='type',
+            set='type',
+            usersetable=False,
+            list=True)
+
+        self.add_property(
+            descr='Serial',
+            name='serial',
+            get='serial',
+            set='serial',
+            type=ValueType.NUMBER,
+            usersetable=False,
+            list=True)
 
     def namespaces(self):
         return [

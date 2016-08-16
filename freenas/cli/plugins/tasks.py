@@ -158,6 +158,7 @@ class TasksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             system."""),
             get='id',
             list=True,
+            type=ValueType.NUMBER
         )
 
         self.add_property(

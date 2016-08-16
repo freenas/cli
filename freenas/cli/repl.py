@@ -1360,66 +1360,54 @@ class MainLoop(object):
                         top = Symbol(self.eval(top, env, path=path))
 
                     if isinstance(top, Literal):
-                        matching = list(map(
-                            lambda ns: Symbol(ns.get_name()),
-                            filter(lambda ns: re.match(str(top.value), str(ns.get_name())), cwd.namespaces()))
-                        )
-                    else:
-                        matching = [top]
+                        top = Symbol(top.value)
 
-                    resultset = Sequence()
+                    item = self.eval(top, env, path=path, dry_run=dry_run)
 
-                    for i in matching:
-                        item = self.eval(i, env, path=path)
+                    if isinstance(item, Namespace):
+                        item.on_enter()
+                        return self.eval(token, env, path=path+[item], dry_run=dry_run)
 
-                        if isinstance(item, Namespace):
-                            item.on_enter()
-                            resultset.append_flat(self.eval(token, env, path=path+[item], dry_run=dry_run))
+                    if isinstance(item, Alias):
+                        return self.eval(item.ast, env, path=path)[0]
 
-                        if isinstance(item, Alias):
-                            resultset.append_flat(self.eval(item.ast, env, path=path)[0])
+                    if isinstance(item, Command):
+                        print('item={0}, dry_run={1}'.format(item, dry_run))
+                        completions = item.complete(self.context)
+                        token_args = convert_to_literals(token.args)
+                        if len(token_args) > 0 and token_args[0] == '..':
+                            args = [token_args[0]]
+                            kwargs = None
+                            opargs = None
+                        else:
+                            args, kwargs, opargs = expand_wildcards(
+                                self.context,
+                                *sort_args([self.eval(i, env) for i in token_args]),
+                                completions=completions
+                            )
 
-                        if isinstance(item, Command):
-                            completions = item.complete(self.context)
-                            token_args = convert_to_literals(token.args)
-                            if len(token_args) > 0 and token_args[0] == '..':
-                                args = [token_args[0]]
-                                kwargs = None
-                                opargs = None
-                            else:
-                                args, kwargs, opargs = expand_wildcards(
-                                    self.context,
-                                    *sort_args([self.eval(i, env) for i in token_args]),
-                                    completions=completions
-                                )
+                        item.exec_path = path if len(path) >= 1 else self.path
+                        item.cwd = self.cwd
+                        item.current_env = env
+                        if dry_run:
+                            return item, cwd, args, kwargs, opargs
 
-                            item.exec_path = path if len(path) >= 1 else self.path
-                            item.cwd = self.cwd
-                            item.current_env = env
-                            if dry_run:
-                                resultset.append((item, cwd, args, kwargs, opargs))
-                                continue
+                        if isinstance(item, PipeCommand):
+                            if first:
+                                raise CommandException(_('Invalid usage.\n{0}'.format(inspect.getdoc(item))))
+                            if serialize_filter:
+                                ret = item.serialize_filter(self.context, args, kwargs, opargs)
+                                if ret is not None:
+                                    if 'filter' in ret:
+                                        serialize_filter['filter'] += ret['filter']
 
-                            if isinstance(item, PipeCommand):
-                                if first:
-                                    raise CommandException(_('Invalid usage.\n{0}'.format(inspect.getdoc(item))))
-                                if serialize_filter:
-                                    ret = item.serialize_filter(self.context, args, kwargs, opargs)
-                                    if ret is not None:
-                                        if 'filter' in ret:
-                                            serialize_filter['filter'] += ret['filter']
+                                    if 'params' in ret:
+                                        serialize_filter['params'].update(ret['params'])
 
-                                        if 'params' in ret:
-                                            serialize_filter['params'].update(ret['params'])
+                            return item.run(self.context, args, kwargs, opargs, input=input_data)
+                        else:
+                            return item.run(self.context, args, kwargs, opargs)
 
-                                result = item.run(self.context, args, kwargs, opargs, input=input_data)
-                                resultset.append(PrintableNone.coerce(result) if not printable_none else result)
-
-                            else:
-                                result = item.run(self.context, args, kwargs, opargs)
-                                resultset.append(PrintableNone.coerce(result) if not printable_none else result)
-
-                    return resultset.unwind(dry_run)
                 except BaseException as err:
                     success = False
                     raise err
@@ -1463,32 +1451,22 @@ class MainLoop(object):
                     self.eval(token.right, env, path, serialize_filter=serialize_filter)
                     return
 
-                cmds = self.eval(token.left, env, path, dry_run=True, first=first)
-                resultset = Sequence()
+                cmd, cwd, args, kwargs, opargs = self.eval(token.left, env, path, dry_run=True, first=first)
 
-                for cmd, cwd, args, kwargs, opargs in cmds:
-                    cwd.on_enter()
-                    self.context.pipe_cwd = cwd
-                    if isinstance(cmd, FilteringCommand):
-                        # Do serialize_filter pass
-                        filt = {"filter": [], "params": {}}
-                        self.eval(token.right, env, path, serialize_filter=filt)
-                        result = cmd.run(self.context, args, kwargs, opargs, filtering=filt)
-                    elif isinstance(cmd, PipeCommand):
-                        result = cmd.run(self.context, args, kwargs, opargs, input=input_data)
-                    else:
-                        result = cmd.run(self.context, args, kwargs, opargs)
+                cwd.on_enter()
+                self.context.pipe_cwd = cwd
 
-                    result = PrintableNone.coerce(result)
-                    if result is not None:
-                        ret = self.eval(token.right, input_data=result)
-                        resultset.append(ret)
-                    else:
-                        resultset.append(result)
+                if isinstance(cmd, FilteringCommand):
+                    # Do serialize_filter pass
+                    filt = {"filter": [], "params": {}}
+                    self.eval(token.right, env, path, serialize_filter=filt)
+                    result = cmd.run(self.context, args, kwargs, opargs, filtering=filt)
+                elif isinstance(cmd, PipeCommand):
+                    result = cmd.run(self.context, args, kwargs, opargs, input=input_data)
+                else:
+                    result = cmd.run(self.context, args, kwargs, opargs)
 
-                    self.context.pipe_cwd = None
-
-                return resultset.unwind(dry_run)
+                return self.eval(token.right, input_data=result)
 
             if isinstance(token, ShellEscape):
                 return self.builtin_commands['shell'].run(

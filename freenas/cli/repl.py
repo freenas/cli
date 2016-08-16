@@ -1372,7 +1372,6 @@ class MainLoop(object):
                         return self.eval(item.ast, env, path=path)[0]
 
                     if isinstance(item, Command):
-                        print('item={0}, dry_run={1}'.format(item, dry_run))
                         completions = item.complete(self.context)
                         token_args = convert_to_literals(token.args)
                         if len(token_args) > 0 and token_args[0] == '..':

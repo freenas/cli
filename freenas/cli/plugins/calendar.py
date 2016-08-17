@@ -105,31 +105,17 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, EntityNamespace):
 class CalendarTasksNamespaceBaseClass(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
     def __init__(self, name, context):
         super(CalendarTasksNamespaceBaseClass, self).__init__(name, context)
-
         self.context = context
         self.query_call = 'calendar_task.query'
         self.create_task = 'calendar_task.create'
         self.update_task = 'calendar_task.update'
         self.delete_task = 'calendar_task.delete'
-        self.required_props = ['name', 'type']
-        self.task_args_prototype = []
+        self.required_props = ['name']
+        self.task_args_idx_helper = []
         self.skeleton_entity = {
             'enabled': False,
             'args': [],
         }
-
-        self.add_property(
-            descr='Type',
-            name='type',
-            get=None,
-            usage=_("""\
-            Indicates the type of task.
-            Not settable by user."""),
-            set='name',
-            list=False,
-            usersettable=False,
-            createsettable=False,
-        )
 
         self.add_property(
             descr='Name',
@@ -169,31 +155,33 @@ class CalendarTasksNamespaceBaseClass(RpcBasedLoadMixin, TaskBasedSaveMixin, Ent
             CalendarTasksStatusNamespace('status', self.context, this),
         ]
 
-    def set_args(self, entity, args, name):
-        if 'args' not in entity:
-            entity['args'] = []
-            if entity['name'] in SKELETON_TASK and len(entity['args']) < len(TASK_ARG_MAPPING[entity['name']]):
-                entity['args'] = SKELETON_TASK[entity['name']]
-            else:
-                while len(entity['args']) < len(TASK_ARG_MAPPING[entity['name']]):
-                    entity['args'].append(None)
-        entity['args'][TASK_ARG_MAPPING[entity['name']].index(name)] = args
+        self.entity_commands = lambda this: {
+            'run': RunCommand(this)
+        }
+
+        self._load_nested_skeleton_entities()
 
     def set_task_args(self, entity, args, name):
-        idx = self.task_args_idx_helper.index(name)
-        entity['args'].pop(idx) if entity['args'][idx] else None
+        idx = self._get_args_index(name)
+        entity['args'].pop(idx) if entity['args'] else None
         entity['args'].insert(idx, args)
 
     def get_task_args(self, entity, name):
-        idx = self.task_args_idx_helper.index(name)
+        idx = self._get_args_index(name)
         return format_value(entity['args'][idx]) if entity['args'][idx] else None
+
+    def _load_nested_skeleton_entities(self):
+        for n in self.entity_namespaces(self):
+            self.skeleton_entity.update(n.skeleton_entity) if hasattr(n, 'skeleton_entity') else None
+
+    def _get_args_index(self, arg_name):
+        return self.task_args_idx_helper.index(arg_name)
 
     @staticmethod
     def get_schedule(entity):
         row = entity['schedule']
         sched = dict({k: v for k, v in row.items() if v != "*" and not isinstance(v, bool)})
         sched.pop('timezone')
-
         return sched
 
     @staticmethod
@@ -298,9 +286,13 @@ class CalendarTasksStatusNamespace(NestedEntityMixin, ItemNamespace):
         self.context = context
         self.parent = parent
         self.parent_entity_path = 'status'
-        self.skeleton_entity = {
-            'status': {}
-        }
+        #self.skeleton_entity = {
+        #    'status': {'next_run_time': "",
+        #               'last_run_time': "",
+        #               'last_run_status': "",
+        #               'current_run_status': None,
+        #               'current_run_progress': None}
+        #}
 
         self.add_property(
             descr='Next run time',
@@ -347,10 +339,9 @@ class CalendarTasksStatusNamespace(NestedEntityMixin, ItemNamespace):
 class ScrubNamespace(CalendarTasksNamespaceBaseClass):
     def __init__(self, name, context):
         super(ScrubNamespace, self).__init__(name, context)
-
         self.extra_query_params = [('name', '=', 'volume.scrub')]
-        self.extra_required_props = ['volume']
-        self.skeleton_entity['type'] = 'volume.scrub'
+        self.required_props.extend(['volume'])
+        self.skeleton_entity['name'] = 'volume.scrub'
         self.task_args_idx_helper = ['volume']
 
         self.add_property(
@@ -359,95 +350,86 @@ class ScrubNamespace(CalendarTasksNamespaceBaseClass):
             get=lambda obj: self.get_task_args(obj, 'volume'),
             list=True,
             set=lambda obj, val: self.set_task_args(obj, val, 'volume'),
-            enum=[vol['id'] for vol in self.context.call_sync("volume.query")],
+            enum=[v for v in self.context.call_sync('volume.query', [], {'select': 'id'})]
         )
 
 
 class SmartNamespace(CalendarTasksNamespaceBaseClass):
     def __init__(self, name, context):
         super(SmartNamespace, self).__init__(name, context)
-
         self.extra_query_params = [('name', '=', 'disk.parallel_test')]
-        self.extra_required_props = ['disk', 'test_type']
-        self.skeleton_entity['type'] = 'SMART'
+        self.required_props.extend(['disk', 'test_type'])
+        self.skeleton_entity['name'] = 'disk.parallel_test'
+        self.task_args_idx_helper = ['disks', 'test_type']
 
         self.add_property(
             descr='Disks',
             name='disks',
-            get='disks',
-            list=False,
-            type=ValueType.SET,
-            set=self.set_disks,
+            get=lambda obj: self.get_task_args(obj, 'disks'),
+            list=True,
+            type=ValueType.ARRAY,
+            set=lambda obj, val: self.set_task_args(obj, val, 'disks'),
+            enum=[d for d in self.context.call_sync('disk.query', [], {'select': 'name'})]
         )
 
         self.add_property(
             descr='SMART Test Type',
             name='test_type',
-            get='test_type',
-            list=False,
-            enum=['short', 'long', 'conveyance', 'offline'],
-            set=lambda obj, value: self.set_args(obj, value, 'test_type'),
+            get=lambda obj: self.get_task_args(obj, 'test_type'),
+            list=True,
+            set=lambda obj, val: self.set_task_args(obj, val, 'test_type'),
+            enum=['short', 'long', 'conveyance', 'offline']
         )
-
-    def set_disks(self, entity, args):
-        all_disks = [disk["path"] for disk in self.context.call_sync("disk.query")]
-        disks = []
-        for disk in args:
-            disk = correct_disk_path(disk)
-            if disk not in all_disks:
-                raise CommandException(_("Invalid disk: {0}, see '/ disk show' for a list of disks".format(disk)))
-            disks.append(disk)
-        self.set_args(entity, disks, 'disks')
 
 
 class SnapshotNamespace(CalendarTasksNamespaceBaseClass):
     def __init__(self, name, context):
         super(SnapshotNamespace, self).__init__(name, context)
-
         self.extra_query_params = [('name', '=', 'volume.snapshot_dataset')]
-        self.extra_required_props = ['dataset', 'recursive', 'lifetime', 'prefix', 'replicable']
-        self.skeleton_entity['type'] = 'SNAPSHOT'
+        self.required_props.extend(['volume', 'dataset', 'recursive', 'lifetime'])
+        self.skeleton_entity['name'] = 'volume.snapshot_dataset'
+        self.task_args_idx_helper = ['dataset', 'recursive', 'lifetime', 'prefix', 'replicable']
 
         self.add_property(
             descr='Dataset',
             name='dataset',
-            get='dataset',
-            list=False,
-            set=lambda obj, value: self.set_args(obj, value, 'dataset'),
+            get=lambda obj: self.get_task_args(obj, 'dataset'),
+            list=True,
+            set=lambda obj, val: self.set_task_args(obj, val, 'dataset'),
         )
 
         self.add_property(
             descr='Lifetime',
             name='lifetime',
-            get='lifetime',
-            list=False,
-            set=lambda obj, value: self.set_args(obj, value, 'lifetime'),
+            get=lambda obj: self.get_task_args(obj, 'lifetime'),
+            list=True,
+            set=lambda obj, val: self.set_task_args(obj, val, 'lifetime'),
             type=ValueType.NUMBER
         )
 
         self.add_property(
             descr='Recursive',
             name='recursive',
-            get='recursive',
-            list=False,
-            set=lambda obj, value: self.set_args(obj, value, 'recursive'),
+            get=lambda obj: self.get_task_args(obj, 'recursive'),
+            list=True,
+            set=lambda obj, val: self.set_task_args(obj, val, 'recursive'),
             type=ValueType.BOOLEAN
         )
 
         self.add_property(
             descr='Prefix',
             name='prefix',
-            get='prefix',
-            list=False,
-            set=lambda obj, value: self.set_args(obj, value, 'prefix'),
+            get=lambda obj: self.get_task_args(obj, 'prefix'),
+            list=True,
+            set=lambda obj, val: self.set_task_args(obj, val, 'prefix'),
         )
 
         self.add_property(
             descr='Replicable',
             name='replicable',
-            get='replicable',
-            list=False,
-            set=lambda obj, value: self.set_args(obj, value, 'replicable'),
+            get=lambda obj: self.get_task_args(obj, 'replicable'),
+            list=True,
+            set=lambda obj, val: self.set_task_args(obj, val, 'replicable'),
             type=ValueType.BOOLEAN
         )
 
@@ -455,60 +437,54 @@ class SnapshotNamespace(CalendarTasksNamespaceBaseClass):
 class ReplicationNamespace(CalendarTasksNamespaceBaseClass):
     def __init__(self, name, context):
         super(ReplicationNamespace, self).__init__(name, context)
-
         self.extra_query_params = [('name', '=', 'replication.replicate_dataset')]
-        self.extra_required_props = []
-        self.skeleton_entity['type'] = 'REPLICATION'
+        self.required_props.extend([])
+        self.skeleton_entity['name'] = 'replication.replicate_dataset'
+        self.task_args_idx_helper = []
 
 
 class CheckUpdateNamespace(CalendarTasksNamespaceBaseClass):
     def __init__(self, name, context):
         super(CheckUpdateNamespace, self).__init__(name, context)
-
         self.extra_query_params = [('name', '=', 'update.checkfetch')]
-        self.extra_required_props = ['send_email']
-        self.skeleton_entity['type'] = 'CHECK_UPDATE'
+        self.required_props.extend(['send_email'])
+        self.skeleton_entity['name'] = 'update.checkfetch'
+        self.task_args_idx_helper = ['send_email']
 
         self.add_property(
             descr='Send Email',
             name='send_email',
-            get='send_email',
-            list=False,
-            set=lambda obj, value: self.set_args(obj, value, 'send_email'),
+            get=lambda obj: self.get_task_args(obj, 'send_email'),
+            list=True,
+            set=lambda obj, val: self.set_args(obj, val, 'send_email'),
             type=ValueType.BOOLEAN,
         )
+
 
 class CommandNamespace(CalendarTasksNamespaceBaseClass):
     def __init__(self, name, context):
         super(CommandNamespace, self).__init__(name, context)
-
         self.extra_query_params = [('name', '=', 'calendar_task.command')]
-        self.extra_required_props = ['username', 'command']
-        self.skeleton_entity['type'] = 'COMMAND'
+        self.required_props.extend(['username', 'command'])
+        self.skeleton_entity['name'] = 'calendar_task.command'
+        self.task_args_idx_helper = ['username', 'command']
 
         self.add_property(
             descr='Username',
             name='username',
-            get='username',
-            list=False,
-            set=self.set_username,
-            condition=lambda e: e['name'] == 'calendar_task.command'
+            get=lambda obj: self.get_task_args(obj, 'username'),
+            list=True,
+            set=lambda obj, val: self.set_task_args(obj, val, 'username'),
+            #enum=[u for u in self.context.call_sync('user.query', [], {'select': 'username'})]
         )
 
         self.add_property(
             descr='Command',
             name='command',
-            get='command',
-            list=False,
-            set=lambda obj, value: self.set_args(obj, value, 'command'),
-            condition=lambda e: e['name'] == 'calendar_task.command'
+            get=lambda obj: self.get_task_args(obj, 'command'),
+            list=True,
+            set=lambda obj, val: self.set_task_args(obj, val, 'command'),
         )
-
-    def set_username(self, entity, args):
-        all_users = [user["username"] for user in self.context.call_sync("user.query")]
-        if args not in all_users:
-            raise CommandException(_("Invalid user: {0}, see '/ account user show' for a list of users".format(args)))
-        self.set_args(entity, args, 'username')
 
 
 TASK_TYPES = {

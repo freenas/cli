@@ -132,7 +132,7 @@ class CalendarTasksNamespaceBaseClass(RpcBasedLoadMixin, TaskBasedSaveMixin, Ent
             descr='Schedule',
             name='schedule',
             get=self.get_schedule,
-            set='schedule',
+            set=None,
             list=True,
             type=ValueType.DICT
         )

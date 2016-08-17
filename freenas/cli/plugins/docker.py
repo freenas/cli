@@ -195,6 +195,10 @@ class DockerImageNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         self.allow_create = False
         self.allow_edit = False
 
+        def get_host(o):
+            h = context.entity_subscribers['docker.host'].query(('id', '=', o['host']), single=True)
+            return h['name'] if h else None
+
         self.add_property(
             descr='Name',
             name='name',
@@ -226,7 +230,7 @@ class DockerImageNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         self.add_property(
             descr='Host',
             name='host',
-            get='host',
+            get=get_host,
             set=None,
             usersetable=False,
             list=True

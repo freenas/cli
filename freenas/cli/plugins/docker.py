@@ -46,6 +46,7 @@ class DockerHostNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             name='name',
             get='name',
             set=None,
+            usersetable=False,
             list=True
         )
 
@@ -54,6 +55,7 @@ class DockerHostNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             name='state',
             get='state',
             set=None,
+            usersetable=False,
             list=True
         )
 
@@ -62,6 +64,7 @@ class DockerHostNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             name='os',
             get='status.os',
             set=None,
+            usersetable=False,
             list=False
         )
 
@@ -70,6 +73,7 @@ class DockerHostNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             name='docker_unique_id',
             get='status.unique_id',
             set=None,
+            usersetable=False,
             list=False
         )
 
@@ -109,6 +113,7 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             descr='Name',
             name='name',
             get='names.0',
+            usersetable=False,
             list=True
         )
 
@@ -116,6 +121,7 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             descr='Image name',
             name='image',
             get='image',
+            usersetable=False,
             list=True
         )
 
@@ -123,6 +129,7 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             descr='Command',
             name='command',
             get='command',
+            usersetable=False,
             list=True
         )
 
@@ -131,6 +138,7 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             name='status',
             get='status',
             set=None,
+            usersetable=False,
             list=True
         )
 
@@ -139,6 +147,7 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             name='host',
             get=get_host,
             set=set_host,
+            usersetable=False,
             list=True
         )
 
@@ -147,6 +156,7 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             name='ports',
             get=get_ports,
             set=set_ports,
+            usersetable=False,
             list=True,
             type=ValueType.SET
         )
@@ -155,6 +165,7 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             descr='Expose ports',
             name='expose_ports',
             get='expose_ports',
+            usersetable=False,
             list=True,
             type=ValueType.BOOLEAN
         )
@@ -164,6 +175,7 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             name='volumes',
             get=get_volumes,
             set=set_volumes,
+            usersetable=False,
             list=True,
             type=ValueType.SET
         )
@@ -188,6 +200,7 @@ class DockerImageNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             name='name',
             get='names.0',
             set=None,
+            usersetable=False,
             list=True
         )
 
@@ -196,6 +209,7 @@ class DockerImageNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             name='size',
             get='size',
             set=None,
+            usersetable=False,
             list=True,
             type=ValueType.SIZE
         )
@@ -205,6 +219,7 @@ class DockerImageNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             name='created_at',
             get='created_at',
             set=None,
+            usersetable=False,
             list=True
         )
 
@@ -213,6 +228,7 @@ class DockerImageNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             name='host',
             get='host',
             set=None,
+            usersetable=False,
             list=True
         )
 

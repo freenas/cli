@@ -112,6 +112,7 @@ class CalendarTasksNamespaceBaseClass(RpcBasedLoadMixin, TaskBasedSaveMixin, Ent
         self.delete_task = 'calendar_task.delete'
         self.required_props = ['name']
         self.task_args_idx_helper = []
+        self.task_args_template = []
         self.skeleton_entity = {
             'enabled': False,
             'args': [],
@@ -163,7 +164,9 @@ class CalendarTasksNamespaceBaseClass(RpcBasedLoadMixin, TaskBasedSaveMixin, Ent
 
     def set_task_args(self, entity, args, name):
         idx = self._get_args_index(name)
-        entity['args'].pop(idx) if entity['args'] else None
+        if not entity['args']:
+            entity['args'] = self.task_args_template
+        entity['args'].pop(idx)
         entity['args'].insert(idx, args)
 
     def get_task_args(self, entity, name):
@@ -343,6 +346,7 @@ class ScrubNamespace(CalendarTasksNamespaceBaseClass):
         self.required_props.extend(['volume'])
         self.skeleton_entity['name'] = 'volume.scrub'
         self.task_args_idx_helper = ['volume']
+        self.task_args_template = ['volume_placeholder']
 
         self.add_property(
             descr='Volume',
@@ -361,6 +365,7 @@ class SmartNamespace(CalendarTasksNamespaceBaseClass):
         self.required_props.extend(['disks', 'test_type'])
         self.skeleton_entity['name'] = 'disk.parallel_test'
         self.task_args_idx_helper = ['disks', 'test_type']
+        self.task_args_template = [['disks_placeholder'], 'test_type_placeholder']
 
         self.add_property(
             descr='Disks',
@@ -369,7 +374,7 @@ class SmartNamespace(CalendarTasksNamespaceBaseClass):
             list=True,
             type=ValueType.ARRAY,
             set=lambda obj, val: self.set_task_args(obj, val, 'disks'),
-            enum=[d for d in self.context.call_sync('disk.query', [], {'select': 'name'})]
+            #enum=[d for d in self.context.call_sync('disk.query', [], {'select': 'name'})]
         )
 
         self.add_property(

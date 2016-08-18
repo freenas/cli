@@ -105,6 +105,7 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
         self.create_task = 'docker.container.create'
         self.delete_task = 'docker.container.delete'
         self.primary_key_name = 'names.0'
+        self.required_props = ['name', 'image']
 
         def get_host(o):
             h = context.entity_subscribers['docker.host'].query(('id', '=', o['host']), single=True)

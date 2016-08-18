@@ -325,7 +325,7 @@ class DockerImagePullCommand(Command):
         else:
             name = kwargs.pop('name')
 
-        host = kwargs.pop('host')
+        host = kwargs.get('host')
         hostid = None
         if host:
             hostid = context.entity_subscribers['docker.host'].query(('name', '=', host), single=True, select='id')

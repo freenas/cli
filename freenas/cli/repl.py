@@ -1809,6 +1809,7 @@ def main():
             context.variables.set(name, value)
 
     if args.e:
+        context.wait_entity_subscribers()
         ml.process(args.e)
         return
 

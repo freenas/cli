@@ -404,8 +404,9 @@ class SnapshotNamespace(CalendarTasksNamespaceBaseClass):
     def __init__(self, name, context):
         super(SnapshotNamespace, self).__init__(name, context)
         self.extra_query_params = [('name', '=', 'volume.snapshot_dataset')]
-        self.required_props.extend(['volume', 'dataset', 'recursive', 'lifetime'])
+        self.required_props.extend(['dataset'])
         self.skeleton_entity['name'] = 'volume.snapshot_dataset'
+        self.skeleton_entity['args'] = ["", False, None, 'auto', False]
         self.task_args_helper = ['dataset', 'recursive', 'lifetime', 'prefix', 'replicable']
 
         self.add_property(

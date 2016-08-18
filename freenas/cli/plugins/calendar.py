@@ -358,7 +358,7 @@ class SmartNamespace(CalendarTasksNamespaceBaseClass):
     def __init__(self, name, context):
         super(SmartNamespace, self).__init__(name, context)
         self.extra_query_params = [('name', '=', 'disk.parallel_test')]
-        self.required_props.extend(['disk', 'test_type'])
+        self.required_props.extend(['disks', 'test_type'])
         self.skeleton_entity['name'] = 'disk.parallel_test'
         self.task_args_idx_helper = ['disks', 'test_type']
 

@@ -494,7 +494,9 @@ class CommandNamespace(CalendarTasksNamespaceBaseClass):
             get=lambda obj: self.get_task_args(obj, 'username'),
             list=True,
             set=lambda obj, val: self.set_task_args(obj, val, 'username'),
-            #enum=[u for u in self.context.call_sync('user.query', [], {'select': 'username'})]
+            enum=[u for u in self.context.call_sync('user.query',
+                                                    [['or', [('builtin', '=', False), ('username', '=', 'root')]]],
+                                                    {'select': 'username'})]
         )
 
         self.add_property(

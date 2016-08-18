@@ -367,11 +367,11 @@ class SmartNamespace(CalendarTasksNamespaceBaseClass):
         self.add_property(
             descr='Disks',
             name='disks',
-            get=lambda obj: self.get_task_args(obj, 'disks'),
+            get=lambda obj: self.get_disks(obj),
             list=True,
             type=ValueType.ARRAY,
-            set=lambda obj, val: self.set_task_args(obj, val, 'disks'),
-            #enum=[d for d in self.context.call_sync('disk.query', [], {'select': 'name'})]
+            set=lambda obj, val: self.set_disks(obj, val),
+            #enum=[d for d in self.context.call_sync('disk.query', [], {'select': 'path'})]
         )
 
         self.add_property(
@@ -382,6 +382,22 @@ class SmartNamespace(CalendarTasksNamespaceBaseClass):
             set=lambda obj, val: self.set_task_args(obj, val, 'test_type'),
             enum=['short', 'long', 'conveyance', 'offline']
         )
+
+    def get_disks(self, obj):
+        disks_ids = self.get_task_args(obj, 'disks')
+        disks_names = []
+        for i in disks_ids:
+            disks_names.append(self.context.call_sync('disk.query', [('id', '=', i)], {'select': 'name', 'single': True}))
+        return disks_names
+
+    def set_disks(self, obj, disks_names):
+        all_disks = [d for d in self.context.call_sync('disk.query', [], {'select': 'name'})]
+        disk_ids = []
+        for d in disks_names:
+            if d not in all_disks:
+                raise CommandException(_("Invalid disk: {0}, see '/ disk show' for a list of disks".format(d)))
+            disk_ids.append(self.context.call_sync('disk.path_to_id', d))
+        self.set_task_args(obj, disk_ids, 'disks')
 
 
 class SnapshotNamespace(CalendarTasksNamespaceBaseClass):

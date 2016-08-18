@@ -28,7 +28,7 @@
 import gettext
 from freenas.cli.namespace import (
     Namespace, EntityNamespace, Command, EntitySubscriberBasedLoadMixin,
-    TaskBasedSaveMixin, CommandException, description
+    TaskBasedSaveMixin, CommandException, description, ConfigNamespace
 )
 from freenas.cli.output import ValueType, Table
 from freenas.cli.output import Sequence
@@ -271,6 +271,25 @@ class DockerImageNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         }
 
 
+@description("Configure Docker general settings")
+class DockerConfigNamespace(ConfigNamespace):
+    """
+    The docker config namespace provides commands for listing,
+    and managing Docker general settings.
+    """
+    def __init__(self, name, context):
+        super(DockerConfigNamespace, self).__init__(name, context)
+        self.config_call = "docker.get_config"
+        self.update_task = 'docker.update'
+
+        self.add_property(
+            descr='Default Docker host',
+            name='default_host',
+            get='default_host',
+            set='default_host'
+        )
+
+
 @description("Pull container image from Docker Hub to Docker host")
 class DockerImagePullCommand(Command):
     """
@@ -431,7 +450,8 @@ class DockerNamespace(Namespace):
         return [
             DockerHostNamespace('host', self.context),
             DockerContainerNamespace('container', self.context),
-            DockerImageNamespace('image', self.context)
+            DockerImageNamespace('image', self.context),
+            DockerConfigNamespace('config', self.context)
         ]
 
 

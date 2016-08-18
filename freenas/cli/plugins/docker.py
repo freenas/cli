@@ -329,7 +329,7 @@ class DockerImagePullCommand(Command):
     def complete(self, context):
         return [
             NullComplete('name='),
-            EntitySubscriberComplete('host=', 'docker.host', lambda d: d['name'], ['auto'], list=True)
+            EntitySubscriberComplete('host=', 'docker.host', lambda d: d['name'])
         ]
 
 

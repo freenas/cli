@@ -252,37 +252,70 @@ class DockerImageNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
 
 class DockerImagePullCommand(Command):
     def run(self, context, args, kwargs, opargs):
-        if len(args) != 2:
-            raise CommandException("Please specify image name and docker host name")
+        if not args and not kwargs:
+            raise CommandException(_("Pull requires more arguments, see 'help pull' for more information"))
+        if len(args) > 1:
+            raise CommandException(_("Wrong syntax for pull, see 'help create' for more information"))
 
-        hostid = context.entity_subscribers['docker.host'].query(('name', '=', args[1]), single=True)
-        if not hostid:
-            raise CommandException("Docker host {0} not found".format(args[1]))
+        if len(args) == 1:
+            if 'name' in kwargs:
+                raise CommandException(_("Both implicit and explicit 'name' parameters are specified."))
+            else:
+                kwargs['name'] = args.pop(0)
 
-        context.submit_task('docker.image.pull', args[0], hostid['id'])
+        if 'name' not in kwargs:
+            raise CommandException(_('Please specify image name'))
+        else:
+            name = kwargs.pop('name')
 
+        host = kwargs.pop('host')
+        hostid = None
+        if host:
+            hostid = context.entity_subscribers['docker.host'].query(('name', '=', host), single=True, select='id')
+
+        context.submit_task('docker.image.pull', name, hostid)
+
+    def complete(self, context):
+        return [
+            NullComplete('name='),
+            EntitySubscriberComplete('host=', 'docker.host', lambda d: d['name'], ['auto'], list=True)
+        ]
 
 class DockerImageSearchCommand(Command):
     def run(self, context, args, kwargs, opargs):
-        if len(args) != 1:
+        if len(args) != 1 and 'name' not in kwargs:
             raise CommandException("Please specify fragment of the image name")
 
-        return Table(context.call_sync('docker.image.search', args[0]), [
+        name = kwargs.get('name') or args[0]
+
+        return Table(context.call_sync('docker.image.search', name), [
             Table.Column('Name', 'name'),
             Table.Column('Description', 'description')
         ])
 
+    def complete(self, context):
+        return [
+            NullComplete('name=')
+        ]
+
 
 class DockerImageReadmeCommand(Command):
     def run(self, context, args, kwargs, opargs):
-        if len(args) != 1:
+        if len(args) != 1 and 'name' not in kwargs:
             raise CommandException("Please specify the image name")
 
-        readme = context.call_sync('docker.image.readme', args[0])
+        name = kwargs.get('name') or args[0]
+
+        readme = context.call_sync('docker.image.readme', name)
         if readme:
             return Sequence(readme)
         else:
             return Sequence("Image {0} readme does not exist".format(args[0]))
+
+    def complete(self, context):
+        return [
+            NullComplete('name=')
+        ]
 
 
 class DockerImageDeleteCommand(Command):

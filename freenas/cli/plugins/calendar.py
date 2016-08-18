@@ -170,7 +170,7 @@ class CalendarTasksNamespaceBaseClass(RpcBasedLoadMixin, TaskBasedSaveMixin, Ent
 
     def get_task_args(self, entity, name):
         idx = self._get_args_index(name)
-        return format_value(entity['args'][idx]) if entity['args'][idx] else None
+        return entity['args'][idx]
 
     def _load_nested_skeleton_entities(self):
         for n in self.entity_namespaces(self):

@@ -31,6 +31,8 @@ from freenas.cli.namespace import (
 )
 from freenas.cli.output import ValueType, Table
 from freenas.cli.output import Sequence
+from freenas.cli.utils import post_save
+from freenas.utils.query import get
 
 
 class DockerHostNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
@@ -243,6 +245,10 @@ class DockerImageNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             'readme': DockerImageReadmeCommand()
         }
 
+        self.entity_commands = lambda this: {
+            'delete': DockerImageDeleteCommand(this)
+        }
+
 
 class DockerImagePullCommand(Command):
     def run(self, context, args, kwargs, opargs):
@@ -277,6 +283,19 @@ class DockerImageReadmeCommand(Command):
             return Sequence(readme)
         else:
             return Sequence("Image {0} readme does not exist".format(args[0]))
+
+
+class DockerImageDeleteCommand(Command):
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        context.submit_task(
+            'docker.image.delete',
+            get(self.parent.entity, 'names.0'),
+            self.parent.entity['host'],
+            callback=lambda s, t: post_save(self.parent, s, t)
+        )
 
 
 class DockerContainerStartStopCommand(Command):

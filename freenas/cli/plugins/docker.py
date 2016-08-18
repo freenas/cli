@@ -33,12 +33,24 @@ from freenas.cli.namespace import (
 from freenas.cli.output import ValueType, Table
 from freenas.cli.output import Sequence
 from freenas.cli.utils import post_save
-from freenas.utils.query import get
+from freenas.utils.query import get, set
 from freenas.cli.complete import NullComplete, EntitySubscriberComplete
 
 
 t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
+
+
+class DockerUtilsMixin(object):
+    def get_host(self, o):
+        h = self.context.entity_subscribers['docker.host'].query(('id', '=', o['host']), single=True)
+        return h['name'] if h else None
+
+    def set_host(self, o, v):
+        h = self.context.entity_subscribers['docker.host'].query(('name', '=', v), single=True)
+        if h:
+            o['host'] = h['id']
+            return h['id']
 
 
 @description("View information about Docker hosts")
@@ -94,7 +106,7 @@ class DockerHostNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
 
 
 @description("Configure and manage Docker containers")
-class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
+class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, DockerUtilsMixin, EntityNamespace):
     """
     The docker container namespace provides commands for listing,
     creating, and managing Docker container.
@@ -106,15 +118,6 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
         self.delete_task = 'docker.container.delete'
         self.primary_key_name = 'names.0'
         self.required_props = ['name', 'image']
-
-        def get_host(o):
-            h = context.entity_subscribers['docker.host'].query(('id', '=', o['host']), single=True)
-            return h['name'] if h else None
-
-        def set_host(o, v):
-            h = context.entity_subscribers['docker.host'].query(('name', '=', v), single=True)
-            if h:
-                o['host'] = h['id']
 
         def get_ports(o):
             return ['{0}:{1}'.format(i['container_port'], i['host_port']) for i in o['ports']]
@@ -164,8 +167,8 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
         self.add_property(
             descr='Host',
             name='host',
-            get=get_host,
-            set=set_host,
+            get=self.get_host,
+            set=self.set_host,
             usersetable=False,
             list=True
         )
@@ -207,7 +210,7 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
 
 
 @description("Configure and manage Docker conatiner images")
-class DockerImageNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
+class DockerImageNamespace(EntitySubscriberBasedLoadMixin, DockerUtilsMixin, EntityNamespace):
     """
     The docker image namespace provides commands for listing,
     creating, and managing Docker container images.
@@ -218,10 +221,6 @@ class DockerImageNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         self.primary_key_name = 'names.0'
         self.allow_create = False
         self.allow_edit = False
-
-        def get_host(o):
-            h = context.entity_subscribers['docker.host'].query(('id', '=', o['host']), single=True)
-            return h['name'] if h else None
 
         self.add_property(
             descr='Name',
@@ -254,7 +253,7 @@ class DockerImageNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         self.add_property(
             descr='Host',
             name='host',
-            get=get_host,
+            get=self.get_host,
             set=None,
             usersetable=False,
             list=True
@@ -273,7 +272,7 @@ class DockerImageNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
 
 
 @description("Configure Docker general settings")
-class DockerConfigNamespace(ConfigNamespace):
+class DockerConfigNamespace(DockerUtilsMixin, ConfigNamespace):
     """
     The docker config namespace provides commands for listing,
     and managing Docker general settings.
@@ -283,16 +282,11 @@ class DockerConfigNamespace(ConfigNamespace):
         self.config_call = "docker.get_config"
         self.update_task = 'docker.update'
 
-        def set_host(o, v):
-            h = context.entity_subscribers['docker.host'].query(('name', '=', v), single=True)
-            if h:
-                o['host'] = h['id']
-
         self.add_property(
             descr='Default Docker host',
             name='default_host',
-            get='default_host',
-            set=set_host
+            get=lambda o: self.get_host({'host': o['default_host']}),
+            set=lambda o, v: set(o, 'default_host', self.set_host({}, v))
         )
 
 

@@ -164,7 +164,7 @@ class CalendarTasksNamespaceBaseClass(RpcBasedLoadMixin, TaskBasedSaveMixin, Ent
     def set_task_args(self, entity, args, name):
         idx = self._get_args_index(name)
         if not entity['args']:
-            entity['args'] = self.task_args_template
+            entity['args'] = self.task_args_helper[:]
         entity['args'].pop(idx)
         entity['args'].insert(idx, args)
 

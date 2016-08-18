@@ -282,11 +282,16 @@ class DockerConfigNamespace(ConfigNamespace):
         self.config_call = "docker.get_config"
         self.update_task = 'docker.update'
 
+        def set_host(o, v):
+            h = context.entity_subscribers['docker.host'].query(('name', '=', v), single=True)
+            if h:
+                o['host'] = h['id']
+
         self.add_property(
             descr='Default Docker host',
             name='default_host',
             get='default_host',
-            set='default_host'
+            set=set_host
         )
 
 

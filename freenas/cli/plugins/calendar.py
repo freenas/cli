@@ -380,7 +380,7 @@ class SmartNamespace(CalendarTasksNamespaceBaseClass):
             get=lambda obj: self.get_task_args(obj, 'test_type'),
             list=True,
             set=lambda obj, val: self.set_task_args(obj, val, 'test_type'),
-            enum=['short', 'long', 'conveyance', 'offline']
+            enum=['SHORT', 'LONG', 'CONVEYANCE', 'OFFLINE']
         )
 
     def get_disks(self, obj):

@@ -25,17 +25,28 @@
 #
 #####################################################################
 
+import gettext
 from freenas.cli.namespace import (
     Namespace, EntityNamespace, Command, EntitySubscriberBasedLoadMixin,
-    TaskBasedSaveMixin, CommandException
+    TaskBasedSaveMixin, CommandException, description
 )
 from freenas.cli.output import ValueType, Table
 from freenas.cli.output import Sequence
 from freenas.cli.utils import post_save
 from freenas.utils.query import get
+from freenas.cli.complete import NullComplete, EntitySubscriberComplete
 
 
+t = gettext.translation('freenas-cli', fallback=True)
+_ = t.gettext
+
+
+@description("View information about Docker hosts")
 class DockerHostNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
+    """
+    The docker host namespace provides commands for listing data
+    about Docker hosts available in the system.
+    """
     def __init__(self, name, context):
         super(DockerHostNamespace, self).__init__(name, context)
         self.entity_subscriber_name = 'docker.host'
@@ -82,7 +93,12 @@ class DockerHostNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         self.primary_key = self.get_mapping('name')
 
 
+@description("Configure and manage Docker containers")
 class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
+    """
+    The docker container namespace provides commands for listing,
+    creating, and managing Docker container.
+    """
     def __init__(self, name, context):
         super(DockerContainerNamespace, self).__init__(name, context)
         self.entity_subscriber_name = 'docker.container'
@@ -184,12 +200,17 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
 
         self.primary_key = self.get_mapping('name')
         self.entity_commands = lambda this: {
-            'start': DockerContainerStartStopCommand(this, 'start'),
-            'stop': DockerContainerStartStopCommand(this, 'stop'),
+            'start': DockerContainerStartCommand(this),
+            'stop': DockerContainerStopCommand(this),
         }
 
 
+@description("Configure and manage Docker conatiner images")
 class DockerImageNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
+    """
+    The docker image namespace provides commands for listing,
+    creating, and managing Docker container images.
+    """
     def __init__(self, name, context):
         super(DockerImageNamespace, self).__init__(name, context)
         self.entity_subscriber_name = 'docker.image'
@@ -250,7 +271,18 @@ class DockerImageNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         }
 
 
+@description("Pull container image from Docker Hub to Docker host")
 class DockerImagePullCommand(Command):
+    """
+    Usage: pull <name> host=<host>
+
+    Example: pull debian:latest
+             pull debian:latest host=my_docker_host
+             pull name=debian:latest host=my_docker_host
+
+    Pulls container image from Docker Hub to selected Docker host.
+    If no host is specified, then default Docker host is selected.
+    """
     def run(self, context, args, kwargs, opargs):
         if not args and not kwargs:
             raise CommandException(_("Pull requires more arguments, see 'help pull' for more information"))
@@ -281,7 +313,18 @@ class DockerImagePullCommand(Command):
             EntitySubscriberComplete('host=', 'docker.host', lambda d: d['name'], ['auto'], list=True)
         ]
 
+
+@description("Search Docker Hub for an image matching a given name")
 class DockerImageSearchCommand(Command):
+    """
+    Usage: search <name>
+
+    Example: search plex
+             search name=plex
+
+    Searches Docker Hub for an image matching a given name.
+    Specified name can be just a part of a full image name.
+    """
     def run(self, context, args, kwargs, opargs):
         if len(args) != 1 and 'name' not in kwargs:
             raise CommandException("Please specify fragment of the image name")
@@ -299,7 +342,16 @@ class DockerImageSearchCommand(Command):
         ]
 
 
+@description("Get full description of container image")
 class DockerImageReadmeCommand(Command):
+    """
+    Usage: readme <name>
+
+    Example: readme plex
+             readme name=plex
+
+    Returns full description of a given container image.
+    """
     def run(self, context, args, kwargs, opargs):
         if len(args) != 1 and 'name' not in kwargs:
             raise CommandException("Please specify the image name")
@@ -318,7 +370,13 @@ class DockerImageReadmeCommand(Command):
         ]
 
 
+@description("Delete cached container image")
 class DockerImageDeleteCommand(Command):
+    """
+    Usage: delete
+
+    Deletes cached container image.
+    """
     def __init__(self, parent):
         self.parent = parent
 
@@ -331,16 +389,40 @@ class DockerImageDeleteCommand(Command):
         )
 
 
-class DockerContainerStartStopCommand(Command):
-    def __init__(self, parent, action):
-        self.action = action
+@description("Start container")
+class DockerContainerStartCommand(Command):
+    """
+    Usage: start
+
+    Starts a container.
+    """
+    def __init__(self, parent):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        context.submit_task('docker.container.{0}'.format(self.action), self.parent.entity['id'])
+        context.submit_task('docker.container.start', self.parent.entity['id'])
 
 
+@description("Stop container")
+class DockerContainerStopCommand(Command):
+    """
+    Usage: stop
+
+    Stops a container.
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        context.submit_task('docker.container.stop', self.parent.entity['id'])
+
+
+@description("Configure and manage Docker hosts, images and containers")
 class DockerNamespace(Namespace):
+    """
+    The docker namespace provides commands for listing,
+    creating, and managing hosts, images and containers.
+    """
     def __init__(self, name, context):
         super(DockerNamespace, self).__init__(name)
         self.context = context

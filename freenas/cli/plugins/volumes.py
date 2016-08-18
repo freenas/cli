@@ -1092,10 +1092,6 @@ class SnapshotsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Ent
                 ('volume', '=', self.parent.name)
             ]
 
-        self.skeleton_entity = {
-            'volume': self.parent.name if parent else None
-        }
-
         self.add_property(
             descr='Snapshot id',
             name='id',

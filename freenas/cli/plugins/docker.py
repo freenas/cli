@@ -35,6 +35,7 @@ from freenas.cli.output import Sequence
 from freenas.cli.utils import post_save
 from freenas.utils.query import get, set
 from freenas.cli.complete import NullComplete, EntitySubscriberComplete
+from freenas.cli.console import Console
 
 
 t = gettext.translation('freenas-cli', fallback=True)
@@ -208,6 +209,7 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
         self.entity_commands = lambda this: {
             'start': DockerContainerStartCommand(this),
             'stop': DockerContainerStopCommand(this),
+            'console': DockerContainerConsoleCommand(this)
         }
 
 
@@ -443,6 +445,23 @@ class DockerContainerStopCommand(Command):
 
     def run(self, context, args, kwargs, opargs):
         context.submit_task('docker.container.stop', self.parent.entity['id'])
+
+
+@description("Start Docker container console")
+class DockerContainerConsoleCommand(Command):
+    """
+    Usage: console
+
+    Examples: console
+
+    Connects to a container serial console. ^] returns to CLI
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        console = Console(context, self.parent.entity['id'], get(self.parent.entity, 'names.0'))
+        console.start()
 
 
 @description("Configure and manage Docker hosts, images and containers")

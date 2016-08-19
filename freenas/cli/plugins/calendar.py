@@ -369,9 +369,9 @@ class SmartNamespace(CalendarTasksNamespaceBaseClass):
             name='disks',
             get=lambda obj: self.get_disks(obj),
             list=True,
-            type=ValueType.ARRAY,
+            type=ValueType.SET,
             set=lambda obj, val: self.set_disks(obj, val),
-            #enum=[d for d in self.context.call_sync('disk.query', [], {'select': 'path'})]
+            enum=[d for d in self.context.call_sync('disk.query', [], {'select': 'name'})]
         )
 
         self.add_property(

@@ -113,7 +113,7 @@ class ConsoleVGACommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        url = context.call_sync('containerd.management.request_webvnc_console', self.parent.entity['id'])
+        url = context.call_sync('containerd.console.request_webvnc_console', self.parent.entity['id'])
         return url
 
 

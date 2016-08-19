@@ -45,7 +45,7 @@ class Console(object):
         sys.stdout.buffer.flush()
 
     def connect(self):
-        token = self.context.call_sync('containerd.management.request_console', self.id)
+        token = self.context.call_sync('containerd.console.request_console', self.id)
         self.conn = VMConsoleClient(self.context.hostname, token)
         self.conn.on_data(self.on_data)
         self.conn.open()

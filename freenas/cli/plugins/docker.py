@@ -211,7 +211,7 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
         }
 
 
-@description("Configure and manage Docker conatiner images")
+@description("Configure and manage Docker container images")
 class DockerImageNamespace(EntitySubscriberBasedLoadMixin, DockerUtilsMixin, EntityNamespace):
     """
     The docker image namespace provides commands for listing,

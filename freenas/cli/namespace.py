@@ -58,14 +58,17 @@ def description(descr):
 
 
 def create_completer(prop):
-    if prop.enum:
-        enum_val = prop.enum() if callable(prop.enum) else prop.enum
-        return EnumComplete(prop.name + '=', enum_val)
+    if prop.complete:
+        return prop.complete
+    else:
+        if prop.enum:
+            enum_val = prop.enum() if callable(prop.enum) else prop.enum
+            return EnumComplete(prop.name + '=', enum_val)
 
-    if prop.type == ValueType.BOOLEAN:
-        return EnumComplete(prop.name + '=', ['yes', 'no'])
+        if prop.type == ValueType.BOOLEAN:
+            return EnumComplete(prop.name + '=', ['yes', 'no'])
 
-    return NullComplete(prop.name + '=')
+        return NullComplete(prop.name + '=')
 
 
 class Namespace(object):
@@ -242,6 +245,7 @@ class PropertyMapping(object):
         self.createsetable = kwargs.pop('createsetable', True)
         self.regex = kwargs.pop('regex', None)
         self.condition = kwargs.pop('condition', None)
+        self.complete = kwargs.pop('complete', None)
         self.ns = kwargs.pop('ns', None)
         self.display_width_percentage = kwargs.pop('display_width_percentage', None)
 

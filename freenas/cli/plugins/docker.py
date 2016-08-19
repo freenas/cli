@@ -144,7 +144,8 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             name='image',
             get='image',
             usersetable=False,
-            list=True
+            list=True,
+            complete=EntitySubscriberComplete('image=', 'docker.image', lambda i: get(i, 'names.0'))
         )
 
         self.add_property(
@@ -170,7 +171,8 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             get=self.get_host,
             set=self.set_host,
             usersetable=False,
-            list=True
+            list=True,
+            complete=EntitySubscriberComplete('host=', 'docker.host', lambda d: d['name'])
         )
 
         self.add_property(
@@ -286,7 +288,8 @@ class DockerConfigNamespace(DockerUtilsMixin, ConfigNamespace):
             descr='Default Docker host',
             name='default_host',
             get=lambda o: self.get_host({'host': o['default_host']}),
-            set=lambda o, v: set(o, 'default_host', self.set_host({}, v))
+            set=lambda o, v: set(o, 'default_host', self.set_host({}, v)),
+            complete=EntitySubscriberComplete('default_host=', 'docker.host', lambda d: d['name'])
         )
 
 

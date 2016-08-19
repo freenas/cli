@@ -397,6 +397,8 @@ class DockerImageDeleteCommand(Command):
     """
     Usage: delete
 
+    Example: delete
+
     Deletes cached container image.
     """
     def __init__(self, parent):
@@ -416,6 +418,8 @@ class DockerContainerStartCommand(Command):
     """
     Usage: start
 
+    Example: start
+
     Starts a container.
     """
     def __init__(self, parent):
@@ -429,6 +433,8 @@ class DockerContainerStartCommand(Command):
 class DockerContainerStopCommand(Command):
     """
     Usage: stop
+
+    Example: stop
 
     Stops a container.
     """

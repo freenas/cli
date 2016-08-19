@@ -25,13 +25,8 @@
 #
 #####################################################################
 
-import sys
-import tty
-import curses
 import gettext
-import termios
 from freenas.cli.output import Sequence
-from freenas.dispatcher.shell import VMConsoleClient
 from freenas.cli.namespace import (
     EntityNamespace, Command, NestedObjectLoadMixin, NestedObjectSaveMixin, EntitySubscriberBasedLoadMixin,
     RpcBasedLoadMixin, TaskBasedSaveMixin, description, CommandException
@@ -41,61 +36,11 @@ from freenas.cli.utils import post_save
 from freenas.utils import first_or_default
 from freenas.utils.query import get, set
 from freenas.cli.complete import NullComplete
+from freenas.cli.console import Console
 
 
 t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
-
-
-class VMConsole(object):
-    def __init__(self, context, id, name):
-        self.context = context
-        self.id = id
-        self.name = name
-        self.conn = None
-        self.stdscr = None
-
-    def on_data(self, data):
-        sys.stdout.buffer.write(data)
-        sys.stdout.buffer.flush()
-
-    def connect(self):
-        token = self.context.call_sync('containerd.management.request_console', self.id)
-        self.conn = VMConsoleClient(self.context.hostname, token)
-        self.conn.on_data(self.on_data)
-        self.conn.open()
-
-    def start(self):
-        # process escape characters using runtime
-        eseq = bytes(self.context.variables.get('vm.console_interrupt'), 'utf-8').decode('unicode_escape')
-        esbytes = bytes(eseq, 'utf-8')
-        eslen = len(esbytes) 
-        esidx = 0   # stack pointer for sequence match...
-
-        stdin_fd = sys.stdin.fileno()
-        old_stdin_settings = termios.tcgetattr(stdin_fd)
-        try:
-            tty.setraw(stdin_fd)
-            self.connect()
-            while True:
-                ch = sys.stdin.read(1)
-                bch = bytes(ch, 'utf-8')[0]
-
-                if esbytes[esidx] == bch:
-                    esidx += 1
-                    if esidx == eslen:
-                        self.conn.close()
-                        break
-                elif esidx > 0:
-                    # reset stack pointer...no match
-                    # BW: possibly write out characters up to this point if sequence not matched?
-                    #     or maybe we write the chars all along?
-                    esidx = 0
-                else:
-                    self.conn.write(ch)
-        finally:
-            termios.tcsetattr(stdin_fd, termios.TCSADRAIN, old_stdin_settings)
-            curses.wrapper(lambda x: x)
 
 
 class StartVMCommand(Command):
@@ -152,7 +97,7 @@ class ConsoleCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        console = VMConsole(context, self.parent.entity['id'], self.parent.entity['name'])
+        console = Console(context, self.parent.entity['id'], self.parent.entity['name'])
         console.start()
 
 

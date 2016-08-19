@@ -63,11 +63,11 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, EntityNamespace):
         self.add_property(
             descr='Name',
             name='name',
-            get='id',
+            get='name',
             usage=_("""\
             Alphanumeric name for the task which becomes read-only after the task
             is created."""),
-            set='id',
+            set='name',
             list=True
         )
 
@@ -116,15 +116,16 @@ class CalendarTasksNamespaceBaseClass(RpcBasedLoadMixin, TaskBasedSaveMixin, Ent
             'enabled': False,
             'args': [],
         }
+        self.primary_key_name = 'name'
 
         self.add_property(
             descr='Name',
             name='name',
-            get='id',
+            get='name',
             usage=_("""\
             Alphanumeric name for the task which becomes read-only after the task
             is created."""),
-            set='id',
+            set='name',
             list=True
         )
 
@@ -188,7 +189,7 @@ class CalendarTasksNamespaceBaseClass(RpcBasedLoadMixin, TaskBasedSaveMixin, Ent
 
     @staticmethod
     def get_type(entity):
-        return TASK_TYPES_REVERSE[entity['name']]
+        return TASK_TYPES_REVERSE[entity['task']]
 
 
 class CalendarTasksScheduleNamespace(NestedEntityMixin, ItemNamespace):
@@ -341,9 +342,9 @@ class CalendarTasksStatusNamespace(NestedEntityMixin, ItemNamespace):
 class ScrubNamespace(CalendarTasksNamespaceBaseClass):
     def __init__(self, name, context):
         super(ScrubNamespace, self).__init__(name, context)
-        self.extra_query_params = [('name', '=', 'volume.scrub')]
+        self.extra_query_params = [('task', '=', 'volume.scrub')]
         self.required_props.extend(['volume'])
-        self.skeleton_entity['name'] = 'volume.scrub'
+        self.skeleton_entity['task'] = 'volume.scrub'
         self.task_args_helper = ['volume']
 
         self.add_property(
@@ -359,9 +360,9 @@ class ScrubNamespace(CalendarTasksNamespaceBaseClass):
 class SmartNamespace(CalendarTasksNamespaceBaseClass):
     def __init__(self, name, context):
         super(SmartNamespace, self).__init__(name, context)
-        self.extra_query_params = [('name', '=', 'disk.parallel_test')]
+        self.extra_query_params = [('task', '=', 'disk.parallel_test')]
         self.required_props.extend(['disks', 'test_type'])
-        self.skeleton_entity['name'] = 'disk.parallel_test'
+        self.skeleton_entity['task'] = 'disk.parallel_test'
         self.task_args_helper = ['disks', 'test_type']
 
         self.add_property(
@@ -403,9 +404,9 @@ class SmartNamespace(CalendarTasksNamespaceBaseClass):
 class SnapshotNamespace(CalendarTasksNamespaceBaseClass):
     def __init__(self, name, context):
         super(SnapshotNamespace, self).__init__(name, context)
-        self.extra_query_params = [('name', '=', 'volume.snapshot_dataset')]
+        self.extra_query_params = [('task', '=', 'volume.snapshot_dataset')]
         self.required_props.extend(['dataset'])
-        self.skeleton_entity['name'] = 'volume.snapshot_dataset'
+        self.skeleton_entity['task'] = 'volume.snapshot_dataset'
         self.skeleton_entity['args'] = ["", False, None, 'auto', False]
         self.task_args_helper = ['dataset', 'recursive', 'lifetime', 'prefix', 'replicable']
 
@@ -456,18 +457,18 @@ class SnapshotNamespace(CalendarTasksNamespaceBaseClass):
 class ReplicationNamespace(CalendarTasksNamespaceBaseClass):
     def __init__(self, name, context):
         super(ReplicationNamespace, self).__init__(name, context)
-        self.extra_query_params = [('name', '=', 'replication.replicate_dataset')]
+        self.extra_query_params = [('task', '=', 'replication.replicate_dataset')]
         self.required_props.extend([])
-        self.skeleton_entity['name'] = 'replication.replicate_dataset'
+        self.skeleton_entity['task'] = 'replication.replicate_dataset'
         self.task_args_helper = []
 
 
 class CheckUpdateNamespace(CalendarTasksNamespaceBaseClass):
     def __init__(self, name, context):
         super(CheckUpdateNamespace, self).__init__(name, context)
-        self.extra_query_params = [('name', '=', 'update.checkfetch')]
+        self.extra_query_params = [('task', '=', 'update.checkfetch')]
         self.required_props.extend(['send_email'])
-        self.skeleton_entity['name'] = 'update.checkfetch'
+        self.skeleton_entity['task'] = 'update.checkfetch'
         self.task_args_helper = ['send_email']
 
         self.add_property(
@@ -483,9 +484,9 @@ class CheckUpdateNamespace(CalendarTasksNamespaceBaseClass):
 class CommandNamespace(CalendarTasksNamespaceBaseClass):
     def __init__(self, name, context):
         super(CommandNamespace, self).__init__(name, context)
-        self.extra_query_params = [('name', '=', 'calendar_task.command')]
+        self.extra_query_params = [('task', '=', 'calendar_task.command')]
         self.required_props.extend(['username', 'command'])
-        self.skeleton_entity['name'] = 'calendar_task.command'
+        self.skeleton_entity['task'] = 'calendar_task.command'
         self.task_args_helper = ['username', 'command']
 
         self.add_property(

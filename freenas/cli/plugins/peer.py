@@ -111,7 +111,7 @@ class CreateReplicationPeerCommand(Command):
             }
         )
 
-    def complete(self, context):
+    def complete(self, context, **kwargs):
         return [
             NullComplete('name='),
             NullComplete('address='),

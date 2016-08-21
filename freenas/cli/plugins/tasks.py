@@ -125,7 +125,7 @@ class TaskListCommand(BaseListCommand):
             'params': {}
         })
 
-    def complete(self, context):
+    def complete(self, context, **kwargs):
         return [
             NullComplete('all'),
             NullComplete('aborted'),

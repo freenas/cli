@@ -130,7 +130,7 @@ class Command(object):
     def run(self, context, args, kwargs, opargs):
         raise NotImplementedError()
 
-    def complete(self, context):
+    def complete(self, context, **kwargs):
         return []
 
     def convert_exec_path_to_strings(self):
@@ -388,7 +388,7 @@ class ItemNamespace(Namespace):
     class GetEntityCommand(Command):
         """
         Usage: get <field>
-        
+
         Display value of specified field.
         """
         def __init__(self, parent):
@@ -410,7 +410,7 @@ class ItemNamespace(Namespace):
 
             return value
 
-        def complete(self, context):
+        def complete(self, context, **kwargs):
             return [EnumComplete(0, [p.name for p in self.parent.property_mappings])]
 
     @description("Sets single <entity> property")
@@ -465,7 +465,7 @@ class ItemNamespace(Namespace):
             self.parent.modified = True
             self.parent.save()
 
-        def complete(self, context):
+        def complete(self, context, **kwargs):
             return [create_completer(x) for x in self.parent.property_mappings if x.set]
 
     @description("Opens an editor for a single <entity> string property")
@@ -497,7 +497,7 @@ class ItemNamespace(Namespace):
             self.parent.modified = True
             self.parent.save()
 
-        def complete(self, context):
+        def complete(self, context, **kwargs):
             return [EnumComplete(0, [p.name for p in self.parent.property_mappings])]
 
     @description("Deletes single entity")
@@ -1041,7 +1041,7 @@ class CreateEntityCommand(Command):
 
         self.parent.save(ns, new=True)
 
-    def complete(self, context):
+    def complete(self, context, **kwargs):
         return [create_completer(x) for x in self.parent.property_mappings if x.set]
 
 

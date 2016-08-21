@@ -106,7 +106,7 @@ class SetoptCommand(Command):
             context.variables.verify(k, v)
             context.variables.set(k, v)
 
-    def complete(self, context):
+    def complete(self, context, **kwargs):
         return [create_variable_completer(k, v) for k, v in context.variables.get_all()]
 
 
@@ -179,7 +179,7 @@ class PrintoptCommand(Command):
         else:
             raise CommandException(_("Invalid syntax {0}.\n{1}".format(args, inspect.getdoc(self))))
 
-    def complete(self, context):
+    def complete(self, context, **kwargs):
         return [create_variable_completer(k, v) for k, v in context.variables.get_all()]
 
 

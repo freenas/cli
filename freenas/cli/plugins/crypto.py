@@ -365,7 +365,7 @@ class ImportCertificateAuthorityCommand(Command):
 
         context.submit_task(self.parent.import_task, kwargs)
 
-    def complete(self, context):
+    def complete(self, context, **kwargs):
         return [
             NullComplete('name='),
             EnumComplete('type=', ['CA_EXISTING'])
@@ -464,7 +464,7 @@ class ImportCertificateCommand(Command):
 
         context.submit_task(self.parent.import_task, kwargs)
 
-    def complete(self, context):
+    def complete(self, context, **kwargs):
         return [
             NullComplete('name='),
             EnumComplete('type=', ['CERT_EXISTING'])

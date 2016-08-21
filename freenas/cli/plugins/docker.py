@@ -335,7 +335,7 @@ class DockerImagePullCommand(Command):
 
         context.submit_task('docker.image.pull', name, hostid)
 
-    def complete(self, context):
+    def complete(self, context, **kwargs):
         return [
             NullComplete('name='),
             EntitySubscriberComplete('host=', 'docker.host', lambda d: d['name'])
@@ -364,7 +364,7 @@ class DockerImageSearchCommand(Command):
             Table.Column('Description', 'description')
         ])
 
-    def complete(self, context):
+    def complete(self, context, **kwargs):
         return [
             NullComplete('name=')
         ]
@@ -392,7 +392,7 @@ class DockerImageReadmeCommand(Command):
         else:
             return Sequence("Image {0} readme does not exist".format(args[0]))
 
-    def complete(self, context):
+    def complete(self, context, **kwargs):
         return [
             NullComplete('name=')
         ]

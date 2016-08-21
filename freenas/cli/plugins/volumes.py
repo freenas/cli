@@ -1383,7 +1383,7 @@ class CreateVolumeCommand(Command):
                 password,
                 callback=lambda s, t: post_save(ns, s, t))
 
-    def complete(self, context):
+    def complete(self, context, **kwargs):
         return [
             NullComplete('name='),
             EnumComplete('layout=', VOLUME_LAYOUTS.keys()),

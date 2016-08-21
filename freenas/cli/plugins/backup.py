@@ -262,7 +262,7 @@ class BackupSyncCommand(Command):
         else:
             context.submit_task('backup.sync', self.parent.entity['id'], incremental, snapshot)
 
-    def complete(self, context):
+    def complete(self, context, **kwargs):
         return [
             EnumComplete('snapshot=', ['yes', 'no']),
             EnumComplete('dry_run=', ['yes', 'no'])

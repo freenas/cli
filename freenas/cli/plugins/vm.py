@@ -673,7 +673,7 @@ class CreateVMSnapshotCommand(Command):
             descr
         )
 
-    def complete(self, context):
+    def complete(self, context, **kwargs):
         return [
             NullComplete('name='),
             NullComplete('description=')
@@ -722,7 +722,7 @@ class PublishVMCommand(Command):
             kwargs.get('description', ''),
         )
 
-    def complete(self, context):
+    def complete(self, context, **kwargs):
         return [
             NullComplete('name='),
             NullComplete('author='),

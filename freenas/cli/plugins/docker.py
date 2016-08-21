@@ -460,7 +460,7 @@ class DockerContainerConsoleCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        console = Console(context, self.parent.entity['id'], get(self.parent.entity, 'names.0'))
+        console = Console(context, self.parent.entity['id'])
         console.start()
 
 

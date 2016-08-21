@@ -97,7 +97,7 @@ class ConsoleCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        console = Console(context, self.parent.entity['id'], self.parent.entity['name'])
+        console = Console(context, self.parent.entity['id'])
         console.start()
 
 

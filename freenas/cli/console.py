@@ -33,10 +33,9 @@ from freenas.dispatcher.shell import VMConsoleClient
 
 
 class Console(object):
-    def __init__(self, context, id, name):
+    def __init__(self, context, id):
         self.context = context
         self.id = id
-        self.name = name
         self.conn = None
         self.stdscr = None
 

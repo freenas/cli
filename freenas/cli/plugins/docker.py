@@ -119,6 +119,9 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
         self.delete_task = 'docker.container.delete'
         self.primary_key_name = 'names.0'
         self.required_props = ['name', 'image']
+        self.skeleton_entity = {
+            'command': []
+        }
 
         def get_ports(o):
             return ['{0}:{1}'.format(i['container_port'], i['host_port']) for i in o['ports']]

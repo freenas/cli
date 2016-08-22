@@ -118,6 +118,20 @@ class CalendarTasksNamespaceBaseClass(RpcBasedLoadMixin, TaskBasedSaveMixin, Ent
         }
         self.primary_key_name = 'name'
 
+        self.localdoc["DeleteEntityCommand"] = ("""\
+            Usage: delete <name>
+
+            Example: delete mytask
+
+            Deletes a calendar task.""")
+
+        self.entity_localdoc["SetEntityCommand"] = ("""\
+            Usage: set <property>=<value>
+
+            Examples: set enabled=true
+
+            Sets a calendar task property.""")
+
         self.add_property(
             descr='Name',
             name='name',
@@ -193,6 +207,18 @@ class CalendarTasksNamespaceBaseClass(RpcBasedLoadMixin, TaskBasedSaveMixin, Ent
 
 
 class CalendarTasksScheduleNamespace(NestedEntityMixin, ItemNamespace):
+    """
+    The schedule namespaces provides commands for setting schedule of selected calendar task
+
+    If a schedule is not set, all time values will be set to * (run all the time).
+    The schedule property takes a key/value pair with keys of second, minute, hour,
+    day_of_month, month, day_of_week, week, and year with values of *, */integer, or
+    integer.
+
+    Examples:
+        set coalesce=no
+        set schedule={"month":"*/2","day":5}
+    """
     def __init__(self, name, context, parent):
         super(CalendarTasksScheduleNamespace, self).__init__(name)
         self.context = context
@@ -340,6 +366,16 @@ class CalendarTasksStatusNamespace(NestedEntityMixin, ItemNamespace):
 
 
 class ScrubNamespace(CalendarTasksNamespaceBaseClass):
+    """
+    Scrub namespaces provides commands to create 'scrub' type calendar tasks
+    A 'scrub' task requires a valid volume passed with the 'volume' property.
+
+    Usage:
+        create <name> <property>=<value>
+
+    Examples:
+        create myscrub volume=mypool
+    """
     def __init__(self, name, context):
         super(ScrubNamespace, self).__init__(name, context)
         self.extra_query_params = [('task', '=', 'volume.scrub')]
@@ -358,6 +394,14 @@ class ScrubNamespace(CalendarTasksNamespaceBaseClass):
 
 
 class SmartNamespace(CalendarTasksNamespaceBaseClass):
+    """
+    SMART namespaces provides commands to create 'smart' type calendar tasks
+    A 'smart' task requires a list of valid disks for the 'disks' property and a test type for the 'test_type' property that is one of short, long, conveyance or offline.
+
+    Usage: create <name> <property>=<value>
+
+    Examples: create mysmart disks=ada0,ada1,ada2 test_type=short
+    """
     def __init__(self, name, context):
         super(SmartNamespace, self).__init__(name, context)
         self.extra_query_params = [('task', '=', 'disk.parallel_test')]
@@ -402,6 +446,15 @@ class SmartNamespace(CalendarTasksNamespaceBaseClass):
 
 
 class SnapshotNamespace(CalendarTasksNamespaceBaseClass):
+    """
+    Snapshot namespaces provides commands to create 'snapshot' type calendar tasks
+    A 'snapshot' task requires a valid dataset to snapshot, a boolean for the 'recursive' property,
+    a string value of [0-9]+[hdmy] for lifetime and optionally a boolean for 'replicable' and a string for the 'prefix'.
+
+    Usage: create <name> <property>=<value>
+
+    Examples: create mysnapshot dataset=mypool/mydataset recursive=yes lifetime=1h
+    """
     def __init__(self, name, context):
         super(SnapshotNamespace, self).__init__(name, context)
         self.extra_query_params = [('task', '=', 'volume.snapshot_dataset')]
@@ -455,6 +508,15 @@ class SnapshotNamespace(CalendarTasksNamespaceBaseClass):
 
 
 class ReplicationNamespace(CalendarTasksNamespaceBaseClass):
+    """
+    Replication namespaces provides commands to create 'replication' type calendar tasks
+    A 'snapshot' task requires a valid dataset to snapshot, a boolean for the 'recursive' property,
+    a string value of [0-9]+[hdmy] for lifetime and optionally a boolean for 'replicable' and a string for the 'prefix'.
+
+    Usage: create <name> <property>=<value>
+
+    Examples: create mysnapshot dataset=mypool/mydataset recursive=yes lifetime=1h
+    """
     def __init__(self, name, context):
         super(ReplicationNamespace, self).__init__(name, context)
         self.extra_query_params = [('task', '=', 'replication.replicate_dataset')]
@@ -464,6 +526,15 @@ class ReplicationNamespace(CalendarTasksNamespaceBaseClass):
 
 
 class CheckUpdateNamespace(CalendarTasksNamespaceBaseClass):
+    """
+    CheckUpdate namespaces provides commands to create 'check_update' type calendar tasks
+    'check_updates' task requires a boolean for the 'send_email' property which tells the task whether or not to send
+    an alert by email when a new update is available.
+
+    Usage: create <name> <property>=<value>
+
+    Examples: create myupdate send_email=no
+    """
     def __init__(self, name, context):
         super(CheckUpdateNamespace, self).__init__(name, context)
         self.extra_query_params = [('task', '=', 'update.checkfetch')]
@@ -482,6 +553,13 @@ class CheckUpdateNamespace(CalendarTasksNamespaceBaseClass):
 
 
 class CommandNamespace(CalendarTasksNamespaceBaseClass):
+    """
+    Command namespaces provides commands to create 'command' type calendar tasks
+
+    Usage: create <name> <property>=<value>
+
+    Examples: create mycommand username=myuser command="ls -l"
+    """
     def __init__(self, name, context):
         super(CommandNamespace, self).__init__(name, context)
         self.extra_query_params = [('task', '=', 'calendar_task.command')]

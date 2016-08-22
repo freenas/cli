@@ -348,7 +348,7 @@ class _RestructuredTextFormatter(object):
 
     @staticmethod
     def _get_qualified_name(name, qualifiers):
-        return ".".join([".".join(qualifiers), name]) if qualifiers else name
+        return " ".join([" ".join(qualifiers), name]) if qualifiers else name
 
 
 class _CommandSectionFormatter(object):

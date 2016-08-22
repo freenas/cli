@@ -527,29 +527,16 @@ class ReplicationNamespace(CalendarTasksNamespaceBaseClass):
 class CheckUpdateNamespace(CalendarTasksNamespaceBaseClass):
     """
     CheckUpdate namespaces provides commands to create 'check_update' type calendar tasks
-    'check_updates' task requires a boolean for the 'send_email' property which tells the task whether or not to send
-    an alert by email when a new update is available.
 
     Usage: create <name> <property>=<value>
 
-    Examples: create myupdate send_email=no
+    Examples: create myupdate
     """
     def __init__(self, name, context):
         super(CheckUpdateNamespace, self).__init__(name, context)
         self.extra_query_params = [('task', '=', 'update.checkfetch')]
         self.skeleton_entity['task'] = 'update.checkfetch'
         self.skeleton_entity['args'] = []
-        self.task_args_helper = ['send_email']
-
-        self.add_property(
-            descr='Send Email',
-            name='send_email',
-            get=None,
-            list=False,
-            set=None,
-            type=ValueType.BOOLEAN,
-            usersetable=False
-        )
 
 
 class CommandNamespace(CalendarTasksNamespaceBaseClass):

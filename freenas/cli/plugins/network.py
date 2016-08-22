@@ -808,6 +808,12 @@ class IPMINamespace(RpcBasedLoadMixin, EntityNamespace):
             callback=lambda s, t: post_save(this, s, t)
         )
 
+    def namespaces(self):
+        if hasattr(self, 'is_docgen_instance') and self.is_docgen_instance:
+            return []
+        else:
+            super(IPMINamespace, self).namespaces()
+
 
 @description("Configure networking")
 class NetworkNamespace(Namespace):

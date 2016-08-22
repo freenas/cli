@@ -154,7 +154,8 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             name='command',
             get='command',
             usersetable=False,
-            list=True
+            list=True,
+            type=ValueType.ARRAY
         )
 
         self.add_property(

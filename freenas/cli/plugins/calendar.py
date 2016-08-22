@@ -210,14 +210,14 @@ class CalendarTasksScheduleNamespace(NestedEntityMixin, ItemNamespace):
     """
     The schedule namespaces provides commands for setting schedule of selected calendar task
 
-    If a schedule is not set, all time values will be set to * (run all the time).
+    If a schedule is not set, all time values will be set to `*` (run all the time).
     The schedule property takes a key/value pair with keys of second, minute, hour,
-    day_of_month, month, day_of_week, week, and year with values of *, */integer, or
+    day_of_month, month, day_of_week, week, and year with values of `*`, `*/integer`, or
     integer.
 
     Examples:
         set coalesce=no
-        set schedule={"month":"*/2","day":5}
+        set schedule={"month":`*/2`,"day":5}
     """
     def __init__(self, name, context, parent):
         super(CalendarTasksScheduleNamespace, self).__init__(name)
@@ -1059,9 +1059,9 @@ class OldCalendarTasksNamespace(RpcBasedLoadMixin,
 
             Create a calendar task.  
     
-            If a schedule is not set, all time values will be set to * (run all the time).
+            If a schedule is not set, all time values will be set to `*` (run all the time).
             The schedule property takes a key/value pair with keys of second, minute, hour,
-            day_of_month, month, day_of_week, week, and year with values of *, */integer, or
+            day_of_month, month, day_of_week, week, and year with values of `*`, `*/integer`, or
             integer.
 
             Valid types for calendar task creation include: scrub, smart, snapshot, replication and check_updates.

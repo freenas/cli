@@ -537,8 +537,8 @@ class CheckUpdateNamespace(CalendarTasksNamespaceBaseClass):
     def __init__(self, name, context):
         super(CheckUpdateNamespace, self).__init__(name, context)
         self.extra_query_params = [('task', '=', 'update.checkfetch')]
-        self.required_props.extend(['send_email'])
         self.skeleton_entity['task'] = 'update.checkfetch'
+        self.skeleton_entity['args'] = []
         self.task_args_helper = ['send_email']
 
         self.add_property(
@@ -546,8 +546,9 @@ class CheckUpdateNamespace(CalendarTasksNamespaceBaseClass):
             name='send_email',
             get=lambda obj: self.get_task_args(obj, 'send_email'),
             list=True,
-            set=lambda obj, val: self.set_args(obj, val, 'send_email'),
+            set=lambda obj, val: self.set_task_args(obj, val, 'send_email'),
             type=ValueType.BOOLEAN,
+            usersetable=False
         )
 
 

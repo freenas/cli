@@ -544,9 +544,9 @@ class CheckUpdateNamespace(CalendarTasksNamespaceBaseClass):
         self.add_property(
             descr='Send Email',
             name='send_email',
-            get=lambda obj: self.get_task_args(obj, 'send_email'),
-            list=True,
-            set=lambda obj, val: self.set_task_args(obj, val, 'send_email'),
+            get=None,
+            list=False,
+            set=None,
             type=ValueType.BOOLEAN,
             usersetable=False
         )

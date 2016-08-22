@@ -599,29 +599,6 @@ TASK_TYPES = {
 TASK_TYPES_REVERSE = {v: k for k, v in list(TASK_TYPES.items())}
 
 
-TASK_ARG_MAPPING = {
-    'volume.scrub': ['volume'],
-    'disk.parallel_test': ['disks', 'test_type'],
-    'update.checkfetch': ['send_email'],
-    'calendar_task.command': ['username', 'command'],
-    'volume.snapshot_dataset': ['dataset', 'recursive', 'lifetime', 'prefix', 'replicable']
-}
-
-
-REQUIRED_PROP_TABLE = {
-    'scrub': ['volume'],
-    'smart': ['disks', 'test_type'],
-    'check_updates': ['send_email'],
-    'command': ['username', 'command'],
-    'snapshot': ['volume', 'dataset', 'recursive', 'lifetime']
-}
-
-
-SKELETON_TASK = {
-    'volume.snapshot_dataset': [None, None, None, "auto", False]
-}
-
-
 @description("Runs calendar task right now")
 class RunCommand(Command):
     """

@@ -275,7 +275,6 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
 
     def display_group(self, entity):
         group = self.context.entity_subscribers['group'].query(
-            self.context.entity_subscribers['group'],
             ('id', '=', entity['group']),
             single=True
         )
@@ -289,11 +288,7 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             raise CommandException(_('Group {0} does not exist.'.format(value)))
 
     def display_aux_groups(self, entity):
-        groups = self.context.entity_subscribers['group'].query(
-            self.context.entity_subscribers['group'],
-            ('id', 'in', entity['groups'])
-        )
-        for group in groups:
+        for group in self.context.entity_subscribers['group'].query(('id', 'in', entity['groups'])):
             yield group['name'] if group else '<unknown group>'
 
     def set_aux_groups(self, entity, value):

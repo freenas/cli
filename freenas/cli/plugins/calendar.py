@@ -27,8 +27,8 @@
 
 import gettext
 from freenas.cli.namespace import (
-    EntityNamespace, ConfigNamespace, Command, RpcBasedLoadMixin, TaskBasedSaveMixin,
-    description, CommandException, NestedEntityMixin, ItemNamespace
+    EntityNamespace, Command, TaskBasedSaveMixin, description,
+    CommandException, NestedEntityMixin, ItemNamespace, EntitySubscriberBasedLoadMixin
 )
 from freenas.cli.output import ValueType, format_value
 

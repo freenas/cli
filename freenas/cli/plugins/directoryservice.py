@@ -85,7 +85,7 @@ class DirectoriesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, E
         self.add_property(
             descr='Type',
             name='type',
-            get='plugin',
+            get='type',
             list=True
         )
 

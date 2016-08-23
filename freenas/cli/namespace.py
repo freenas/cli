@@ -102,6 +102,8 @@ class Namespace(object):
                     yield j
             except NotImplementedError:
                 continue
+            except Exception:
+                raise CommandException(_("Dumping failed in: {0}".format(i.get_name())))
 
     def commands(self):
         return {}

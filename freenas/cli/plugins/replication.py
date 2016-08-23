@@ -412,7 +412,3 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
 
 def _init(context):
     context.attach_namespace('/', ReplicationNamespace('replication', context))
-
-
-def get_top_namespace(context):
-    return ReplicationNamespace('replication', context)

@@ -245,7 +245,3 @@ class TasksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
 
 def _init(context):
     context.attach_namespace('/', TasksNamespace('task', context))
-
-
-def get_top_namespace(context):
-    return TasksNamespace('task', context)

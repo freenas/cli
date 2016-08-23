@@ -408,7 +408,3 @@ def _init(context):
     context.attach_namespace('/', AccountNamespace('account', context))
     context.map_tasks('user.*', UsersNamespace)
     context.map_tasks('group.*', GroupsNamespace)
-
-
-def get_top_namespace(context):
-    return AccountNamespace('account', context)

@@ -295,7 +295,3 @@ class EraseDiskCommand(Command):
 def _init(context):
     context.attach_namespace('/', DisksNamespace('disk', context))
     context.map_tasks('disk.*', DisksNamespace)
-
-
-def get_top_namespace(context):
-    return DisksNamespace('disk', context)

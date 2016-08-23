@@ -969,7 +969,3 @@ class DeleteTemplateCommand(Command):
 def _init(context):
     context.attach_namespace('/', VMNamespace('vm', context))
     context.map_tasks('vm.*', VMNamespace)
-
-
-def get_top_namespace(context):
-    return VMNamespace('vm', context)

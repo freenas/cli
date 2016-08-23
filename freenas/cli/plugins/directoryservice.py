@@ -397,7 +397,3 @@ class KerberosKeytabsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixi
 
 def _init(context):
     context.attach_namespace('/', DirectoryServiceNamespace('directoryservice', context))
-
-
-def get_top_namespace(context):
-    return DirectoryServiceNamespace('directoryservice', context)

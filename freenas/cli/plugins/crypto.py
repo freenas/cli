@@ -475,7 +475,3 @@ def _init(context):
     context.attach_namespace('/', CryptoNamespace('crypto', context))
     context.map_tasks('crypto.certificate.*', CertificateNamespace)
     context.map_tasks('crypto.certificate.*', CertificateAuthorityNamespace)
-
-
-def get_top_namespace(context):
-    return CryptoNamespace('crypto', context)

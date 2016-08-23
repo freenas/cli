@@ -604,7 +604,3 @@ class RunCommand(Command):
 
 def _init(context):
     context.attach_namespace('/', CalendarTasksNamespace('calendar', context))
-
-
-def get_top_namespace(context):
-    return CalendarTasksNamespace('calendar', context)

@@ -224,7 +224,3 @@ class AlertFilterNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
 
 def _init(context):
     context.attach_namespace('/', AlertNamespace('alert', context))
-
-
-def get_top_namespace(context):
-    return AlertNamespace('alert', context)

@@ -149,8 +149,8 @@ class DirectoriesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, E
             }
 
             this.load()
-            if this.entity and this.entity.get('plugin'):
-                provider = PROVIDERS.get(this.entity['plugin'])
+            if this.entity and this.entity.get('type'):
+                provider = PROVIDERS.get(this.entity['type'])
                 if provider:
                     return [provider('properties', self.context, this)]
 

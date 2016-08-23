@@ -51,6 +51,26 @@ class NTPServersNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
         self.delete_task = 'ntp_server.delete'
         self.required_props = ['name', 'address']
         self.primary_key_name = 'id'
+        self.localdoc['CreateEntityCommand'] = _("""\
+            Usage: create <name> address=<address> <property>=<value> ...
+
+            Examples: create myntp address=utcnist.colorado.edu
+
+            Adds an NTP server for syncing with. For a list of properties, see 'help properties'.""")
+        self.entity_localdoc['SetEntityCommand'] = _("""\
+            Usage: set <property>=<value> ...
+
+            Examples: set address=utcnist2.colorado.edu
+                      set burst=True
+                      set preferred=yes
+                      set minpoll=6
+                      set maxpoll=15
+
+            Sets a user property. For a list of properties, see 'help properties'.""")
+        self.entity_localdoc['DeleteEntityCommand'] = _("""\
+            Usage: delete 
+
+            Deletes the specified NTP server.""")
 
         self.add_property(
             descr='Name',
@@ -67,6 +87,7 @@ class NTPServersNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
             get='address',
             set='address',
             list=True,
+            usage=_("Must be a valid hostname for an NTP server"),
             type=ValueType.STRING
         )
 
@@ -76,6 +97,10 @@ class NTPServersNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
             get='burst',
             set='burst',
             list=True,
+            usage=_("""\
+                    Can be set to true or false, if true this option will send 8 packets
+                    instead of 1 on each poll interval to the server while the server is
+                    reachable for improved timekeeping."""),
             type=ValueType.BOOLEAN
         )
 
@@ -85,6 +110,10 @@ class NTPServersNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
             get='iburst',
             set='iburst',
             list=True,
+            usage=_("""\
+                    Can be set to true or false, if true this option will send 8 packets
+                    instead of 1 on each poll interval to the server while the server is
+                    not reachable for improved synchronization."""),
             type=ValueType.BOOLEAN
         )
 
@@ -94,6 +123,8 @@ class NTPServersNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
             get='prefer',
             set='prefer',
             list=True,
+            usage=_("""\
+                    Can be set to yes or no, if true then this will be the preferred server."""),
             type=ValueType.BOOLEAN
         )
 
@@ -103,6 +134,8 @@ class NTPServersNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
             get='minpoll',
             set='minpoll',
             list=True,
+            usage=_("""\
+                    An integer value that ranges between 4 and 1 minus the max poll value."""),
             type=ValueType.NUMBER
         )
 
@@ -111,6 +144,8 @@ class NTPServersNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
             name='maxpoll',
             get='maxpoll',
             set='maxpoll',
+            usage=_("""\
+                    An integer value that ranges between 17 and 1 plus the min poll value."""),
             list=True,
             type=ValueType.NUMBER
         )

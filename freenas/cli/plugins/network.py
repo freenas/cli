@@ -812,7 +812,7 @@ class IPMINamespace(RpcBasedLoadMixin, EntityNamespace):
         if hasattr(self, 'is_docgen_instance') and self.is_docgen_instance:
             return []
         else:
-            super(IPMINamespace, self).namespaces()
+            return super(IPMINamespace, self).namespaces()
 
 
 @description("Configure networking")

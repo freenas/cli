@@ -650,11 +650,10 @@ class MakeDocsCommand(Command):
     def run(self, context, args, kwargs, opargs):
         builtin_cmds = context.ml.base_builtin_commands
         filtering_cmds = context.ml.pipe_commands
-        plugins = context.plugins
 
         base_commands = [[name, instance] for name, instance in builtin_cmds.items()]
         filtering_commands = [[name, instance] for name, instance in filtering_cmds.items()]
-        root_namespaces = [p.get_top_namespace(context) for _, p in plugins.items() if hasattr(p, 'get_top_namespace')]
+        root_namespaces = context.root_ns.namespaces()
 
         docgen = CliDocGen()
         docgen.load_global_base_commands(base_commands)

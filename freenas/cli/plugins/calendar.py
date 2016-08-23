@@ -37,7 +37,7 @@ t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
 
 
-class CalendarTasksNamespace(RpcBasedLoadMixin, EntityNamespace):
+class CalendarTasksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
     """
     The calendar namespace provides commands for listing and creating
     calendar tasks.
@@ -45,9 +45,9 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, EntityNamespace):
     def __init__(self, name, context):
         super(CalendarTasksNamespace, self).__init__(name, context)
         self.context = context
-        self.query_call = 'calendar_task.query'
+        self.entity_subscriber_name = 'calendar_task'
         self.allow_create = False
-        self.primary_key = self.get_mapping('name')
+        self.primary_key_name = 'name'
 
         self.add_property(
             descr='Type',
@@ -90,6 +90,8 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, EntityNamespace):
             type=ValueType.BOOLEAN
         )
 
+        self.primary_key = self.get_mapping('name')
+
     def namespaces(self):
         return [
             ScrubNamespace('scrub', self.context),
@@ -101,11 +103,11 @@ class CalendarTasksNamespace(RpcBasedLoadMixin, EntityNamespace):
         ]
 
 
-class CalendarTasksNamespaceBaseClass(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
+class CalendarTasksNamespaceBaseClass(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
     def __init__(self, name, context):
         super(CalendarTasksNamespaceBaseClass, self).__init__(name, context)
         self.context = context
-        self.query_call = 'calendar_task.query'
+        self.entity_subscriber_name = 'calendar_task'
         self.create_task = 'calendar_task.create'
         self.update_task = 'calendar_task.update'
         self.delete_task = 'calendar_task.delete'

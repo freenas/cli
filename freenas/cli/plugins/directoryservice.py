@@ -31,6 +31,7 @@ from freenas.cli.output import ValueType
 from freenas.cli.namespace import (
     Command,
     Namespace,
+    ConfigNamespace,
     ItemNamespace,
     EntityNamespace,
     EntitySubscriberBasedLoadMixin,
@@ -60,9 +61,31 @@ class DirectoryServiceNamespace(Namespace):
 
     def namespaces(self):
         return [
+            DirectoryServicesConfigNamespace('config', self.context),
             DirectoriesNamespace('directories', self.context),
             KerberosNamespace('kerberos', self.context)
         ]
+
+
+class DirectoryServicesConfigNamespace(ConfigNamespace):
+    def __init__(self, name, context):
+        super(DirectoryServicesConfigNamespace, self).__init__(name, context)
+        self.config_call = "directoryservice.get_config"
+        self.update_task = 'directoryservice.update'
+
+        self.add_property(
+            descr='Search order',
+            name='search_order',
+            get='search_order',
+            type=ValueType.SET
+        )
+
+        self.add_property(
+            descr='Cache TTL',
+            name='cache_ttl',
+            get='cache_ttl',
+            type=ValueType.NUMBER
+        )
 
 
 class DirectoriesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):

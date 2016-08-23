@@ -129,6 +129,7 @@ ENTITY_SUBSCRIBERS = [
     'task',
     'tunable',
     'crypto.certificate',
+    'calendar_task',
     'alert',
     'alert.filter',
     'vm',

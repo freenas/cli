@@ -30,6 +30,7 @@
 import textwrap
 import inspect
 import copy
+import os
 from freenas.cli.namespace import SingleItemNamespace, EntityNamespace
 
 
@@ -132,6 +133,9 @@ class NamespacesDocGen(object):
         return ret
 
     def _write_output_file(self, contents):
+        if not os.path.exists(self.output_file_path):
+            os.makedirs(self.output_file_path)
+
         with open(self.output_file_path+self.curr_output_filename+self.output_file_ext, 'w') as f:
             f.write(contents)
 
@@ -184,6 +188,9 @@ class GlobalCommandsDocGen(object):
         return contents
 
     def _write_output_file(self, contents):
+        if not os.path.exists(self.output_file_path):
+            os.makedirs(self.output_file_path)
+
         with open(self.output_file_path+self.curr_output_filename+self.output_file_ext, 'w') as f:
             f.write(contents)
 

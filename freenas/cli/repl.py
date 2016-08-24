@@ -1418,7 +1418,7 @@ class MainLoop(object):
                 raise SyntaxError("Command or namespace {0} not found".format(top.name))
 
             if isinstance(token, FunctionCall):
-                args = list(map(lambda a: self.eval(a, env), token.args))
+                args = list(map(lambda a: self.eval(a, env, first=True), token.args))
                 func = env.find(token.name)
                 if func:
                     if isinstance(func, Environment.Variable):

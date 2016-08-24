@@ -1519,12 +1519,10 @@ class MainLoop(object):
             line = '; '.join(unparse(t, oneliner=True) for t in tokens)
             add_line_to_history(line)
 
-            first = True
             for i in tokens:
                 try:
                     self.context.call_stack = []
-                    ret = self.eval(i, first=first, printable_none=True)
-                    first = False
+                    ret = self.eval(i, first=True, printable_none=True)
                 except SystemExit as err:
                     raise err
                 except BaseException as err:

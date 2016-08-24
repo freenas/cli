@@ -1149,8 +1149,14 @@ class MainLoop(object):
                     real_path.append(i)
             return real_path[-1]
 
+    def reset_on_first_run(self):
+        self.context.pipe_cwd = None
+
     def eval(self, token, env=None, path=None, serialize_filter=None, input_data=None, dry_run=False, first=False,
              printable_none=False):
+
+        if first:
+            self.reset_on_first_run()
 
         cwd = self.get_cwd(path)
         path = path or []
@@ -1453,8 +1459,9 @@ class MainLoop(object):
 
                 cmd, cwd, args, kwargs, opargs = self.eval(token.left, env, path, dry_run=True, first=first)
 
-                cwd.on_enter()
-                self.context.pipe_cwd = cwd
+                if self.context.pipe_cwd is None:
+                    cwd.on_enter()
+                    self.context.pipe_cwd = cwd
 
                 if isinstance(cmd, FilteringCommand):
                     # Do serialize_filter pass

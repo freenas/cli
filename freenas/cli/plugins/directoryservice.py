@@ -36,6 +36,7 @@ from freenas.cli.namespace import (
     EntityNamespace,
     EntitySubscriberBasedLoadMixin,
     TaskBasedSaveMixin,
+    NestedEntityMixin,
     description
 )
 
@@ -187,19 +188,12 @@ class DirectoriesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, E
         self.primary_key = self.get_mapping('name')
 
 
-class BaseDirectoryPropertiesNamespace(ItemNamespace):
+class BaseDirectoryPropertiesNamespace(NestedEntityMixin, ItemNamespace):
     def __init__(self, name, context, parent):
         super(BaseDirectoryPropertiesNamespace, self).__init__(name)
         self.context = context
         self.parent = parent
-
-    def load(self):
-        if hasattr(self.parent, 'entity') and 'parameters' in self.parent.entity:
-            self.entity = self.parent.entity['parameters']
-            self.orig_entity = copy.deepcopy(self.entity)
-
-    def save(self):
-        return self.parent.save()
+        self.parent_entity_path = 'parameters'
 
 
 class ActiveDirectoryPropertiesNamespace(BaseDirectoryPropertiesNamespace):

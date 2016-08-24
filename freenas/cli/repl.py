@@ -174,7 +174,7 @@ def expand_wildcards(context, args, kwargs, opargs, completions):
         return list(filter(regex.match, choices))
 
     for i in completions:
-        if not i.list:
+        if not getattr(i, 'list', None):
             continue
 
         if isinstance(i.name, six.integer_types):
@@ -1670,11 +1670,10 @@ class MainLoop(object):
 
                     append_space = True
                 elif issubclass(type(obj), Command):
-                    completions = obj.complete(self.context)
+                    completions = obj.complete(self.context, text=text)
                     choices = [c.name for c in completions if isinstance(c.name, six.string_types)]
 
                     arg = find_arg(args, readline.get_begidx())
-
                     if arg is False:
                         return None
                     elif isinstance(arg, six.integer_types):

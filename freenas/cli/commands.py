@@ -36,6 +36,8 @@ import gettext
 import platform
 import textwrap
 import re
+import logging
+import copy
 from datetime import datetime
 from freenas.cli.parser import parse, unparse
 from freenas.cli.complete import NullComplete, EnumComplete
@@ -64,6 +66,8 @@ if platform.system() != 'Windows':
 
 t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
+
+logger = logging.getLogger('cli.commands')
 
 
 def create_variable_completer(name, var):
@@ -123,6 +127,17 @@ class ChangeNamespaceCommand(Command):
     This is basically a navigation command to facilitate unix-like navigation
     """
 
+    def mod_namespaces(self, nslist, prepend=''):
+        """Small utility function to append `/` at the end of the namespace name"""
+        modded_ns = []
+        if prepend and not prepend.endswith('/'):
+            prepend += '/'
+        for i in nslist:
+            modns = copy.copy(i)
+            modns.name = '{0}{1}{2}'.format(prepend, modns.name, '/')
+            modded_ns.append(modns)
+        return modded_ns
+
     def run(self, context, args, kwargs, opargs):
         if kwargs:
             raise CommandException(_(
@@ -132,11 +147,64 @@ class ChangeNamespaceCommand(Command):
             if '..' in args:
                 path_args = ''.join(args)
             else:
-                raise CommandException(_('Invalid syntax: {0}.\n{1}'.format(args, inspect.getdoc(self))))
+                raise CommandException(_(
+                    'Invalid syntax: {0}.\n{1}'.format(args, inspect.getdoc(self))
+                ))
         else:
             path_args = args[0]
         path = path_args[0] + path_args[1:].replace('/', ' ').strip()
         return context.ml.process(path)
+
+    def complete(self, context, **kwargs):
+        text = kwargs.get('text', None)
+        if text is None:
+            return []
+
+        # Some defaults
+        path = context.ml.path[:]
+        prepend = []
+        ns = context.ml.path[-1]
+        old_ns_list = []
+
+        text = text.strip()
+
+        # hack to make '/..' endings tab complete
+        if text.endswith("/.."):
+            text += '/'
+
+        # Find the last occurence of '/'
+        last_slash = text.rfind('/') if text else -1
+
+        if last_slash > -1:
+            if text.startswith('/'):
+                prepend = ['/']
+                path = path[0]
+                ns = context.root_ns
+                text = text[1:]
+            if last_slash != 0 and last_slash < len(text) - 1:
+                # Remove anything after the last slash
+                text = text[:last_slash]
+
+        for pseudo_token in filter(lambda x: x.strip() != '', text.split('/')):
+            if pseudo_token == '..':
+                if old_ns_list:
+                    ns = old_ns_list.pop()
+                elif isinstance(path, list) and len(path) > 1:
+                    del path[-1]
+                    ns = path[-1]
+                prepend.append('..')
+                continue
+            for new_ns in ns.namespaces():
+                if new_ns != ns and new_ns.name == pseudo_token:
+                    old_ns_list.append(ns)
+                    ns = new_ns
+                    prepend.append(new_ns.name)
+                    break
+        if prepend and prepend[0] == '/':
+            prepend = '/' + '/'.join(prepend[1:])
+        else:
+            prepend = '/'.join(prepend)
+        return self.mod_namespaces(ns.namespaces(), prepend)
 
 
 @description("Print configuration variable values")
@@ -225,6 +293,7 @@ class SetenvCommand(Command):
 
     Sets an environment variable.
     """
+
     def run(self, context, args, kwargs, opargs):
         for k, v in kwargs.items():
             os.environ[k] = str(v)
@@ -237,6 +306,7 @@ class PrintenvCommand(Command):
 
     Prints currently set environment variables and their values.
     """
+
     def run(self, context, args, kwargs, opargs):
         return Table(
             [{'name': k, 'value': v} for k, v in os.environ.items()],
@@ -524,22 +594,25 @@ class HelpCommand(Command):
                             else:
                                 prop_usage = "{0}, accepts {1} values".format(prop.descr, prop_type)
                         prop_dict = {
-                                'propname': prop.name,
-                                'propusage': ' '.join(prop_usage.split())
+                            'propname': prop.name,
+                            'propusage': ' '.join(prop_usage.split())
                         }
                         prop_dict_list.append(prop_dict)
                 if len(prop_dict_list) > 0:
-                    return Table(prop_dict_list, [
-                        Table.Column('Property', 'propname', ValueType.STRING),
-                        Table.Column('Usage', 'propusage', ValueType.STRING),
-                        ])
+                    return Table(
+                        prop_dict_list,
+                        [
+                            Table.Column('Property', 'propname', ValueType.STRING),
+                            Table.Column('Usage', 'propusage', ValueType.STRING),
+                        ]
+                    )
         if isinstance(obj, Command) or isinstance(obj, FilteringCommand) and obj.__doc__:
             command_name = obj.__class__.__name__
             if (
                 hasattr(obj, 'parent') and
                 hasattr(obj.parent, 'localdoc') and
                 command_name in obj.parent.localdoc.keys()
-               ):
+            ):
                 return textwrap.dedent(obj.parent.localdoc[command_name]) + "\n"
             else:
                 if inspect.getdoc(obj) is not None:
@@ -883,7 +956,7 @@ class EchoCommand(Command):
                 if not (
                     isinstance(item, (Table, output_obj, dict, Sequence, list)) or
                     i == 0 or
-                    isinstance(args[i-1], (Table, output_obj, dict, Sequence, list))
+                    isinstance(args[i - 1], (Table, output_obj, dict, Sequence, list))
                 ):
                     echo_seq[-1] = ' '.join([echo_seq[-1], str(item)])
                 elif isinstance(item, list):
@@ -900,6 +973,7 @@ class PendingCommand(Command):
 
     Display the list of currently pending tasks.
     """
+
     def run(self, context, args, kwargs, opargs):
         pending = list(filter(
             lambda t: t['session'] == context.session_id,
@@ -922,6 +996,7 @@ class WaitCommand(Command):
     Show task progress of either all waiting tasks or the
     specified task. Use 'task show' to determine the task ID.
     """
+
     def run(self, context, args, kwargs, opargs):
         if args:
             try:
@@ -936,7 +1011,7 @@ class WaitCommand(Command):
                 pass
         if tid is None:
             raise CommandException(_(
-                    'No recently submitted tasks (which are still active) found'
+                'No recently submitted tasks (which are still active) found'
             ))
 
         def update(progress, task):
@@ -1001,6 +1076,7 @@ class AttachDebuggerCommand(Command):
     """
     Usage: attach_debugger <path to pydevd egg> <host> <port>
     """
+
     def run(self, context, args, kwargs, opargs):
         import sys
         sys.path.append(args[0])
@@ -1092,6 +1168,7 @@ class OlderThanPipeCommand(PipeCommand):
     Return all elements of a list that contains time values that are
     older than the given time delta.
     """
+
     def run(self, context, args, kwargs, opargs, input=None):
         return input
 
@@ -1113,6 +1190,7 @@ class NewerThanPipeCommand(PipeCommand):
     Return all elements of a list that contains time values that are newer than
     the given time delta.
     """
+
     def run(self, context, args, kwargs, opargs, input=None):
         return input
 
@@ -1133,6 +1211,7 @@ class ExcludePipeCommand(PipeCommand):
     Return all the elements of a list that do not match the given key
     value.
     """
+
     def run(self, context, args, kwargs, opargs, input=None):
         return input
 
@@ -1167,6 +1246,7 @@ class SortPipeCommand(PipeCommand):
 
     Sort the elements of a list by the given key.
     """
+
     def serialize_filter(self, context, args, kwargs, opargs):
         return {"params": {"sort": args}}
 
@@ -1183,6 +1263,7 @@ class LimitPipeCommand(PipeCommand):
 
     Return only the specified number of elements in a list.
     """
+
     def serialize_filter(self, context, args, kwargs, opargs):
         if len(args) == 0:
             raise CommandException(_("Please specify a number to limit."))
@@ -1207,6 +1288,7 @@ class SelectPipeCommand(PipeCommand):
     Return only the output of the specified field. Use 'help properties' to
     determine the valid field (Property) names for a namespace.
     """
+
     def run(self, context, args, kwargs, opargs, input=None):
         ns = context.pipe_cwd
         available_props = [x.name for x in ns.property_mappings if x.list]

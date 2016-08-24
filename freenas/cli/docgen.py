@@ -64,7 +64,7 @@ class NamespacesDocGen(object):
     def __init__(self):
         self.root_namespaces = []
         self.namespaces_filenames = []
-        self.output_file_path = '/var/tmp/'
+        self.output_file_path = '/var/tmp/cli.docs/'
         self.top_index_filename = 'index'
         self.namespaces_index_filename = 'idx_namespaces'
         self.output_file_ext = '.rst'
@@ -145,7 +145,7 @@ class GlobalCommandsDocGen(object):
         self.commands_type_and_list_pairs = {'base': [],
                                              'filtering': []}
         self.global_commands_filenames = []
-        self.output_file_path = '/var/tmp/'
+        self.output_file_path = '/var/tmp/cli.docs/'
         self.output_file_ext = '.rst'
         self.top_index_filename = 'index'
         self.global_commands_index_filename = 'idx_global_commands'

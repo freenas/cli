@@ -963,18 +963,6 @@ class MainLoop(object):
         self.aliases = {}
         self.connection = None
         self.saved_state = None
-        self.cached_values = {
-            'rel_cwd': None,
-            'rel_tokens': None,
-            'rel_ptr': None,
-            'rel_ptr_namespaces': None,
-            'obj': None,
-            'obj_namespaces': None,
-            'choices': None,
-            'scope_cwd': None,
-            'scope_namespaces': None,
-            'scope_commands': None,
-        }
 
     def __get_prompt(self):
         variables = collections.defaultdict(lambda: '', {

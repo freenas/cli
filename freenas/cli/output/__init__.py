@@ -114,9 +114,6 @@ class Table(object):
     def __getitem__(self, item):
         return self.data[item]
 
-    def __iter__(self):
-        return self.data
-
     def pop(self, pop_index):
         return self.data.pop(pop_index)
 

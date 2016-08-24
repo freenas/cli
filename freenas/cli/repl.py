@@ -49,6 +49,7 @@ import inspect
 import re
 from six.moves.urllib.parse import urlparse
 from socket import gaierror as socket_error
+from freenas.cli.output import Table
 from freenas.cli.descriptions import events
 from freenas.cli.utils import PrintableNone, SIGTSTPException, SIGTSTP_setter, errors_by_path
 from freenas.cli import functions
@@ -1214,6 +1215,11 @@ class MainLoop(object):
 
             if isinstance(token, AssignmentStatement):
                 expr = self.eval(token.expr, env, first=first)
+               
+                # Table data needs to be flattened upon assignment
+                if isinstance(expr, Table):
+                    rows = list(expr.data)
+                    expr.data = rows
 
                 if token.name in self.context.variables.variables:
                     raise SyntaxError(_(

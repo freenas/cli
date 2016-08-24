@@ -70,9 +70,7 @@ def array_resize(array, length):
 
 def print_(*items):
     for i in items:
-        format_output(i, newline=False)
-
-    output_msg('')
+        format_output(i)
 
 
 def printf(fmt, *args):

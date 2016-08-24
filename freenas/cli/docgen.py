@@ -29,7 +29,6 @@
 
 import textwrap
 import inspect
-import re
 import copy
 from freenas.cli.namespace import SingleItemNamespace, EntityNamespace
 

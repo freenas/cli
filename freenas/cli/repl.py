@@ -1828,8 +1828,8 @@ def main():
         return
 
     try:
-        with open(os.path.expanduser('~/.cli_history'), 'r') as history_file:
-            history_list = history_file.read().splitlines()
+        with open(os.path.expanduser('~/.cli_history'), 'rb') as history_file:
+            history_list = history_file.read().decode('utf8', 'ignore').splitlines()
             history_list = history_list[-1000:]
             for line in history_list:
                 readline.add_history(line)

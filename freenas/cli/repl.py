@@ -305,12 +305,13 @@ class VariableStore(object):
     def save(self, filename=None):
         env_settings = {}
         for key, variable in self.variables.items():
-            env_settings[key] = {
-                'default': variable.default,
-                'type': variable.type.value,
-                'choices': variable.choices,
-                'value': variable.value
-            }
+            if not variable.readonly:
+                env_settings[key] = {
+                    'default': variable.default,
+                    'type': variable.type.value,
+                    'choices': variable.choices,
+                    'value': variable.value
+                }
         try:
             with open(filename or self.save_to_file, 'w') as f:
                 json.dump(env_settings, f)

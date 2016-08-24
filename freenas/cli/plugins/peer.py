@@ -330,6 +330,8 @@ class PeerNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             usersetable=False
         )
 
+        self.primary_key = self.get_mapping('name')
+
     def namespaces(self):
         return [
             ReplicationPeerNamespace('replication', self.context),

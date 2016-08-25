@@ -872,8 +872,8 @@ class SourceCommand(Command):
                 arg = os.path.expanduser(arg)
                 if os.path.isfile(arg):
                     try:
-                        with open(arg, 'r') as f:
-                            ast = parse(f.read(), arg)
+                        with open(arg, 'rb') as f:
+                            ast = parse(f.read().decode('utf8'), arg)
                             context.eval_block(ast)
                     except UnicodeDecodeError as e:
                         raise CommandException(_(

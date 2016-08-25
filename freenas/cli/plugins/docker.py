@@ -298,6 +298,22 @@ class DockerConfigNamespace(DockerUtilsMixin, ConfigNamespace):
             complete=EntitySubscriberComplete('default_host=', 'docker.host', lambda d: d['name'])
         )
 
+        self.add_property(
+            descr='Forward Docker remote API to host',
+            name='api_forwarding',
+            get=lambda o: self.get_host({'host': o['default_host']}),
+            set=lambda o, v: set(o, 'default_host', self.set_host({}, v)),
+            complete=EntitySubscriberComplete('default_host=', 'docker.host', lambda d: d['name'])
+        )
+
+        self.add_property(
+            descr='Docker remote API forwarding',
+            name='api_forwarding_enable',
+            get='api_forwarding_enable',
+            set='api_forwarding_enable',
+            type=ValueType.BOOLEAN
+        )
+
 
 @description("Pull container image from Docker Hub to Docker host")
 class DockerImagePullCommand(Command):

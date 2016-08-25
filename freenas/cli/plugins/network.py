@@ -809,7 +809,7 @@ class IPMINamespace(RpcBasedLoadMixin, EntityNamespace):
         )
 
     def namespaces(self):
-        if hasattr(self, 'is_docgen_instance') and self.is_docgen_instance:
+        if getattr(self, 'is_docgen_instance', False):
             return []
         else:
             return super(IPMINamespace, self).namespaces()
@@ -838,7 +838,7 @@ class NetworkNamespace(Namespace):
         if self.context.call_sync('ipmi.is_ipmi_loaded'):
             ret.append(IPMINamespace('ipmi', self.context))
 
-        if hasattr(self, 'is_docgen_instance') and self.is_docgen_instance:
+        if getattr(self, 'is_docgen_instance', False):
             ret.append(IPMINamespace('ipmi', self.context))
 
         return ret

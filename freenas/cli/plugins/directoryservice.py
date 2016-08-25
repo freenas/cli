@@ -178,7 +178,7 @@ class DirectoriesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, E
                 if provider:
                     return [provider('properties', self.context, this)]
 
-            if hasattr(self, 'is_docgen_instance') and self.is_docgen_instance:
+            if getattr(self, 'is_docgen_instance', False):
                 return [namespace('<entity=={0}>properties'.format(name), self.context, this) for name, namespace in
                         PROVIDERS.items()]
 

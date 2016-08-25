@@ -352,8 +352,13 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
 class VMDeviceDiskMixin(EntityNamespace):
     def __init__(self, name, context):
         def get_humanized_summary(o):
-            size = get_humanized_size(o['properties']['size']) + " " if o['type'] == 'DISK' else ""
-            return size + o['properties']['mode'] + " " + o['type']
+            if get(o, 'type') == 'DISK':
+                return "{0} {1} DISK".format(
+                    get_humanized_size(get(o, 'properties.size')),
+                    get(o, 'mode')
+                )
+
+            return get(o, 'type')
 
         super(VMDeviceDiskMixin, self).__init__(name, context)
         self.humanized_summaries['DISK'] = get_humanized_summary
@@ -389,8 +394,10 @@ class VMDeviceDiskMixin(EntityNamespace):
 class VMDeviceNicMixin(EntityNamespace):
     def __init__(self, name, context):
         def get_humanized_summary(o):
-            bridge = " bridged to " + o['properties']['bridge'] if 'bridge' in o['properties'] else ""
-            return o['properties']['device'] + " NIC" + bridge
+            if get(o, 'properties.bridge'):
+                return "{0} NIC bridged to {1}".format(get(o, 'properties.device'), get(o, 'properties.bridge'))
+
+            return "{0} NIC".format(get(o, 'properties.device'))
 
         super(VMDeviceNicMixin, self).__init__(name, context)
         self.humanized_summaries['NIC'] = get_humanized_summary
@@ -433,7 +440,7 @@ class VMDeviceNicMixin(EntityNamespace):
 class VMDeviceUSBMixin(EntityNamespace):
     def __init__(self, name, context):
         def get_humanized_summary(o):
-            return "USB " + o['properties']['device'] + " device"
+            return "USB {0} device".format(get(o, 'properties.device'))
 
         super(VMDeviceUSBMixin, self).__init__(name, context)
         self.humanized_summaries['USB'] = get_humanized_summary
@@ -451,7 +458,7 @@ class VMDeviceUSBMixin(EntityNamespace):
 class VMDeviceVGAMixin(EntityNamespace):
     def __init__(self, name, context):
         def get_humanized_summary(o):
-            return "VGA device with resolution " + o['properties']['resolution']
+            return "VGA device with resolution {0}".format(get(o, 'properties.resolution'))
 
         def set_resolution(o ,v):
             if 'properties' in o:

@@ -251,58 +251,6 @@ class SystemDatasetImportCommand(Command):
         context.submit_task('system_dataset.import', vol, callback=lambda s: post_save(self.parent, s))
 
 
-@description("View sessions")
-class SessionsNamespace(RpcBasedLoadMixin, EntityNamespace):
-    """
-    System sessions command, expands into commmands to show sessions.
-    """
-
-    def __init__(self, name, context):
-        super(SessionsNamespace, self).__init__(name, context)
-
-        self.allow_create = False
-        self.allow_edit = False
-        self.query_call = 'session.query'
-
-        self.add_property(
-            descr='Session ID',
-            name='id',
-            get='id',
-            type=ValueType.NUMBER
-        )
-
-        self.add_property(
-            descr='IP Address',
-            name='address',
-            get='address',
-        )
-
-        self.add_property(
-            descr='User name',
-            name='username',
-            get='username',
-        )
-
-        self.add_property(
-            descr='Started at',
-            name='started',
-            get='started_at',
-            type=ValueType.TIME
-        )
-
-        self.add_property(
-            descr='Ended at',
-            name='ended',
-            get='ended_at',
-            type=ValueType.TIME
-        )
-
-        self.primary_key = self.get_mapping('id')
-
-    def serialize(self):
-        raise NotImplementedError()
-
-
 @description("View event history")
 class EventsNamespace(RpcBasedLoadMixin, EntityNamespace):
     """

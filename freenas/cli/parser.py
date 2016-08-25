@@ -30,6 +30,9 @@ import re
 import ply.lex as lex
 import ply.yacc as yacc
 from freenas.cli import config
+import logging
+
+logger = logging.getLogger('freenascli.parser')
 
 
 def ASTObject(name, *args):
@@ -301,8 +304,8 @@ precedence = (
 )
 
 
-def t_ESCAPENL(t):
-    r'\s*[\n\#]'
+def t_ESCAPE_COMMENTS(t):
+    r'^\#'
     t.lexer.lineno += 1
 
 
@@ -351,7 +354,7 @@ def t_NEWLINE(t):
 
 
 def t_ignore_BREAKNL(t):
-    r'\\'
+    r'\\\s*'
     t.lexer.breaknl = True
     pass
 

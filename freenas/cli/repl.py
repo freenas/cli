@@ -256,7 +256,7 @@ class VariableStore(object):
             'abort_on_errors': self.Variable(True, ValueType.BOOLEAN),
             'output': self.Variable(None, ValueType.STRING),
             'verbosity': self.Variable(1, ValueType.NUMBER),
-            'vm.console_interrupt': self.Variable(r'\035',ValueType.STRING),
+            'vm.console_interrupt': self.Variable(r'\035', ValueType.STRING),
             'cli_src_path': self.Variable(
                 os.path.dirname(os.path.realpath(__file__)), ValueType.STRING, None, True
             )

@@ -27,7 +27,7 @@
 
 from freenas.cli.namespace import (
     Namespace, ConfigNamespace, Command, CommandException, description,
-    RpcBasedLoadMixin, EntityNamespace
+    EntitySubscriberBasedLoadMixin, EntityNamespace
 )
 from freenas.cli.output import Object, Sequence, ValueType, format_value
 from freenas.cli.descriptions import events
@@ -47,17 +47,16 @@ class SendMessageCommand(Command):
 
 
 @description("View sessions")
-class SessionsNamespace(RpcBasedLoadMixin, EntityNamespace):
+class SessionsNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
     """
     System sessions command, expands into commmands to show sessions.
     """
 
     def __init__(self, name, context):
         super(SessionsNamespace, self).__init__(name, context)
-
         self.allow_create = False
         self.allow_edit = False
-        self.query_call = 'session.query'
+        self.entity_subscriber_name = 'session'
 
         self.add_property(
             descr='Session ID',

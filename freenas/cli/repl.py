@@ -113,7 +113,8 @@ EVENT_MASKS = [
     'task.progress',
     'task.updated',
     'service.stopped',
-    'service.started'
+    'service.started',
+    'session.message'
 ]
 ENTITY_SUBSCRIBERS = [
     'user',
@@ -129,6 +130,7 @@ ENTITY_SUBSCRIBERS = [
     'share',
     'task',
     'tunable',
+    'session',
     'crypto.certificate',
     'calendar_task',
     'alert',

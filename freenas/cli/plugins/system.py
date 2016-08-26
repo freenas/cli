@@ -742,7 +742,6 @@ class SystemNamespace(ConfigNamespace):
             AdvancedNamespace('advanced', self.context),
             TimeNamespace('time', self.context),
             MailNamespace('mail', self.context),
-            SessionsNamespace('session', self.context),
             EventsNamespace('event', self.context),
             SystemDatasetNamespace('system_dataset', self.context),
             ConfigDbNamespace('config'),

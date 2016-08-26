@@ -490,6 +490,14 @@ class VMDeviceVGAMixin(EntityNamespace):
             else:
                 o.update({'properties': {'resolution': '{0}x{1}'.format(v[0], v[1])}})
 
+        def set_vnc_port(obj, val):
+            if val not in range(1, 65536):
+                raise CommandException(_("vnc_port must be value in range 1..65535"))
+            if 'properties' in obj:
+                obj['properties']['vnc_port'] = val
+            else:
+                obj.update({'properties': {'vnc_port': '{0}'.format(val)}})
+
         super(VMDeviceVGAMixin, self).__init__(name, context)
         self.humanized_summaries['GRAPHICS'] = get_humanized_summary
 
@@ -528,6 +536,7 @@ class VMDeviceVGAMixin(EntityNamespace):
             name='vnc_port',
             get='properties.vnc_port',
             list=False,
+            set=set_vnc_port,
             type=ValueType.NUMBER,
             condition=lambda e: e['type'] == 'GRAPHICS'
         )

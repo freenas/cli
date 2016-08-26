@@ -379,7 +379,7 @@ class VMDeviceDiskMixin(EntityNamespace):
             if get(o, 'type') == 'DISK':
                 return "{0} {1} DISK".format(
                     get_humanized_size(get(o, 'properties.size')),
-                    get(o, 'mode')
+                    get(o, 'properties.mode')
                 )
 
             return get(o, 'type')

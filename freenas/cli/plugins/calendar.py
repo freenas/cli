@@ -227,7 +227,7 @@ class CalendarTasksScheduleNamespace(NestedEntityMixin, ItemNamespace):
         self.parent_entity_path = 'schedule'
         self.skeleton_entity = {
             'schedule': { 'coalesce': True,
-                          'timezone': self.context.call_sync('system.general.get_config')['timezone'],
+                          'timezone': self.context.call_sync('system.general.get_config').get('timezone', "UTC"),
                           'year': None,
                           'month': None,
                           'day': None,

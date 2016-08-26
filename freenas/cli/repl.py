@@ -83,6 +83,8 @@ from freenas.cli.commands import (
     UnaliasCommand, ListVarsCommand, AttachDebuggerCommand, ChangeNamespaceCommand,
     MakeDocsCommand
 )
+from freenas.cli.docgen import CliDocGen
+
 import collections
 
 try:
@@ -353,6 +355,7 @@ class VariableStore(object):
 
 class Context(object):
     def __init__(self):
+        self.docgen_run = False
         self.uri = None
         self.parsed_uri = None
         self.hostname = None
@@ -400,7 +403,7 @@ class Context(object):
 
     def start(self, password=None):
         self.discover_plugins()
-        self.connect(password)
+        self.connect(password) if not self.docgen_run else None
 
     def start_entity_subscribers(self):
         for i in ENTITY_SUBSCRIBERS:
@@ -743,7 +746,7 @@ class Context(object):
             self.output_queue.put(translation)
 
     def call_sync(self, name, *args, **kwargs):
-        return self.connection.call_sync(name, *args, **kwargs)
+        return self.connection.call_sync(name, *args, **kwargs) if not self.docgen_run else {}
 
     def call_task_sync(self, name, *args, **kwargs):
         return self.connection.call_task_sync(name, *args)
@@ -1742,6 +1745,7 @@ def main():
         parser = argparse.ArgumentParser()
     parser.add_argument('uri', metavar='URI', nargs='?',
                         default='unix:')
+    parser.add_argument('-make_docs', action='store_true')
     parser.add_argument('-m', metavar='MIDDLEWARECONFIG',
                         default=DEFAULT_MIDDLEWARE_CONFIGFILE)
     parser.add_argument('-c', metavar='CONFIG', default=DEFAULT_CLI_CONFIGFILE)
@@ -1751,11 +1755,13 @@ def main():
     parser.add_argument('-D', metavar='DEFINE', action='append')
     args = parser.parse_args()
 
-    if os.environ.get('FREENAS_SYSTEM') != 'YES' and args.uri == 'unix:':
-        args.uri = six.moves.input('Please provide FreeNAS IP: ')
-
     context = Context()
     context.argparse_parser = parser
+    context.docgen_run = args.make_docs
+
+    if not context.docgen_run and os.environ.get('FREENAS_SYSTEM') != 'YES' and args.uri == 'unix:':
+        args.uri = six.moves.input('Please provide FreeNAS IP: ')
+
     context.uri = args.uri
     context.parsed_uri = urlparse(args.uri)
     if context.parsed_uri.scheme == '':
@@ -1768,6 +1774,7 @@ def main():
     else:
         context.hostname = context.parsed_uri.hostname
     if (
+        not context.docgen_run and
         context.parsed_uri.scheme != 'unix' and
         context.parsed_uri.netloc not in ('localhost', '127.0.0.1', None)
     ):
@@ -1797,6 +1804,21 @@ def main():
 
     ml = MainLoop(context)
     context.ml = ml
+
+    if args.make_docs:
+        builtin_cmds = context.ml.base_builtin_commands
+        filtering_cmds = context.ml.pipe_commands
+
+        base_commands = [[name, instance] for name, instance in builtin_cmds.items()]
+        filtering_commands = [[name, instance] for name, instance in filtering_cmds.items()]
+        root_namespaces = context.root_ns.namespaces()
+
+        docgen = CliDocGen()
+        docgen.load_global_base_commands(base_commands)
+        docgen.load_global_filtering_commands(filtering_commands)
+        docgen.load_root_namespaces(root_namespaces)
+        docgen.write_docs()
+        return
 
     if username is not None:
         context.login(username, args.p)

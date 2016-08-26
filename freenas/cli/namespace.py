@@ -1156,10 +1156,13 @@ class EntitySubscriberBasedLoadMixin(object):
         if hasattr(self, 'default_sort'):
             options['sort'] = [self.default_sort]
 
-        return self.context.entity_subscribers[self.entity_subscriber_name].query(
-            *(self.extra_query_params + params),
-            **options
-        )
+        if not self.context.docgen_run:
+            return self.context.entity_subscribers[self.entity_subscriber_name].query(
+                *(self.extra_query_params + params),
+                **options
+            )
+        else:
+            return {}
 
     def get_one(self, name):
         return self.context.entity_subscribers[self.entity_subscriber_name].query(

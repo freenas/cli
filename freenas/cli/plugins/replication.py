@@ -34,7 +34,8 @@ from freenas.cli.namespace import (
 )
 from freenas.cli.complete import NullComplete, EnumComplete
 from freenas.cli.output import ValueType, read_value
-from freenas.cli.utils import post_save
+from freenas.cli.utils import post_save, parse_timedelta
+from freenas.utils import query as q
 
 t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
@@ -101,6 +102,7 @@ class CreateReplicationCommand(Command):
             bidirectional=<bidirectional> auto_recover=<auto_recover>
             replicate_services=<replicate_services> encrypt=<encrypt>
             compress=<fast/default/best> throttle=<throttle>
+            snapshot_lifetime=<snapshot_lifetime> follow_delete=<follow_delete>
 
     Example: create my_replication master=10.0.0.2 slave=10.0.0.3
                                    datasets=mypool,mypool/dataset
@@ -127,6 +129,9 @@ class CreateReplicationCommand(Command):
              create my_replication master=10.0.0.2 slave=10.0.0.3
                                    datasets=mypool encrypt=AES128 compress=best
                                    throttle=10MiB
+             create my_replication master=10.0.0.2 slave=10.0.0.3
+                                   datasets=mypool snapshot_lifetime=1:10:10
+                                   followdelete=yes
 
     Creates a replication link entry. Link contains configuration data
     used in later replication process.
@@ -245,6 +250,9 @@ class CreateReplicationCommand(Command):
 
         ns.entity['transport_options'] = transport_plugins
 
+        ns.entity['snapshot_lifetime'] = parse_timedelta(kwargs.get('snapshot_lifetime', 365 * 24 * 60 * 60)).seconds
+        ns.entity['followdelete'] = kwargs.get('followdelete', False)
+
         context.submit_task(
             self.parent.create_task,
             ns.entity,
@@ -258,7 +266,9 @@ class CreateReplicationCommand(Command):
             NullComplete('slave='),
             NullComplete('datasets='),
             NullComplete('throttle='),
+            NullComplete('snapshot_lifetime='),
             EnumComplete('recursive=', ['yes', 'no']),
+            EnumComplete('followdelete=', ['yes', 'no']),
             EnumComplete('bidirectional=', ['yes', 'no']),
             EnumComplete('auto_recover=', ['yes', 'no']),
             EnumComplete('replicate_services=', ['yes', 'no']),
@@ -447,6 +457,22 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             set=set_compress,
             enum=['fast', 'default', 'best'],
             list=False)
+
+        self.add_property(
+            descr='Snapshot lifetime',
+            name='snapshot_lifetime',
+            get='snapshot_lifetime',
+            set=lambda o, v: q.set(o, 'snapshot_lifetime', parse_timedelta(str(v)).seconds),
+            list=False,
+            type=ValueType.NUMBER)
+
+        self.add_property(
+            descr='Follow delete',
+            name='followdelete',
+            get='followdelete',
+            set='followdelete',
+            list=False,
+            type=ValueType.BOOLEAN)
 
         self.add_property(
             descr='Last result',

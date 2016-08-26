@@ -26,13 +26,10 @@
 #####################################################################
 
 from freenas.cli.namespace import (
-    Namespace, ConfigNamespace, Command, CommandException, description,
+    Command, CommandException, description,
     EntitySubscriberBasedLoadMixin, EntityNamespace
 )
-from freenas.cli.output import Object, Sequence, ValueType, format_value
-from freenas.cli.descriptions import events
-from freenas.cli.utils import post_save, parse_timedelta
-import gettext
+from freenas.cli.output import ValueType
 
 
 class SendMessageCommand(Command):

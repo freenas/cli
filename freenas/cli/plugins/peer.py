@@ -37,8 +37,8 @@ t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
 
 
-@description(_("Exchange keys with remote host and create known replication peer entry at both sides"))
-class CreateReplicationPeerCommand(Command):
+@description(_("Exchange keys with remote host and create known FreeNAS peer entry at both sides"))
+class CreateFreeNASPeerCommand(Command):
     """
     Usage: create <address> username=<username> password=<password>
 
@@ -48,7 +48,7 @@ class CreateReplicationPeerCommand(Command):
              create name=my_peer address=my_username@10.0.0.1 password=secret
                     port=1234
 
-    Exchange keys with remote host and create known replication host entry
+    Exchange keys with remote host and create known FreeNAS host entry
     at both sides.
 
     User name and password are used only once to authorize key exchange.
@@ -101,7 +101,7 @@ class CreateReplicationPeerCommand(Command):
             {
                 'name': name,
                 'address': address,
-                'type': 'replication',
+                'type': 'freenas',
                 'credentials': {
                     'username': username,
                     'password': password,
@@ -164,13 +164,13 @@ class BasePeerNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Enti
         self.save_key_name = 'id'
 
 
-@description(_("Manage replication peers"))
-class ReplicationPeerNamespace(BasePeerNamespace):
+@description(_("Manage FreeNAS peers"))
+class FreeNASPeerNamespace(BasePeerNamespace):
     """
-    The replication peer namespace provides commands for listing and managing replication peers.
+    The FreeNAS peer namespace provides commands for listing and managing FreeNAS peers.
     """
     def __init__(self, name, context):
-        super(ReplicationPeerNamespace, self).__init__(name, 'replication', context)
+        super(FreeNASPeerNamespace, self).__init__(name, 'freenas', context)
 
         self.add_property(
             descr='Port',
@@ -195,8 +195,8 @@ class ReplicationPeerNamespace(BasePeerNamespace):
         )
 
     def commands(self):
-        cmds = super(ReplicationPeerNamespace, self).commands()
-        cmds.update({'create': CreateReplicationPeerCommand(self)})
+        cmds = super(FreeNASPeerNamespace, self).commands()
+        cmds.update({'create': CreateFreeNASPeerCommand(self)})
         return cmds
 
 
@@ -293,7 +293,7 @@ class AmazonS3Namespace(BasePeerNamespace):
 class PeerNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
     """
     The peer namespace contains the namespaces
-    for managing SSH, replication and Amazon S3
+    for managing SSH, FreeNAS and Amazon S3
     peers.
     """
     def __init__(self, name, context):
@@ -334,7 +334,7 @@ class PeerNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
 
     def namespaces(self):
         return [
-            ReplicationPeerNamespace('replication', self.context),
+            FreeNASPeerNamespace('freenas', self.context),
             SSHPeerNamespace('ssh', self.context),
             AmazonS3Namespace('amazons3', self.context)
         ]

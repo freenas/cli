@@ -51,7 +51,7 @@ from six.moves.urllib.parse import urlparse
 from socket import gaierror as socket_error
 from freenas.cli.output import Table
 from freenas.cli.descriptions import events
-from freenas.cli.utils import PrintableNone, SIGTSTPException, SIGTSTP_setter, errors_by_path
+from freenas.cli.utils import SIGTSTPException, SIGTSTP_setter, errors_by_path
 from freenas.cli import functions
 from freenas.cli import config
 from freenas.cli.namespace import (
@@ -65,7 +65,7 @@ from freenas.cli.parser import (
     UndefStatement, Redirection, AnonymousFunction, ShellEscape, Parentheses, ConstStatement
 )
 from freenas.cli.output import (
-    ValueType, ProgressBar, Sequence, output_lock, output_msg, read_value, format_value,
+    ValueType, ProgressBar, output_lock, output_msg, read_value, format_value,
     format_output, output_msg_locked
 )
 from freenas.dispatcher.client import Client, ClientError
@@ -80,7 +80,8 @@ from freenas.cli.commands import (
     SearchPipeCommand, ExcludePipeCommand, SortPipeCommand, LimitPipeCommand,
     SelectPipeCommand, LoginCommand, DumpCommand, WhoamiCommand, PendingCommand,
     WaitCommand, OlderThanPipeCommand, NewerThanPipeCommand, IndexCommand, AliasCommand,
-    UnaliasCommand, ListVarsCommand, AttachDebuggerCommand, ChangeNamespaceCommand
+    UnaliasCommand, ListVarsCommand, AttachDebuggerCommand, ChangeNamespaceCommand,
+    WCommand
 )
 from freenas.cli.docgen import CliDocGen
 
@@ -954,6 +955,7 @@ class MainLoop(object):
         'vars': ListVarsCommand(),
         'attach_debugger': AttachDebuggerCommand(),
         'cd': ChangeNamespaceCommand(),
+        'w': WCommand()
     }
     builtin_commands = base_builtin_commands.copy()
     builtin_commands.update(pipe_commands)

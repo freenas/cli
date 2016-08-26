@@ -1057,6 +1057,21 @@ class AttachDebuggerCommand(Command):
         pydevd.settrace(args[1], port=args[2])
 
 
+class WCommand(Command):
+    """
+    Usage: w
+    """
+
+    def run(self, context, args, kwargs, opargs):
+        sessions = context.call_sync('session.get_live_user_sessions')
+        return Table(sessions, [
+            Table.Column('Session ID', 'id'),
+            Table.Column('User name', 'username'),
+            Table.Column('Address', 'address'),
+            Table.Column('Started at', 'started_at', ValueType.TIME)
+        ])
+
+
 @description("Scroll through long output")
 class MorePipeCommand(PipeCommand):
     """

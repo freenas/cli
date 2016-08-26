@@ -35,6 +35,17 @@ from freenas.cli.utils import post_save, parse_timedelta
 import gettext
 
 
+class SendMessageCommand(Command):
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        if len(args) < 1:
+            raise CommandException("No message provided")
+
+        context.call_sync('session.send_to_session', self.parent.entity['id'], str(args[0]))
+
+
 @description("View sessions")
 class SessionsNamespace(RpcBasedLoadMixin, EntityNamespace):
     """
@@ -82,6 +93,9 @@ class SessionsNamespace(RpcBasedLoadMixin, EntityNamespace):
         )
 
         self.primary_key = self.get_mapping('id')
+        self.entity_commands = lambda this: {
+            'send': SendMessageCommand(this)
+        }
 
     def serialize(self):
         raise NotImplementedError()

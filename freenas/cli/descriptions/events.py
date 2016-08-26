@@ -49,6 +49,13 @@ events = {
     'service.stopped': (
         _("Service stopped"),
         lambda c, a: _("Service {0} stopped".format(a.get('name')))
+    ),
+    'session.message': (
+        _("A message"),
+        lambda c, a: _("Message from user {0}: {1}".format(
+            a.get('sender_name'),
+            a.get('message')
+        ))
     )
 }
 

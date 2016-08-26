@@ -586,7 +586,21 @@ class VMDeviceNamespace(NestedObjectLoadMixin,
         self.extra_query_params = [('type', 'in', ('DISK', 'CDROM', 'NIC', 'USB', 'GRAPHICS'))]
         self.parent_path = 'devices'
         self.primary_key = self.get_mapping('name')
+        self.skeleton_entity = {
+             'properties': {}
+        }
 
+    def save(self, this, new=False):
+        types = {'DISK':'vm-device-disk', 
+                 'CDROM':'vm-device-cdrom', 
+                 'NIC':'vm-device-nic',
+                 'USB':'vm-device-usb',
+                 'GRAPHICS':'vm-device-graphics'
+                }
+        if new:
+            this.entity['properties']['type'] = types[this.entity['type']]
+        super(VMDeviceNamespace, self).save(this, new)
+        
 
 class VMVolumeNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNamespace):
     def __init__(self, name, context, parent):

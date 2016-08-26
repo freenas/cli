@@ -25,7 +25,7 @@
 #
 #####################################################################
 
-import copy
+import errno
 import gettext
 from freenas.cli.output import ValueType
 from freenas.cli.namespace import (
@@ -39,6 +39,7 @@ from freenas.cli.namespace import (
     NestedEntityMixin,
     description
 )
+from freenas.utils.query import get
 
 
 t = gettext.translation('freenas-cli', fallback=True)
@@ -135,6 +136,24 @@ class DirectoriesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, E
             get='status.state',
             set=None,
             list=True,
+        )
+
+        self.add_property(
+            descr='Error code',
+            name='error_code',
+            get=lambda o: errno.errorcode.get(get(o, 'status.status_code')),
+            set=None,
+            list=True,
+            condition=lambda o: get(o, 'status.state') == 'FAILURE'
+        )
+
+        self.add_property(
+            descr='Error message',
+            name='error_message',
+            get='status.status_message',
+            set=None,
+            list=True,
+            condition=lambda o: get(o, 'status.state') == 'FAILURE'
         )
 
         self.add_property(

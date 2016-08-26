@@ -152,6 +152,36 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
         self.delete_task = 'vm.delete'
         self.required_props = ['name', 'volume']
         self.primary_key_name = 'name'
+        self.localdoc['CreateEntityCommand'] = ("""\
+            Usage: create <name> volume=<volume> <property>=<value> ...
+
+            Examples: create myvm volume=myvolume
+                      create myfreebsd volume=myvolume template=freebsd-11-zfs
+
+            Creates a virtual machine. For a list of properties, see 'help properties'.
+            For a list of templates see '/ vm template show'""")
+        self.entity_localdoc['SetEntityCommand'] = ("""\
+            Usage: set <property>=<value> ...
+
+            Examples: set memsize=2GB
+                      set cores=4
+                      set guest_type=freebsd64
+                      set bootloader=GRUB
+
+            Sets a virtual machine property. For a list of properties, see 'help properties'.""")
+        self.entity_localdoc['DeleteEntityCommand'] = ("""\
+            Usage: delete
+
+            Deletes the specified virtual machine.""")
+        self.localdoc['ListCommand'] = ("""\
+            Usage: show
+
+            Lists all virtual machines. Optionally, filter or sort by property.
+            Use 'help properties' to list available properties.
+
+            Examples:
+                show
+                show | search name == foo""")
 
         def set_memsize(o, v):
             set(o, 'config.memsize', int(v / 1024 / 1024))
@@ -248,20 +278,14 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             get='guest_type',
             list=False,
             enum=[
-                'boot2docker',
-                'centos',
-                'debian',
-                'fedora',
-                'freebsd',
-                'freenas',
-                'netbsd',
-                'openbsd',
-                'opensuse',
-                'pfsense',
-                'solaris',
-                'ubuntu',
-                'other-linux',
-                'other-unix',
+                'linux64',
+                'freebsd32',
+                'freebsd64',
+                'netbsd64',
+                'openbsd32',
+                'openbsd64',
+                'windows64',
+                'solaris64',
                 'other'
             ]
         )

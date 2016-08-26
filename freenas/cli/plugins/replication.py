@@ -136,6 +136,9 @@ class CreateReplicationCommand(Command):
     Creates a replication link entry. Link contains configuration data
     used in later replication process.
 
+    All ZFS pools referenced in 'datasets' property must exist on both
+    slave and master at creation time. They also need to have the same names.
+
     Created replication is implicitly: unidirectional, non-recursive,
     does not recover automatically and does not replicate services
     along with datasets.

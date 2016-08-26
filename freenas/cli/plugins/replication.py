@@ -43,13 +43,9 @@ _ = t.gettext
 @description(_("Triggers replication process"))
 class SyncCommand(Command):
     """
-    Usage: sync encrypt=<encrypt> compress=<fast/default/best> throttle=<throttle>
+    Usage: sync
 
     Example: sync
-             sync encrypt=AES128
-             sync compress=best
-             sync throttle=10MiB
-             sync encrypt=AES128 compress=best throttle=10MiB
 
     Triggers replication process.
     """
@@ -58,39 +54,10 @@ class SyncCommand(Command):
 
     def run(self, context, args, kwargs, opargs):
         name = self.parent.entity['name']
-        compress = kwargs.pop('compress', None)
-        encrypt = kwargs.pop('encrypt', None)
-        throttle = kwargs.pop('throttle', None)
-        transport_plugins = []
-
-        if compress:
-            if compress not in ['fast', 'default', 'best']:
-                raise CommandException('Compression level must be selected as one of: fast, default, best')
-            transport_plugins.append({
-                'name': 'compress',
-                'level': compress.upper()
-            })
-
-        if throttle:
-            if not isinstance(throttle, int):
-                raise CommandException('Throttle must be a number representing maximum transfer per second')
-            transport_plugins.append({
-                'name': 'throttle',
-                'buffer_size': throttle
-            })
-
-        if encrypt:
-            if encrypt not in ['AES128', 'AES192', 'AES256']:
-                raise CommandException('Encryption type must be selected as one of: AES128, AES192, AES256')
-            transport_plugins.append({
-                'name': 'encrypt',
-                'type': encrypt
-            })
 
         context.submit_task(
             'replication.sync',
             name,
-            transport_plugins,
             callback=lambda s, t: post_save(self.parent, s, t)
         )
 
@@ -132,7 +99,8 @@ class CreateReplicationCommand(Command):
     """
     Usage: create <name> master=<master> slave=<slave> recursive=<recursive>
             bidirectional=<bidirectional> auto_recover=<auto_recover>
-            replicate_services=<replicate_services>
+            replicate_services=<replicate_services> encrypt=<encrypt>
+            compress=<fast/default/best> throttle=<throttle>
 
     Example: create my_replication master=10.0.0.2 slave=10.0.0.3
                                    datasets=mypool,mypool/dataset
@@ -150,6 +118,15 @@ class CreateReplicationCommand(Command):
                                    datasets=mypool,mypool2 bidirectional=yes
                                    recursive=yes replicate_services=yes
                                    auto_recover=yes
+             create my_replication master=10.0.0.2 slave=10.0.0.3
+                                   datasets=mypool encrypt=AES128
+             create my_replication master=10.0.0.2 slave=10.0.0.3
+                                   datasets=mypool compress=best
+             create my_replication master=10.0.0.2 slave=10.0.0.3
+                                   datasets=mypool throttle=10MiB
+             create my_replication master=10.0.0.2 slave=10.0.0.3
+                                   datasets=mypool encrypt=AES128 compress=best
+                                   throttle=10MiB
 
     Creates a replication link entry. Link contains configuration data
     used in later replication process.
@@ -236,6 +213,38 @@ class CreateReplicationCommand(Command):
         ns.entity['recursive'] = recursive
         ns.entity['replicate_services'] = replicate_services
 
+        compress = kwargs.pop('compress', None)
+        encrypt = kwargs.pop('encrypt', 'AES128')
+        throttle = kwargs.pop('throttle', None)
+        transport_plugins = []
+
+        if compress:
+            if compress not in ['fast', 'default', 'best']:
+                raise CommandException('Compression level must be selected as one of: fast, default, best')
+            transport_plugins.append({
+                'name': 'compress',
+                'level': compress.upper()
+            })
+
+        if throttle:
+            if not isinstance(throttle, int):
+                raise CommandException('Throttle must be a number representing maximum transfer per second')
+            transport_plugins.append({
+                'name': 'throttle',
+                'buffer_size': throttle
+            })
+
+        if encrypt:
+            if encrypt not in ['no', 'AES128', 'AES192', 'AES256']:
+                raise CommandException('Encryption type must be selected as one of: no, AES128, AES192, AES256')
+            if encrypt != 'no':
+                transport_plugins.append({
+                    'name': 'encrypt',
+                    'type': encrypt.upper()
+                })
+
+        ns.entity['transport_options'] = transport_plugins
+
         context.submit_task(
             self.parent.create_task,
             ns.entity,
@@ -248,10 +257,13 @@ class CreateReplicationCommand(Command):
             NullComplete('master='),
             NullComplete('slave='),
             NullComplete('datasets='),
+            NullComplete('throttle='),
             EnumComplete('recursive=', ['yes', 'no']),
             EnumComplete('bidirectional=', ['yes', 'no']),
             EnumComplete('auto_recover=', ['yes', 'no']),
-            EnumComplete('replicate_services=', ['yes', 'no'])
+            EnumComplete('replicate_services=', ['yes', 'no']),
+            EnumComplete('compress=', ['fast', 'default', 'best']),
+            EnumComplete('encrypt=', ['no', 'AES128', 'AES192', 'AES256'])
         ]
 
 
@@ -281,8 +293,67 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
         self.skeleton_entity = {
             'bidirectional': False,
             'recursive': False,
-            'replicate_services': False
+            'replicate_services': False,
+            'transport_options': []
         }
+
+        def get_transport_option(obj, name):
+            options = obj['transport_options']
+            for o in options:
+                if o['name'] == name:
+                    return o
+
+            return None
+
+        def get_compress(obj):
+            compress = get_transport_option(obj, 'compress')
+            if compress:
+                return compress['level']
+            else:
+                return None
+
+        def get_throttle(obj):
+            throttle = get_transport_option(obj, 'throttle')
+            if throttle:
+                return throttle['buffer_size']
+            else:
+                return None
+
+        def get_encrypt(obj):
+            encrypt = get_transport_option(obj, 'encrypt')
+            if encrypt:
+                return encrypt['type']
+            else:
+                return None
+
+        def set_transport_option(obj, oldval, val):
+            if oldval:
+                obj['transport_options'].remove(oldval)
+            if val:
+                obj.append(val)
+
+        def set_compress(obj, val):
+            opt = {
+                'name': 'compress',
+                'level': val
+            }
+            set_transport_option(obj, get_transport_option(obj, 'compress'), opt)
+
+        def set_throttle(obj, val):
+            opt = {
+                'name': 'throttle',
+                'buffer_size': val
+            }
+            set_transport_option(obj, get_transport_option(obj, 'throttle'), opt)
+
+        def set_encrypt(obj, val):
+            opt = None
+            if val != 'no':
+                opt = {
+                    'name': 'encrypt',
+                    'type': val
+                }
+            set_transport_option(obj, get_transport_option(obj, 'encrypt'), opt)
 
         self.add_property(
             descr='Name',
@@ -352,6 +423,30 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             set='replicate_services',
             list=False,
             type=ValueType.BOOLEAN)
+
+        self.add_property(
+            descr='Transfer encryption',
+            name='encryption',
+            get=get_encrypt,
+            set=set_encrypt,
+            enum=['no', 'AES128', 'AES192', 'AES256'],
+            list=False)
+
+        self.add_property(
+            descr='Transfer throttle',
+            name='throttle',
+            get=get_throttle,
+            set=set_throttle,
+            list=False,
+            type=ValueType.SIZE)
+
+        self.add_property(
+            descr='Transfer compression',
+            name='compression',
+            get=get_compress,
+            set=set_compress,
+            enum=['fast', 'default', 'best'],
+            list=False)
 
         self.add_property(
             descr='Last result',

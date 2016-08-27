@@ -67,6 +67,8 @@ class BootEnvironmentNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         self.entity_localdoc['DeleteEntityCommand'] = ("""\
             Usage: delete
 
+            Examples: delete
+
             Delete the specified boot environment. This command will
             fail if the boot environment is active.""")
         self.localdoc['ListCommand'] = ("""\
@@ -79,6 +81,27 @@ class BootEnvironmentNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
                 show | search name == default
                 show | search active == no
                 show | search name~="FreeNAS" | sort name""")
+        self.entity_localdoc['GetEntityCommand'] = ("""\
+            Usage: get <field>
+
+            Examples:
+                get name
+
+            Display value of specified field.""")
+        self.entity_localdoc['EditEntityCommand'] = ("""\
+            Usage: edit <field>
+
+            Examples: edit name
+
+            Opens the default editor for the specified property. The default editor
+            is inherited from the shell's $EDITOR which can be set from the shell.
+            For a list of properties for the current namespace, see 'help properties'.""")
+        self.entity_localdoc['ShowEntityCommand'] = ("""\
+            Usage: show
+
+            Examples: show
+
+            Display the property values for boot environment.""")
 
         self.add_property(
             descr='Name',
@@ -185,6 +208,8 @@ class RenameBootEnvCommand(Command):
     """
     Usage: rename <newname>
 
+    Examples: rename mybootenv
+
     Rename the boot environment.
     """
     def __init__(self, parent):
@@ -206,6 +231,8 @@ class RenameBootEnvCommand(Command):
 class ActivateBootEnvCommand(Command):
     """
     Usage: activate
+
+    Examples: activate
 
     Activate the specified boot environment.
     """
@@ -240,6 +267,8 @@ class BootPoolNamespace(Namespace):
 class BootPoolShowCommand(Command):
     """
     Usage: show
+
+    Examples: show
     """
     def run(self, context, args, kwargs, opargs):
         pass
@@ -249,6 +278,8 @@ class BootPoolShowCommand(Command):
 class BootPoolShowDisksCommand(Command):
     """
     Usage: show_disks
+
+    Examples: show_disks
 
     List the device(s) in the boot pool and display
     the status of the boot pool.

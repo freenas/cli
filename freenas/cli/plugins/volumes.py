@@ -805,15 +805,10 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
                       create mypool/mydataset dedup="sha512,verify" compression=gzip-4
 
             Creates a dataset.""")
-
         self.entity_localdoc['DeleteEntityCommand'] = ("""\
-            Usage: delete <volume>/<dataset>
-
-            Example: delete mypool/mydataset
-                     delete mypool/mydataset/somedataset
+            Usage: delete
 
             Deletes a dataset.""")
-
         self.localdoc['ListCommand'] = ("""\
             Usage: show
 
@@ -1427,9 +1422,7 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
         self.update_task = 'volume.update'
         self.delete_task = 'volume.delete'
         self.entity_localdoc['DeleteEntityCommand'] = ("""\
-            Usage: delete <volume>
-
-            Example: delete mypool
+            Usage: delete
 
             Deletes a volume.""")
         self.localdoc['ListCommand'] = ("""\

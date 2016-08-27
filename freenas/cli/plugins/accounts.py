@@ -88,9 +88,7 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
 
             Sets a user property. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['DeleteEntityCommand'] = ("""\
-            Usage: delete <username>
-
-            Example: delete myuser
+            Usage: delete
 
             Deletes the specified user.
             Note that built-in user accounts can not be deleted.""")
@@ -329,9 +327,7 @@ class GroupsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
             Sets the "name" property in order to rename the group. This
             will fail for builtin groups.""")
         self.entity_localdoc['DeleteEntityCommand'] = ("""\
-            Usage: delete <groupname>
-
-            Example: delete smbusers
+            Usage: delete
 
             Deletes a group.""")
         self.localdoc['ListCommand'] = ("""\

@@ -136,9 +136,7 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
 
             Sets a network interface property. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['DeleteEntityCommand'] = ("""\
-            Usage: delete <interface>
-
-            Examples: delete lagg0
+            Usage: delete
 
             Deletes an interface.""")
 
@@ -444,9 +442,7 @@ class AliasesNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNames
 
             Creates a network interface alias. Aliases cannot be edited after creation so if you need to change an alias you must delete it then recreate it.""")
         self.entity_localdoc['DeleteEntityCommand'] = ("""\
-            Usage: delete <address>
-
-            Examples: delete 192.168.1.1
+            Usage: delete
 
             Deletes an alias.""")
 
@@ -505,9 +501,7 @@ class HostsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityN
             Add an entry to the hosts table. Specify the hostname
             or FQDN and its associated IP address.""")
         self.entity_localdoc['DeleteEntityCommand'] = ("""\
-            Usage: delete <hostname>
-
-            Examples: delete myhost
+            Usage: delete
 
             Deletes a hostname.""")
 
@@ -651,9 +645,7 @@ class RoutesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Entity
 
             Sets a network route property. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['DeleteEntityCommand'] = ("""\
-            Usage: delete <route>
-
-            Examples: delete myroute
+            Usage: delete
 
             Deletes a route.""")
 

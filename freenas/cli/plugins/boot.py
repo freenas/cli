@@ -65,9 +65,7 @@ class BootEnvironmentNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
 
             Edit the name of the specified boot environment.""")
         self.entity_localdoc['DeleteEntityCommand'] = ("""\
-            Usage: delete <bootenv name>
-
-            Example: delete mybootenv
+            Usage: delete
 
             Delete the specified boot environment. This command will
             fail if the boot environment is active.""")

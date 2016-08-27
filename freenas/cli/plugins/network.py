@@ -58,6 +58,9 @@ class InterfaceManageCommand(Command):
     Usage: up
            down
 
+    Examples: up
+              down
+
     Enable or disable this network interface.
     """
     def __init__(self, parent, up):
@@ -90,6 +93,8 @@ class InterfaceManageCommand(Command):
 class InterfaceRenewCommand(Command):
     """
     Usage: renew
+
+    Examples: renew
 
     Renew IP lease for this network interface.
     """
@@ -138,7 +143,33 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
         self.entity_localdoc['DeleteEntityCommand'] = ("""\
             Usage: delete
 
+            Examples: delete
+
             Deletes an interface.""")
+        self.entity_localdoc['GetEntityCommand'] = ("""\
+            Usage: get <field>
+
+            Examples:
+                get name
+                get link_address
+                get dhcp_server_address
+
+            Display value of specified field.""")
+        self.localdoc['ListCommand'] = ("""\
+            Usage: show
+
+            Lists all routes. Optionally, filter or sort by property.
+            Use 'help properties' to list available properties.
+
+            Examples:
+                show
+                show | search name == em0""")
+        self.entity_localdoc['ShowEntityCommand'] = ("""\
+            Usage: show
+
+            Examples: show
+
+            Display the property values for the current interface.""")
 
         self.link_states = {
             'LINK_STATE_UP': _("up"),
@@ -444,7 +475,23 @@ class AliasesNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNames
         self.entity_localdoc['DeleteEntityCommand'] = ("""\
             Usage: delete
 
+            Examples: delete
+
             Deletes an alias.""")
+        self.entity_localdoc['GetEntityCommand'] = ("""\
+            Usage: get <field>
+
+            Examples:
+                get address
+                get netmask
+
+            Display value of specified field.""")
+        self.entity_localdoc['ShowEntityCommand'] = ("""\
+            Usage: show
+
+            Examples: show
+
+            Display the property values for the current alias.""")
 
         self.add_property(
             descr='Address family',
@@ -494,16 +541,57 @@ class HostsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityN
         self.delete_task = 'network.host.delete'
         self.required_props = ['name', 'addresses']
         self.localdoc['CreateEntityCommand'] = ("""\
-            Usage: create <hostname> address=<IP address>
+            Usage: create <hostname> addresses=<IP address>,<IP address>,..
 
-            Examples: create myfreenas address=10.0.0.1
+            Examples: create myfreenas addresses=10.0.0.1
+                      create somehost addresses=10.0.0.2,10.0.0.3
 
             Add an entry to the hosts table. Specify the hostname
             or FQDN and its associated IP address.""")
         self.entity_localdoc['DeleteEntityCommand'] = ("""\
             Usage: delete
 
-            Deletes a hostname.""")
+            Examples: delete
+
+            Deletes a host.""")
+        self.entity_localdoc['SetEntityCommand'] = ("""\
+            Usage: set <property>=<value> ...
+
+            Examples: set name=newname
+                      set addresses=172.16.0.1,10.0.0.1
+
+            Sets a network host property. For a list of properties, see 'help properties'.""")
+        self.entity_localdoc['GetEntityCommand'] = ("""\
+            Usage: get <field>
+
+            Examples:
+                get name
+                get addresses
+
+            Display value of specified field.""")
+        self.localdoc['ListCommand'] = ("""\
+            Usage: show
+
+            Lists all routes. Optionally, filter or sort by property.
+            Use 'help properties' to list available properties.
+
+            Examples:
+                show
+                show | search name == somehost""")
+        self.entity_localdoc['ShowEntityCommand'] = ("""\
+            Usage: show
+
+            Examples: show
+
+            Display the property values for the current host.""")
+        self.entity_localdoc['EditEntityCommand'] = ("""\
+            Usage: edit <field>
+
+            Examples: edit name
+
+            Opens the default editor for the specified property. The default editor
+            is inherited from the shell's $EDITOR which can be set from the shell.
+            For a list of properties for the current namespace, see 'help properties'.""")
 
         self.add_property(
             descr='IP addresses',
@@ -647,7 +735,41 @@ class RoutesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Entity
         self.entity_localdoc['DeleteEntityCommand'] = ("""\
             Usage: delete
 
+            Examples: delete
+
             Deletes a route.""")
+        self.entity_localdoc['GetEntityCommand'] = ("""\
+            Usage: get <field>
+
+            Examples:
+                get gateway
+                get network
+                get netmask
+
+            Display value of specified field.""")
+        self.localdoc['ListCommand'] = ("""\
+            Usage: show
+
+            Lists all routes. Optionally, filter or sort by property.
+            Use 'help properties' to list available properties.
+
+            Examples:
+                show
+                show | search name == someroute""")
+        self.entity_localdoc['ShowEntityCommand'] = ("""\
+            Usage: show
+
+            Examples: show
+
+            Display the property values for the current route.""")
+        self.entity_localdoc['EditEntityCommand'] = ("""\
+            Usage: edit <field>
+
+            Examples: edit name
+
+            Opens the default editor for the specified property. The default editor
+            is inherited from the shell's $EDITOR which can be set from the shell.
+            For a list of properties for the current namespace, see 'help properties'.""")
 
         self.skeleton_entity = {
             'type': 'INET'

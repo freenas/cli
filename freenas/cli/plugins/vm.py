@@ -591,14 +591,17 @@ class VMDeviceNamespace(NestedObjectLoadMixin,
         }
 
     def save(self, this, new=False):
-        types = {'DISK':'vm-device-disk', 
-                 'CDROM':'vm-device-cdrom', 
-                 'NIC':'vm-device-nic',
-                 'USB':'vm-device-usb',
-                 'GRAPHICS':'vm-device-graphics'
-                }
+        types = {
+            'DISK': 'vm-device-disk',
+            'CDROM': 'vm-device-cdrom',
+            'NIC': 'vm-device-nic',
+            'USB': 'vm-device-usb',
+            'GRAPHICS': 'vm-device-graphics'
+        }
+
         if new:
-            this.entity['properties']['type'] = types[this.entity['type']]
+            this.entity['properties']['@type'] = types[this.entity['type']]
+
         super(VMDeviceNamespace, self).save(this, new)
         
 

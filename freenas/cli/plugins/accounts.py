@@ -117,6 +117,20 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
                 get fullname
 
             Display value of specified field.""")
+        self.entity_localdoc['EditEntityCommand'] = ("""\
+            Usage: edit <field>
+
+            Examples: edit username
+
+            Opens the default editor for the specified property. The default editor
+            is inherited from the shell's $EDITOR which can be set from the shell.
+            For a list of properties for the current namespace, see 'help properties'.""")
+        self.entity_localdoc['ShowEntityCommand'] = ("""\
+            Usage: show
+
+            Examples: show
+
+            Display the property values for user.""")
 
         self.skeleton_entity = {
             'username': None,
@@ -342,6 +356,8 @@ class GroupsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
         self.entity_localdoc['DeleteEntityCommand'] = ("""\
             Usage: delete
 
+            Examples: delete
+
             Deletes a group.""")
         self.localdoc['ListCommand'] = ("""\
             Usage: show
@@ -361,6 +377,20 @@ class GroupsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
                 get gid
 
             Display value of specified field.""")
+        self.entity_localdoc['EditEntityCommand'] = ("""\
+            Usage: edit <field>
+
+            Examples: edit name
+
+            Opens the default editor for the specified property. The default editor
+            is inherited from the shell's $EDITOR which can be set from the shell.
+            For a list of properties for the current namespace, see 'help properties'.""")
+        self.entity_localdoc['ShowEntityCommand'] = ("""\
+            Usage: show
+
+            Examples: show
+
+            Display the property values for group.""")
 
         self.skeleton_entity = {
             'name': None,

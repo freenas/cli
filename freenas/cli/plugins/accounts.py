@@ -44,6 +44,8 @@ class ShellsCommand(Command):
     """
     Usage: shells
 
+    Examples: shells
+
     Displays a list of valid shells for user accounts.
     """
 
@@ -90,6 +92,8 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
         self.entity_localdoc['DeleteEntityCommand'] = ("""\
             Usage: delete
 
+            Examples: delete
+
             Deletes the specified user.
             Note that built-in user accounts can not be deleted.""")
 
@@ -104,6 +108,15 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
                 show | search username == root
                 show | search uid > 1000
                 show | search fullname~=John | sort fullname""")
+        self.entity_localdoc['GetEntityCommand'] = ("""\
+            Usage: get <field>
+
+            Examples:
+                get username
+                get uid
+                get fullname
+
+            Display value of specified field.""")
 
         self.skeleton_entity = {
             'username': None,
@@ -340,6 +353,14 @@ class GroupsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
                 show | search name == wheel
                 show | search gid > 1000
                 show | search builtin == no""")
+        self.entity_localdoc['GetEntityCommand'] = ("""\
+            Usage: get <field>
+
+            Examples:
+                get name
+                get gid
+
+            Display value of specified field.""")
 
         self.skeleton_entity = {
             'name': None,

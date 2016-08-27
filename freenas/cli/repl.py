@@ -140,7 +140,7 @@ ENTITY_SUBSCRIBERS = [
     'vm',
     'vm.snapshot',
     'syslog',
-    'replication.link',
+    'replication',
     'replication.host',
     'backup',
     'kerberos.realm',

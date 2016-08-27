@@ -290,7 +290,7 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
 
         self.primary_key_name = 'name'
         self.save_key_name = 'name'
-        self.entity_subscriber_name = 'replication.link'
+        self.entity_subscriber_name = 'replication'
         self.create_task = 'replication.create'
         self.update_task = 'replication.update'
         self.delete_task = 'replication.delete'

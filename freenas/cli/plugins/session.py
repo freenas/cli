@@ -43,6 +43,14 @@ class SendMessageCommand(Command):
         context.call_sync('session.send_to_session', self.parent.entity['id'], str(args[0]))
 
 
+class WallCommand(Command):
+    def run(self, context, args, kwargs, opargs):
+        if len(args) < 1:
+            raise CommandException("No message provided")
+
+        context.call_sync('session.send_to_all', str(args[0]))
+
+
 @description("View sessions")
 class SessionsNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
     """
@@ -91,6 +99,10 @@ class SessionsNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         self.primary_key = self.get_mapping('id')
         self.entity_commands = lambda this: {
             'send': SendMessageCommand(this)
+        }
+
+        self.extra_commands = {
+            'wall': WallCommand()
         }
 
     def serialize(self):

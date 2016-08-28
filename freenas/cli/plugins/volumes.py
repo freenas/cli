@@ -646,7 +646,7 @@ class ReplicateCommand(Command):
     def run(self, context, args, kwargs, opargs):
         peer = kwargs.pop('peer')
         remote_dataset = kwargs.pop('remote_dataset')
-        dry_run = kwargs.pop('dry_run', False)
+        dry_run = read_value(kwargs.pop('dry_run', 'no'), ValueType.BOOLEAN)
         recursive = read_value(kwargs.pop('recursive', 'no'), ValueType.BOOLEAN)
         follow_delete = kwargs.pop('follow_delete', False)
         compress = kwargs.pop('compress', None)
@@ -715,13 +715,13 @@ class ReplicateCommand(Command):
             result = context.call_task_sync(*args)
             return Sequence(
                 Table(
-                    result['result'], [
-                        Table.Column('Action type', 'type', ValueType.STRING),
+                    result['result'][0], [
+                        Table.Column('Action type', 'type', ValueType.STRING, 20),
                         Table.Column('Description', describe, ValueType.STRING)
                     ]
                 ),
                 "Estimated replication stream size: {0}".format(format_value(
-                    result[1],
+                    result['result'][1],
                     ValueType.SIZE)
                 )
             )

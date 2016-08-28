@@ -68,9 +68,42 @@ class NTPServersNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
 
             Sets a user property. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['DeleteEntityCommand'] = _("""\
-            Usage: delete 
+            Usage: delete
+
+            Examples: delete
 
             Deletes the specified NTP server.""")
+        self.entity_localdoc['EditEntityCommand'] = ("""\
+            Usage: edit <field>
+
+            Examples: edit name
+
+            Opens the default editor for the specified property. The default editor
+            is inherited from the shell's $EDITOR which can be set from the shell.
+            For a list of properties for the current namespace, see 'help properties'.""")
+        self.entity_localdoc['ShowEntityCommand'] = ("""\
+            Usage: show
+
+            Examples: show
+
+            Display the property values for the current NTP server.""")
+        self.entity_localdoc['GetEntityCommand'] = ("""\
+            Usage: get <field>
+
+            Examples:
+                get name
+                get address
+
+            Display value of specified field.""")
+        self.localdoc['ListCommand'] = ("""\
+            Usage: show
+
+            Lists all NTP servers. Optionally, filter or sort by property.
+            Use 'help properties' to list available properties.
+
+            Examples:
+                show
+                show | search address ~= utcnist """)
 
         self.add_property(
             descr='Name',
@@ -78,6 +111,7 @@ class NTPServersNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
             get='id',
             set='id',
             list=True,
+            usage=_("The id of the NTP server, accepts strings"),
             type=ValueType.STRING
         )
 

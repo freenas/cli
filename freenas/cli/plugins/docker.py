@@ -200,6 +200,15 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
         )
 
         self.add_property(
+            descr='Interactive',
+            name='interactive',
+            get='interactive',
+            usersetable=False,
+            list=False,
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
             descr='Volumes',
             name='volumes',
             get=get_volumes,

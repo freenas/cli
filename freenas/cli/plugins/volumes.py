@@ -644,19 +644,24 @@ class ReplicateCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        remote = kwargs.pop('remote')
+        peer = kwargs.pop('peer')
         remote_dataset = kwargs.pop('remote_dataset')
         dry_run = kwargs.pop('dry_run', False)
-        recursive = kwargs.pop('recursive', False)
+        recursive = read_value(kwargs.pop('recursive', 'no'), ValueType.BOOLEAN)
         follow_delete = kwargs.pop('follow_delete', False)
         compress = kwargs.pop('compress', None)
         encrypt = kwargs.pop('encrypt', None)
         throttle = kwargs.pop('throttle', None)
         transport_plugins = []
 
+        peer = context.entity_subscribers['peer'].query(('name', '=', peer), single=True)
+        if not peer:
+            raise CommandException('Peer {0} unknown'.format(peer))
+
         if compress:
             if compress not in ['fast', 'default', 'best']:
                 raise CommandException('Compression level must be selected as one of: fast, default, best')
+
             transport_plugins.append({
                 'name': 'compress',
                 'level': compress.upper()
@@ -665,6 +670,7 @@ class ReplicateCommand(Command):
         if throttle:
             if not isinstance(throttle, int):
                 raise CommandException('Throttle must be a number representing maximum transfer per second')
+
             transport_plugins.append({
                 'name': 'throttle',
                 'buffer_size': throttle
@@ -673,6 +679,7 @@ class ReplicateCommand(Command):
         if encrypt:
             if encrypt not in ['AES128', 'AES192', 'AES256']:
                 raise CommandException('Encryption type must be selected as one of: AES128, AES192, AES256')
+
             transport_plugins.append({
                 'name': 'encrypt',
                 'type': encrypt
@@ -682,7 +689,7 @@ class ReplicateCommand(Command):
             'replication.replicate_dataset',
             self.parent.entity['name'],
             {
-                'remote': remote,
+                'peer': peer['id'],
                 'remote_dataset': remote_dataset,
                 'recursive': recursive,
                 'followdelete': follow_delete

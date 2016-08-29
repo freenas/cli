@@ -333,12 +333,13 @@ class BootPoolDetachDiskCommand(Command):
     """
     Usage: detach_disk <disk>
 
-    Example: detach_disk ada1
+    Example: detach_disk ada1p2
 
     Detach the specified device(s) from the boot pool,
     reducing the number of devices in the N-way mirror. If
     only one device remains, it has no redundancy. At least
     one device must remain in the pool.
+    See 'show_disks' for a list of disks that can be detached from the pool.
     """
     def run(self, context, args, kwargs, opargs):
         if not args:

@@ -1098,6 +1098,9 @@ class EntityNamespace(Namespace):
         return base
 
     def namespace_by_name(self, name):
+        if self.primary_key is None:
+            return
+
         item = self.get_one(name)
         if item:
             return SingleItemNamespace(name, self, leaf_entity=self.leaf_harborer)

@@ -238,6 +238,12 @@ class ActiveDirectoryPropertiesNamespace(BaseDirectoryPropertiesNamespace):
             set='password'
         )
 
+        self.add_property(
+            descr='DC address',
+            name='dc_address',
+            get='dc_address',
+        )
+
 
 class FreeIPAPropertiesNamespace(BaseDirectoryPropertiesNamespace):
     def __init__(self, name, context, parent):

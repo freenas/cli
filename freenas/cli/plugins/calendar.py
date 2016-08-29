@@ -123,6 +123,8 @@ class CalendarTasksNamespaceBaseClass(EntitySubscriberBasedLoadMixin, TaskBasedS
         self.entity_localdoc["DeleteEntityCommand"] = ("""\
             Usage: delete
 
+            Example: delete
+
             Deletes a calendar task.""")
 
         self.entity_localdoc["SetEntityCommand"] = ("""\

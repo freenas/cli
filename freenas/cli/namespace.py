@@ -750,7 +750,10 @@ class SingleItemNamespace(ItemNamespace):
 
     @property
     def primary_key(self):
-        return self.parent.primary_key.do_get(self.entity)
+        if self.parent.primary_key:
+            return self.parent.primary_key.do_get(self.entity)
+        else:
+            return None
 
     def get_name(self):
         name = self.primary_key if self.entity else self.name

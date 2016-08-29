@@ -31,6 +31,7 @@ from freenas.cli.namespace import (
     CommandException, NestedEntityMixin, ItemNamespace, EntitySubscriberBasedLoadMixin
 )
 from freenas.cli.output import ValueType, format_value
+from freenas.utils import query as q
 
 
 t = gettext.translation('freenas-cli', fallback=True)
@@ -523,7 +524,60 @@ class ReplicationNamespace(CalendarTasksNamespaceBaseClass):
         self.extra_query_params = [('task', '=', 'replication.replicate_dataset')]
         self.required_props.extend([])
         self.skeleton_entity['task'] = 'replication.replicate_dataset'
-        self.task_args_helper = []
+        self.task_args_helper = ['dataset', 'options', 'transport_options']
+
+        def get_peer_name(id):
+            peer = self.context.entity_subscribers['peer'].query(('id', '=', id), single=True)
+            return peer['name'] if peer else None
+
+        def set_peer_id(name):
+            peer = self.context.entity_subscribers['peer'].query(('name', '=', name), single=True)
+            if not peer:
+                raise CommandException('Peer {0} not found'.format(name))
+
+            return peer['id']
+
+        self.add_property(
+            descr='Local dataset',
+            name='dataset',
+            get=lambda obj: self.get_task_args(obj, 'dataset'),
+            list=True,
+            set=lambda obj, val: self.set_task_args(obj, val, 'dataset'),
+        )
+
+        self.add_property(
+            descr='Remote ataset',
+            name='remote_dataset',
+            get=lambda obj: q.get(self.get_task_args(obj, 'options'), 'remote_dataset'),
+            list=True,
+            set=lambda obj, val: q.set(self.get_task_args(obj, 'options'), 'remote_dataset', val),
+        )
+
+        self.add_property(
+            descr='Peer name',
+            name='peer',
+            get=lambda obj: get_peer_name(q.get(self.get_task_args(obj, 'options'), 'peer')),
+            list=True,
+            set=lambda obj, val: q.set(self.get_task_args(obj, 'options'), 'peer', set_peer_id(val)),
+        )
+
+        self.add_property(
+            descr='Recursive',
+            name='recursive',
+            get=lambda obj: q.get(self.get_task_args(obj, 'options'), 'recursive'),
+            list=True,
+            set=lambda obj, val: q.set(self.get_task_args(obj, 'options'), 'recursive', val),
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
+            descr='Follow delete',
+            name='followdelete',
+            get=lambda obj: q.get(self.get_task_args(obj, 'options'), 'followdelete'),
+            list=False,
+            set=lambda obj, val: q.set(self.get_task_args(obj, 'options'), 'followdelete', val),
+            type=ValueType.BOOLEAN
+        )
 
 
 class CheckUpdateNamespace(CalendarTasksNamespaceBaseClass):

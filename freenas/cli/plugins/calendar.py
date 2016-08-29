@@ -105,6 +105,7 @@ class CalendarTasksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
 
 
 class CalendarTasksNamespaceBaseClass(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
+    local_timezone = False
     def __init__(self, name, context):
         super(CalendarTasksNamespaceBaseClass, self).__init__(name, context)
         self.context = context
@@ -119,6 +120,10 @@ class CalendarTasksNamespaceBaseClass(EntitySubscriberBasedLoadMixin, TaskBasedS
             'args': [],
         }
         self.primary_key_name = 'name'
+
+        if not CalendarTasksNamespaceBaseClass.local_timezone:
+            CalendarTasksNamespaceBaseClass.local_timezone = self.context.call_sync(
+                'system.general.get_config').get('timezone', "UTC")
 
         self.entity_localdoc["DeleteEntityCommand"] = ("""\
             Usage: delete
@@ -229,7 +234,7 @@ class CalendarTasksScheduleNamespace(NestedEntityMixin, ItemNamespace):
         self.skeleton_entity = {
             'schedule': {
                 'coalesce': True,
-                'timezone': self.context.call_sync('system.general.get_config').get('timezone', "UTC"),
+                'timezone': CalendarTasksNamespaceBaseClass.local_timezone,
                 'year': None,
                 'month': None,
                 'day': None,

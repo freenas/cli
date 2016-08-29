@@ -317,8 +317,8 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
         self.add_property(
             descr='Readme',
             name='readme',
-            get='template.readme',
-            set='template.readme',
+            get='config.readme',
+            set='config.readme',
             list=False,
             type=ValueType.TEXT_FILE
         )
@@ -363,7 +363,7 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             'kill': KillVMCommand(this),
             'reboot': RebootVMCommand(this),
             'console': ConsoleCommand(this),
-            'readme': ReadmeCommand(this)
+            'readme': ReadmeCommand(this, 'config')
         }
 
         if hasattr(this, 'entity') and this.entity is not None:
@@ -967,7 +967,7 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
         this.load() if hasattr(this, 'load') else None
         commands = {
             'download': DownloadImagesCommand(this),
-            'readme': ReadmeCommand(this)
+            'readme': ReadmeCommand(this, 'template')
         }
 
         if hasattr(this, 'entity') and this.entity is not None:
@@ -1007,14 +1007,12 @@ class ReadmeCommand(Command):
 
     Shows readme entry of selected VM
     """
-    def __init__(self, parent):
+    def __init__(self, parent, key):
+        self.key = key
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs, filtering=None):
-        if self.parent.entity['template'].get('readme'):
-            return Sequence(self.parent.entity['template']['readme'])
-        else:
-            return Sequence("Selected template does not have readme entry")
+        return Sequence(self.parent.entity[self.key].get('readme', 'Selected template does not have readme entry'))
 
 
 @description("Deletes VM images from the local cache")

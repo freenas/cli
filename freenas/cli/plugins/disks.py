@@ -255,6 +255,9 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityN
         if disp['type'] == 'VOLUME':
             return 'part of volume {0}'.format(disp['name'])
 
+        if disp['type'] == 'EXPORTED_VOLUME':
+            return 'part of exported volume {0}'.format(disp['name'])
+
         return 'unknown'
 
 

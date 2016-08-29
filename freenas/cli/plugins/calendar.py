@@ -399,7 +399,7 @@ class ScrubNamespace(CalendarTasksNamespaceBaseClass):
             get=lambda obj: self.get_task_args(obj, 'volume'),
             list=True,
             set=lambda obj, val: self.set_task_args(obj, val, 'volume'),
-            enum=[v for v in self.context.entity_subscribers['volume'].query(select='id')]
+            enum=[v for v in self.query([], {'subscriber': 'volume', 'select': 'id'})]
         )
 
 
@@ -426,7 +426,7 @@ class SmartNamespace(CalendarTasksNamespaceBaseClass):
             list=True,
             type=ValueType.SET,
             set=lambda obj, val: self.set_disks(obj, val),
-            enum=[d for d in self.context.entity_subscribers['disk'].query(select='name')]
+            enum=[d for d in self.query([], {'subscriber': 'disk', 'select': 'name'})]
         )
 
         self.add_property(
@@ -442,11 +442,11 @@ class SmartNamespace(CalendarTasksNamespaceBaseClass):
         disks_ids = self.get_task_args(obj, 'disks')
         disks_names = []
         for i in disks_ids:
-            disks_names.append(self.context.entity_subscribers['disk'].query(('id', '=', i), select='name', single=True))
+            disks_names.append(self.query([('id', '=', i)], {'subscriber': 'disk', 'select': 'name', 'single': True}))
         return disks_names
 
     def set_disks(self, obj, disks_names):
-        all_disks = [d for d in self.context.entity_subscribers['disk'].query(select='name')]
+        all_disks = [d for d in self.query([], {'subscriber': 'disk', 'select': 'name'})]
         disk_ids = []
         for d in disks_names:
             if d not in all_disks:

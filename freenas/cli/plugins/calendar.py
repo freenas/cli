@@ -31,6 +31,7 @@ from freenas.cli.namespace import (
     CommandException, NestedEntityMixin, ItemNamespace, EntitySubscriberBasedLoadMixin
 )
 from freenas.cli.output import ValueType, format_value
+from freenas.utils import first_or_default
 from freenas.utils import query as q
 
 
@@ -543,7 +544,6 @@ class ReplicationNamespace(CalendarTasksNamespaceBaseClass):
             []
         ]
 
-
         def get_peer_name(id):
             peer = self.context.entity_subscribers['peer'].query(('id', '=', id), single=True)
             return peer['name'] if peer else None
@@ -555,6 +555,22 @@ class ReplicationNamespace(CalendarTasksNamespaceBaseClass):
 
             return peer['id']
 
+        def get_transport_option(obj, type, property):
+            opt = first_or_default(lambda i: i['name'] == type, obj['args'][2])
+            return opt[property] if opt else None
+
+        def set_transport_option(obj, type, property, value):
+            opt = first_or_default(lambda i: i['name'] == type, obj['args'][2])
+            if opt:
+                opt[property] = value
+                return
+
+            obj['args'][2].append({
+                'name': type,
+                property: value
+            })
+
+
         self.add_property(
             descr='Local dataset',
             name='dataset',
@@ -564,7 +580,7 @@ class ReplicationNamespace(CalendarTasksNamespaceBaseClass):
         )
 
         self.add_property(
-            descr='Remote ataset',
+            descr='Remote dataset',
             name='remote_dataset',
             get=lambda obj: q.get(self.get_task_args(obj, 'options'), 'remote_dataset'),
             list=True,
@@ -595,6 +611,33 @@ class ReplicationNamespace(CalendarTasksNamespaceBaseClass):
             list=False,
             set=lambda obj, val: q.set(self.get_task_args(obj, 'options'), 'followdelete', val),
             type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
+            descr='Compression',
+            name='compression',
+            get=lambda obj: get_transport_option(obj, 'compression', 'level'),
+            list=False,
+            set=lambda obj, val: set_transport_option(obj, 'compression', 'level', val),
+            enum=['FAST', 'DEFAULT', 'BEST', 'none']
+        )
+
+        self.add_property(
+            descr='Encryption',
+            name='encryption',
+            get=lambda obj: get_transport_option(obj, 'encryption', 'type'),
+            list=False,
+            set=lambda obj, val: set_transport_option(obj, 'encryption', 'type', val),
+            enum=['AES128', 'AES192', 'AES256', 'none']
+        )
+
+        self.add_property(
+            descr='Throttle',
+            name='throttle',
+            get=lambda obj: get_transport_option(obj, 'throttle', 'buffer_size'),
+            list=False,
+            set=lambda obj, val: set_transport_option(obj, 'throttle', 'buffer_size', val),
+            type=ValueType.SIZE
         )
 
 

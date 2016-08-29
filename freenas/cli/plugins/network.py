@@ -138,6 +138,8 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
             Examples: set dhcp=true
                       set ipv6_disable=true
                       set enabled=false
+                      set lagg_ports=igb0,igb1
+                      set lagg_ports=none
 
             Sets a network interface property. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['DeleteEntityCommand'] = ("""\

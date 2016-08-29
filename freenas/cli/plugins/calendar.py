@@ -523,8 +523,19 @@ class ReplicationNamespace(CalendarTasksNamespaceBaseClass):
         super(ReplicationNamespace, self).__init__(name, context)
         self.extra_query_params = [('task', '=', 'replication.replicate_dataset')]
         self.required_props.extend([])
-        self.skeleton_entity['task'] = 'replication.replicate_dataset'
         self.task_args_helper = ['dataset', 'options', 'transport_options']
+        self.skeleton_entity['task'] = 'replication.replicate_dataset'
+        self.skeleton_entity['args'] = [
+            None,
+            {
+                'remote_dataset': None,
+                'peer': None,
+                'recursive': False,
+                'followdelete': False
+            },
+            []
+        ]
+
 
         def get_peer_name(id):
             peer = self.context.entity_subscribers['peer'].query(('id', '=', id), single=True)

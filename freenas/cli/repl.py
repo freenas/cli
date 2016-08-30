@@ -1721,7 +1721,10 @@ class MainLoop(object):
         sys.stdout.flush()
 
 
-def main(argv):
+def main(argv=None):
+    if not argv:
+        args = sys.argv
+
     if CLI_LOG_DIR:
         current_cli_logfile = os.path.join(CLI_LOG_DIR, 'freenascli.{0}.log'.format(os.getpid()))
         logging.basicConfig(filename=current_cli_logfile, level=logging.DEBUG)

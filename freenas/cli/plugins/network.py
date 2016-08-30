@@ -410,7 +410,7 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
             of the lagg. When specifying multiple interfaces,
             place each interface name within double quotes
             and a comma with space between each interface
-            name."""),
+            name.  To empty this list, set it to 'none'"""),
             list=False,
             type=ValueType.SET,
             condition=lambda e: e['type'] == 'LAGG'

@@ -972,6 +972,14 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
         )
 
         self.add_property(
+            descr='Mounted',
+            name='mounted',
+            get='mounted',
+            list=True,
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
             descr='Temporary mountpoint',
             name='temp_mount',
             get='temp_mountpoint',

@@ -25,6 +25,7 @@
 #
 #####################################################################
 
+import gettext
 from freenas.cli.namespace import (
     Command, CommandException, description,
     EntitySubscriberBasedLoadMixin, EntityNamespace
@@ -32,7 +33,18 @@ from freenas.cli.namespace import (
 from freenas.cli.output import ValueType
 
 
+t = gettext.translation('freenas-cli', fallback=True)
+_ = t.gettext
+
+
 class SendMessageCommand(Command):
+    """
+    Usage: send <message>
+
+    Examples: send "Hello there"
+
+    Sends a message to the current session.
+    """
     def __init__(self, parent):
         self.parent = parent
 
@@ -44,6 +56,13 @@ class SendMessageCommand(Command):
 
 
 class WallCommand(Command):
+    """
+    Usage: wall <message>
+
+    Examples: wall "Hello there"
+
+    Sends a message to all logged in users
+    """
     def run(self, context, args, kwargs, opargs):
         if len(args) < 1:
             raise CommandException("No message provided")
@@ -67,33 +86,38 @@ class SessionsNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             descr='Session ID',
             name='id',
             get='id',
-            type=ValueType.NUMBER
+            type=ValueType.NUMBER,
+            usage=_("""The id of the session""")
         )
 
         self.add_property(
             descr='IP Address',
             name='address',
             get='address',
+            usage=_("""The IP address of the logged in user""")
         )
 
         self.add_property(
             descr='User name',
             name='username',
             get='username',
+            usage=_("""The logged in user's username""")
         )
 
         self.add_property(
             descr='Started at',
             name='started',
             get='started_at',
-            type=ValueType.TIME
+            type=ValueType.TIME,
+            usage=_("""The time the session started""")
         )
 
         self.add_property(
             descr='Ended at',
             name='ended',
             get='ended_at',
-            type=ValueType.TIME
+            type=ValueType.TIME,
+            usage=_("""The time the session ended""")
         )
 
         self.primary_key = self.get_mapping('id')

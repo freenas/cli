@@ -616,9 +616,9 @@ class ReplicationNamespace(CalendarTasksNamespaceBaseClass):
         self.add_property(
             descr='Compression',
             name='compression',
-            get=lambda obj: get_transport_option(obj, 'compression', 'level'),
+            get=lambda obj: get_transport_option(obj, 'compress', 'level'),
             list=False,
-            set=lambda obj, val: set_transport_option(obj, 'compression', 'level', val),
+            set=lambda obj, val: set_transport_option(obj, 'compress', 'level', val),
             enum=['FAST', 'DEFAULT', 'BEST', 'none']
         )
 

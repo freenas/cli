@@ -619,7 +619,7 @@ class ReplicationNamespace(CalendarTasksNamespaceBaseClass):
             get=lambda obj: get_transport_option(obj, 'compress', 'level'),
             list=False,
             set=lambda obj, val: set_transport_option(obj, 'compress', 'level', val),
-            enum=['FAST', 'DEFAULT', 'BEST', 'none']
+            enum=['FAST', 'DEFAULT', 'BEST', None]
         )
 
         self.add_property(
@@ -628,7 +628,7 @@ class ReplicationNamespace(CalendarTasksNamespaceBaseClass):
             get=lambda obj: get_transport_option(obj, 'encryption', 'type'),
             list=False,
             set=lambda obj, val: set_transport_option(obj, 'encryption', 'type', val),
-            enum=['AES128', 'AES192', 'AES256', 'none']
+            enum=['AES128', 'AES192', 'AES256', None]
         )
 
         self.add_property(

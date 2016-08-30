@@ -40,6 +40,9 @@ class NullComplete(object):
 class EnumComplete(NullComplete):
     def __init__(self, name, choices, **kwargs):
         def quote(s):
+            if s is None:
+                return 'none'
+
             for c in ' \t\n`~!@#$%^&*()-=+[{]}\\|;:\'",<>/?':
                 if c in s:
                     return '"{0}"'.format(s)

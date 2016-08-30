@@ -1723,7 +1723,7 @@ class MainLoop(object):
 
 def main(argv=None):
     if not argv:
-        args = sys.argv
+        argv = sys.argv
 
     if CLI_LOG_DIR:
         current_cli_logfile = os.path.join(CLI_LOG_DIR, 'freenascli.{0}.log'.format(os.getpid()))

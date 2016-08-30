@@ -1721,7 +1721,7 @@ class MainLoop(object):
         sys.stdout.flush()
 
 
-def main():
+def main(argv):
     if CLI_LOG_DIR:
         current_cli_logfile = os.path.join(CLI_LOG_DIR, 'freenascli.{0}.log'.format(os.getpid()))
         logging.basicConfig(filename=current_cli_logfile, level=logging.DEBUG)
@@ -1753,7 +1753,7 @@ def main():
     parser.add_argument('-f', metavar='INPUT')
     parser.add_argument('-p', metavar='PASSWORD')
     parser.add_argument('-D', metavar='DEFINE', action='append')
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     context = Context()
     context.argparse_parser = parser
@@ -1876,4 +1876,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv)

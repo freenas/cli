@@ -23,9 +23,12 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 #####################################################################
+
+import os
 import platform
 import sys
 from setuptools import setup, find_packages
+from setuptools.command.install import install
 
 dependency_links = []
 install_requires = [
@@ -58,6 +61,14 @@ elif platform.system() == 'Windows':
     install_requires.append('pyreadline')
 
 
+class build_docs(install):
+    def run(self):
+        install.run(self)
+        if os.getenv('GENERATE_CLI_DOCS'):
+            from freenas.cli import repl
+            repl.main(['--makedocs'])
+
+
 setup(
     name='freenas.cli',
     url='http://github.com/freenas/middleware',
@@ -84,6 +95,7 @@ setup(
     setup_requires=['freenas.utils', 'six', 'ply'],
     include_package_data=True,
     use_freenas=True,
+    cmdclass={'install': build_docs}
 )
 
 # Generate parser

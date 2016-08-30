@@ -162,7 +162,7 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
         )
 
         self.add_property(
-            descr='Command',
+            descr='Environment',
             name='environment',
             get='environment',
             set='environment',

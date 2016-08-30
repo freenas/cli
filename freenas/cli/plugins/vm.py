@@ -271,7 +271,7 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             name='bootloader',
             get='config.bootloader',
             list=False,
-            enum=['BHYVELOAD', 'GRUB', 'UEFI']
+            enum=['BHYVELOAD', 'GRUB', 'UEFI', 'UEFI_CSM']
         )
 
         self.add_property(

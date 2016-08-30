@@ -155,7 +155,7 @@ class CalendarTasksNamespaceBaseClass(EntitySubscriberBasedLoadMixin, TaskBasedS
             descr='Schedule',
             name='schedule',
             get=self.get_schedule,
-            set=None,
+            set='schedule',
             list=True,
             type=ValueType.DICT
         )

@@ -127,7 +127,7 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             return ['{0}:{1}'.format(i['container_port'], i['host_port']) for i in o['ports']]
 
         def set_ports(o, v):
-            o['ports'] = [{'container_port': c, 'host_port': h} for c, h in (x.split(':') for x in v)]
+            o['ports'] = [{'container_port': int(c), 'host_port': int(h)} for c, h in (x.split(':') for x in v)]
 
         def get_volumes(o):
             return ['{0}:{1}'.format(i['container_path'], i['host_path']) for i in o['volumes']]

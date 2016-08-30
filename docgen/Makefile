@@ -48,7 +48,7 @@ clean:
 
 .PHONY: meta
 meta:
-	@cd $(FREENAS_CLI)/ && $(VENV_PYTHON) -m  freenas.cli.repl -make_docs
+	@cd $(FREENAS_CLI)/ && $(VENV_PYTHON) -m  freenas.cli.repl --makedocs
 	@cp $(BUILD_META)/* $(BUILD_SRC)/
 
 .PHONY: install_pybsd

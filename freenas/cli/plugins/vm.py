@@ -109,6 +109,7 @@ class ConsoleVGACommand(Command):
 
     Returns link to VM VGA console.
     """
+
     def __init__(self, parent):
         self.parent = parent
 
@@ -124,6 +125,7 @@ class ImportVMCommand(Command):
 
     Imports a VM.
     """
+
     def __init__(self, parent):
         self.parent = parent
 
@@ -484,7 +486,7 @@ class VMDeviceVGAMixin(EntityNamespace):
         def get_humanized_summary(o):
             return "VGA device with resolution {0}".format(get(o, 'properties.resolution'))
 
-        def set_resolution(o ,v):
+        def set_resolution(o, v):
             if 'properties' in o:
                 o['properties'].update({'resolution': '{0}x{1}'.format(v[0], v[1])})
             else:
@@ -603,7 +605,7 @@ class VMDeviceNamespace(NestedObjectLoadMixin,
             this.entity['properties']['@type'] = types[this.entity['type']]
 
         super(VMDeviceNamespace, self).save(this, new)
-        
+
 
 class VMVolumeNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNamespace):
     def __init__(self, name, context, parent):
@@ -616,7 +618,7 @@ class VMVolumeNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityName
             'type': 'VOLUME',
             'properties': {}
         }
-        self.required_props = ['name','destination']
+        self.required_props = ['name', 'destination']
         self.localdoc['CreateEntityCommand'] = ("""\
             Usage: create <name> destination=<destination> <property>=<value> ...
 
@@ -733,13 +735,19 @@ class CreateVMSnapshotCommand(Command):
 
     def run(self, context, args, kwargs, opargs):
         if not args and not kwargs:
-            raise CommandException(_("create requires more arguments, see 'help create' for more information"))
+            raise CommandException(_(
+                "create requires more arguments, see 'help create' for more information"
+            ))
         if len(args) > 1:
-            raise CommandException(_("Wrong syntax for create, see 'help create' for more information"))
+            raise CommandException(_(
+                "Wrong syntax for create, see 'help create' for more information"
+            ))
 
         if len(args) == 1:
             if 'name' in kwargs:
-                raise CommandException(_("Both implicit and explicit 'name' parameters are specified."))
+                raise CommandException(_(
+                    "Both implicit and explicit 'name' parameters are specified."
+                ))
             else:
                 kwargs[self.parent.primary_key.name] = args.pop(0)
 
@@ -784,13 +792,19 @@ class PublishVMCommand(Command):
 
     def run(self, context, args, kwargs, opargs):
         if not args and not kwargs:
-            raise CommandException(_("publish requires more arguments, see 'help publish' for more information"))
+            raise CommandException(_(
+                "publish requires more arguments, see 'help publish' for more information"
+            ))
         if len(args) > 1:
-            raise CommandException(_("Wrong syntax for publish, see 'help publish' for more information"))
+            raise CommandException(_(
+                "Wrong syntax for publish, see 'help publish' for more information"
+            ))
 
         if len(args) == 1:
             if 'name' in kwargs:
-                raise CommandException(_("Both implicit and explicit 'name' parameters are specified."))
+                raise CommandException(_(
+                    "Both implicit and explicit 'name' parameters are specified."
+                ))
             else:
                 kwargs['name'] = args.pop(0)
 

@@ -744,11 +744,11 @@ class OpenFilesCommand(Command):
 
 
 @description("Mounts readonly dataset under selected system path")
-class MountCommand(Command):
+class PeekCommand(Command):
     """
-    Usage: mount path=<path>
+    Usage: peek path=<path>
 
-    Example: mount path=/path/to/my/temporary/mountpoint
+    Example: peek path=/path/to/my/temporary/mountpoint
 
     Mounts readonly dataset under selected system path.
     """
@@ -769,11 +769,11 @@ class MountCommand(Command):
 
 
 @description("Unmounts readonly dataset")
-class UmountCommand(Command):
+class UnpeekCommand(Command):
     """
-    Usage: unmount
+    Usage: unpeek
 
-    Example: unmount
+    Example: unpeek
 
     Unmounts readonly dataset.
     """
@@ -1019,13 +1019,13 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
         if this.entity:
             if this.entity['properties']['readonly']['parsed']:
                 if this.entity['mounted']:
-                    commands['umount'] = UmountCommand(this)
+                    commands['unpeek'] = UnpeekCommand(this)
                 else:
-                    commands['mount'] = MountCommand(this)
+                    commands['peek'] = PeekCommand(this)
 
         if getattr(self, 'is_docgen_instance', False):
-            commands['umount'] = UmountCommand(this)
-            commands['mount'] = MountCommand(this)
+            commands['unpeek'] = UnpeekCommand(this)
+            commands['peek'] = PeekCommand(this)
 
         return commands
 

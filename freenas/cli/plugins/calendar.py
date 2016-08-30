@@ -50,6 +50,16 @@ class CalendarTasksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         self.entity_subscriber_name = 'calendar_task'
         self.allow_create = False
         self.primary_key_name = 'name'
+        self.localdoc['ListCommand'] = ("""\
+            Usage: show
+
+            Lists all smart tasks. Optionally, filter or sort by property.
+            Use 'help properties' to list available properties.
+
+            Examples:
+                show
+                show | search name == somename
+                show | search enabled == yes""")
 
         self.add_property(
             descr='Type',
@@ -225,7 +235,7 @@ class CalendarTasksScheduleNamespace(NestedEntityMixin, ItemNamespace):
 
     Examples:
         set coalesce=no
-        set schedule={"month":`*/2`,"day":5}
+        set hour="*/2"
     """
     def __init__(self, name, context, parent):
         super(CalendarTasksScheduleNamespace, self).__init__(name)
@@ -246,6 +256,17 @@ class CalendarTasksScheduleNamespace(NestedEntityMixin, ItemNamespace):
                 'day_of_week': None,
             }
         }
+
+        self.localdoc['SetEntityCommand'] = ("""\
+            Usage: set <property>=<value> ...
+
+            Examples: set coalesce=no
+                      set month="*/2"
+                      set day=5
+                      set timezone=America/New_York
+
+            Sets a schedule property. For a list of properties, see 'help properties'.""")
+
 
         self.add_property(
             descr='Coalesce',
@@ -381,7 +402,7 @@ class ScrubNamespace(CalendarTasksNamespaceBaseClass):
     A 'scrub' task requires a valid volume passed with the 'volume' property.
 
     Usage:
-        create <name> <property>=<value>
+        create <name> volume=<volume> <property>=<value>
 
     Examples:
         create myscrub volume=mypool
@@ -392,6 +413,45 @@ class ScrubNamespace(CalendarTasksNamespaceBaseClass):
         self.required_props.extend(['volume'])
         self.skeleton_entity['task'] = 'volume.scrub'
         self.task_args_helper = ['volume']
+        self.localdoc['CreateEntityCommand'] = ("""\
+            Usage: create <name> disks=<disks> volume=<volume> <property>=<value>
+
+            Examples: create myscrub volume=mypool
+                      create somescrub volume=somepool schedule={"hour":2,"day_of_week":5}
+            
+            Creates a scrub calendar task. For a list of properties, see 'help properties'.""")
+        self.entity_localdoc['SetEntityCommand'] = ("""\
+            Usage: set <property>=<value> ...
+
+            Examples: set name=otherscrub
+                      set enabled=true
+
+            Sets a scrub calendar task property. For a list of properties, see 'help properties'.""")
+        self.entity_localdoc['GetEntityCommand'] = ("""\
+            Usage: get <field>
+
+            Examples:
+                get volume
+                get name
+
+            Display value of specified field.""")
+        self.entity_localdoc['EditEntityCommand'] = ("""\
+            Usage: edit <field>
+
+            Examples: edit name
+
+            Opens the default editor for the specified property. The default editor
+            is inherited from the shell's $EDITOR which can be set from the shell.
+            For a list of properties for the current namespace, see 'help properties'.""")
+        self.localdoc['ListCommand'] = ("""\
+            Usage: show
+
+            Lists all smart tasks. Optionally, filter or sort by property.
+            Use 'help properties' to list available properties.
+
+            Examples:
+                show
+                show | search name == somename""")
 
         self.add_property(
             descr='Volume',
@@ -406,11 +466,14 @@ class ScrubNamespace(CalendarTasksNamespaceBaseClass):
 class SmartNamespace(CalendarTasksNamespaceBaseClass):
     """
     SMART namespaces provides commands to create 'smart' type calendar tasks
-    A 'smart' task requires a list of valid disks for the 'disks' property and a test type for the 'test_type' property that is one of short, long, conveyance or offline.
+    A 'smart' task requires a list of valid disks for the 'disks' property and
+    a test type for the 'test_type' property that is one of short, long, conveyance
+    or offline.
 
-    Usage: create <name> <property>=<value>
+    Usage: create <name> disks=<disks> test_type=<test_type>
 
-    Examples: create mysmart disks=ada0,ada1,ada2 test_type=short
+    Examples: create mysmart disks=ada0,ada1,ada2 test_type=SHORT
+              create somesmart disks=ada0,ada1,ada2 rest_type=LONG schedule={"hour":3}
     """
     def __init__(self, name, context):
         super(SmartNamespace, self).__init__(name, context)
@@ -418,6 +481,46 @@ class SmartNamespace(CalendarTasksNamespaceBaseClass):
         self.required_props.extend(['disks', 'test_type'])
         self.skeleton_entity['task'] = 'disk.parallel_test'
         self.task_args_helper = ['disks', 'test_type']
+        self.localdoc['CreateEntityCommand'] = ("""\
+            Usage: create <name> disks=<disks> test_type=<test_type> <property>=<value>
+
+            Examples: create mysmart disks=ada0,ada1,ada2 test_type=SHORT
+                      create somesmart disks=ada0,ada1,ada2 test_type=LONG schedule={"hour":"*/4"}
+            
+            Creates a SMART calendar task. For a list of properties, see 'help properties'.""")
+        self.entity_localdoc['SetEntityCommand'] = ("""\
+            Usage: set <property>=<value> ...
+
+            Examples: set test_type=LONG
+                      set disks=ada1,ada2
+                      set enabled=true
+
+            Sets a SMART calendar task property. For a list of properties, see 'help properties'.""")
+        self.entity_localdoc['GetEntityCommand'] = ("""\
+            Usage: get <field>
+
+            Examples:
+                get test_type
+                get disks
+
+            Display value of specified field.""")
+        self.entity_localdoc['EditEntityCommand'] = ("""\
+            Usage: edit <field>
+
+            Examples: edit name
+
+            Opens the default editor for the specified property. The default editor
+            is inherited from the shell's $EDITOR which can be set from the shell.
+            For a list of properties for the current namespace, see 'help properties'.""")
+        self.localdoc['ListCommand'] = ("""\
+            Usage: show
+
+            Lists all smart tasks. Optionally, filter or sort by property.
+            Use 'help properties' to list available properties.
+
+            Examples:
+                show
+                show | search name == somename""")
 
         self.add_property(
             descr='Disks',
@@ -461,9 +564,10 @@ class SnapshotNamespace(CalendarTasksNamespaceBaseClass):
     A 'snapshot' task requires a valid dataset to snapshot, a boolean for the 'recursive' property,
     a string value of [0-9]+[hdmy] for lifetime and optionally a boolean for 'replicable' and a string for the 'prefix'.
 
-    Usage: create <name> <property>=<value>
+    Usage: create <name> dataset=<dataset> <property>=<value>
 
-    Examples: create mysnapshot dataset=mypool/mydataset recursive=yes lifetime=1h
+    Examples:   create mysnapshot dataset=mypool schedule={"minute":*/30}
+                create somesnapshot dataset=mypool/mydataset recursive=yes lifetime=1h schedule={"minute":"0"}
     """
     def __init__(self, name, context):
         super(SnapshotNamespace, self).__init__(name, context)
@@ -472,6 +576,46 @@ class SnapshotNamespace(CalendarTasksNamespaceBaseClass):
         self.skeleton_entity['task'] = 'volume.snapshot_dataset'
         self.skeleton_entity['args'] = ["", False, None, 'auto', False]
         self.task_args_helper = ['dataset', 'recursive', 'lifetime', 'prefix', 'replicable']
+        self.localdoc['CreateEntityCommand'] = ("""\
+            Usage: create <name> dataset=<dataset> <property>=<value>
+
+            Examples:   create mysnapshot dataset=mypool
+                        create somesnapshot dataset=mypool/mydataset recursive=yes lifetime=1h schedule={"minute":"0"}
+
+            Creates a snapshot calendar task. For a list of properties, see 'help properties'.""")
+        self.entity_localdoc['SetEntityCommand'] = ("""\
+            Usage: set <property>=<value> ...
+
+            Examples: set lifetime=2h
+                      set name=newname
+                      set enabled=true
+
+            Sets a snapshot calendar task property. For a list of properties, see 'help properties'.""")
+        self.entity_localdoc['GetEntityCommand'] = ("""\
+            Usage: get <field>
+
+            Examples:
+                get lifetime
+                get dataset
+
+            Display value of specified field.""")
+        self.entity_localdoc['EditEntityCommand'] = ("""\
+            Usage: edit <field>
+
+            Examples: edit name
+
+            Opens the default editor for the specified property. The default editor
+            is inherited from the shell's $EDITOR which can be set from the shell.
+            For a list of properties for the current namespace, see 'help properties'.""")
+        self.localdoc['ListCommand'] = ("""\
+            Usage: show
+
+            Lists all snapshot tasks. Optionally, filter or sort by property.
+            Use 'help properties' to list available properties.
+
+            Examples:
+                show
+                show | search name == somename""")
 
         self.add_property(
             descr='Dataset',
@@ -647,22 +791,59 @@ class CheckUpdateNamespace(CalendarTasksNamespaceBaseClass):
 
     Usage: create <name> <property>=<value>
 
-    Examples: create myupdate
+    Examples: create myupdate schedule={"hour":1}
     """
     def __init__(self, name, context):
         super(CheckUpdateNamespace, self).__init__(name, context)
         self.extra_query_params = [('task', '=', 'update.checkfetch')]
         self.skeleton_entity['task'] = 'update.checkfetch'
         self.skeleton_entity['args'] = []
+        self.localdoc['CreateEntityCommand'] = ("""\
+            Usage: create <name> <property>=<value>
+
+            Examples: create myupdate schedule={"hour":1}
+            
+            Creates a update calendar task. For a list of properties, see 'help properties'.""")
+        self.entity_localdoc['SetEntityCommand'] = ("""\
+            Usage: set <property>=<value> ...
+
+            Examples: set name=newname
+                      set enabled=true
+
+            Sets a update calendar task property. For a list of properties, see 'help properties'.""")
+        self.entity_localdoc['GetEntityCommand'] = ("""\
+            Usage: get <field>
+
+            Examples:
+                get name
+
+            Display value of specified field.""")
+        self.entity_localdoc['EditEntityCommand'] = ("""\
+            Usage: edit <field>
+
+            Examples: edit name
+
+            Opens the default editor for the specified property. The default editor
+            is inherited from the shell's $EDITOR which can be set from the shell.
+            For a list of properties for the current namespace, see 'help properties'.""")
+        self.localdoc['ListCommand'] = ("""\
+            Usage: show
+
+            Lists all smart tasks. Optionally, filter or sort by property.
+            Use 'help properties' to list available properties.
+
+            Examples:
+                show
+                show | search name == somename""")
 
 
 class CommandNamespace(CalendarTasksNamespaceBaseClass):
     """
     Command namespaces provides commands to create 'command' type calendar tasks
 
-    Usage: create <name> <property>=<value>
+    Usage: create <name> username=<username> command=<command> <property>=<value>
 
-    Examples: create mycommand username=myuser command="ls -l"
+    Examples: create mycommand username=myuser command="ls -l" schedule={"minute":"*/5"}
     """
     def __init__(self, name, context):
         super(CommandNamespace, self).__init__(name, context)
@@ -670,6 +851,45 @@ class CommandNamespace(CalendarTasksNamespaceBaseClass):
         self.required_props.extend(['username', 'command'])
         self.skeleton_entity['task'] = 'calendar_task.command'
         self.task_args_helper = ['username', 'command']
+        self.localdoc['CreateEntityCommand'] = ("""\
+            Usage: create <name> username=<username> command=<command> <property>=<value>
+
+            Examples: create mycommand username=myuser command="ls -l" schedule={"minute":"*/5"}
+            
+            Creates a command calendar task. For a list of properties, see 'help properties'.""")
+        self.entity_localdoc['SetEntityCommand'] = ("""\
+            Usage: set <property>=<value> ...
+
+            Examples: set command="cowsay moo"
+                      set username=someuser
+                      set enabled=true
+
+            Sets a command calendar task property. For a list of properties, see 'help properties'.""")
+        self.entity_localdoc['GetEntityCommand'] = ("""\
+            Usage: get <field>
+
+            Examples:
+                get command
+                get username
+
+            Display value of specified field.""")
+        self.entity_localdoc['EditEntityCommand'] = ("""\
+            Usage: edit <field>
+
+            Examples: edit name
+
+            Opens the default editor for the specified property. The default editor
+            is inherited from the shell's $EDITOR which can be set from the shell.
+            For a list of properties for the current namespace, see 'help properties'.""")
+        self.localdoc['ListCommand'] = ("""\
+            Usage: show
+
+            Lists all smart tasks. Optionally, filter or sort by property.
+            Use 'help properties' to list available properties.
+
+            Examples:
+                show
+                show | search name == somename""")
 
         self.add_property(
             descr='Username',

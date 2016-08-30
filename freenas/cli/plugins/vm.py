@@ -584,6 +584,7 @@ class VMDeviceNamespace(NestedObjectLoadMixin,
     def __init__(self, name, context, parent):
         super(VMDeviceNamespace, self).__init__(name, context)
         self.parent = parent
+        self.required_props = ['name', 'type']
         self.primary_key_name = 'name'
         self.extra_query_params = [('type', 'in', ('DISK', 'CDROM', 'NIC', 'USB', 'GRAPHICS'))]
         self.parent_path = 'devices'

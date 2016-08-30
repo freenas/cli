@@ -25,6 +25,7 @@
 #
 #####################################################################
 
+import copy
 import gettext
 from freenas.cli.namespace import (
     EntityNamespace, Command, TaskBasedSaveMixin, description,
@@ -705,15 +706,19 @@ class ReplicationNamespace(CalendarTasksNamespaceBaseClass):
 
         def set_transport_option(obj, type, property, value):
             opt = first_or_default(lambda i: i['name'] == type, obj['args'][2])
-            if opt:
-                opt[property] = value
-                return
 
-            obj['args'][2].append({
-                'name': type,
-                property: value
-            })
+            if value:
+                if opt:
+                    opt[property] = value
+                else:
+                    obj['args'][2].append({
+                        'name': type,
+                        property: value
+                    })
+            else:
+                obj['args'][2].remove(opt)
 
+            obj['args'] = copy.copy(obj['args'])
 
         self.add_property(
             descr='Local dataset',

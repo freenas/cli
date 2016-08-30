@@ -235,7 +235,7 @@ class CalendarTasksScheduleNamespace(NestedEntityMixin, ItemNamespace):
 
     Examples:
         set coalesce=no
-        set hour="*/2"
+        set hour="`*/2`"
     """
     def __init__(self, name, context, parent):
         super(CalendarTasksScheduleNamespace, self).__init__(name)
@@ -566,7 +566,7 @@ class SnapshotNamespace(CalendarTasksNamespaceBaseClass):
 
     Usage: create <name> dataset=<dataset> <property>=<value>
 
-    Examples:   create mysnapshot dataset=mypool schedule={"minute":*/30}
+    Examples:   create mysnapshot dataset=mypool schedule={"minute":"`*/30`"}
                 create somesnapshot dataset=mypool/mydataset recursive=yes lifetime=1h schedule={"minute":"0"}
     """
     def __init__(self, name, context):
@@ -843,7 +843,7 @@ class CommandNamespace(CalendarTasksNamespaceBaseClass):
 
     Usage: create <name> username=<username> command=<command> <property>=<value>
 
-    Examples: create mycommand username=myuser command="ls -l" schedule={"minute":"*/5"}
+    Examples: create mycommand username=myuser command="ls -l" schedule={"minute":"`*/5`"}
     """
     def __init__(self, name, context):
         super(CommandNamespace, self).__init__(name, context)

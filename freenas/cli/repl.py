@@ -1745,7 +1745,7 @@ def main():
         parser = argparse.ArgumentParser()
     parser.add_argument('uri', metavar='URI', nargs='?',
                         default='unix:')
-    parser.add_argument('-make_docs', action='store_true')
+    parser.add_argument('--makedocs', action='store_true', help='Generate CLI documentation metadata and leave')
     parser.add_argument('-m', metavar='MIDDLEWARECONFIG',
                         default=DEFAULT_MIDDLEWARE_CONFIGFILE)
     parser.add_argument('-c', metavar='CONFIG', default=DEFAULT_CLI_CONFIGFILE)
@@ -1757,7 +1757,7 @@ def main():
 
     context = Context()
     context.argparse_parser = parser
-    context.docgen_run = args.make_docs
+    context.docgen_run = args.makedocs
 
     if not context.docgen_run and os.environ.get('FREENAS_SYSTEM') != 'YES' and args.uri == 'unix:':
         args.uri = six.moves.input('Please provide FreeNAS IP: ')
@@ -1805,7 +1805,7 @@ def main():
     ml = MainLoop(context)
     context.ml = ml
 
-    if args.make_docs:
+    if args.makedocs:
         builtin_cmds = context.ml.base_builtin_commands
         filtering_cmds = context.ml.pipe_commands
 

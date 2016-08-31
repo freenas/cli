@@ -260,6 +260,14 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
         )
 
         self.add_property(
+            descr='Boot directory (for GRUB)',
+            name='boot_directory',
+            get='config.boot_directory',
+            list=False,
+            usage="The directory in VM's dataset under the files directory that contains grub.cfg"
+        )
+
+        self.add_property(
             descr='Boot partition (for GRUB)',
             name='boot_partition',
             get='config.boot_partition',

@@ -584,16 +584,6 @@ class VMDeviceNamespace(NestedObjectLoadMixin,
     """
     The VM Device namespace provides commands for managing device resources
     available on selected virtual machine
-
-    Usage:
-        create type=<device-type> name=<device-name> property=<value>
-        delete <device-name>
-        <device-name> show
-
-    Examples:
-        create type=DISK name=mydisk disk_mode=AHCI disk_size=1G
-        create type=NIC name=mynic nic_mode=NAT nic_device_type=E1000
-        create type=GRAPHICS name=framebuffer resolution=1280,1024
     """
     def __init__(self, name, context, parent):
         super(VMDeviceNamespace, self).__init__(name, context)

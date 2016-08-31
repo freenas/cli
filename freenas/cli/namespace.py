@@ -1178,10 +1178,10 @@ class EntitySubscriberBasedLoadMixin(object):
             return {}
 
     def get_one(self, name):
-        return self.context.entity_subscribers[self.entity_subscriber_name].query(
+        return copy.deepcopy(self.context.entity_subscribers[self.entity_subscriber_name].query(
             (self.primary_key_name, '=', name), *self.extra_query_params,
             single=True
-        )
+        ))
 
 
 class TaskBasedSaveMixin(object):

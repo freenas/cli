@@ -256,7 +256,8 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             descr='Boot device',
             name='boot_device',
             get='config.boot_device',
-            list=False
+            list=False,
+            usage="The device from the devices namespace from which to boot from"
         )
 
         self.add_property(
@@ -271,7 +272,8 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             descr='Boot partition (for GRUB)',
             name='boot_partition',
             get='config.boot_partition',
-            list=False
+            list=False,
+            usage="The partition on the os's boot device to boot from (i.e. msdos1 for the first partition of a BIOS partition layout)"
         )
 
         self.add_property(

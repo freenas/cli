@@ -468,9 +468,9 @@ class DockerContainerStartCommand(Command):
     Usage: start
 
     Example:
-    Start signle container:
+    Start single container:
         start
-    Start all containers at once:
+    Start all containers on the system using CLI scripting:
         for (i in $(docker container show)) { / docker container ${i["name"]} start }
 
     Starts a container.

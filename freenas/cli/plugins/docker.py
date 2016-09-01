@@ -180,6 +180,15 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
         )
 
         self.add_property(
+            descr='Container host name',
+            name='hostname',
+            get='hostname',
+            set=None,
+            usersetable=False,
+            list=False
+        )
+
+        self.add_property(
             descr='Host',
             name='host',
             get=self.get_host,

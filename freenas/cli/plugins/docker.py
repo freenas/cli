@@ -471,7 +471,7 @@ class DockerContainerStartCommand(Command):
     Start single container:
         start
     Start all containers on the system using CLI scripting:
-        for (i in $(docker container show)) { / docker container ${i["name"]} start }
+        for (i in $(docker container show)) { / docker container ${i["names"][0]} start }
 
     Starts a container.
     """

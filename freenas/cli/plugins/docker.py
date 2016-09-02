@@ -218,6 +218,15 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
         )
 
         self.add_property(
+            descr='Autostart container',
+            name='autostart',
+            get='autostart',
+            usersetable=False,
+            list=True,
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
             descr='Interactive',
             name='interactive',
             get='interactive',

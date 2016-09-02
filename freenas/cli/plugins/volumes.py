@@ -1110,13 +1110,6 @@ class SnapshotsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Ent
             list=True)
 
         self.add_property(
-            descr='Snapshot name',
-            name='name',
-            get='name',
-            set='name',
-            list=True)
-
-        self.add_property(
             descr='Dataset name',
             name='dataset',
             get='dataset',

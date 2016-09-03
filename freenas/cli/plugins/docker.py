@@ -324,7 +324,7 @@ class DockerConfigNamespace(DockerUtilsMixin, ConfigNamespace):
     def __init__(self, name, context):
         super(DockerConfigNamespace, self).__init__(name, context)
         self.config_call = "docker.config.get_config"
-        self.update_task = 'docker.update'
+        self.update_task = 'docker.config.update'
 
         self.add_property(
             descr='Default Docker host',

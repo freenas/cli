@@ -198,6 +198,13 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityN
         )
 
         self.add_property(
+            descr='SMART status',
+            name='status.smart_status',
+            get='status.smart_status',
+            list=True
+        )
+
+        self.add_property(
             descr='SMART options',
             name='smart_options',
             get='smart_options',

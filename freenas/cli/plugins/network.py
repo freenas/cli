@@ -216,6 +216,13 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
         )
 
         self.add_property(
+            descr='Description',
+            name='description',
+            get='name',
+            list=True
+        )
+
+        self.add_property(
             descr='Enabled',
             name='enabled',
             get='enabled',

@@ -29,6 +29,7 @@ import sys
 import tty
 import curses
 import termios
+from threading import Thread
 from freenas.dispatcher.shell import VMConsoleClient
 
 
@@ -60,7 +61,9 @@ class Console(object):
         old_stdin_settings = termios.tcgetattr(stdin_fd)
         try:
             tty.setraw(stdin_fd)
-            self.connect()
+            connect_t = Thread(target=self.connect)
+            connect_t.daemon = True
+            connect_t.start()
             while True:
                 ch = sys.stdin.read(1)
                 bch = bytes(ch, 'utf-8')[0]

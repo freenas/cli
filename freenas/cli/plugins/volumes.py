@@ -1341,6 +1341,15 @@ class CreateVolumeCommand(Command):
                 password
             )
 
+            return
+        elif volume_type == 'custom':
+            if not isinstance(kwargs.get('topology'), dict):
+                raise CommandException(_("Volume topology needs to be passed as 'topology' parameter"))
+    
+            ns.entity['id'] = name
+            ns.entity['topology'] = kwargs['topology']
+            ns.entity['key_encrypted'] = key_encryption
+            ns.entity['password_encrypted'] = True if password else False
         else:
             ns.entity['id'] = name
             ns.entity['topology'] = {}
@@ -1380,11 +1389,11 @@ class CreateVolumeCommand(Command):
                         'path': correct_disk_path(log_disks[0])
                     })
 
-            context.submit_task(
-                self.parent.create_task,
-                ns.entity,
-                password,
-                callback=lambda s, t: post_save(ns, s, t))
+        context.submit_task(
+            self.parent.create_task,
+            ns.entity,
+            password,
+            callback=lambda s, t: post_save(ns, s, t))
 
     def complete(self, context, **kwargs):
         return [

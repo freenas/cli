@@ -994,7 +994,8 @@ class WaitCommand(Command):
         generator = None
         progress = None
         try:
-            task = context.entity_subscribers['task'].get(tid, timeout=1)
+            task = context.entity_subscribers['task'].query(('id', '=', tid), single=True)
+
             if task['state'] in ('FINISHED', 'FAILED', 'ABORTED'):
                 return _("The task with id: {0} ended in {1} state".format(tid, task['state']))
 

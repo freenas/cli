@@ -1345,7 +1345,7 @@ class CreateVolumeCommand(Command):
         elif volume_type == 'custom':
             if not isinstance(kwargs.get('topology'), dict):
                 raise CommandException(_("Volume topology needs to be passed as 'topology' parameter"))
-    
+
             ns.entity['id'] = name
             ns.entity['topology'] = kwargs['topology']
             ns.entity['key_encrypted'] = key_encryption

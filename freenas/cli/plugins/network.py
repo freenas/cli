@@ -293,6 +293,15 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
         )
 
         self.add_property(
+            descr='DHCP error message',
+            name='dhcp_error',
+            get='status.dhcp.error',
+            set=None,
+            list=False,
+            condition=lambda e: get(e, 'status.dhcp.error')
+        )
+
+        self.add_property(
             descr='IPv6 autoconfiguration',
             name='ipv6_autoconf',
             get='rtadv',

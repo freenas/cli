@@ -177,7 +177,7 @@ class UpdateNowCommand(Command):
                 ))
 
     def run(self, context, args, kwargs, opargs):
-        if (args or len(kwargs) > 1 or ('reboot' not in kwargs and len(kwargs) == 1)):
+        if args or len(kwargs) > 1 or ('reboot' not in kwargs and len(kwargs) == 1):
             raise CommandException(_(
                 "Incorrect syntax {0} {1}\n{2}".format(args, kwargs, inspect.getdoc(self))
             ))

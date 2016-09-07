@@ -144,13 +144,18 @@ class AsciiOutputFormatter(object):
             return time.strftime(fmt, time.localtime(value))
 
     @staticmethod
+    def columnize(data):
+        columnizer = Columnizer()
+        return columnizer.columnize(data)
+
+    @staticmethod
     def output_list(data, label, vt=ValueType.STRING, **kwargs):
-        sys.stdout.write(columnize(data))
+        sys.stdout.write(AsciiOutputFormatter.columnize(data))
         sys.stdout.flush()
 
     @staticmethod
     def output_dict(data, key_label, value_label, value_vt=ValueType.STRING):
-        sys.stdout.write(columnize(['{0}={1}'.format(row[0], AsciiOutputFormatter.format_value(row[1], value_vt)) for row in list(data.items())]))
+        sys.stdout.write(AsciiOutputFormatter.columnize(['{0}={1}'.format(row[0], AsciiOutputFormatter.format_value(row[1], value_vt)) for row in list(data.items())]))
         sys.stdout.flush()
 
     @staticmethod
@@ -432,3 +437,78 @@ class AsciiStreamTablePrinter(object):
         for line in self.ordered_lines:
             six.print_(line, file=file, end=end)
         self._cleanup_lines()
+
+
+class Columnizer(object):
+    def __init__(self, display_width=80, col_sep="  "):
+        self.display_width = display_width
+        self.col_sep = col_sep
+        self.tty_esc_codes_patterns = ['\x1b[1m', '\x1b[0m', '\033[1m', '\033[0m']
+        self.saved_start_tty_esc_codes = []
+        self.saved_end_tty_esc_codes = []
+        self.saved_start_tty_esc_codes_helper = []
+        self.saved_end_tty_esc_codes_helper = []
+
+    def columnize(self, data):
+        data = self._strip_and_save_tty_esc_codes(data)
+
+        for ncols in range(1, len(data) + 1):
+            rows = self._split_row_data(data, ncols)
+            for i, r in enumerate(rows):
+                if not self._check_row_width(r):
+                    break
+                self.passed = True if i == len(rows) - 1 else False
+            if getattr(self, 'passed', False):
+                break
+        cols_widths = self._get_cols_widths(rows)
+        return "\n".join(self._format_rows(rows, cols_widths)) + "\n"
+
+    def _check_row_width(self, row_data):
+        line_length = sum([len(i) + len(self.col_sep) for i in row_data])
+        return line_length < self.display_width
+
+    def _get_cols_widths(self, rows):
+        cols_widths = [0] * len(max(rows, key=len))
+        for r in rows:
+            for i, col in enumerate(r):
+                cols_widths[i] = max([cols_widths[i], len(col)])
+        return cols_widths
+
+    def _split_row_data(self, data, ncols):
+        self.saved_start_tty_esc_codes = [self.saved_start_tty_esc_codes_helper[n::ncols] for n in range(0, ncols)]
+        self.saved_end_tty_esc_codes = [self.saved_end_tty_esc_codes_helper[n::ncols] for n in range(0, ncols)]
+        return [data[n::ncols] for n in range(0, ncols)]
+
+    def _format_rows(self, rows, cols_widths=None):
+        rows = self._load_and_add_tty_esc_codes(rows)
+        ret = []
+        for r in rows:
+            row = []
+            for i, col in enumerate(r):
+                row.append(col + (" " * (cols_widths[i] - len(col))))
+            ret.append(self.col_sep.join(row))
+        return ret
+
+    def _strip_and_save_tty_esc_codes(self, data):
+        self.saved_start_tty_esc_codes_helper = [""] * len(data)
+        self.saved_end_tty_esc_codes_helper = [""] * len(data)
+        ret = [None] * len(data)
+        for i, word in enumerate(data):
+            for p in self.tty_esc_codes_patterns:
+                if word.startswith(p):
+                    self.saved_start_tty_esc_codes_helper[i] = p
+                    word = word.split(p)[1]
+                if word.endswith(p):
+                    self.saved_end_tty_esc_codes_helper[i] = p
+                    word = word.split(p)[0]
+            ret[i] = word
+        return ret
+
+    def _load_and_add_tty_esc_codes(self, rows):
+        ret = []
+        for i, r in enumerate(rows):
+            row = []
+            for j, col in enumerate(r):
+                row.append(self.saved_start_tty_esc_codes[i][j] + col + self.saved_end_tty_esc_codes[i][j])
+            ret.append(row)
+        return ret

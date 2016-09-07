@@ -1231,11 +1231,12 @@ def check_disks(context, disks, cache_disks=None, log_disks=None):
 class CreateVolumeCommand(Command):
     """
     Usage: create <name> disks=<disks> layout=<layout> key_encryption=<key_encryption>
-            password=<password> cache=<disks> log=<disks>
+            password=<password> cache=<disks> log=<disks> auto_unlock=<auto_unlock>
 
     Example: create mypool disks=ada1,ada2
              create mypool disks=ada1,ada2 key_encryption=yes
              create mypool disks=ada1,ada2 key_encryption=yes password=1234
+             create mypool disks=auto key_encryption=yes auto_unlock=yes
              create mypool disks=ada1,ada2 password=1234
              create mypool disks=auto layout=virtualization
              create mypool disks=ada1,ada2 cache=ada3 log=ada4
@@ -1292,6 +1293,13 @@ class CreateVolumeCommand(Command):
 
         key_encryption = read_value(kwargs.pop('key_encryption', False), ValueType.BOOLEAN)
         password = kwargs.get('password')
+        auto_unlock = None
+        if 'auto_unlock' in kwargs:
+            auto_unlock = read_value(kwargs.pop('auto_unlock', False), ValueType.BOOLEAN)
+        if auto_unlock and (not key_encryption or password):
+            raise CommandException(_(
+                'Automatic volume unlock can be selected for volumes using only key based encryption.'
+            ))
 
         cache_disks = kwargs.pop('cache', [])
         log_disks = kwargs.pop('log', [])
@@ -1338,7 +1346,8 @@ class CreateVolumeCommand(Command):
                 cache_disks,
                 log_disks,
                 key_encryption,
-                password
+                password,
+                auto_unlock
             )
 
             return
@@ -1348,8 +1357,6 @@ class CreateVolumeCommand(Command):
 
             ns.entity['id'] = name
             ns.entity['topology'] = kwargs['topology']
-            ns.entity['key_encrypted'] = key_encryption
-            ns.entity['password_encrypted'] = True if password else False
         else:
             ns.entity['id'] = name
             ns.entity['topology'] = {}
@@ -1362,8 +1369,6 @@ class CreateVolumeCommand(Command):
                     'type': volume_type,
                     'children': [{'type': 'disk', 'path': correct_disk_path(disk)} for disk in disks]
                 })
-            ns.entity['key_encrypted'] = key_encryption
-            ns.entity['password_encrypted'] = True if password else False
             if len(cache_disks) > 0:
                 if 'cache' not in ns.entity:
                     ns.entity['topology']['cache'] = []
@@ -1389,6 +1394,10 @@ class CreateVolumeCommand(Command):
                         'path': correct_disk_path(log_disks[0])
                     })
 
+        ns.entity['key_encrypted'] = key_encryption
+        ns.entity['password_encrypted'] = True if password else False
+        ns.entity['auto_unlock'] = auto_unlock
+
         context.submit_task(
             self.parent.create_task,
             ns.entity,
@@ -1401,6 +1410,7 @@ class CreateVolumeCommand(Command):
             EnumComplete('layout=', VOLUME_LAYOUTS.keys()),
             EnumComplete('type=', VOLUME_LAYOUTS.keys()),
             EnumComplete('key_encryption=', ['yes', 'no']),
+            EnumComplete('auto_unlock=', ['yes', 'no']),
             NullComplete('password='),
             EntitySubscriberComplete('disks=', 'disk', lambda d: d['name'], ['auto'], list=True),
             EntitySubscriberComplete('cache=', 'disk', lambda d: d['name'], ['auto'], list=True),
@@ -1478,6 +1488,13 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
             get='password_encrypted',
             type=ValueType.BOOLEAN,
             set=None)
+
+        self.add_property(
+            descr='Automatic unlock',
+            name='auto_unlock',
+            get='auto_unlock',
+            type=ValueType.BOOLEAN,
+            condition=lambda o: o.get('key_encrypted') and not o.get('password_encrypted'))
 
         self.add_property(
             descr='Providers',

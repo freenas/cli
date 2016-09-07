@@ -35,7 +35,6 @@ import natural.date
 import math
 from dateutil.parser import parse
 from texttable import Texttable
-from columnize import columnize
 from freenas.cli import config
 from freenas.cli.output import ValueType, get_terminal_size, resolve_cell, get_humanized_size, Table
 from freenas.cli.utils import get_localtime_offset

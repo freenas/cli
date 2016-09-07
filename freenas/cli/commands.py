@@ -721,6 +721,11 @@ class IndexCommand(Command):
     """
 
     def run(self, context, args, kwargs, opargs):
+        def add_tty_formatting(input):
+            set_bold_font = '\033[1m'
+            reset_font = '\033[0m'
+            return set_bold_font + input + reset_font if context.is_interactive else input
+
         obj = self.get_relative_namespace(context)
         nss = obj.namespaces()
         cmds = obj.commands()
@@ -737,7 +742,7 @@ class IndexCommand(Command):
         ns_seq = Sequence(
             _("Current namespace items:"),
             sorted(list(cmds)) +
-            [ns.get_name() for ns in sorted(nss, key=lambda i: str(i.get_name()))]
+            [add_tty_formatting(ns.get_name()) for ns in sorted(nss, key=lambda i: str(i.get_name()))]
         )
         if outseq is not None:
             outseq += ns_seq

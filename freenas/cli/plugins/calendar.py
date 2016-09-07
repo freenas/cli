@@ -665,12 +665,11 @@ class SnapshotNamespace(CalendarTasksNamespaceBaseClass):
 class ReplicationNamespace(CalendarTasksNamespaceBaseClass):
     """
     Replication namespaces provides commands to create 'replication' type calendar tasks
-    A 'snapshot' task requires a valid dataset to snapshot, a boolean for the 'recursive' property,
-    a string value of [0-9]+[hdmy] for lifetime and optionally a boolean for 'replicable' and a string for the 'prefix'.
 
     Usage: create <name> <property>=<value>
 
-    Examples: create mysnapshot dataset=mypool/mydataset recursive=yes lifetime=1h
+    Examples:
+        create myrepl dataset=mypool/dataset remote_dataset=otherpool/bak peer=mypeer recursive=yes schedule={"minute": "`*/30`"}
     """
     def __init__(self, name, context):
         super(ReplicationNamespace, self).__init__(name, context)

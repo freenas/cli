@@ -479,12 +479,16 @@ class Columnizer(object):
         return [data[n::ncols] for n in range(0, ncols)]
 
     def _format_rows(self, rows, cols_widths=None):
+        def get_rows_elements_lengths(rows_elements):
+            return [[len(element) for element in row_elements] for row_elements in rows_elements]
+
+        rows_elements_lengths = get_rows_elements_lengths(rows)
         rows = self._load_and_add_tty_esc_codes(rows)
         ret = []
-        for r in rows:
+        for irow, r in enumerate(rows):
             row = []
-            for i, col in enumerate(r):
-                row.append(col + (" " * (cols_widths[i] - len(col))))
+            for icol, col in enumerate(r):
+                row.append(col + (" " * (cols_widths[icol] - rows_elements_lengths[irow][icol])))
             ret.append(self.col_sep.join(row))
         return ret
 

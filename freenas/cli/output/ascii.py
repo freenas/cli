@@ -469,8 +469,8 @@ class Columnizer(object):
     def _get_cols_widths(self, rows):
         cols_widths = [0] * len(max(rows, key=len))
         for r in rows:
-            for i, col in enumerate(r):
-                cols_widths[i] = max([cols_widths[i], len(col)])
+            for icol, col in enumerate(r):
+                cols_widths[icol] = max([cols_widths[icol], len(col)])
         return cols_widths
 
     def _split_row_data(self, data, ncols):
@@ -509,9 +509,9 @@ class Columnizer(object):
 
     def _load_and_add_tty_esc_codes(self, rows):
         ret = []
-        for i, r in enumerate(rows):
+        for ir, r in enumerate(rows):
             row = []
-            for j, col in enumerate(r):
-                row.append(self.saved_start_tty_esc_codes[i][j] + col + self.saved_end_tty_esc_codes[i][j])
+            for icol, col in enumerate(r):
+                row.append(self.saved_start_tty_esc_codes[ir][icol] + col + self.saved_end_tty_esc_codes[ir][icol])
             ret.append(row)
         return ret

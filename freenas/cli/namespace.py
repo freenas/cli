@@ -233,6 +233,7 @@ class RootNamespace(Namespace):
 
 class PropertyMapping(object):
     def __init__(self, **kwargs):
+        self.context = kwargs.pop('context', None)
         self.index = kwargs.pop('index')
         self.name = kwargs.pop('name')
         self.descr = kwargs.pop('descr', None)
@@ -272,8 +273,8 @@ class PropertyMapping(object):
 
         value = read_value(value, self.type)
 
-        if self.enum:
-            enum_val = self.enum() if callable(self.enum) else self.enum
+        if self.enum or (self.complete and self.context):
+            enum_val = self.enum() if callable(self.enum) else self.enum or self.complete.choices(self.context, None)
             if self.type == ValueType.SET:
                 for e in value:
                     if e not in enum_val:
@@ -590,7 +591,7 @@ class ItemNamespace(Namespace):
             field, rest = field.rsplit('.', 1)
 
     def add_property(self, **kwargs):
-        self.property_mappings.append(PropertyMapping(index=len(self.property_mappings), **kwargs))
+        self.property_mappings.append(PropertyMapping(context=self.context, index=len(self.property_mappings), **kwargs))
 
     def get_property(self, prop, obj):
         mapping = self.get_mapping(prop)
@@ -1085,7 +1086,7 @@ class EntityNamespace(Namespace):
         raise NotImplementedError()
 
     def add_property(self, **kwargs):
-        self.property_mappings.append(PropertyMapping(index=len(self.property_mappings), **kwargs))
+        self.property_mappings.append(PropertyMapping(context=self.context, index=len(self.property_mappings), **kwargs))
 
     def commands(self):
         base = {'show': ListCommand(self)}

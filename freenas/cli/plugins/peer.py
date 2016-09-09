@@ -187,6 +187,12 @@ class FreeNASPeerNamespace(BasePeerNamespace):
             list=False
         )
 
+        name_mapping = self.get_mapping('name')
+        name_mapping.usersetable = False
+
+        address_mapping = self.get_mapping('address')
+        address_mapping.usersetable = False
+
     def commands(self):
         cmds = super(FreeNASPeerNamespace, self).commands()
         cmds.update({'create': CreateFreeNASPeerCommand(self)})

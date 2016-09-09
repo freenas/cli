@@ -65,3 +65,19 @@ class EntitySubscriberComplete(NullComplete):
 
     def choices(self, context, token):
         return context.entity_subscribers[self.datasource].query(callback=self.mapper) + self.extra
+
+
+class RpcComplete(EntitySubscriberComplete):
+    def __init__(self, name, datasource, mapper=None, extra=None, **kwargs):
+        super(RpcComplete, self).__init__(name, datasource, mapper, extra, **kwargs)
+
+    def choices(self, context, token):
+        result = []
+        for o in list(context.call_sync(self.datasource)) + self.extra:
+            r = self.mapper(o)
+            if isinstance(r, (list, tuple)):
+                result.extend(r)
+            else:
+                result.append(r)
+
+        return result

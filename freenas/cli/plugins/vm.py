@@ -35,7 +35,7 @@ from freenas.cli.output import ValueType, get_humanized_size
 from freenas.cli.utils import post_save
 from freenas.utils import first_or_default
 from freenas.utils.query import get, set
-from freenas.cli.complete import NullComplete, EntitySubscriberComplete
+from freenas.cli.complete import NullComplete, EntitySubscriberComplete, RpcComplete
 from freenas.cli.console import Console
 
 
@@ -203,7 +203,8 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
         self.add_property(
             descr='Template name',
             name='template',
-            get='template.name'
+            get='template.name',
+            complete=RpcComplete('template=', 'vm.template.query', lambda i: get(i, 'template.name'))
         )
 
         self.add_property(
@@ -218,7 +219,8 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             name='volume',
             get='target',
             createsetable=True,
-            usersetable=False
+            usersetable=False,
+            complete=EntitySubscriberComplete('volume=', 'volume', lambda i: i['id'])
         )
 
         self.add_property(
@@ -257,7 +259,12 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             name='boot_device',
             get='config.boot_device',
             list=False,
-            usage="The device from the devices namespace from which to boot from"
+            usage="The device from the devices namespace from which to boot from",
+            complete=RpcComplete(
+                'boot_device=',
+                'vm.query',
+                lambda o: [i['name'] for i in o['devices'] if i['type'] in ('DISK', 'CDROM')]
+            )
         )
 
         self.add_property(

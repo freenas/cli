@@ -40,9 +40,10 @@ _ = t.gettext
 @description(_("Exchange keys with remote host and create known FreeNAS peer entry at both sides"))
 class CreateFreeNASPeerCommand(Command):
     """
-    Usage: create <address> username=<username> password=<password>
+    Usage: create name=<name> address=<address> username=<username> password=<password>
 
-    Example: create my_peer address=10.0.0.1 username=my_username
+    Example: create address=freenas-2.local username=root password=secret
+             create my_peer address=10.0.0.1 username=my_username
                     password=secret
              create my_peer address=my_username@10.0.0.1 password=secret
              create name=my_peer address=my_username@10.0.0.1 password=secret
@@ -50,6 +51,8 @@ class CreateFreeNASPeerCommand(Command):
 
     Exchange keys with remote host and create known FreeNAS host entry
     at both sides.
+
+    FreeNAS peer name when not defined defaults to host name.
 
     User name and password are used only once to authorize key exchange.
     Default SSH port is 22.
@@ -69,10 +72,7 @@ class CreateFreeNASPeerCommand(Command):
         if len(args) == 1:
             kwargs['name'] = args.pop(0)
 
-        if 'name' not in kwargs:
-            raise CommandException(_('Please specify a name for your peer'))
-        else:
-            name = kwargs.pop('name')
+        name = kwargs.pop('name', None)
 
         if 'address' not in kwargs:
             raise CommandException(_('Please specify an address of your remote'))
@@ -96,19 +96,22 @@ class CreateFreeNASPeerCommand(Command):
 
         port = kwargs.pop('port', 22)
 
+        peer = {
+            'address': address,
+            'type': 'freenas',
+            'credentials': {
+                'username': username,
+                'password': password,
+                'port': port,
+                'type': 'ssh'
+            }
+        }
+        if name:
+            peer['name'] = name
+
         context.submit_task(
             self.parent.create_task,
-            {
-                'name': name,
-                'address': address,
-                'type': 'freenas',
-                'credentials': {
-                    'username': username,
-                    'password': password,
-                    'port': port,
-                    'type': 'ssh'
-                }
-            }
+            peer
         )
 
     def complete(self, context, **kwargs):

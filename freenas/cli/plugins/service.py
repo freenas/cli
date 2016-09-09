@@ -137,7 +137,7 @@ class ServicesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Enti
 
 class ServiceConfigNamespace(NestedEntityMixin, ItemNamespace):
     def __init__(self, name, context, parent):
-        super(ServiceConfigNamespace, self).__init__(name)
+        super(ServiceConfigNamespace, self).__init__(name, context)
         self.context = context
         self.parent = parent
         self.parent_entity_path = 'config'

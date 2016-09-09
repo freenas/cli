@@ -129,7 +129,7 @@ class BackupNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
 
 class BackupBasePropertiesNamespace(NestedEntityMixin, ItemNamespace):
     def __init__(self, name, context, parent):
-        super(BackupBasePropertiesNamespace, self).__init__(name)
+        super(BackupBasePropertiesNamespace, self).__init__(name, context)
         self.context = context
         self.parent = parent
         self.parent_entity_path = 'properties'

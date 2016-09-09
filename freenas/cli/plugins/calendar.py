@@ -239,7 +239,7 @@ class CalendarTasksScheduleNamespace(NestedEntityMixin, ItemNamespace):
         set hour="`*/2`"
     """
     def __init__(self, name, context, parent):
-        super(CalendarTasksScheduleNamespace, self).__init__(name)
+        super(CalendarTasksScheduleNamespace, self).__init__(name, context)
         self.context = context
         self.parent = parent
         self.parent_entity_path = 'schedule'
@@ -343,7 +343,7 @@ class CalendarTasksScheduleNamespace(NestedEntityMixin, ItemNamespace):
 
 class CalendarTasksStatusNamespace(NestedEntityMixin, ItemNamespace):
     def __init__(self, name, context, parent):
-        super(CalendarTasksStatusNamespace, self).__init__(name)
+        super(CalendarTasksStatusNamespace, self).__init__(name, context)
         self.context = context
         self.parent = parent
         self.parent_entity_path = 'status'

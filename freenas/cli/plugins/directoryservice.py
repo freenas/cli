@@ -209,7 +209,7 @@ class DirectoriesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, E
 
 class BaseDirectoryPropertiesNamespace(NestedEntityMixin, ItemNamespace):
     def __init__(self, name, context, parent):
-        super(BaseDirectoryPropertiesNamespace, self).__init__(name)
+        super(BaseDirectoryPropertiesNamespace, self).__init__(name, context)
         self.context = context
         self.parent = parent
         self.parent_entity_path = 'parameters'

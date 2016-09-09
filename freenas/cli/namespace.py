@@ -523,11 +523,12 @@ class ItemNamespace(Namespace):
             if curr_ns.get_name() == entity_id and isinstance(curr_ns.parent, self.parent.parent.__class__):
                 context.ml.cd_up()
 
-    def __init__(self, name):
+    def __init__(self, name, context):
         super(ItemNamespace, self).__init__(name)
         self.name = name
         if not hasattr(self, 'description'):
             self.description = name
+        self.context = context
         self.entity = None
         self.leaf_entity = False
         self.orig_entity = None
@@ -646,7 +647,7 @@ class ItemNamespace(Namespace):
 
 class ConfigNamespace(ItemNamespace):
     def __init__(self, name, context):
-        super(ConfigNamespace, self).__init__(name)
+        super(ConfigNamespace, self).__init__(name, context)
         self.context = context
         self.saved = name is not None
         self.config_call = None
@@ -711,8 +712,8 @@ class ConfigNamespace(ItemNamespace):
 
 
 class SingleItemNamespace(ItemNamespace):
-    def __init__(self, name, parent, **kwargs):
-        super(SingleItemNamespace, self).__init__(name)
+    def __init__(self, name, parent, context, **kwargs):
+        super(SingleItemNamespace, self).__init__(name, context)
         self.parent = parent
         self.saved = name is not None
         self.property_mappings = parent.property_mappings
@@ -868,7 +869,7 @@ class SingleItemNamespace(ItemNamespace):
         nslst = []
         for i in self.leaf_ns.query([], {}):
             name = self.leaf_ns.primary_key.do_get(i)
-            nslst.append(SingleItemNamespace(name, self.leaf_ns, leaf_entity=self.leaf_harborer))
+            nslst.append(SingleItemNamespace(name, self.leaf_ns, self.context, leaf_entity=self.leaf_harborer))
         return nslst
 
 
@@ -976,7 +977,7 @@ class CreateEntityCommand(Command):
             self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        ns = SingleItemNamespace(None, self.parent)
+        ns = SingleItemNamespace(None, self.parent, context)
         ns.orig_entity = copy.deepcopy(self.parent.skeleton_entity)
         ns.entity = copy.deepcopy(self.parent.skeleton_entity)
         kwargs = collections.OrderedDict(kwargs)
@@ -1103,7 +1104,7 @@ class EntityNamespace(Namespace):
 
         item = self.get_one(name)
         if item:
-            return SingleItemNamespace(name, self, leaf_entity=self.leaf_harborer)
+            return SingleItemNamespace(name, self, self.context, leaf_entity=self.leaf_harborer)
 
     def namespaces(self, name=None):
         if self.primary_key is None or self.large:
@@ -1111,7 +1112,7 @@ class EntityNamespace(Namespace):
 
         for i in self.query([], {'limit': 100}):
             name = self.primary_key.do_get(i)
-            yield SingleItemNamespace(name, self, leaf_entity=self.leaf_harborer)
+            yield SingleItemNamespace(name, self, self.context, leaf_entity=self.leaf_harborer)
 
 
 class RpcBasedLoadMixin(object):

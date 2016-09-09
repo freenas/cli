@@ -680,7 +680,7 @@ class Context(object):
         entityns = nsclass('<temp>', self) if inspect.isclass(nsclass) else nsclass
 
         if isinstance(entityns, EntityNamespace):
-            namespace = SingleItemNamespace('<temp>', entityns)
+            namespace = SingleItemNamespace('<temp>', entityns, self)
             if task['name'] == entityns.update_task:
                 # Update tasks have updated_params as second argument
                 errors = errors_by_path(task['error']['extra'], [1])

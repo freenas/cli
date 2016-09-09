@@ -482,7 +482,7 @@ class _NamespaceProcessor(object):
         return nested_namespaces, entity_commands, entity_namespaces
 
     def _instantiate_entity_namespace(self, parent_ns):
-        entity = SingleItemNamespace(None, parent_ns)
+        entity = SingleItemNamespace(None, parent_ns, None)
         entity.orig_entity = copy.deepcopy(parent_ns.skeleton_entity)
         entity.entity = copy.deepcopy(parent_ns.skeleton_entity)
         return entity

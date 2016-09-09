@@ -1312,7 +1312,7 @@ class CreateVolumeCommand(Command):
         if isinstance(log_disks, six.string_types):
             log_disks = [log_disks]
 
-        ns = SingleItemNamespace(None, self.parent)
+        ns = SingleItemNamespace(None, self.parent, context)
         ns.orig_entity = copy.deepcopy(self.parent.skeleton_entity)
         ns.entity = copy.deepcopy(self.parent.skeleton_entity)
 

@@ -237,7 +237,7 @@ class PropertyMapping(object):
         self.name = kwargs.pop('name')
         self.descr = kwargs.pop('descr', None)
         self.get = kwargs.pop('get')
-        self.get_name = kwargs.pop('get_name', self.name)
+        self.get_name = kwargs.pop('get_name', self.get)
         self.set = kwargs.pop('set', None) if 'set' in kwargs else self.get
         self.list = kwargs.pop('list', True)
         self.type = kwargs.pop('type', ValueType.STRING)
@@ -568,10 +568,10 @@ class ItemNamespace(Namespace):
         raise NotImplementedError()
 
     def has_property(self, prop):
-        return any([x for x in self.property_mappings if x.name == prop])
+        return any(x for x in self.property_mappings if x.name == prop)
 
     def get_mapping(self, prop):
-        return list([x for x in self.property_mappings if x.name == prop])[0]
+        return list(x for x in self.property_mappings if x.name == prop)[0]
 
     def get_mapping_by_field(self, field):
         rest = None

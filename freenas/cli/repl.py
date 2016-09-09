@@ -78,7 +78,7 @@ from freenas.cli.commands import (
     ShellCommand, HelpCommand, ShowUrlsCommand, ShowIpsCommand, TopCommand, ClearCommand,
     HistoryCommand, SaveoptCommand, EchoCommand, SourceCommand, MorePipeCommand,
     SearchPipeCommand, ExcludePipeCommand, SortPipeCommand, LimitPipeCommand,
-    SelectPipeCommand, LoginCommand, DumpCommand, WhoamiCommand, PendingCommand,
+    SelectPipeCommand, FindPipeCommand, LoginCommand, DumpCommand, WhoamiCommand, PendingCommand,
     WaitCommand, OlderThanPipeCommand, NewerThanPipeCommand, IndexCommand, AliasCommand,
     UnaliasCommand, ListVarsCommand, AttachDebuggerCommand, ChangeNamespaceCommand,
     WCommand
@@ -923,6 +923,7 @@ class MainLoop(object):
         'sort': SortPipeCommand(),
         'limit': LimitPipeCommand(),
         'select': SelectPipeCommand(),
+        'find': FindPipeCommand(),
         'more': MorePipeCommand(),
         'less': MorePipeCommand(),
         'older_than': OlderThanPipeCommand(),

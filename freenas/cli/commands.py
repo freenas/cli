@@ -1119,7 +1119,6 @@ def map_opargs(opargs, context):
 
 @description("Filter results based on specified conditions")
 class SearchPipeCommand(PipeCommand):
-
     """
     Usage: <command> | search <key> <op> <value> ...
 
@@ -1147,6 +1146,26 @@ class SearchPipeCommand(PipeCommand):
             ))
 
         return {"filter": mapped_opargs}
+
+
+@description("Finds name of first object matched by the query")
+class FindPipeCommand(SearchPipeCommand):
+    """
+    Usage: <command> | find <key> <op> <value>
+
+    Example: network interface show | find name==vlan0
+
+    Return first item in a list that matches specified conditions.
+    """
+    def run(self, context, args, kwargs, opargs, input=None):
+        ns = context.pipe_cwd
+        prop = ns.primary_key
+        if isinstance(input, Table):
+            try:
+                first = next(iter(input.data))
+                return prop.do_get(first)
+            except (StopIteration, KeyError):
+                return None
 
 
 @description("Select tasks started before or at the specified time")

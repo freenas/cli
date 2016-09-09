@@ -153,7 +153,8 @@ class BasePeerNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Enti
         self.add_property(
             descr='Peer Type',
             name='type',
-            get='type'
+            get='type',
+            usersetable=False
         )
 
         self.add_property(

@@ -1322,6 +1322,12 @@ class MainLoop(object):
 
             if isinstance(token, (ExpressionExpansion, CommandExpansion)):
                 expr = self.eval(token.expr, env, first=first)
+
+                # Table data needs to be flattened upon assignment
+                if isinstance(expr, Table):
+                    rows = list(expr.data)
+                    expr.data = rows
+
                 return expr
 
             if isinstance(token, CommandCall):

@@ -149,6 +149,8 @@ class ChangeNamespaceCommand(Command):
                 raise CommandException(_(
                     'Invalid syntax: {0}.\n{1}'.format(args, inspect.getdoc(self))
                 ))
+        elif len(args) == 0:
+            return
         else:
             path_args = args[0]
         path = path_args[0] + path_args[1:].replace('/', ' ').strip()

@@ -398,12 +398,13 @@ class VMDeviceNamespace(NestedObjectLoadMixin, EntityNamespace):
         self.parent_path = 'devices'
         self.allow_create = False
 
-        self.humanized_summaries = {}
-        self.humanized_summaries['DISK'] = VMDeviceDiskNamespace.get_humanized_summary
-        self.humanized_summaries['CDROM'] = VMDeviceDiskNamespace.get_humanized_summary
-        self.humanized_summaries['NIC'] = VMDeviceNicNamespace.get_humanized_summary
-        self.humanized_summaries['USB'] = VMDeviceUsbNamespace.get_humanized_summary
-        self.humanized_summaries['GRAPHICS'] = VMDeviceGraphicsNamespace.get_humanized_summary
+        self.humanized_summaries = {
+            'DISK': VMDeviceDiskNamespace.get_humanized_summary,
+            'CDROM': VMDeviceDiskNamespace.get_humanized_summary,
+            'NIC': VMDeviceNicNamespace.get_humanized_summary,
+            'USB': VMDeviceUsbNamespace.get_humanized_summary,
+            'GRAPHICS': VMDeviceGraphicsNamespace.get_humanized_summary
+        }
 
         self.localdoc['ListCommand'] = ("""\
             Usage: show

@@ -494,7 +494,7 @@ class RekeyVolumeCommand(Command):
         if self.parent.entity.get('providers_presence', 'NONE') != 'ALL':
             raise CommandException('You must unlock your volume first')
         password = kwargs.get('password', None)
-        key_encrypted = kwargs.get('key_encrypted', True)
+        key_encrypted = read_value(kwargs.pop('key_encrypted', 'yes'), ValueType.BOOLEAN)
         name = self.parent.entity['id']
         context.submit_task('volume.rekey', name, key_encrypted, password)
 

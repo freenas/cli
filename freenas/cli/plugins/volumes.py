@@ -159,6 +159,12 @@ class AddVdevCommand(Command):
         self.parent.modified = True
         self.parent.save()
 
+    def complete(self, context, **kwargs):
+        return [
+            EnumComplete('type=', ['mirror', 'disk', 'raidz1', 'raidz2', 'raidz3', 'cache', 'log']),
+            EntitySubscriberComplete('disks=', 'disk', lambda d: d['name'], ['auto'], list=True)
+        ]
+
 
 @description("Adds new disk to existing mirror or converts single disk stripe to a mirror")
 class ExtendVdevCommand(Command):
@@ -498,6 +504,12 @@ class RekeyVolumeCommand(Command):
         name = self.parent.entity['id']
         context.submit_task('volume.rekey', name, key_encrypted, password)
 
+    def complete(self, context, **kwargs):
+        return [
+            EnumComplete('key_encrypted=', ['yes', 'no']),
+            NullComplete('password=')
+        ]
+
 
 @description("Creates an encrypted file containing copy of metadatas of all disks related to an encrypted volume")
 class BackupVolumeMasterKeyCommand(Command):
@@ -537,6 +549,11 @@ class BackupVolumeMasterKeyCommand(Command):
         return Sequence("Backup password:",
                         str(result['result']))
 
+    def complete(self, context, **kwargs):
+        return [
+            NullComplete('path=')
+        ]
+
 
 @description("Restores metadata of all disks related to an encrypted volume from a backup file")
 class RestoreVolumeMasterKeyCommand(Command):
@@ -567,6 +584,12 @@ class RestoreVolumeMasterKeyCommand(Command):
 
         name = self.parent.entity['id']
         context.submit_task('volume.keys.restore', name, password, path)
+
+    def complete(self, context, **kwargs):
+        return [
+            NullComplete('path='),
+            NullComplete('password=')
+        ]
 
 
 @description("Shows volume topology")
@@ -766,6 +789,11 @@ class PeekCommand(Command):
             path,
             callback=lambda s, t: post_save(self.parent, s, t)
         )
+
+    def complete(self, context, **kwargs):
+        return [
+            NullComplete('path=')
+        ]
 
 
 @description("Unmounts readonly dataset")
@@ -1059,6 +1087,11 @@ class RollbackCommand(Command):
             force
         )
 
+    def complete(self, context, **kwargs):
+        return [
+            EnumComplete('force=', ['yes', 'no'])
+        ]
+
 
 class CloneCommand(Command):
     """
@@ -1082,6 +1115,11 @@ class CloneCommand(Command):
             self.parent.entity['id'],
             new_name
         )
+
+    def complete(self, context, **kwargs):
+        return [
+            NullComplete('new_name=')
+        ]
 
 
 @description("Snapshots")

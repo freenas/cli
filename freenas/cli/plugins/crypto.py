@@ -56,6 +56,11 @@ class CryptoNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         self.localdoc['ListCommand'] = ("""\
             Usage: show
 
+            Examples:
+                show
+                show | search type == CERT_INTERNAL
+                show | search type == CERT_INTERNAL | sort name
+
             Lists all certificates, optionally doing filtering and sorting.
             """)
 
@@ -64,6 +69,9 @@ class CryptoNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             name='name',
             get='name',
             set='name',
+            usage=_("""\
+            Name of the certificate
+            """),
             list=True)
 
         self.add_property(
@@ -71,6 +79,9 @@ class CryptoNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             name='type',
             get='type',
             set='type',
+            usage=_("""\
+            Certificate type
+            """),
             usersetable=False,
             list=True)
 
@@ -79,6 +90,9 @@ class CryptoNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             name='serial',
             get='serial',
             set='serial',
+            usage=_("""\
+            Certificate unique serial number
+            """),
             type=ValueType.NUMBER,
             usersetable=False,
             list=True)

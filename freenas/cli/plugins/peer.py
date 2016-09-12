@@ -92,13 +92,13 @@ class CreateFreeNASPeerCommand(Command):
         context.submit_task(
             self.parent.create_task,
             {
-                'address': address,
                 'type': 'freenas',
                 'credentials': {
                     'username': username,
                     'password': password,
                     'port': port,
-                    'type': 'ssh'
+                    'type': 'ssh',
+                    'address': address
                 }
             }
         )
@@ -124,7 +124,7 @@ class BasePeerNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Enti
         self.create_task = 'peer.create'
         self.update_task = 'peer.update'
         self.delete_task = 'peer.delete'
-        self.required_props = ['name', ['address', 'type', 'credentials']]
+        self.required_props = ['name', ['type', 'credentials']]
 
         self.skeleton_entity = {
             'type': type_name,
@@ -144,12 +144,6 @@ class BasePeerNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Enti
             name='type',
             get='type',
             usersetable=False
-        )
-
-        self.add_property(
-            descr='Peer address',
-            name='address',
-            get='address'
         )
 
         self.primary_key = self.get_mapping('name')
@@ -187,11 +181,15 @@ class FreeNASPeerNamespace(BasePeerNamespace):
             list=False
         )
 
+        self.add_property(
+            descr='Peer address',
+            name='address',
+            get='credentials.address',
+            usersetable=False
+        )
+
         name_mapping = self.get_mapping('name')
         name_mapping.usersetable = False
-
-        address_mapping = self.get_mapping('address')
-        address_mapping.usersetable = False
 
     def commands(self):
         cmds = super(FreeNASPeerNamespace, self).commands()
@@ -206,6 +204,12 @@ class SSHPeerNamespace(BasePeerNamespace):
     """
     def __init__(self, name, context):
         super(SSHPeerNamespace, self).__init__(name, 'ssh', context)
+
+        self.add_property(
+            descr='Peer address',
+            name='address',
+            get='credentials.address'
+        )
 
         self.add_property(
             descr='Username',
@@ -315,15 +319,6 @@ class PeerNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             descr='Peer Type',
             name='type',
             get='type',
-            set=None,
-            createsetable=False,
-            usersetable=False
-        )
-
-        self.add_property(
-            descr='Peer address',
-            name='address',
-            get='address',
             set=None,
             createsetable=False,
             usersetable=False

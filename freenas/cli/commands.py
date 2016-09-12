@@ -726,7 +726,7 @@ class IndexCommand(Command):
         def add_tty_formatting(input):
             set_bold_font = '\033[1m'
             reset_font = '\033[0m'
-            return set_bold_font + input + reset_font if context.is_interactive else input
+            return set_bold_font + str(input) + reset_font if context.is_interactive else input
 
         obj = self.get_relative_namespace(context)
         nss = obj.namespaces()

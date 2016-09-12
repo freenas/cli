@@ -51,6 +51,8 @@ class CalendarTasksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         self.entity_subscriber_name = 'calendar_task'
         self.allow_create = False
         self.primary_key_name = 'name'
+        self.has_entities_in_subnamespaces_only = True
+
         self.localdoc['ListCommand'] = ("""\
             Usage: show
 

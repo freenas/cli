@@ -47,6 +47,7 @@ class DashboardNamespace(EntityNamespace):
         super(DashboardNamespace, self).__init__(name, context)
         self.context = context
         self.allow_create = False
+        self.has_entities_in_subnamespaces_only = True
 
         self.extra_commands = {
             'status': StatusCommand(),

@@ -404,6 +404,7 @@ class VMDeviceNamespace(NestedObjectLoadMixin, EntityNamespace):
         self.parent = parent
         self.parent_path = 'devices'
         self.allow_create = False
+        self.has_entities_in_subnamespaces_only = True
 
         self.humanized_summaries = {
             'DISK': VMDeviceDiskNamespace.get_humanized_summary,

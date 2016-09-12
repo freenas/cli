@@ -52,6 +52,7 @@ class CryptoNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         self.entity_subscriber_name = 'crypto.certificate'
         self.primary_key_name = 'name'
         self.allow_create = False
+        self.has_entities_in_subnamespaces_only = True
 
         self.localdoc['ListCommand'] = ("""\
             Usage: show

@@ -130,16 +130,6 @@ class CertificateBaseNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixi
             Lists all certificates, optionally doing filtering and sorting.
             """)
 
-        self.entity_localdoc['DeleteEntityCommand'] = ("""\
-            Usage: delete
-
-            Examples: delete
-
-            Deletes the specified certificate.
-
-            !WARNING! Deleting the CA certificate will cause recursive delete
-            of all the certificates signed by that CA.""")
-
         self.add_property(
             descr='Name',
             name='name',
@@ -383,6 +373,16 @@ class CertificateAuthorityNamespace(CertificateBaseNamespace):
                 lifetime=365 country=PL state=Slaskie city=Czerwionka-Leszczyny organization=myorg email=a@b.c
                 common=MyCommonName""")
 
+        self.entity_localdoc['DeleteEntityCommand'] = ("""\
+            Usage: delete
+
+            Examples: delete
+
+            Deletes the specified certificate.
+
+            !WARNING! Deleting the CA certificate will cause recursive delete
+            of all the certificates signed by that CA.""")
+
         self.add_property(
             descr='Type',
             name='type',
@@ -500,6 +500,13 @@ class CertificateNamespace(CertificateBaseNamespace):
                 create type=CERT_INTERNAL name=myCASignedServerCert signing_ca_name=myRootCA key_length=2048
                 digest_algorithm=SHA256 lifetime=365 country=PL state=Slaskie city=Czerwionka-Leszczyny
                 organization=myorg email=a@b.c common=www.myserver.com""")
+
+        self.entity_localdoc['DeleteEntityCommand'] = ("""\
+            Usage: delete
+
+            Examples: delete
+
+            Deletes the specified certificate.""")
 
         self.add_property(
             descr='Type',

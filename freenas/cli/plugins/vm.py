@@ -407,7 +407,7 @@ class VMDeviceNamespace(NestedObjectLoadMixin, EntityNamespace):
 
         self.humanized_summaries = {
             'DISK': VMDeviceDiskNamespace.get_humanized_summary,
-            'CDROM': VMDeviceDiskNamespace.get_humanized_summary,
+            'CDROM': VMDeviceCdromNamespace.get_humanized_summary,
             'NIC': VMDeviceNicNamespace.get_humanized_summary,
             'USB': VMDeviceUsbNamespace.get_humanized_summary,
             'GRAPHICS': VMDeviceGraphicsNamespace.get_humanized_summary
@@ -451,7 +451,8 @@ class VMDeviceNamespace(NestedObjectLoadMixin, EntityNamespace):
             VMDeviceGraphicsNamespace('graphics', self.context, self.parent),
             VMDeviceUsbNamespace('usb', self.context, self.parent),
             VMDeviceNicNamespace('nic', self.context, self.parent),
-            VMDeviceDiskNamespace('disk', self.context, self.parent)
+            VMDeviceDiskNamespace('disk', self.context, self.parent),
+            VMDeviceCdromNamespace('cdrom', self.context, self.parent)
         ]
 
 
@@ -675,31 +676,23 @@ class VMDeviceNicNamespace(VMDeviceNamespaceBaseClass):
 
 class VMDeviceDiskNamespace(VMDeviceNamespaceBaseClass):
     """
-    The VM Device Disk namespace provides commands for managing disk/cdrom resources
+    The VM Device Disk namespace provides commands for managing disk resources
     available on selected virtual machine
     """
     def __init__(self, name, context, parent):
         super(VMDeviceDiskNamespace, self).__init__(name, context, parent)
-        self.extra_query_params = [('type', 'in', ('DISK', 'CDROM'))]
-        self.required_props.extend(['type', 'mode', 'size'])
+        self.extra_query_params = [('type', 'in', ('DISK'))]
+        self.required_props.extend(['mode', 'size'])
+        self.skeleton_entity['type'] = 'DISK'
 
         self.localdoc['CreateEntityCommand'] = ("""\
                    Usage: create name=<device-name> property=<value>
 
                    Examples:
-                       create type=DISK name=mydisk mode=AHCI size=1G
-                       create type=CDROM name=mycdrom mode=AHCI
+                       create name=mydisk mode=AHCI size=1G
 
                    Creates device with selected properties.
                    For full list of propertise type 'help properties'""")
-
-        self.add_property(
-            descr='Type',
-            name='type',
-            get='type',
-            enum=['DISK', 'CDROM'],
-            list=True,
-        )
 
         self.add_property(
             descr='Disk mode',
@@ -717,6 +710,34 @@ class VMDeviceDiskNamespace(VMDeviceNamespaceBaseClass):
             list=True,
         )
 
+    @staticmethod
+    def get_humanized_summary(o):
+        return "{0} {1} DISK".format(
+            get_humanized_size(get(o, 'properties.size')),
+            get(o, 'properties.mode')
+        )
+
+
+class VMDeviceCdromNamespace(VMDeviceNamespaceBaseClass):
+    """
+    The VM Device Cdrom namespace provides commands for managing cdrom device resources
+    available on selected virtual machine
+    """
+    def __init__(self, name, context, parent):
+        super(VMDeviceCdromNamespace, self).__init__(name, context, parent)
+        self.extra_query_params = [('type', 'in', ('CDROM'))]
+        self.required_props.extend(['image_path'])
+        self.skeleton_entity['type'] = 'CDROM'
+
+        self.localdoc['CreateEntityCommand'] = ("""\
+                   Usage: create name=<device-name> property=<value>
+
+                   Examples:
+                       create name=mycdrom image_path=/path/to/image
+
+                   Creates device with selected properties.
+                   For full list of propertise type 'help properties'""")
+
         self.add_property(
             descr='Image path',
             name='image_path',
@@ -726,13 +747,7 @@ class VMDeviceDiskNamespace(VMDeviceNamespaceBaseClass):
 
     @staticmethod
     def get_humanized_summary(o):
-        if get(o, 'type') == 'DISK':
-            return "{0} {1} DISK".format(
-                get_humanized_size(get(o, 'properties.size')),
-                get(o, 'properties.mode')
-            )
-
-        return get(o, 'type')
+        return "CDROM with image: {0}".format(get(o, 'properties.path'))
 
 
 class VMVolumeNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNamespace):

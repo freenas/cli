@@ -234,9 +234,9 @@ class SSHPeerNamespace(BasePeerNamespace):
         )
 
         self.add_property(
-            descr='Public key',
-            name='pubkey',
-            get='credentials.pubkey',
+            descr='Private key',
+            name='privkey',
+            get='credentials.privkey',
             list=False
         )
 

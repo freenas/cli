@@ -1533,7 +1533,7 @@ svc_cli_config = {
     ],
 
 
- "openvpn": [
+    "openvpn": [
         {
             'descr': 'Device type tap/tun',
             'name': 'dev',

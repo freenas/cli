@@ -461,7 +461,7 @@ class _NamespaceProcessor(object):
 
         def _get_entity_commands(ns):
             ret = []
-            if not isinstance(ns, EntityNamespace):
+            if not isinstance(ns, EntityNamespace) or getattr(ns, 'has_entities_in_subnamespaces_only', False):
                 return ret
             entity_ns = self._instantiate_entity_namespace(ns)
             for name, instance in entity_ns.commands().items():
@@ -470,7 +470,7 @@ class _NamespaceProcessor(object):
 
         def _get_entity_namespaces(ns):
             ret = []
-            if not isinstance(ns, EntityNamespace):
+            if not isinstance(ns, EntityNamespace) or getattr(ns, 'has_entities_in_subnamespaces_only', False):
                 return ret
             entity_ns = self._instantiate_entity_namespace(ns)
             return [n for n in entity_ns.namespaces()]

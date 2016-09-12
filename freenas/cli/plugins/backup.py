@@ -140,30 +140,10 @@ class BackupSSHPropertiesNamespace(BackupBasePropertiesNamespace):
         super(BackupSSHPropertiesNamespace, self).__init__(name, context, parent)
 
         self.add_property(
-            descr='Hostname',
-            name='hostname',
-            usage=_("""\
-            Hostname or IP address of SSH server. To also specify an
-            alternative port, append with ":port_number"."""),
-            get='hostport'
-        )
-
-        self.add_property(
-            descr='Username',
-            name='username',
-            usage=_("""\
-            Case sensitive username to login as. The user must already exist
-            on the SSH server."""),
-            get='username'
-        )
-
-        self.add_property(
-            descr='Password',
-            name='password',
-            usage=_("""\
-            Case sensitive password associated with the username."""),
-            get=None,
-            set='password'
+            descr='Peer',
+            name='peer',
+            usage=_("Peer name. Must match a peer of type ssh"),
+            get='peer'
         )
 
         self.add_property(
@@ -180,21 +160,10 @@ class BackupS3PropertiesNamespace(BackupBasePropertiesNamespace):
         super(BackupS3PropertiesNamespace, self).__init__(name, context, parent)
 
         self.add_property(
-            descr='Access key',
-            name='access_key',
-            usage=_("""\
-            Enclose the access ID for the Amazon AWS account between double
-            quotes."""),
-            get='access_key'
-        )
-
-        self.add_property(
-            descr='Secret key',
-            name='secret_key',
-            usage=_("""\
-            Enclose the secret key for the Amazon AWS account between double
-            quotes."""),
-            get='secret_key'
+            descr='Peer',
+            name='peer',
+            usage=_("Peer name. Must match a peer of type s3"),
+            get='peer'
         )
 
         self.add_property(
@@ -212,14 +181,6 @@ class BackupS3PropertiesNamespace(BackupBasePropertiesNamespace):
             usage=_("""\
             The name of the folder within the bucket to backup to."""),
             get='folder'
-        )
-
-        self.add_property(
-            descr='Region',
-            name='region',
-            usage=_("""\
-            Optional region associated with the bucket."""),
-            get='region'
         )
 
 

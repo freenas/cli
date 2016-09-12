@@ -26,7 +26,7 @@
 #####################################################################
 
 import gettext
-from freenas.cli.output import Sequence, Object, format_value
+from freenas.cli.output import Sequence, Object, format_value, read_value
 from freenas.cli.namespace import (
     ItemNamespace, EntityNamespace, Command, EntitySubscriberBasedLoadMixin,
     TaskBasedSaveMixin, NestedEntityMixin, description
@@ -228,9 +228,9 @@ class BackupSyncCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        incremental = kwargs.pop('incremental', False)
-        snapshot = kwargs.pop('snapshot', False)
-        dry_run = kwargs.pop('dry_run', False)
+        incremental = read_value(kwargs.pop('incrementasl', 'yes'), ValueType.BOOLEAN)
+        snapshot = read_value(kwargs.pop('snapshot', 'yes'), ValueType.BOOLEAN)
+        dry_run = read_value(kwargs.pop('dry_run', 'no'), ValueType.BOOLEAN)
 
         if dry_run:
             def describe(row):
@@ -246,7 +246,7 @@ class BackupSyncCommand(Command):
                 if row['type'] == 'DELETE_DATASET':
                     return 'delete remote dataset {remotefs} (because it has been deleted locally)'.format(**row)
 
-            result = context.call_task_sync('backup.sync', self.parent.entity['id'], snapshot, incremental, True)
+            result = context.call_task_sync('backup.sync', self.parent.entity['id'], snapshot, True)
             return Sequence(
                 Table(
                     result['result'], [
@@ -260,7 +260,7 @@ class BackupSyncCommand(Command):
                 )
             )
         else:
-            context.submit_task('backup.sync', self.parent.entity['id'], incremental, snapshot)
+            context.submit_task('backup.sync', self.parent.entity['id'], snapshot)
 
     def complete(self, context, **kwargs):
         return [

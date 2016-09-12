@@ -70,7 +70,7 @@ class CryptoNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             get='name',
             set='name',
             usage=_("""\
-            Name of the certificate
+            Name of the certificate.
             """),
             list=True)
 
@@ -91,7 +91,7 @@ class CryptoNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             get='serial',
             set='serial',
             usage=_("""\
-            Certificate unique serial number
+            Unique serial number of the certificate
             """),
             type=ValueType.NUMBER,
             usersetable=False,
@@ -119,11 +119,35 @@ class CertificateBaseNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixi
         self.delete_task = 'crypto.certificate.delete'
         self.primary_key_name = 'name'
 
+        self.localdoc['ListCommand'] = ("""\
+            Usage: show
+
+            Examples:
+                show
+                show | search type == CERT_INTERNAL
+                show | search type == CERT_INTERNAL | sort name
+
+            Lists all certificates, optionally doing filtering and sorting.
+            """)
+
+        self.entity_localdoc['DeleteEntityCommand'] = ("""\
+            Usage: delete
+
+            Examples: delete
+
+            Deletes the specified certificate.
+
+            !WARNING! Deleting the CA certificate will cause recursive delete
+            of all the certificates signed by that CA.""")
+
         self.add_property(
             descr='Name',
             name='name',
             get='name',
             set='name',
+            usage=_("""\
+            Name of the certificate.
+            """),
             list=True)
 
         self.add_property(
@@ -131,6 +155,9 @@ class CertificateBaseNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixi
             name='certificate',
             get='certificate',
             set='certificate',
+            usage=_("""\
+            Certificate contents.
+            """),
             type=ValueType.TEXT_FILE,
             usersetable=lambda e: e['type'] in ('CA_EXISTING', 'CERT_EXISTING'),
             list=False)
@@ -140,6 +167,9 @@ class CertificateBaseNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixi
             name='certificate_path',
             get='certificate_path',
             set='certificate_path',
+            usage=_("""\
+            Path to the certificate file.
+            """),
             type=ValueType.STRING,
             usersetable=False,
             list=False)
@@ -149,6 +179,9 @@ class CertificateBaseNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixi
             name='privatekey',
             get='privatekey',
             set='privatekey',
+            usage=_("""\
+            Private key associated with the certificate.
+            """),
             type=ValueType.TEXT_FILE,
             usersetable=lambda e: e['type'] in ('CA_EXISTING', 'CERT_EXISTING'),
             list=False)
@@ -158,6 +191,9 @@ class CertificateBaseNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixi
             name='privatekey_path',
             get='privatekey_path',
             set='privatekey_path',
+            usage=_("""\
+            Path to the private key associated with the certificate.
+            """),
             type=ValueType.STRING,
             usersetable=False,
             list=False)
@@ -167,6 +203,9 @@ class CertificateBaseNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixi
             name='serial',
             get='serial',
             set='serial',
+            usage=_("""\
+            Unique serial number of the certificate
+            """),
             type=ValueType.NUMBER,
             usersetable=False,
             list=True)
@@ -176,6 +215,10 @@ class CertificateBaseNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixi
             name='selfsigned',
             get='selfsigned',
             set='selfsigned',
+            usage=_("""\
+            Boolean value. True if the certificate is 'self-signed', meaning that
+            the certificate was not signed by any external Certificate Authority.
+            """),
             usersetable=False,
             type=ValueType.BOOLEAN,
             list=True)
@@ -185,6 +228,9 @@ class CertificateBaseNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixi
             name='key_length',
             get='key_length',
             set='key_length',
+            usage=_("""\
+            Key length, for security reasons minimun of 2048 is recommanded.
+            """),
             type=ValueType.NUMBER,
             usersetable=False,
             list=False)
@@ -194,6 +240,9 @@ class CertificateBaseNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixi
             name='digest_algorithm',
             get='digest_algorithm',
             set='digest_algorithm',
+            usage=_("""\
+            Digest alghoritm for the certificate.
+            """),
             enum=['SHA1', 'SHA224', 'SHA256', 'SHA384', 'SHA512'],
             usersetable=False,
             list=False)
@@ -203,6 +252,9 @@ class CertificateBaseNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixi
             name='not_before',
             get='not_before',
             set='not_before',
+            usage=_("""\
+            Certificate's lifetime 'valid from' date.
+            """),
             usersetable=False,
             list=True)
 
@@ -211,6 +263,9 @@ class CertificateBaseNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixi
             name='not_after',
             get='not_after',
             set='not_after',
+            usage=_("""\
+            Certificate's lifetime 'valid to' date.
+            """),
             usersetable=False,
             list=True)
 
@@ -230,6 +285,8 @@ class CertificateBaseNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixi
             name='country',
             get='country',
             set='country',
+            usage=_("""\
+            Country of the organization"""),
             usersetable=False,
             list=False)
 
@@ -238,6 +295,9 @@ class CertificateBaseNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixi
             name='state',
             get='state',
             set='state',
+            usage=_("""\
+            State or province of the organization
+            """),
             usersetable=False,
             list=False)
 
@@ -246,6 +306,9 @@ class CertificateBaseNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixi
             name='city',
             get='city',
             set='city',
+            usage=_("""\
+            Location of the organization
+            """),
             usersetable=False,
             list=False)
 
@@ -254,6 +317,9 @@ class CertificateBaseNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixi
             name='organization',
             get='organization',
             set='organization',
+            usage=_("""\
+            Name of the company or organization
+            """),
             usersetable=False,
             list=False)
 
@@ -262,6 +328,9 @@ class CertificateBaseNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixi
             name='common',
             get='common',
             set='common',
+            usage=_("""\
+            Fully qualified domain name of FreeNAS system
+            """),
             usersetable=False,
             list=False)
 
@@ -270,6 +339,9 @@ class CertificateBaseNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixi
             name='email',
             get='email',
             set='email',
+            usage=_("""\
+            Email address of the person responsible for the certificate
+            """),
             usersetable=False,
             list=False)
 
@@ -299,6 +371,7 @@ class CertificateAuthorityNamespace(CertificateBaseNamespace):
             Crates a Certificate Authority. For a list of properties, see 'help properties'.
 
             Usage:
+                create name=<cert-name> <property>=<value>
 
             Examples:
             Create root CA Certificate :
@@ -315,6 +388,9 @@ class CertificateAuthorityNamespace(CertificateBaseNamespace):
             name='type',
             get='type',
             set='type',
+            usage=_("""\
+            Type of the certificate.
+            """),
             enum=[
                 'CA_EXISTING',
                 'CA_INTERMEDIATE',
@@ -328,6 +404,9 @@ class CertificateAuthorityNamespace(CertificateBaseNamespace):
             name='signing_ca_name',
             get=lambda e: e['signing_ca_name'],
             set='signing_ca_name',
+            usage=_("""\
+            Name of the CA signing this certificate.
+            """),
             enum=self.get_ca_names,
             condition=lambda e: e['type'] == 'CA_INTERMEDIATE',
             usersetable=False,
@@ -338,6 +417,9 @@ class CertificateAuthorityNamespace(CertificateBaseNamespace):
             name='signing_ca_id',
             get='signing_ca_id',
             set='signing_ca_id',
+            usage=_("""\
+            ID of the CA signing this certificate. This field is not user-settable.
+            """),
             condition=lambda e: e['type'] == 'CA_INTERMEDIATE',
             usersetable=False,
             list=False)
@@ -347,6 +429,9 @@ class CertificateAuthorityNamespace(CertificateBaseNamespace):
             name='passphrase',
             get='passphrase',
             set='passphrase',
+            usage=_("""\
+            Passphrase for the privatekey of this certificate.
+            """),
             usersetable=False,
             list=False)
 
@@ -421,6 +506,9 @@ class CertificateNamespace(CertificateBaseNamespace):
             name='type',
             get='type',
             set='type',
+            usage=_("""\
+            Type of the certificate.
+            """),
             enum=[
                 'CERT_CSR',
                 'CERT_EXISTING',
@@ -435,6 +523,9 @@ class CertificateNamespace(CertificateBaseNamespace):
             name='signing_ca_name',
             get=lambda e: e['signing_ca_name'],
             set='signing_ca_name',
+            usage=_("""\
+            Name of the CA signing this certificate.
+            """),
             enum=self.get_ca_names,
             condition=lambda e: e['type'] != 'CERT_EXISTING' and e['type'] != 'CERT_CSR',
             usersetable=False,
@@ -445,6 +536,9 @@ class CertificateNamespace(CertificateBaseNamespace):
             name='signing_ca_id',
             get='signing_ca_id',
             set='signing_ca_id',
+            usage=_("""\
+            ID of the CA signing this certificate. This field is not user-settable.
+            """),
             condition=lambda e: e['type'] != 'CERT_EXISTING' and e['type'] != 'CERT_CSR',
             usersetable=False,
             list=False)

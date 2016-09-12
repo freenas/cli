@@ -1065,6 +1065,7 @@ class EntityNamespace(Namespace):
         self.leaf_harborer = False
         self.leaf_entity_namespace = None
         self.large = False
+        self.has_entities_in_subnamespaces_only = False
 
     def has_property(self, prop):
         return any([x for x in self.property_mappings if x.name == prop])

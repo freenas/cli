@@ -359,7 +359,7 @@ class ImportCertificateAuthorityCommand(Command):
         if not kwargs:
             raise CommandException(_("Import requires more arguments, see 'help import' for more information"))
         if 'type' not in kwargs or kwargs['type'] != "CA_EXISTING":
-            raise CommandException(_("Pleaes specify valid 'type' argument value"))
+            raise CommandException(_("Please specify valid 'type' argument value"))
         if 'name' not in kwargs:
             raise CommandException(_("Please specify name of the imported CA"))
 
@@ -458,7 +458,7 @@ class ImportCertificateCommand(Command):
         if not kwargs:
             raise CommandException(_("Import requires more arguments, see 'help import' for more information"))
         if 'type' not in kwargs or kwargs['type'] != "CERT_EXISTING":
-            raise CommandException(_("Pleaes specify valid 'type' argument value"))
+            raise CommandException(_("Please specify valid 'type' argument value"))
         if 'name' not in kwargs:
             raise CommandException(_("Please specify name of the imported Certificate"))
 

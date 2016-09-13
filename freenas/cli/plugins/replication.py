@@ -227,12 +227,13 @@ class CreateReplicationCommand(Command):
         transport_plugins = []
 
         if compress:
-            if compress not in ['fast', 'default', 'best']:
+            if compress not in ['no', 'fast', 'default', 'best']:
                 raise CommandException('Compression level must be selected as one of: fast, default, best')
-            transport_plugins.append({
-                'name': 'compress',
-                'level': compress.upper()
-            })
+            if compress != ' no':
+                transport_plugins.append({
+                    'name': 'compress',
+                    'level': compress.upper()
+                })
 
         if throttle:
             if not isinstance(throttle, int):
@@ -275,7 +276,7 @@ class CreateReplicationCommand(Command):
             EnumComplete('bidirectional=', ['yes', 'no']),
             EnumComplete('auto_recover=', ['yes', 'no']),
             EnumComplete('replicate_services=', ['yes', 'no']),
-            EnumComplete('compress=', ['fast', 'default', 'best']),
+            EnumComplete('compress=', ['no', 'fast', 'default', 'best']),
             EnumComplete('encrypt=', ['no', 'AES128', 'AES192', 'AES256'])
         ]
 
@@ -346,10 +347,12 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
                 obj.append(val)
 
         def set_compress(obj, val):
-            opt = {
-                'name': 'compress',
-                'level': val
-            }
+            opt = None
+            if val != 'no':
+                opt = {
+                    'name': 'compress',
+                    'level': val
+                }
             set_transport_option(obj, get_transport_option(obj, 'compress'), opt)
 
         def set_throttle(obj, val):

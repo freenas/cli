@@ -336,6 +336,8 @@ class ItemNamespace(Namespace):
     class ShowEntityCommand(FilteringCommand):
         """
         Usage: show
+
+        Example: show
         
         Display the property values for current entity.
         """
@@ -390,6 +392,8 @@ class ItemNamespace(Namespace):
         """
         Usage: get <field>
 
+        Example: get my_property
+
         Display value of specified field.
         """
         def __init__(self, parent):
@@ -418,6 +422,8 @@ class ItemNamespace(Namespace):
     class SetEntityCommand(Command):
         """
         Usage: set <property>=<value> ...
+
+        Example: set my_property=value
 
         Set the specified property to the specified value. For a list of properties for the
         current namespace, see 'help properties'.
@@ -473,6 +479,8 @@ class ItemNamespace(Namespace):
     class EditEntityCommand(Command):
         """
         Usage: edit <property>
+
+        Example: edit my_property
 
         Opens the default editor for the specified property. The default editor
         is inherited from the shell's $EDITOR which can be set from the shell.
@@ -957,6 +965,13 @@ class BaseListCommand(FilteringCommand):
 
 @description("Lists <entity>s")
 class ListCommand(BaseListCommand):
+    """
+    Usage: show
+
+    Example: show
+
+    Lists items in current namespace.
+    """
     def run(self, context, args, kwargs, opargs, filtering=None):
         if args or kwargs or opargs:
             raise CommandException(_('"show" command doesn\'t take any arguments'))
@@ -968,6 +983,8 @@ class ListCommand(BaseListCommand):
 class CreateEntityCommand(Command):
     """
     Usage: create <name> <property>=<value> ...
+
+    Example: create new_item my_property1=value my_property2=value2 ...
 
     For a list of properties for the current namespace, see 'help properties'.
     """

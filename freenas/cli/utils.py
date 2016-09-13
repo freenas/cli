@@ -34,7 +34,7 @@ import ipaddress
 import gettext
 import signal
 import dateutil.tz
-from freenas.utils.query import get
+from freenas.utils.query import get, set
 from datetime import timedelta, datetime
 
 
@@ -216,6 +216,24 @@ def get_localtime_offset():
     localtz = dateutil.tz.tzlocal()
     localoffset = localtz.utcoffset(datetime.now(localtz))
     return localoffset.total_seconds()
+
+
+def get_related(context, name, obj, field):
+    id = get(obj, field)
+    thing = context.entity_subscribers[name].query(('id', '=', id), single=True)
+    if not thing:
+        return None
+
+    return thing['name']
+
+
+def set_related(context, name, obj, field, value):
+    thing = context.entity_subscribers[name].query(('name', '=', value), single=True)
+    if not thing:
+        from freenas.cli.namespace import CommandException
+        raise CommandException('{0} not found'.format(value))
+
+    set(obj, field, thing['id'])
 
 
 class PrintableNone(object):

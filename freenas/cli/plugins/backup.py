@@ -26,13 +26,13 @@
 #####################################################################
 
 import gettext
-from freenas.cli.output import Sequence, Object, format_value, read_value
+from freenas.cli.output import Sequence, Object, ValueType, Table, format_value, read_value
 from freenas.cli.namespace import (
     ItemNamespace, EntityNamespace, Command, EntitySubscriberBasedLoadMixin,
     TaskBasedSaveMixin, NestedEntityMixin, description
 )
 from freenas.cli.complete import EnumComplete
-from freenas.cli.output import ValueType, Table
+from freenas.cli.utils import get_related, set_related
 
 
 t = gettext.translation('freenas-cli', fallback=True)
@@ -143,7 +143,8 @@ class BackupSSHPropertiesNamespace(BackupBasePropertiesNamespace):
             descr='Peer',
             name='peer',
             usage=_("Peer name. Must match a peer of type ssh"),
-            get='peer'
+            get=lambda o: get_related(self.context, 'peer', o, 'peer'),
+            set=lambda o, v: set_related(self.context, 'peer', o, 'peer', v)
         )
 
         self.add_property(
@@ -163,7 +164,8 @@ class BackupS3PropertiesNamespace(BackupBasePropertiesNamespace):
             descr='Peer',
             name='peer',
             usage=_("Peer name. Must match a peer of type s3"),
-            get='peer'
+            get=lambda o: get_related(self.context, 'peer', o, 'peer'),
+            set=lambda o, v: set_related(self.context, 'peer', o, 'peer', v)
         )
 
         self.add_property(

@@ -376,15 +376,18 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             name='name',
             get='name',
             usersetable=False,
-            list=True)
-
+            list=True,
+            usage=_('Name of a replication task')
+        )
 
         self.add_property(
             descr='Master',
             name='master',
             get='master',
             set='master',
-            list=False)
+            list=False,
+            usage=_('Name of FreeNAS machine (peer) acting as a sending side.')
+        )
 
         self.add_property(
             descr='Slave',
@@ -393,15 +396,18 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             usersetable=False,
             type=ValueType.SET,
             list=True,
+            usage=_('Name of FreeNAS machine (peer) acting as a receiving side.')
         )
-        
+
         self.add_property(
             descr='Datasets',
             name='datasets',
             get='datasets',
             set='datasets',
             list=False,
-            type=ValueType.SET)
+            type=ValueType.SET,
+            usage=_('List of datasets to be replicated.')
+        )
 
         self.add_property(
             descr='Bi-directional',
@@ -409,7 +415,9 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             get='bidirectional',
             set='bidirectional',
             list=False,
-            type=ValueType.BOOLEAN)
+            type=ValueType.BOOLEAN,
+            usage=_('Defines if a replication task does support inverting master/slave roles.')
+        )
 
         self.add_property(
             descr='Automatic recovery',
@@ -418,14 +426,22 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             set='auto_recover',
             condition=lambda o: o.get('bidirectional'),
             list=False,
-            type=ValueType.BOOLEAN)
+            type=ValueType.BOOLEAN,
+            usage=_('''\
+            Enables automatic replication stream invert when initial master
+            becomes down/unreachable. Once initial master goes back online
+            replication streams are being inverted again
+            to match initial direction.''')
+        )
 
         self.add_property(
             descr='Initial master side',
             name='initial_master',
             get='initial_master',
             usersetable=False,
-            list=False)
+            list=False,
+            usage=_('Informs which host was initially selected a replication master.')
+        )
 
         self.add_property(
             descr='Recursive',
@@ -433,7 +449,9 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             get='recursive',
             set='recursive',
             list=False,
-            type=ValueType.BOOLEAN)
+            type=ValueType.BOOLEAN,
+            usage=_('Defines if selected datasets should be replicated recursively.')
+        )
 
         self.add_property(
             descr='Services replication',
@@ -442,7 +460,12 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             set='replicate_services',
             condition=lambda o: o.get('bidirectional'),
             list=False,
-            type=ValueType.BOOLEAN)
+            type=ValueType.BOOLEAN,
+            usage=_('''\
+            When set, in bidirectional replication case,
+            enables FreeNAS machines to attempt to recreate services
+            (such as shares) on new master after role swap.''')
+        )
 
         self.add_property(
             descr='Transfer encryption',
@@ -450,7 +473,11 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             get=get_encrypt,
             set=set_encrypt,
             enum=['no', 'AES128', 'AES192', 'AES256'],
-            list=False)
+            list=False,
+            usage=_('''\
+            Encryption algorithm used during replication stream send operation.
+            Can be one of: 'no', 'AES128', 'AES192', 'AES256'.''')
+        )
 
         self.add_property(
             descr='Transfer throttle',
@@ -458,7 +485,9 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             get=get_throttle,
             set=set_throttle,
             list=False,
-            type=ValueType.SIZE)
+            type=ValueType.SIZE,
+            usage=_('Maximum transfer speed during replication. Value in B/s.')
+        )
 
         self.add_property(
             descr='Transfer compression',
@@ -466,7 +495,11 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             get=get_compress,
             set=set_compress,
             enum=['fast', 'default', 'best'],
-            list=False)
+            list=False,
+            usage=_('''\
+            Compression algorithm used during replication stream send operation.
+            Can be one of: 'no', 'fast', 'default', 'best'.''')
+        )
 
         self.add_property(
             descr='Snapshot lifetime',
@@ -474,7 +507,9 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             get='snapshot_lifetime',
             set=lambda o, v: q.set(o, 'snapshot_lifetime', parse_timedelta(str(v)).seconds),
             list=False,
-            type=ValueType.NUMBER)
+            type=ValueType.NUMBER,
+            usage=_('Lifetime of snapshots created for replication purposes.')
+        )
 
         self.add_property(
             descr='Follow delete',
@@ -482,7 +517,11 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             get='followdelete',
             set='followdelete',
             list=False,
-            type=ValueType.BOOLEAN)
+            type=ValueType.BOOLEAN,
+            usage=_('''\
+            Defines if replication should automatically remove
+            stale snapshots at slave side.''')
+        )
 
         self.add_property(
             descr='Last result',
@@ -490,7 +529,9 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             get='status.status',
             usersetable=False,
             list=False,
-            type=ValueType.STRING)
+            type=ValueType.STRING,
+            usage=_('String status of last replication run.')
+        )
 
         self.add_property(
             descr='Last output message',
@@ -498,7 +539,9 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             get='status.message',
             usersetable=False,
             list=False,
-            type=ValueType.STRING)
+            type=ValueType.STRING,
+            usage=_('Output message of last replication run.')
+        )
 
         self.add_property(
             descr='Last transfer size',
@@ -506,7 +549,9 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             get='status.size',
             usersetable=False,
             list=False,
-            type=ValueType.SIZE)
+            type=ValueType.SIZE,
+            usage=_('Transfer size of last replication run.')
+        )
 
         self.add_property(
             descr='Last transfer speed per second',
@@ -514,7 +559,9 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             get='status.speed',
             usersetable=False,
             list=False,
-            type=ValueType.SIZE)
+            type=ValueType.SIZE,
+            usage=_('Transfer speed of last replication run.')
+        )
 
         self.primary_key = self.get_mapping('name')
 

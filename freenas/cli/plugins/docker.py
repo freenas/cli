@@ -73,7 +73,8 @@ class DockerHostNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             get='name',
             set=None,
             usersetable=False,
-            list=True
+            list=True,
+            usage=_('Name of Virtual Machine instance hosting a Docker service.')
         )
 
         self.add_property(
@@ -82,7 +83,8 @@ class DockerHostNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             get='state',
             set=None,
             usersetable=False,
-            list=True
+            list=True,
+            usage=_('State of a Docker host service. Can be UP or DOWN.')
         )
 
         self.add_property(
@@ -91,7 +93,8 @@ class DockerHostNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             get='status.os',
             set=None,
             usersetable=False,
-            list=False
+            list=False,
+            usage=_('Name of the operating system hosting a Docker service.')
         )
 
         self.add_property(
@@ -100,7 +103,8 @@ class DockerHostNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             get='status.unique_id',
             set=None,
             usersetable=False,
-            list=False
+            list=False,
+            usage=_('Unique ID of a Docker host.')
         )
 
         self.primary_key = self.get_mapping('name')
@@ -140,7 +144,8 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             name='name',
             get='names.0',
             usersetable=False,
-            list=True
+            list=True,
+            usage=_('Name of a container instance.')
         )
 
         self.add_property(
@@ -149,7 +154,8 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             get='image',
             usersetable=False,
             list=True,
-            complete=EntitySubscriberComplete('image=', 'docker.image', lambda i: get(i, 'names.0'))
+            complete=EntitySubscriberComplete('image=', 'docker.image', lambda i: get(i, 'names.0')),
+            usage=_('Name of container image used to create an instance of a container.')
         )
 
         self.add_property(
@@ -158,7 +164,10 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             get='command',
             usersetable=False,
             list=True,
-            type=ValueType.ARRAY
+            type=ValueType.ARRAY,
+            usage=_('''\
+            Command being run on a container (like /bin/sh).
+            Can be a single string or a list of strings.''')
         )
 
         self.add_property(
@@ -167,7 +176,11 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             get='environment',
             set='environment',
             list=False,
-            type=ValueType.ARRAY
+            type=ValueType.ARRAY,
+            usage=_('''\
+            Array of strings formed as KEY=VALUE.
+            These are being converted to environment variables
+            visible to a running container instance.''')
         )
 
         self.add_property(
@@ -176,7 +189,8 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             get='status',
             set=None,
             usersetable=False,
-            list=True
+            list=True,
+            usage=_('String status of a container returned by a Docker service.')
         )
 
         self.add_property(
@@ -185,7 +199,11 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             get='hostname',
             set=None,
             usersetable=False,
-            list=False
+            list=False,
+            usage=_('''\
+            Used to set host name of a container - like my_ubuntu_container.
+            If not set explicitly it defaults in most cases
+            to generating a random string as a container's host name.''')
         )
 
         self.add_property(
@@ -195,7 +213,11 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             set=self.set_host,
             usersetable=False,
             list=True,
-            complete=EntitySubscriberComplete('host=', 'docker.host', lambda d: d['name'])
+            complete=EntitySubscriberComplete('host=', 'docker.host', lambda d: d['name']),
+            usage=_('''\
+            Name of Docker host instance owning container instance.
+            Docker host name equals to name of Virtual Machine
+            hosting Docker service.''')
         )
 
         self.add_property(
@@ -205,7 +227,13 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             set=set_ports,
             usersetable=False,
             list=True,
-            type=ValueType.SET
+            type=ValueType.SET,
+            usage=_('''\
+            Array of strings used for defining network ports forwarding.
+            Each of values should be formatted like:
+            <container_port_number>:<freenas_port_number>/<tcp/udp>
+            Ports are always being forwarded to a default FreeNAS box's
+            network interface.''')
         )
 
         self.add_property(
@@ -214,7 +242,10 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             get='expose_ports',
             usersetable=False,
             list=True,
-            type=ValueType.BOOLEAN
+            type=ValueType.BOOLEAN,
+            usage=_('''\
+            Property defining whether or not ports which are defined in `ports`
+            should be actually forwarded to FreeNAS (host machine).''')
         )
 
         self.add_property(
@@ -223,7 +254,8 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             get='autostart',
             usersetable=False,
             list=True,
-            type=ValueType.BOOLEAN
+            type=ValueType.BOOLEAN,
+            usage=_('')
         )
 
         self.add_property(
@@ -232,7 +264,13 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             get='interactive',
             usersetable=False,
             list=False,
-            type=ValueType.BOOLEAN
+            type=ValueType.BOOLEAN,
+            usage=_('''\
+            Defines if container's standard input should act
+            like it is open even if no console is attached to a container.
+            Useful to keep alive a process (command) being run on a container
+            which immediately exits when there is no standard input
+            opened to it (i.e. /bin/bash or any other shell).''')
         )
 
         self.add_property(
@@ -242,7 +280,11 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             set=set_volumes,
             usersetable=False,
             list=True,
-            type=ValueType.SET
+            type=ValueType.SET,
+            usage=_('''\
+            List of strings formatted like:
+            container_path:freenas_path
+            Defines which of FreeNAS paths should be exposed to a container.''')
         )
 
         self.primary_key = self.get_mapping('name')
@@ -272,7 +314,8 @@ class DockerImageNamespace(EntitySubscriberBasedLoadMixin, DockerUtilsMixin, Ent
             get='names.0',
             set=None,
             usersetable=False,
-            list=True
+            list=True,
+            usage=_('Name of a Docker container image')
         )
 
         self.add_property(
@@ -282,7 +325,8 @@ class DockerImageNamespace(EntitySubscriberBasedLoadMixin, DockerUtilsMixin, Ent
             set=None,
             usersetable=False,
             list=True,
-            type=ValueType.SIZE
+            type=ValueType.SIZE,
+            usage=_('Size of a Docker container image on a Docker host.')
         )
 
         self.add_property(
@@ -291,7 +335,8 @@ class DockerImageNamespace(EntitySubscriberBasedLoadMixin, DockerUtilsMixin, Ent
             get='created_at',
             set=None,
             usersetable=False,
-            list=True
+            list=True,
+            usage=_('Creation time of a Docker container image.')
         )
 
         self.add_property(
@@ -300,7 +345,8 @@ class DockerImageNamespace(EntitySubscriberBasedLoadMixin, DockerUtilsMixin, Ent
             get=self.get_host,
             set=None,
             usersetable=False,
-            list=True
+            list=True,
+            usage=_('Name of a Docker host storing a container image.')
         )
 
         self.primary_key = self.get_mapping('name')
@@ -331,7 +377,11 @@ class DockerConfigNamespace(DockerUtilsMixin, ConfigNamespace):
             name='default_host',
             get=lambda o: self.get_host({'host': o['default_host']}),
             set=lambda o, v: set(o, 'default_host', self.set_host({}, v)),
-            complete=EntitySubscriberComplete('default_host=', 'docker.host', lambda d: d['name'])
+            complete=EntitySubscriberComplete('default_host=', 'docker.host', lambda d: d['name']),
+            usage=_('''\
+            Name of a Docker host selected by default for any
+            container or container image operations
+            when there is no `host` parameter set explicitly in a command.''')
         )
 
         self.add_property(
@@ -339,7 +389,11 @@ class DockerConfigNamespace(DockerUtilsMixin, ConfigNamespace):
             name='api_forwarding',
             get=lambda o: self.get_host({'host': o['default_host']}),
             set=lambda o, v: set(o, 'default_host', self.set_host({}, v)),
-            complete=EntitySubscriberComplete('default_host=', 'docker.host', lambda d: d['name'])
+            complete=EntitySubscriberComplete('default_host=', 'docker.host', lambda d: d['name']),
+            usage=_('''\
+            Defines which (if any) Docker host - Virtual Machine hosting
+            a Docker service - should expose their standard remote HTTP API
+            at FreeNAS's default network interface.''')
         )
 
         self.add_property(
@@ -347,7 +401,10 @@ class DockerConfigNamespace(DockerUtilsMixin, ConfigNamespace):
             name='api_forwarding_enable',
             get='api_forwarding_enable',
             set='api_forwarding_enable',
-            type=ValueType.BOOLEAN
+            type=ValueType.BOOLEAN,
+            usage=_('''\
+            Used for enabling/disabling Docker HTTP API forwarding
+            to FreeNAS's default network interface.''')
         )
 
 

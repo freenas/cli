@@ -416,6 +416,7 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             name='auto_recover',
             get='auto_recover',
             set='auto_recover',
+            condition=lambda o: o.get('bidirectional'),
             list=False,
             type=ValueType.BOOLEAN)
 
@@ -439,6 +440,7 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             name='replicate_services',
             get='replicate_services',
             set='replicate_services',
+            condition=lambda o: o.get('bidirectional'),
             list=False,
             type=ValueType.BOOLEAN)
 

@@ -305,6 +305,8 @@ class PrintenvCommand(Command):
     """
     Usage: printenv
 
+    Example: printenv
+
     Prints currently set environment variables and their values.
     """
 
@@ -439,6 +441,8 @@ class ShowIpsCommand(Command):
     """
     Usage: showips
 
+    Example: showips
+
     Display the IP addresses from all configured and active network
     interfaces.
     """
@@ -458,6 +462,8 @@ class ShowUrlsCommand(Command):
 
     """
     Usage: showurls
+
+    Example: showurls
 
     Display the URLs for accessing the web GUI.
     """
@@ -488,6 +494,8 @@ class LoginCommand(Command):
     """
     Usage: login <username> <password>
 
+    Example: login my_username secret
+
     Login to the CLI as the specified user.
     """
 
@@ -507,6 +515,8 @@ class ExitCommand(Command):
     """
     Usage: exit
 
+    Example: exit
+
     Exit the CLI. Note that the CLI will restart if this command
     is run from the local console. The keyboard shortcut for this
     command is (ctrl+d).
@@ -521,6 +531,8 @@ class WhoamiCommand(Command):
 
     """
     Usage: whoami
+
+    Example: whoami
 
     Display the current CLI user.
     """
@@ -759,6 +771,8 @@ class ListVarsCommand(Command):
     """
     Usage: vars
 
+    Example: vars
+
     List the command variables for the current scope.
     """
 
@@ -775,6 +789,8 @@ class TopCommand(Command):
     """
     Usage: top
 
+    Example: top
+
     Return to the root of the command tree.
     """
 
@@ -787,6 +803,8 @@ class ClearCommand(Command):
 
     """
     Usage: clear
+
+    Example: clear
 
     Clear the screen.
     """
@@ -833,6 +851,8 @@ class SourceCommand(Command):
     """
     Usage: source </path/filename>
            source </path/filename1> </path/filename2> </path/filename3>
+
+    Example: source /mnt/mypool/myscript
 
     Run specified file or files, where each file contains a list
     of CLI commands. When creating the source file, separate
@@ -950,6 +970,8 @@ class PendingCommand(Command):
     """
     Usage: pending
 
+    Example: pending
+
     Display the list of currently pending tasks.
     """
 
@@ -971,6 +993,9 @@ class WaitCommand(Command):
     """
     Usage: wait
            wait <task ID>
+
+    Example: wait
+             wait 100
 
     Show task progress of either all waiting tasks or the
     specified task. Use 'task show' to determine the task ID.
@@ -1070,6 +1095,10 @@ class AttachDebuggerCommand(Command):
 class WCommand(Command):
     """
     Usage: w
+
+    Example: w
+
+    List active CLI sessions.
     """
 
     def run(self, context, args, kwargs, opargs):

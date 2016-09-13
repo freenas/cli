@@ -28,11 +28,12 @@
 import gettext
 from freenas.cli.output import Sequence, Object, ValueType, Table, format_value, read_value
 from freenas.cli.namespace import (
-    ItemNamespace, EntityNamespace, Command, EntitySubscriberBasedLoadMixin,
+    ItemNamespace, EntityNamespace, Command, CommandException, EntitySubscriberBasedLoadMixin,
     TaskBasedSaveMixin, NestedEntityMixin, description
 )
 from freenas.cli.complete import EnumComplete
 from freenas.cli.utils import get_related, set_related
+from freenas.utils import query as q
 
 
 t = gettext.translation('freenas-cli', fallback=True)
@@ -210,6 +211,9 @@ class BackupSyncCommand(Command):
                     return 'delete remote dataset {remotefs} (because it has been deleted locally)'.format(**row)
 
             result = context.call_task_sync('backup.sync', self.parent.entity['id'], snapshot, True)
+            if result['state'] != 'FINISHED':
+                raise CommandException('Failed to query backup: {0}'.format(q.get(result, 'error.message')))
+
             return Sequence(
                 Table(
                     result['result'], [
@@ -238,6 +242,9 @@ class BackupQueryCommand(Command):
 
     def run(self, context, args, kwargs, opargs):
         result = context.call_task_sync('backup.query', self.parent.entity['id'])
+        if result['state'] != 'FINISHED':
+            raise CommandException('Failed to query backup: {0}'.format(q.get(result, 'error.message')))
+
         manifest = result['result']
         return Sequence(
             Object(

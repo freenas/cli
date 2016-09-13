@@ -29,7 +29,7 @@ import gettext
 from freenas.cli.output import Sequence
 from freenas.cli.namespace import (
     EntityNamespace, Command, NestedObjectLoadMixin, NestedObjectSaveMixin, EntitySubscriberBasedLoadMixin,
-    RpcBasedLoadMixin, TaskBasedSaveMixin, description, CommandException
+    RpcBasedLoadMixin, TaskBasedSaveMixin, description, CommandException, ConfigNamespace
 )
 from freenas.cli.output import ValueType, get_humanized_size
 from freenas.cli.utils import post_save
@@ -138,6 +138,26 @@ class ImportVMCommand(Command):
         if not volume:
             raise CommandException(_("Please specify which volume is containing a VM being imported."))
         context.submit_task('vm.import', name, volume, callback=lambda s, t: post_save(self.parent, t))
+
+
+@description("Configure system-wide virtualization behavior")
+class VMConfigNamespace(ConfigNamespace):
+    def __init__(self, name, context):
+        super(VMConfigNamespace, self).__init__(name, context)
+        self.config_call = "vm.config.get_config"
+        self.update_task = 'vm.config.update'
+
+        self.add_property(
+            descr='Management network',
+            name='management_network',
+            get='network.management',
+        )
+
+        self.add_property(
+            descr='NAT network',
+            name='nat_network',
+            get='network.nat',
+        )
 
 
 @description("Configure and manage virtual machines")
@@ -353,7 +373,6 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
 
         self.primary_key = self.get_mapping('name')
         self.entity_namespaces = self.get_entity_namespaces
-
         self.entity_commands = self.get_entity_commands
 
         self.extra_commands = {
@@ -362,6 +381,7 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
 
     def namespaces(self):
         yield TemplateNamespace('template', self.context)
+        yield VMConfigNamespace('config', self.context)
         for namespace in super(VMNamespace, self).namespaces():
             yield namespace
 

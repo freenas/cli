@@ -491,6 +491,7 @@ class CertificateNamespace(CertificateBaseNamespace):
             Crates a certificate. For a list of properties, see 'help properties'.
 
             Usage:
+                create name=<ca-name> <property>=<value>
 
             Examples:
             Create self-signed server certificate without CA:

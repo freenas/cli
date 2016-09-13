@@ -255,7 +255,9 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             usersetable=False,
             list=True,
             type=ValueType.BOOLEAN,
-            usage=_('')
+            usage=_('''\
+            Defines if a container should be started automatically
+            when a Docker host related to it goes UP''')
         )
 
         self.add_property(

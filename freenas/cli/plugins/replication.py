@@ -375,13 +375,6 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             usersetable=False,
             list=True)
 
-        self.add_property(
-            descr='Partners',
-            name='partners',
-            get='partners',
-            usersetable=False,
-            type=ValueType.SET,
-            list=True)
 
         self.add_property(
             descr='Master',
@@ -390,6 +383,15 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             set='master',
             list=False)
 
+        self.add_property(
+            descr='Slave',
+            name='slave',
+            get='slave',
+            usersetable=False,
+            type=ValueType.SET,
+            list=True,
+        )
+        
         self.add_property(
             descr='Datasets',
             name='datasets',

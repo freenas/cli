@@ -136,14 +136,16 @@ class BasePeerNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Enti
         self.add_property(
             descr='Peer Name',
             name='name',
-            get='name'
+            get='name',
+            usage=_('Name of a peer.')
         )
 
         self.add_property(
             descr='Peer Type',
             name='type',
             get='type',
-            usersetable=False
+            usersetable=False,
+            usage=_('Type of a peer.')
         )
 
         self.primary_key = self.get_mapping('name')
@@ -164,28 +166,32 @@ class FreeNASPeerNamespace(BasePeerNamespace):
             name='port',
             get='credentials.port',
             list=False,
-            type=ValueType.NUMBER
+            type=ValueType.NUMBER,
+            usage=_('SSH port used to reach a FreeNAS peer.')
         )
 
         self.add_property(
             descr='Public key',
             name='pubkey',
             get='credentials.pubkey',
-            list=False
+            list=False,
+            usage=_('Public SSH key of a FreeNAS peer.')
         )
 
         self.add_property(
             descr='Host key',
             name='hostkey',
             get='credentials.hostkey',
-            list=False
+            list=False,
+            usage=_('SSH host key of a FreeNAS peer.')
         )
 
         self.add_property(
             descr='Peer address',
             name='address',
             get='credentials.address',
-            usersetable=False
+            usersetable=False,
+            usage=_('Address of a FreeNAS peer.')
         )
 
         name_mapping = self.get_mapping('name')
@@ -208,21 +214,24 @@ class SSHPeerNamespace(BasePeerNamespace):
         self.add_property(
             descr='Peer address',
             name='address',
-            get='credentials.address'
+            get='credentials.address',
+            usage=_('Address of a SSH peer.')
         )
 
         self.add_property(
             descr='Username',
             name='username',
             get='credentials.username',
-            list=False
+            list=False,
+            usage=_('Username used to connect to a SSH peer.')
         )
 
         self.add_property(
             descr='Password',
             name='password',
             get='credentials.password',
-            list=False
+            list=False,
+            usage=_('Password used to connect to a SSH peer.')
         )
 
         self.add_property(
@@ -230,21 +239,24 @@ class SSHPeerNamespace(BasePeerNamespace):
             name='port',
             get='credentials.port',
             list=False,
-            type=ValueType.NUMBER
+            type=ValueType.NUMBER,
+            usage=_('SSH port used to connect to a SSH peer.')
         )
 
         self.add_property(
             descr='Private key',
             name='privkey',
             get='credentials.privkey',
-            list=False
+            list=False,
+            usage=_('Private SSH peer used to connect to SSH peer.')
         )
 
         self.add_property(
             descr='Host key',
             name='hostkey',
             get='credentials.hostkey',
-            list=False
+            list=False,
+            usage=_('SSH host key of a SSH peer.')
         )
 
 
@@ -260,35 +272,40 @@ class AmazonS3Namespace(BasePeerNamespace):
             descr='Access key',
             name='access_key',
             get='credentials.access_key',
-            list=False
+            list=False,
+            usage=_('Access key to Amazon S3.')
         )
 
         self.add_property(
             descr='Secret key',
             name='secret_key',
             get='credentials.secret_key',
-            list=False
+            list=False,
+            usage=_('Secret key to Amazon S3.')
         )
 
         self.add_property(
             descr='Region',
             name='region',
             get='credentials.region',
-            list=False
+            list=False,
+            usage=_('Region property used to connect to Amazon S3 peer.')
         )
 
         self.add_property(
             descr='Bucket',
             name='bucket',
             get='credentials.bucket',
-            list=False
+            list=False,
+            usage=_('Bucket property used to connect to Amazon S3 peer.')
         )
 
         self.add_property(
             descr='Folder',
             name='folder',
             get='credentials.folder',
-            list=False
+            list=False,
+            usage=_('Folder property used to connect to Amazon S3 peer.')
         )
 
 
@@ -312,7 +329,8 @@ class PeerNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             get='name',
             set=None,
             createsetable=False,
-            usersetable=False
+            usersetable=False,
+            usage=_('Name of a peer.')
         )
 
         self.add_property(
@@ -321,7 +339,8 @@ class PeerNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             get='type',
             set=None,
             createsetable=False,
-            usersetable=False
+            usersetable=False,
+            usage=_('Type of a peer.')
         )
 
     def namespaces(self):

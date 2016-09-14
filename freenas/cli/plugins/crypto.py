@@ -96,7 +96,6 @@ class CryptoNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             usage=_("""\
             Unique serial number of the certificate
             """),
-            type=ValueType.NUMBER,
             usersetable=False,
             list=True)
 
@@ -201,7 +200,6 @@ class CertificateBaseNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixi
             usage=_("""\
             Unique serial number of the certificate
             """),
-            type=ValueType.NUMBER,
             usersetable=False,
             list=True)
 

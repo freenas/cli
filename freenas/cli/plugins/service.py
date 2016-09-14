@@ -1706,7 +1706,33 @@ svc_cli_config = {
              by other properties. Space delimited list of parameters
              enclosed between double quotes."""),
             'get': 'auxiliary',
-            'type': ValueType.STRING
+            'type': ValueType.STRING,
+        },
+        { 
+            'descr': 'OpenVPN mode',
+            'name': 'mode',
+            'usage': _("""
+             OpenVPN mode: pki or psk"""),
+            'get': 'mode',
+            'type': ValueType.STRING,
+        },
+        {
+    
+            'descr': 'PSK mode server ip address',
+            'name': 'psk_server_ip',
+            'usage': _("""
+             PSK mode server ip address."""),
+            'get': 'psk_server_ip',
+            'type': ValueType.STRING,
+        },
+        { 
+        
+            'descr': 'PSK mode client ip address',
+            'name': 'psk_remote_ip',
+            'usage': _("""
+             PSK mode client ip address."""),
+            'get': 'psk_remote_ip',
+            'type': ValueType.STRING,
         },
 
     ]

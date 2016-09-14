@@ -32,6 +32,7 @@ from freenas.cli.namespace import (
     Command, Namespace, EntityNamespace, TaskBasedSaveMixin,
     EntitySubscriberBasedLoadMixin, description, CommandException
 )
+from freenas.utils import normalize
 from freenas.cli.output import ValueType
 from freenas.cli.complete import EnumComplete, NullComplete
 
@@ -441,36 +442,49 @@ class CertificateAuthorityNamespace(CertificateBaseNamespace):
         self.primary_key = self.get_mapping('name')
 
 
-@description("Imports given CA")
+@description("Imports CA")
 class ImportCertificateAuthorityCommand(Command):
     """
-    Usage: import type=CA_EXISTING name=<name>
+    Usage:
+        import name=<name> certificate_path=<value or ""> privatekey_path=<value or "">
 
     Examples:
-    Import existing CA Certificate :
-    import type=CA_EXISTING name=myImportedCA
-    myImportedCA edit certificate
-    myImportedCA edit privatekey
+    Import existing CA from files:
+        import name=importedFromFiles certificate_path=/abs/path/cert.crt privatekey_path=/abs/path/cert.key
+    Import by creating empty certificate entry and editing the 'certificate' and 'privatekey' fields:
+        import name=importedByCpyPaste certificate_path="" privatekey_path=""
+        importedByCpyPaste edit certificate
+        importedByCpyPaste edit privatekey
+
 
     Imports a Certificate Authority.
+    It is possible to either import CA from existing file or create an empty CA entry in database
+    and edit it's properties 'certificate' and/or 'privatekey' in external editor.
+    Both cases are shown in the 'Examples' section
     """
     def __init__(self, parent):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
+        normalize(kwargs, {'type': 'CA_EXISTING'})
         if not kwargs:
-            raise CommandException(_("Import requires more arguments, see 'help import' for more information"))
-        if 'type' not in kwargs or kwargs['type'] != "CA_EXISTING":
-            raise CommandException(_("Please specify valid 'type' argument value"))
+            raise CommandException(_("Import requires more arguments. For help see 'help import'"))
         if 'name' not in kwargs:
-            raise CommandException(_("Please specify name of the imported CA"))
+            raise CommandException(_("Please specify name of the imported CA. For help see 'help import'"))
+        if 'certificate_path' not in kwargs:
+            raise CommandException(_("The 'certificate_path' argument must either be absolute path to CA file "
+                                     "or an empty string. For help see 'help import'"))
+        if 'privatekey_path' not in kwargs:
+            raise CommandException(_("The 'privatekey_path' argument must either be absolute path to privatekey file "
+                                     "or an empty string. For help see 'help import'"))
 
         context.submit_task(self.parent.import_task, kwargs)
 
     def complete(self, context, **kwargs):
         return [
             NullComplete('name='),
-            EnumComplete('type=', ['CA_EXISTING'])
+            NullComplete('certificate_path='),
+            NullComplete('privatekey_path='),
         ]
 
 
@@ -557,36 +571,48 @@ class CertificateNamespace(CertificateBaseNamespace):
         self.primary_key = self.get_mapping('name')
 
 
-@description("Imports given CA")
+@description("Imports Certificate")
 class ImportCertificateCommand(Command):
     """
-    Usage: import type=CERT_EXISTING name=<name>
+    Usage:
+        import name=<name> certificate_path=<value or ""> privatekey_path=<value or "">
 
     Examples:
-    Import existing server certificate:
-    import type=CERT_EXISTING name=myImportedServerCert
-    myImportedServerCert edit certificate
-    myImportedServerCert edit privatekey
+    Import existing server certificate from files:
+        import name=importedFromFiles certificate_path=/abs/path/cert.crt privatekey_path=/abs/path/cert.key
+    Import by creating empty certificate entry and editing the 'certificate' and 'privatekey' fields:
+        import name=importedByCpyPaste certificate_path="" privatekey_path=""
+        importedByCpyPaste edit certificate
+        importedByCpyPaste edit privatekey
 
     Imports a Certificate.
+    It is possible to either import certificate from existing file or create an empty certificate entry in database
+    and edit it's properties 'certificate' and/or 'privatekey' in external editor.
+    Both cases are shown in the 'Examples' section
     """
     def __init__(self, parent):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
+        normalize(kwargs, {'type': 'CERT_EXISTING'})
         if not kwargs:
-            raise CommandException(_("Import requires more arguments, see 'help import' for more information"))
-        if 'type' not in kwargs or kwargs['type'] != "CERT_EXISTING":
-            raise CommandException(_("Please specify valid 'type' argument value"))
+            raise CommandException(_("Import requires more arguments. For help see 'help import'"))
         if 'name' not in kwargs:
-            raise CommandException(_("Please specify name of the imported Certificate"))
+            raise CommandException(_("Please specify name of the imported Certificate. For help see 'help import'"))
+        if 'certificate_path' not in kwargs:
+            raise CommandException(_("The 'certificate_path' argument must either be absolute path to certificate file "
+                                     "or an empty string. For help see 'help import'"))
+        if 'privatekey_path' not in kwargs:
+            raise CommandException(_("The 'privatekey_path' argument must either be absolute path to privatekey file "
+                                     "or an empty string. For help see 'help import'"))
 
         context.submit_task(self.parent.import_task, kwargs)
 
     def complete(self, context, **kwargs):
         return [
             NullComplete('name='),
-            EnumComplete('type=', ['CERT_EXISTING'])
+            NullComplete('certificate_path='),
+            NullComplete('privatekey_path='),
         ]
 
 

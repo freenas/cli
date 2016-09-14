@@ -445,6 +445,11 @@ class CertificateAuthorityNamespace(CertificateBaseNamespace):
 @description("Imports CA")
 class ImportCertificateAuthorityCommand(Command):
     """
+    Imports a Certificate Authority.
+    It is possible to either import CA from existing file or create an empty CA entry in database
+    and edit it's properties 'certificate' and/or 'privatekey' in external editor.
+    Both cases are shown in the 'examples' section
+
     Usage:
         import name=<name> certificate_path=<value or ""> privatekey_path=<value or "">
 
@@ -455,12 +460,6 @@ class ImportCertificateAuthorityCommand(Command):
         import name=importedByCpyPaste certificate_path="" privatekey_path=""
         importedByCpyPaste edit certificate
         importedByCpyPaste edit privatekey
-
-
-    Imports a Certificate Authority.
-    It is possible to either import CA from existing file or create an empty CA entry in database
-    and edit it's properties 'certificate' and/or 'privatekey' in external editor.
-    Both cases are shown in the 'Examples' section
     """
     def __init__(self, parent):
         self.parent = parent
@@ -574,6 +573,11 @@ class CertificateNamespace(CertificateBaseNamespace):
 @description("Imports Certificate")
 class ImportCertificateCommand(Command):
     """
+    Imports a Certificate.
+    It is possible to either import certificate from existing file or create an empty certificate entry in database
+    and edit it's properties 'certificate' and/or 'privatekey' in external editor.
+    Both cases are shown in the 'examples' section
+
     Usage:
         import name=<name> certificate_path=<value or ""> privatekey_path=<value or "">
 
@@ -584,11 +588,6 @@ class ImportCertificateCommand(Command):
         import name=importedByCpyPaste certificate_path="" privatekey_path=""
         importedByCpyPaste edit certificate
         importedByCpyPaste edit privatekey
-
-    Imports a Certificate.
-    It is possible to either import certificate from existing file or create an empty certificate entry in database
-    and edit it's properties 'certificate' and/or 'privatekey' in external editor.
-    Both cases are shown in the 'Examples' section
     """
     def __init__(self, parent):
         self.parent = parent

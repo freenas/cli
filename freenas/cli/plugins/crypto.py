@@ -44,8 +44,9 @@ _ = t.gettext
 @description(_("Provides access to Cryptography options"))
 class CryptoNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
     """
-    The cryptography namespace is used to manage crypthography related
-    aspects of the system.
+    The cryptography namespace provides an overview of certificates available in the system
+    - see 'show' command.
+    This namespace extends into subnamespaces which provide commands for management of the certificates.
     """
     def __init__(self, name, context):
         super(CryptoNamespace, self).__init__(name, context)

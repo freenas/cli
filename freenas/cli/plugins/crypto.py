@@ -157,11 +157,12 @@ class CertificateBaseNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixi
             descr='Certificate Path',
             name='certificate_path',
             get='certificate_path',
-            set='certificate_path',
+            set=None,
             usage=_("""\
             Path to the certificate file.
             """),
             type=ValueType.STRING,
+            createsetable=False,
             usersetable=False,
             list=False)
 
@@ -181,11 +182,12 @@ class CertificateBaseNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixi
             descr='Private Key Path',
             name='privatekey_path',
             get='privatekey_path',
-            set='privatekey_path',
+            set=None,
             usage=_("""\
             Path to the private key associated with the certificate.
             """),
             type=ValueType.STRING,
+            createsetable=False,
             usersetable=False,
             list=False)
 

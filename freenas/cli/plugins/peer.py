@@ -31,7 +31,7 @@ from freenas.cli.namespace import (
     EntitySubscriberBasedLoadMixin, description
 )
 from freenas.cli.complete import NullComplete
-from freenas.cli.output import ValueType
+from freenas.cli.output import ValueType, Sequence
 
 t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
@@ -40,12 +40,14 @@ _ = t.gettext
 @description(_("Exchange keys with remote host and create known FreeNAS peer entry at both sides"))
 class CreateFreeNASPeerCommand(Command):
     """
-    Usage: create name=<name> address=<address> username=<username> password=<password>
+    Usage: create name=<name> address=<address> username=<username>
+                  password=<password> token=<token>
 
     Example: create address=freenas-2.local username=root password=secret
              create address=10.0.0.1 username=my_username password=secret
              create address=my_username@10.0.0.1 password=secret
              create address=my_username@10.0.0.1 password=secret port=1234
+             create address=freenas-2.local token=123456
 
     Exchange keys with remote host and create known FreeNAS host entry
     at both sides.
@@ -54,6 +56,10 @@ class CreateFreeNASPeerCommand(Command):
 
     User name and password are used only once to authorize key exchange.
     Default SSH port is 22.
+
+    Peer creation using authentication tokens have two steps:
+    before issuing actual 'create' command, one has to generate
+    a temporary token on remote machine via 'get_token' command.
 
     User used for pairing purposes must belong to 'wheel' group at remote host.
     """
@@ -72,36 +78,52 @@ class CreateFreeNASPeerCommand(Command):
         else:
             address = kwargs.pop('address')
 
-        split_address = address.split('@')
-        if len(split_address) == 2:
-            kwargs['username'] = split_address[0]
-            address = split_address[1]
-
-        if 'username' not in kwargs:
-            raise CommandException(_('Please specify a valid user name'))
-        else:
-            username = kwargs.pop('username')
-
-        if 'password' not in kwargs:
-            raise CommandException(_('Please specify a valid password'))
-        else:
-            password = kwargs.pop('password')
-
         port = kwargs.pop('port', 22)
 
-        context.submit_task(
-            self.parent.create_task,
-            {
-                'type': 'freenas',
-                'credentials': {
-                    'username': username,
-                    'password': password,
-                    'port': port,
-                    'type': 'ssh',
-                    'address': address
+        token = kwargs.get('token')
+
+        if token:
+            context.submit_task(
+                self.parent.create_task,
+                {
+                    'type': 'freenas',
+                    'credentials': {
+                        'port': port,
+                        'type': 'freenas-auth',
+                        'address': address,
+                        'auth_code': token
+                    }
                 }
-            }
-        )
+            )
+        else:
+            split_address = address.split('@')
+            if len(split_address) == 2:
+                kwargs['username'] = split_address[0]
+                address = split_address[1]
+
+            if 'username' not in kwargs:
+                raise CommandException(_('Please specify a valid user name'))
+            else:
+                username = kwargs.pop('username')
+
+            if 'password' not in kwargs:
+                raise CommandException(_('Please specify a valid password'))
+            else:
+                password = kwargs.pop('password')
+
+            context.submit_task(
+                self.parent.create_task,
+                {
+                    'type': 'freenas',
+                    'credentials': {
+                        'username': username,
+                        'password': password,
+                        'port': port,
+                        'type': 'freenas-auth',
+                        'address': address
+                    }
+                }
+            )
 
     def complete(self, context, **kwargs):
         return [
@@ -109,8 +131,45 @@ class CreateFreeNASPeerCommand(Command):
             NullComplete('address='),
             NullComplete('username='),
             NullComplete('password='),
-            NullComplete('port=')
+            NullComplete('port='),
+            NullComplete('token=')
         ]
+
+
+@description(_("Generate FreeNAS peer one-time authentication token"))
+class FreeNASPeerGetAuthTokenCommand(Command):
+    """
+    Usage: get_token
+
+    Example: get_token
+
+    Returns an authentication token which is valid for 5 minutes.
+    This token can be used on other FreeNAS machine to set up a FreeNAS peer.
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        return Sequence(
+            'One time authentication code:',
+            context.call_sync('peer.freenas.get_auth_code')
+        )
+
+
+@description(_("Invalidate all active FreeNAS peer one-time authentication tokens"))
+class FreeNASPeerInvalidateTokensCommand(Command):
+    """
+    Usage: invalidate_tokens
+
+    Example: invalidate_tokens
+
+    Invalidates all active FreeNAS peer one-time authentication tokens.
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        context.call_sync('peer.freenas.void_auth_codes')
 
 
 class BasePeerNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):
@@ -199,7 +258,11 @@ class FreeNASPeerNamespace(BasePeerNamespace):
 
     def commands(self):
         cmds = super(FreeNASPeerNamespace, self).commands()
-        cmds.update({'create': CreateFreeNASPeerCommand(self)})
+        cmds.update({
+            'create': CreateFreeNASPeerCommand(self),
+            'get_token': FreeNASPeerGetAuthTokenCommand(self),
+            'invalidate_tokens': FreeNASPeerInvalidateTokensCommand(self)
+        })
         return cmds
 
 

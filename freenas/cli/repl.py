@@ -1504,11 +1504,12 @@ class MainLoop(object):
 
     def process(self, line):
         def add_line_to_history(line):
-            if not os.path.exists(os.path.expanduser('~/')):
-                return
             readline.add_history(line)
-            with open(os.path.expanduser('~/.cli_history'), 'a') as history_file:
-                history_file.write('\n' + line)
+            try:
+                with open(os.path.expanduser('~/.cli_history'), 'a') as history_file:
+                    history_file.write('\n' + line)
+            except IOError:
+                pass
 
         if len(line) == 0:
             return

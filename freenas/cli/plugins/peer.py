@@ -139,11 +139,11 @@ class CreateFreeNASPeerCommand(Command):
 @description(_("Generate FreeNAS peer one-time authentication token"))
 class FreeNASPeerGetAuthTokenCommand(Command):
     """
-    Usage: get_token
+    Usage: create_token
 
-    Example: get_token
+    Example: create_token
 
-    Returns an authentication token which is valid for 5 minutes.
+    Creates an authentication token which is valid for 5 minutes.
     This token can be used on other FreeNAS machine to set up a FreeNAS peer.
     """
     def __init__(self, parent):
@@ -260,7 +260,7 @@ class FreeNASPeerNamespace(BasePeerNamespace):
         cmds = super(FreeNASPeerNamespace, self).commands()
         cmds.update({
             'create': CreateFreeNASPeerCommand(self),
-            'get_token': FreeNASPeerGetAuthTokenCommand(self),
+            'create_token': FreeNASPeerGetAuthTokenCommand(self),
             'invalidate_tokens': FreeNASPeerInvalidateTokensCommand(self)
         })
         return cmds

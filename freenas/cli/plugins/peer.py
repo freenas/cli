@@ -26,12 +26,14 @@
 #####################################################################
 
 import gettext
+from datetime import datetime
 from freenas.cli.namespace import (
     Command, CommandException, EntityNamespace, TaskBasedSaveMixin,
     EntitySubscriberBasedLoadMixin, description
 )
-from freenas.cli.complete import NullComplete
-from freenas.cli.output import ValueType, Sequence
+from freenas.cli.complete import NullComplete, RpcComplete
+from freenas.cli.output import ValueType, Sequence, Table
+from freenas.utils import first_or_default
 
 t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
@@ -152,24 +154,95 @@ class FreeNASPeerGetAuthTokenCommand(Command):
     def run(self, context, args, kwargs, opargs):
         return Sequence(
             'One time authentication code:',
-            context.call_sync('peer.freenas.get_auth_code')
+            context.call_sync('peer.freenas.create_auth_code')
         )
 
 
-@description(_("Invalidate all active FreeNAS peer one-time authentication tokens"))
-class FreeNASPeerInvalidateTokensCommand(Command):
+@description(_("Invalidate selected FreeNAS peer one-time authentication token"))
+class FreeNASPeerInvalidateTokenCommand(Command):
     """
-    Usage: invalidate_tokens
+    Usage: invalidate_token token=<token>
 
-    Example: invalidate_tokens
+    Example: invalidate_token token=123456
+             invalidate_token 123456
+             invalidate_token 12****
+             invalidate_token 12
 
-    Invalidates all active FreeNAS peer one-time authentication tokens.
+    Invalidates selected FreeNAS peer one-time authentication token.
+    You have to enter at least two first digits of a valid token.
     """
     def __init__(self, parent):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        context.call_sync('peer.freenas.void_auth_codes')
+        if not args and not kwargs:
+            raise CommandException(_("Command invalidate_token requires more arguments."))
+        if len(args) > 1:
+            raise CommandException(_("Wrong syntax for invalidate_token."))
+
+        if len(args) == 1 and not kwargs.get('token'):
+            kwargs['token'] = args.pop(0)
+
+        if 'token' not in kwargs:
+            raise CommandException(_('Please specify a valid token'))
+        else:
+            token = str(kwargs.pop('token'))
+
+        try:
+            if token.index('*') < 2:
+                raise CommandException(_('You have to enter at least first two digits of a valid token.'))
+        except ValueError:
+            pass
+
+        match = first_or_default(
+            lambda c: c['code'][:2] == token[:2],
+            context.call_sync('peer.freenas.get_auth_codes')
+        )
+        if not match:
+            return Sequence(
+                'No matching code found. You might have entered wrong token, or it has already expired.'
+            )
+        else:
+            if match['code'] == token:
+                token = match
+
+            context.call_sync('peer.freenas.invalidate_code', token)
+
+    def complete(self, context, **kwargs):
+        return [
+            RpcComplete('token=', 'peer.freenas.get_auth_codes', lambda c: c['code'])
+        ]
+
+
+@description(_("List valid FreeNAS authentication tokens"))
+class FreeNASPeerListTokensCommand(Command):
+    """
+    Usage: list_tokens
+
+    Example: list_tokens
+
+    Lists valid FreeNAS authentication tokens.
+    """
+
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        codes = list(context.call_sync('peer.freenas.get_auth_codes'))
+        for c in codes:
+            remaining_time = c['expires_at'] - datetime.now()
+            remaining_time = int(remaining_time.total_seconds())
+            if remaining_time < 0:
+                c['lifetime'] = 'Expired {0} seconds ago'.format(abs(remaining_time))
+            else:
+                c['lifetime'] = 'Expires in {0} seconds'.format(remaining_time)
+
+        return Table(
+            codes, [
+                Table.Column('Token', 'code', ValueType.STRING),
+                Table.Column('Lifetime', 'lifetime', ValueType.STRING)
+            ]
+        )
 
 
 class BasePeerNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):
@@ -261,7 +334,8 @@ class FreeNASPeerNamespace(BasePeerNamespace):
         cmds.update({
             'create': CreateFreeNASPeerCommand(self),
             'create_token': FreeNASPeerGetAuthTokenCommand(self),
-            'invalidate_tokens': FreeNASPeerInvalidateTokensCommand(self)
+            'invalidate_token': FreeNASPeerInvalidateTokenCommand(self),
+            'list_tokens': FreeNASPeerListTokensCommand(self)
         })
         return cmds
 

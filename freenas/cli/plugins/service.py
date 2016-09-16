@@ -1531,8 +1531,6 @@ svc_cli_config = {
             'type': ValueType.STRING,
         },
     ],
-
-
     "openvpn": [
         {
             'descr': 'Device type tap/tun',
@@ -1708,6 +1706,43 @@ svc_cli_config = {
             'get': 'auxiliary',
             'type': ValueType.STRING
         },
-
+    ],
+    "consul": [
+        {
+            'descr': 'Bind address',
+            'name': 'bind_address',
+            'get': 'bind_address',
+            'type': ValueType.STRING
+        },
+        {
+            'descr': 'Server mode',
+            'name': 'server',
+            'get': 'server',
+            'type': ValueType.BOOLEAN,
+        },
+        {
+            'descr': 'Datacenter name',
+            'name': 'datacenter',
+            'get': 'datacenter',
+            'type': ValueType.STRING,
+        },
+        {
+            'descr': 'Node name',
+            'name': 'node_name',
+            'get': 'node_name',
+            'type': ValueType.STRING,
+        },
+        {
+            'descr': 'Join addresses',
+            'name': 'join_addresses',
+            'get': 'start_join',
+            'type': ValueType.SET,
+        },
+        {
+            'descr': 'WAN join addresses',
+            'name': 'wan_join_addresses',
+            'get': 'start_join_wan',
+            'type': ValueType.SET,
+        },
     ]
 }

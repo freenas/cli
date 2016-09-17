@@ -690,6 +690,19 @@ class SystemNamespace(ConfigNamespace):
         )
 
         self.add_property(
+            descr='Description',
+            name='description',
+            get='description'
+        )
+
+        self.add_property(
+            descr='Tags',
+            name='tags',
+            get='tags',
+            type=ValueType.SET
+        )
+
+        self.add_property(
             descr='Syslog Server',
             name='syslog_server',
             usage=_("""\

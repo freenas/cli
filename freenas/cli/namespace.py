@@ -1190,6 +1190,7 @@ class EntitySubscriberBasedLoadMixin(object):
             extra_query_params = self.extra_query_params
 
         if not self.context.docgen_run:
+            self.context.entity_subscribers[subscriber].wait_ready()
             return self.context.entity_subscribers[subscriber].query(
                 *(extra_query_params + params),
                 **options
@@ -1198,6 +1199,7 @@ class EntitySubscriberBasedLoadMixin(object):
             return {}
 
     def get_one(self, name):
+        self.context.entity_subscribers[self.entity_subscriber_name].wait_ready()
         return copy.deepcopy(self.context.entity_subscribers[self.entity_subscriber_name].query(
             (self.primary_key_name, '=', name), *self.extra_query_params,
             single=True

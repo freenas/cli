@@ -27,7 +27,7 @@
 
 import gettext
 from freenas.cli.namespace import (
-    Namespace, EntityNamespace, Command, EntitySubscriberBasedLoadMixin,
+    Namespace, EntityNamespace, Command, RpcBasedLoadMixin,
     CommandException, description, ConfigNamespace
 )
 
@@ -41,7 +41,9 @@ _ = t.gettext
 class OpenVPNConfigNamespace(ConfigNamespace):
     """
     The OpenVPN config namespace provides commands for listing,
-    and managing OpenVPN general settings.
+    and managing OpenVPN settings.
+    It also provides ability to generate corresponding client config and
+    static key.
     """
     def __init__(self, name, context):
         super(OpenVPNConfigNamespace, self).__init__(name, context)
@@ -62,7 +64,7 @@ class OpenVPNConfigNamespace(ConfigNamespace):
             set='dev',
             type=ValueType.STRING,
             usage=_('''\
-            Device type for openvpn server.''')
+            Device type for openvpn server. tap/tun''')
         )
         self.add_property(
             descr='Enables OpenVPN server',
@@ -370,30 +372,20 @@ class OpenVPNStaticKeyCommand(Command):
 
 
 @description("Manages OpenVPN service")
-class OpenVPNManageNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
+class OpenVPNamespace(RpcBasedLoadMixin, EntityNamespace):
     """
     This namespace provides commands for managing the OpenVPN service.
+    Go into 'config' namespace for configuration related actions.
     """
     def __init__(self, name, context):
-        super(OpenVPNManageNamespace, self).__init__(name, context)
+        super(OpenVPNamespace, self).__init__(name, context)
 
-        self.entity_subscriber_name = 'service'
         self.extra_query_params = [('name', '=', 'openvpn')]
+        self.query_call = 'service.query'
         self.primary_key = self.get_mapping('name')
 
         self.allow_create = False
         self.allow_edit = False
-
-        self.add_property(
-            descr='Service name',
-            name='name',
-            get='name',
-            usage=_("""\
-            Name of the service. Read-only value assigned by
-            the operating system."""),
-            set=None,
-            list=True
-        )
 
         self.add_property(
             descr='State',
@@ -424,7 +416,8 @@ class OpenVPNManageNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             'restart': OpenVPNManageCommand('restart')
         }
 
-
+    def namespaces(self):
+        return [OpenVPNConfigNamespace('config', self.context)]
 
 @description("Start/stop/restart/reload a service")
 class OpenVPNManageCommand(Command):
@@ -448,25 +441,8 @@ class OpenVPNManageCommand(Command):
         context.submit_task(
             'service.manage',
             self.service_id,
-            self.action,
+            self.action
             )
-
-
-@description("Configure and manage OpenVPN service")
-class OpenVPNamespace(Namespace):
-    """
-    The OpenVPN namespace provides commands for managing,
-    and configuring the OpenVPN service.
-    """
-    def __init__(self, name, context):
-        super(OpenVPNamespace, self).__init__(name)
-        self.context = context
-
-    def namespaces(self):
-        return [
-            OpenVPNManageNamespace('manage', self.context),
-            OpenVPNConfigNamespace('config', self.context)
-        ]
 
 
 def _init(context):

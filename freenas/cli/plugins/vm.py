@@ -677,10 +677,13 @@ class VMDeviceNicNamespace(VMDeviceNamespaceBaseClass):
             name='bridge',
             get='properties.bridge',
             list=True,
-            complete=MultipleSourceComplete('bridge=', (
-                EntitySubscriberComplete('bridge=', 'network.interface', lambda i: i['id']),
-                EntitySubscriberComplete('bridge=', 'network.interface', lambda i: i['name'])
-            ))
+            complete=MultipleSourceComplete(
+                'bridge=', (
+                    EntitySubscriberComplete('bridge=', 'network.interface', lambda i: i['id']),
+                    EntitySubscriberComplete('bridge=', 'network.interface', lambda i: i['name'])
+                ),
+                extra=['default']
+            )
         )
 
         self.add_property(

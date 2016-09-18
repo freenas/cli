@@ -184,7 +184,7 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
         }
 
         self.skeleton_entity = {
-            'type': 'LAGG',
+            'type': None,
             'aliases': []
         }
 

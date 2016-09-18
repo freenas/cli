@@ -143,18 +143,10 @@ class ChangeNamespaceCommand(Command):
                 'You cannot specify command like properties in this navigation command'
             ))
         if len(args) > 1:
-            if '..' in args:
-                path_args = ''.join(args)
-            else:
-                raise CommandException(_(
-                    'Invalid syntax: {0}.\n{1}'.format(args, inspect.getdoc(self))
-                ))
-        elif len(args) == 0:
-            return
-        else:
-            path_args = args[0]
-        path = path_args[0] + path_args[1:].replace('/', ' ').strip()
-        return context.ml.process(path)
+            raise CommandException(_('Invalid syntax: {0}.\n{1}'.format(args, inspect.getdoc(self))))
+        elif len(args) == 1:
+            path = args[0][0] + args[0][1:].replace('/', ' ').strip()
+            return context.ml.process(path)
 
     def complete(self, context, **kwargs):
         text = kwargs.get('text', None)

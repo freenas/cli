@@ -35,7 +35,7 @@ from freenas.cli.output import ValueType, get_humanized_size
 from freenas.cli.utils import post_save
 from freenas.utils import first_or_default
 from freenas.utils.query import get, set
-from freenas.cli.complete import NullComplete, EntitySubscriberComplete, RpcComplete
+from freenas.cli.complete import NullComplete, EntitySubscriberComplete, RpcComplete, MultipleSourceComplete
 from freenas.cli.console import Console
 
 
@@ -677,7 +677,10 @@ class VMDeviceNicNamespace(VMDeviceNamespaceBaseClass):
             name='bridge',
             get='properties.bridge',
             list=True,
-            complete=EntitySubscriberComplete('bridge=', 'network.interface', lambda i: i['id'])
+            complete=MultipleSourceComplete('bridge=', (
+                EntitySubscriberComplete('bridge=', 'network.interface', lambda i: i['id']),
+                EntitySubscriberComplete('bridge=', 'network.interface', lambda i: i['name'])
+            ))
         )
 
         self.add_property(

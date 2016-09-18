@@ -644,7 +644,7 @@ class VMDeviceNicNamespace(VMDeviceNamespaceBaseClass):
     def __init__(self, name, context, parent):
         super(VMDeviceNicNamespace, self).__init__(name, context, parent)
         self.extra_query_params = [('type', 'in', 'NIC')]
-        self.required_props.extend(['mode', 'device_type', 'bridge'])
+        self.required_props.extend(['mode', 'device_type'])
         self.skeleton_entity['type'] = 'NIC'
 
         self.localdoc['CreateEntityCommand'] = ("""\

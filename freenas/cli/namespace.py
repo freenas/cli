@@ -25,7 +25,6 @@
 #
 #####################################################################
 
-
 import re
 import copy
 import traceback
@@ -36,6 +35,7 @@ import sys
 import collections
 import six
 import inspect
+import contextlib
 from freenas.utils import first_or_default, query as q
 from freenas.cli.parser import CommandCall, Literal, Symbol, BinaryParameter, Comment
 from freenas.cli.complete import NullComplete, EnumComplete
@@ -251,6 +251,15 @@ class PropertyMapping(object):
         self.complete = kwargs.pop('complete', None)
         self.ns = kwargs.pop('ns', None)
         self.display_width_percentage = kwargs.pop('display_width_percentage', None)
+
+    def can_set(self, obj):
+        if not self.set:
+            return False
+
+        if self.condition and not self.condition(obj):
+            return False
+
+        return True
 
     def is_usersetable(self, obj):
         if callable(self.usersetable):
@@ -1064,7 +1073,20 @@ class CreateEntityCommand(Command):
         self.parent.save(ns, new=True)
 
     def complete(self, context, **kwargs):
-        return [create_completer(x) for x in self.parent.property_mappings if x.set]
+        if 'kwargs' in kwargs:
+            ns = SingleItemNamespace(None, self.parent, context)
+            ns.orig_entity = copy.deepcopy(self.parent.skeleton_entity)
+            ns.entity = copy.deepcopy(self.parent.skeleton_entity)
+            kwargs = collections.OrderedDict(kwargs)
+            mappings = map(lambda i: (self.parent.get_mapping(i[0]), i[1]), kwargs['kwargs'].items())
+
+            for prop, v in sorted(mappings, key=lambda i: i[0].index):
+                with contextlib.suppress(BaseException):
+                    prop.do_set(ns.entity, v)
+
+            return [create_completer(x) for x in self.parent.property_mappings if x.can_set(ns.entity)]
+
+        return []
 
 
 class EntityNamespace(Namespace):

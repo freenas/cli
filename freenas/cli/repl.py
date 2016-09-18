@@ -47,6 +47,7 @@ import six
 import paramiko
 import inspect
 import re
+import contextlib
 from six.moves.urllib.parse import urlparse
 from socket import gaierror as socket_error
 from freenas.cli.output import Table
@@ -1680,7 +1681,23 @@ class MainLoop(object):
 
                     append_space = True
                 elif issubclass(type(obj), Command):
-                    completions = obj.complete(self.context, text=text)
+                    c_args = []
+                    c_kwargs = {}
+                    c_opargs = []
+
+                    with contextlib.suppress(BaseException):
+                        token_args = convert_to_literals(copy.deepcopy(token).args)
+
+                        if len(token_args) > 0 and token_args[0] == '..':
+                            args = [token_args[0]]
+                        else:
+                            c_args, c_kwargs, c_opargs = expand_wildcards(
+                                self.context,
+                                *sort_args([self.eval(i) for i in token_args]),
+                                completions=obj.complete(self.context, text=text)
+                            )
+
+                    completions = obj.complete(self.context, text=text, args=c_args, kwargs=c_kwargs, opargs=c_opargs)
                     choices = [c.name for c in completions if isinstance(c.name, six.string_types)]
 
                     arg = find_arg(args, readline.get_begidx())

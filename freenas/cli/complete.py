@@ -84,12 +84,14 @@ class RpcComplete(EntitySubscriberComplete):
 
 
 class MultipleSourceComplete(NullComplete):
-    def __init__(self, name, components, **kwargs):
+    def __init__(self, name, components, extra=None, **kwargs):
         super(MultipleSourceComplete, self).__init__(name, **kwargs)
         self.components = components
+        self.extra = [] or extra
 
     def choices(self, context, token):
         result = []
+        result.extend(self.extra)
         for c in self.components:
             result.extend(c.choices(context, token))
 

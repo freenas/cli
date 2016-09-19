@@ -40,8 +40,67 @@ t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
 
 
+class BackupSSHPropertiesMixin(object):
+    def __init__(self, name, context):
+        super(BackupSSHPropertiesMixin, self).__init__(name, context)
+
+        self.add_property(
+            descr='Peer',
+            name='peer',
+            usage=_("Peer name. Must match a peer of type ssh"),
+            get=lambda o: get_related(self.context, 'peer', o, 'properties.peer'),
+            set=lambda o, v: set_related(self.context, 'peer', o, 'properties.peer', v),
+            condition=lambda o: o['provider'] == 'ssh'
+        )
+
+        self.add_property(
+            descr='Directory',
+            name='directory',
+            usage=_("""\
+            Name of existing directory to save the backups to."""),
+            get='properties.directory',
+            condition=lambda o: o['provider'] == 'ssh'
+        )
+
+
+class BackupS3PropertiesMixin(object):
+    def __init__(self, name, context):
+        super(BackupS3PropertiesMixin, self).__init__(name, context)
+
+        self.add_property(
+            descr='Peer',
+            name='peer',
+            usage=_("Peer name. Must match a peer of type s3"),
+            get=lambda o: get_related(self.context, 'peer', o, 'properties.peer'),
+            set=lambda o, v: set_related(self.context, 'peer', o, 'properties.peer', v),
+            condition=lambda o: o['provider'] == 's3'
+        )
+
+        self.add_property(
+            descr='Bucket',
+            name='bucket',
+            usage=_("""\
+            Enclose the valid hostname label between double quotes.
+            This assumes you have already created a bucket."""),
+            get='properties.bucket',
+            condition=lambda o: o['provider'] == 's3'
+        )
+
+        self.add_property(
+            descr='Folder',
+            name='folder',
+            usage=_("""\
+            The name of the folder within the bucket to backup to."""),
+            get='properties.folder',
+            condition=lambda o: o['provider'] == 's3'
+        )
+
+
 @description("Backup Snapshots")
-class BackupNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):
+class BackupNamespace(
+    TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, BackupSSHPropertiesMixin,
+    BackupS3PropertiesMixin, EntityNamespace
+):
     """
     The backup namespace provides commands for configuring backups to an SSH
     server or Amazon S3.
@@ -53,6 +112,10 @@ class BackupNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
         self.create_task = 'backup.create'
         self.update_task = 'backup.update'
         self.delete_task = 'backup.delete'
+        self.skeleton_entity = {
+            'name': None,
+            'provider': None
+        }
 
         self.add_property(
             descr='Name',
@@ -69,7 +132,8 @@ class BackupNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
             get='provider',
             usage=_("""\
             Mandatory. Supported values are "ssh" or "s3"."""),
-            list=True
+            list=True,
+            enum=['ssh', 's3']
         )
 
         self.add_property(
@@ -103,88 +167,12 @@ class BackupNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
             enum=['NONE', 'GZIP']
         )
 
-        def get_entity_namespaces(this):
-            PROVIDERS = {
-                'ssh': BackupSSHPropertiesNamespace,
-                's3': BackupS3PropertiesNamespace
-            }
-
-            this.load()
-            if this.entity and this.entity.get('provider'):
-                return [PROVIDERS[this.entity['provider']]('properties', self.context, this)]
-
-            if getattr(self, 'is_docgen_instance', False):
-                return [namespace('<entity=={0}>properties'.format(name), self.context, this) for name, namespace in
-                    PROVIDERS.items()]
-
-            return []
-
         self.primary_key = self.get_mapping('name')
-        self.entity_namespaces = get_entity_namespaces
         self.entity_commands = lambda this: {
             'sync': BackupSyncCommand(this),
             'query': BackupQueryCommand(this),
             'restore': BackupRestoreCommand(this)
         }
-
-
-class BackupBasePropertiesNamespace(NestedEntityMixin, ItemNamespace):
-    def __init__(self, name, context, parent):
-        super(BackupBasePropertiesNamespace, self).__init__(name, context)
-        self.context = context
-        self.parent = parent
-        self.parent_entity_path = 'properties'
-
-
-class BackupSSHPropertiesNamespace(BackupBasePropertiesNamespace):
-    def __init__(self, name, context, parent):
-        super(BackupSSHPropertiesNamespace, self).__init__(name, context, parent)
-
-        self.add_property(
-            descr='Peer',
-            name='peer',
-            usage=_("Peer name. Must match a peer of type ssh"),
-            get=lambda o: get_related(self.context, 'peer', o, 'peer'),
-            set=lambda o, v: set_related(self.context, 'peer', o, 'peer', v)
-        )
-
-        self.add_property(
-            descr='Directory',
-            name='directory',
-            usage=_("""\
-            Name of existing directory to save the backups to."""),
-            get='directory'
-        )
-
-
-class BackupS3PropertiesNamespace(BackupBasePropertiesNamespace):
-    def __init__(self, name, context, parent):
-        super(BackupS3PropertiesNamespace, self).__init__(name, context, parent)
-
-        self.add_property(
-            descr='Peer',
-            name='peer',
-            usage=_("Peer name. Must match a peer of type s3"),
-            get=lambda o: get_related(self.context, 'peer', o, 'peer'),
-            set=lambda o, v: set_related(self.context, 'peer', o, 'peer', v)
-        )
-
-        self.add_property(
-            descr='Bucket',
-            name='bucket',
-            usage=_("""\
-            Enclose the valid hostname label between double quotes.
-            This assumes you have already created a bucket."""),
-            get='bucket'
-        )
-
-        self.add_property(
-            descr='Folder',
-            name='folder',
-            usage=_("""\
-            The name of the folder within the bucket to backup to."""),
-            get='folder'
-        )
 
 
 class BackupSyncCommand(Command):

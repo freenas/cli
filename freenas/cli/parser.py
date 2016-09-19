@@ -359,7 +359,7 @@ def t_ignore_BREAKNL(t):
     pass
 
 
-def t_error(t):
+def t_ANY_error(t):
     if parser.recover_errors:
         t.lexer.skip(1)
         return
@@ -367,7 +367,7 @@ def t_error(t):
         raise SyntaxError("Illegal character '%s'" % t.value[0])
 
 
-def t_eof(t):
+def t_ANY_eof(t):
     if lexer.parens > 0 or lexer.breaknl:
         more = config.instance.ml.input('... ' * (1 if lexer.breaknl else lexer.parens))
         lexer.breaknl = False

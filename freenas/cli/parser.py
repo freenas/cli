@@ -471,7 +471,7 @@ def p_if_stmt(p):
 
 def p_for_stmt(p):
     """
-    for_stmt : FOR LPAREN assignment_stmt SEMICOLON expr SEMICOLON assignment_stmt RPAREN block
+    for_stmt : FOR LPAREN stmt SEMICOLON expr SEMICOLON stmt RPAREN block
     """
     p[0] = ForStatement(p[3], p[5], p[7], p[9])
 

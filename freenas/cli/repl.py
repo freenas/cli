@@ -61,7 +61,7 @@ from freenas.cli.namespace import (
 )
 from freenas.cli.parser import (
     parse, unparse, Symbol, Literal, BinaryParameter, UnaryExpr, BinaryExpr, PipeExpr, AssignmentStatement,
-    IfStatement, ForStatement, WhileStatement, FunctionCall, CommandCall, Subscript,
+    IfStatement, ForStatement, ForInStatement, WhileStatement, FunctionCall, CommandCall, Subscript,
     ExpressionExpansion, CommandExpansion, FunctionDefinition, ReturnStatement, BreakStatement,
     UndefStatement, Redirection, AnonymousFunction, ShellEscape, Parentheses, ConstStatement
 )
@@ -1264,6 +1264,16 @@ class MainLoop(object):
                 return
 
             if isinstance(token, ForStatement):
+                local_env = Environment(self.context, outer=env)
+                self.eval(token.stmt1, local_env)
+
+                while self.eval(token.expr, local_env):
+                    self.eval_block(token.body, local_env, True)
+                    self.eval(token.stmt2, local_env)
+
+                return
+
+            if isinstance(token, ForInStatement):
                 local_env = Environment(self.context, outer=env)
                 expr = self.eval(token.expr, env)
                 if isinstance(token.var, tuple):

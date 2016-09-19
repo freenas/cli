@@ -87,7 +87,8 @@ Subscript = ASTObject('Subscript', 'expr', 'index')
 IfStatement = ASTObject('IfStatement', 'expr', 'body', 'else_body')
 AssignmentStatement = ASTObject('AssignmentStatement', 'name', 'expr')
 ConstStatement = ASTObject('ConstStatement', 'name', 'expr')
-ForStatement = ASTObject('ForStatement', 'var', 'expr', 'body')
+ForStatement = ASTObject('ForStatement', 'stmt1', 'expr', 'stmt2', 'body')
+ForInStatement = ASTObject('ForInStatement', 'var', 'expr', 'body')
 WhileStatement = ASTObject('WhileStatement', 'expr', 'body')
 UndefStatement = ASTObject('UndefStatement', 'name')
 ReturnStatement = ASTObject('ReturnStatement', 'expr')
@@ -123,7 +124,7 @@ tokens = list(reserved.values()) + [
     'ASSIGN', 'LPAREN', 'RPAREN', 'EQ', 'NE', 'GT', 'GE', 'LT', 'LE',
     'REGEX', 'UP', 'PIPE', 'LIST', 'COMMA', 'INC', 'DEC', 'PLUS', 'MINUS',
     'MUL', 'DIV', 'EOPEN', 'COPEN', 'LBRACE', 'RBRACE', 'LBRACKET', 'RBRACKET',
-    'NEWLINE', 'COLON', 'REDIRECT', 'MOD', 'SHELL'
+    'NEWLINE', 'SEMICOLON', 'COLON', 'REDIRECT', 'MOD', 'SHELL'
 ]
 
 
@@ -348,8 +349,13 @@ def t_ANY_RBRACE(t):
 
 
 def t_NEWLINE(t):
-    r'[\n;]+'
+    r'[\n]+'
     t.lexer.lineno += len(t.value)
+    return t
+
+
+def t_SEMICOLON(t):
+    r'[;]+'
     return t
 
 
@@ -372,8 +378,8 @@ def t_ANY_eof(t):
         more = config.instance.ml.input('... ' * (1 if lexer.breaknl else lexer.parens))
         lexer.breaknl = False
         if more:
-            lexer.input(more + '\n')
-            return lexer.token()
+            t.lexer.input(more + '\n')
+            return t.lexer.token()
 
         return None
 
@@ -381,8 +387,8 @@ def t_ANY_eof(t):
 def p_stmt_list(p):
     """
     stmt_list : stmt_redirect
-    stmt_list : stmt_redirect NEWLINE
-    stmt_list : stmt_redirect NEWLINE stmt_list
+    stmt_list : stmt_redirect newline
+    stmt_list : stmt_redirect newline stmt_list
     """
     if len(p) in (2, 3):
         p[0] = [p[1]]
@@ -393,7 +399,7 @@ def p_stmt_list(p):
 
 def p_stmt_list_2(p):
     """
-    stmt_list : NEWLINE stmt_list
+    stmt_list : newline stmt_list
     """
     p[0] = p[2]
 
@@ -417,6 +423,7 @@ def p_stmt(p):
     """
     stmt : if_stmt
     stmt : for_stmt
+    stmt : for_in_stmt
     stmt : while_stmt
     stmt : assignment_stmt
     stmt : function_definition_stmt
@@ -441,14 +448,14 @@ def p_block(p):
 
 def p_block_2(p):
     """
-    block : LBRACE NEWLINE stmt_list RBRACE
+    block : LBRACE newline stmt_list RBRACE
     """
     p[0] = p[3]
 
 
 def p_block_3(p):
     """
-    block : LBRACE NEWLINE RBRACE
+    block : LBRACE newline RBRACE
     block : LBRACE RBRACE
     """
     p[0] = []
@@ -462,18 +469,25 @@ def p_if_stmt(p):
     p[0] = IfStatement(p[3], p[5], p[7] if len(p) == 8 else [], p=p)
 
 
-def p_for_stmt_1(p):
+def p_for_stmt(p):
     """
-    for_stmt : FOR LPAREN ATOM IN expr RPAREN block
+    for_stmt : FOR LPAREN assignment_stmt SEMICOLON expr SEMICOLON assignment_stmt RPAREN block
     """
-    p[0] = ForStatement(p[3], p[5], p[7], p=p)
+    p[0] = ForStatement(p[3], p[5], p[7], p[9])
 
 
-def p_for_stmt_2(p):
+def p_for_in_stmt_1(p):
     """
-    for_stmt : FOR LPAREN ATOM COMMA ATOM IN expr RPAREN block
+    for_in_stmt : FOR LPAREN ATOM IN expr RPAREN block
     """
-    p[0] = ForStatement((p[3], p[5]), p[7], p[9], p=p)
+    p[0] = ForInStatement(p[3], p[5], p[7], p=p)
+
+
+def p_for_in_stmt_2(p):
+    """
+    for_in_stmt : FOR LPAREN ATOM COMMA ATOM IN expr RPAREN block
+    """
+    p[0] = ForInStatement((p[3], p[5]), p[7], p[9], p=p)
 
 
 def p_while_stmt(p):
@@ -514,14 +528,14 @@ def p_function_definition_stmt_2(p):
 
 def p_function_definition_stmt_3(p):
     """
-    function_definition_stmt : FUNCTION ATOM LPAREN RPAREN NEWLINE block
+    function_definition_stmt : FUNCTION ATOM LPAREN RPAREN newline block
     """
     p[0] = FunctionDefinition(p[2], [], p[6], p=p)
 
 
 def p_function_definition_stmt_4(p):
     """
-    function_definition_stmt : FUNCTION ATOM LPAREN function_argument_list RPAREN NEWLINE block
+    function_definition_stmt : FUNCTION ATOM LPAREN function_argument_list RPAREN newline block
     """
     p[0] = FunctionDefinition(p[2], p[4], p[7], p=p)
 
@@ -629,7 +643,7 @@ def p_array_literal(p):
 def p_dict_literal_1(p):
     """
     dict_literal : LBRACE RBRACE
-    dict_literal : LBRACE NEWLINE RBRACE
+    dict_literal : LBRACE newline RBRACE
     """
     p[0] = Literal(dict(), dict)
 
@@ -662,8 +676,8 @@ def p_dict_pair_1(p):
 
 def p_dict_pair_2(p):
     """
-    dict_pair : NEWLINE expr COLON expr
-    dict_pair : NEWLINE expr COLON expr NEWLINE
+    dict_pair : newline expr COLON expr
+    dict_pair : newline expr COLON expr newline
     """
     p[0] = (p[2], p[4])
 
@@ -722,7 +736,7 @@ def p_anon_function_expr_1(p):
 
 def p_anon_function_expr_2(p):
     """
-    anon_function_expr : FUNCTION LPAREN RPAREN NEWLINE block
+    anon_function_expr : FUNCTION LPAREN RPAREN newline block
     """
     p[0] = AnonymousFunction([], p[5], p=p)
 
@@ -736,7 +750,7 @@ def p_anon_function_expr_3(p):
 
 def p_anon_function_expr_4(p):
     """
-    anon_function_expr : FUNCTION LPAREN function_argument_list RPAREN NEWLINE block
+    anon_function_expr : FUNCTION LPAREN function_argument_list RPAREN newline block
     """
     p[0] = AnonymousFunction(p[3], p[6], p=p)
 
@@ -920,6 +934,13 @@ def p_shell(p):
     p[0] = ShellEscape(p[2] if len(p) > 2 else [])
 
 
+def p_newline(p):
+    """
+    newline : NEWLINE
+    newline : SEMICOLON
+    """
+
+
 def p_error(p):
     if parser.recover_errors:
         if p is None:
@@ -938,7 +959,7 @@ def p_error(p):
 
 
 lexer = lex.lex()
-parser = yacc.yacc(debug=False, optimize=True, write_tables=False)
+parser = yacc.yacc(debug=True, optimize=True, write_tables=False)
 
 
 def parse(s, filename, recover_errors=False):
@@ -1047,6 +1068,14 @@ def unparse(token, indent=0, oneliner=False):
         ))
 
     if isinstance(token, ForStatement):
+        return ind('for ({0}; {1}; {2}) {{{3}}}'.format(
+            unparse(token.stmt1),
+            unparse(token.expr),
+            unparse(token.stmt2),
+            format_block(token.body)
+        ))
+
+    if isinstance(token, ForInStatement):
         return ind('for ({0} in {1}) {{{2}}}'.format(
             token.var,
             unparse(token.expr),

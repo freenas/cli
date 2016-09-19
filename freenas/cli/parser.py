@@ -355,7 +355,8 @@ def t_NEWLINE(t):
 
 
 def t_SEMICOLON(t):
-    r'[;]+'
+    r'[;]+[\n]?'
+    t.lexer.lineno += t.value.count('\n')
     return t
 
 
@@ -942,6 +943,13 @@ def p_newline(p):
 
 
 def p_error(p):
+    def find_column(input, lexpos):
+        last_cr = input.rfind('\n', 0, lexpos)
+        if last_cr < 0:
+            last_cr = 0
+        column = (lexpos - last_cr) + 1
+        return column
+
     if parser.recover_errors:
         if p is None:
             e = yacc.YaccSymbol()
@@ -955,7 +963,8 @@ def p_error(p):
         if not p:
             raise SyntaxError("Parse error")
 
-        raise SyntaxError("Invalid token '{0}' at line {1}, column {2}".format(p.value, p.lineno, p.lexpos))
+        column = find_column(parser.input, p.lexpos)
+        raise SyntaxError("Invalid token '{0}' at line {1}, column {2}".format(p.value, p.lineno, column))
 
 
 lexer = lex.lex()
@@ -966,6 +975,7 @@ def parse(s, filename, recover_errors=False):
     lexer.lineno = 1
     lexer.parens = 0
     lexer.breaknl = False
+    parser.input = s
     parser.filename = filename
     parser.recover_errors = recover_errors
     return parser.parse(s, lexer=lexer, tracking=True)

@@ -425,7 +425,18 @@ class ItemNamespace(Namespace):
             return value
 
         def complete(self, context, **kwargs):
-            return [EnumComplete(0, [p.name for p in self.parent.property_mappings])]
+            if 'kwargs' in kwargs:
+                ns = self.parent
+                kwargs = collections.OrderedDict(kwargs)
+                mappings = map(lambda i: (self.parent.get_mapping(i[0]), i[1]), kwargs['kwargs'].items())
+
+                for prop, v in sorted(mappings, key=lambda i: i[0].index):
+                    with contextlib.suppress(BaseException):
+                        prop.do_set(ns.entity, v)
+
+                return [EnumComplete(0, [x.name for x in self.parent.property_mappings if x.can_set(ns.entity)])]
+
+            return []
 
     @description("Sets single <entity> property")
     class SetEntityCommand(Command):
@@ -482,7 +493,18 @@ class ItemNamespace(Namespace):
             self.parent.save()
 
         def complete(self, context, **kwargs):
-            return [create_completer(x) for x in self.parent.property_mappings if x.set]
+            if 'kwargs' in kwargs:
+                ns = self.parent
+                kwargs = collections.OrderedDict(kwargs)
+                mappings = map(lambda i: (self.parent.get_mapping(i[0]), i[1]), kwargs['kwargs'].items())
+
+                for prop, v in sorted(mappings, key=lambda i: i[0].index):
+                    with contextlib.suppress(BaseException):
+                        prop.do_set(ns.entity, v)
+
+                return [create_completer(x) for x in self.parent.property_mappings if x.can_set(ns.entity)]
+
+            return []
 
     @description("Opens an editor for a single <entity> string property")
     class EditEntityCommand(Command):
@@ -516,7 +538,18 @@ class ItemNamespace(Namespace):
             self.parent.save()
 
         def complete(self, context, **kwargs):
-            return [EnumComplete(0, [p.name for p in self.parent.property_mappings])]
+            if 'kwargs' in kwargs:
+                ns = self.parent
+                kwargs = collections.OrderedDict(kwargs)
+                mappings = map(lambda i: (self.parent.get_mapping(i[0]), i[1]), kwargs['kwargs'].items())
+
+                for prop, v in sorted(mappings, key=lambda i: i[0].index):
+                    with contextlib.suppress(BaseException):
+                        prop.do_set(ns.entity, v)
+
+                return [EnumComplete(0, [x.name for x in self.parent.property_mappings if x.can_set(ns.entity)])]
+
+            return []
 
     @description("Deletes single entity")
     class DeleteEntityCommand(Command):

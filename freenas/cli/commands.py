@@ -1098,6 +1098,24 @@ class WCommand(Command):
         ])
 
 
+class TimeCommand(Command):
+    """
+    Usage: time "<code>"
+
+    Measures execution time of <code>
+    """
+    def run(self, context, args, kwargs, opargs):
+        if len(args) < 1:
+            raise CommandException("Provide code fragment to evaluate")
+
+        start = datetime.now()
+        result = context.eval(parse(args[0], '<time>'))
+        end = datetime.now()
+        msg = "Execution time: {0} seconds".format((end - start).total_seconds())
+
+        return Sequence(*(result + [msg]))
+
+
 @description("Scroll through long output")
 class MorePipeCommand(PipeCommand):
     """

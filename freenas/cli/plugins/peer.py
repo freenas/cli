@@ -295,6 +295,21 @@ class FreeNASPeerNamespace(BasePeerNamespace):
     """
     def __init__(self, name, context):
         super(FreeNASPeerNamespace, self).__init__(name, 'freenas', context)
+        self.allow_edit = False
+
+        self.entity_localdoc['DeleteEntityCommand'] = ("""\
+            Usage: delete
+
+            Deletes the specified FreeNAS peer.""")
+        self.localdoc['ListCommand'] = ("""\
+            Usage: show
+
+            Lists all FreeNAS peers. Optionally, filter or sort by property.
+            Use 'help properties' to list available properties.
+
+            Examples:
+                show
+                show | search name == foo""")
 
         self.add_property(
             descr='Port',
@@ -302,6 +317,7 @@ class FreeNASPeerNamespace(BasePeerNamespace):
             get='credentials.port',
             list=False,
             type=ValueType.NUMBER,
+            usersetable=False,
             usage=_('SSH port used to reach a FreeNAS peer.')
         )
 
@@ -310,6 +326,7 @@ class FreeNASPeerNamespace(BasePeerNamespace):
             name='pubkey',
             get='credentials.pubkey',
             list=False,
+            usersetable=False,
             usage=_('Public SSH key of a FreeNAS peer.')
         )
 
@@ -318,6 +335,7 @@ class FreeNASPeerNamespace(BasePeerNamespace):
             name='hostkey',
             get='credentials.hostkey',
             list=False,
+            usersetable=False,
             usage=_('SSH host key of a FreeNAS peer.')
         )
 
@@ -350,6 +368,37 @@ class SSHPeerNamespace(BasePeerNamespace):
     """
     def __init__(self, name, context):
         super(SSHPeerNamespace, self).__init__(name, 'ssh', context)
+
+        self.localdoc['CreateEntityCommand'] = ("""\
+            Usage: create name=<name> address=<address> username=<username>
+                   password=<password> port=<port> privkey=<privkey> hostkey=<hostkey>
+
+            Examples: create name=mypeer address=anotherhost.local username=myuser
+                             password=secret
+                      create name=mypeer address=192.168.0.105 username=myuser
+                             hostkey="hostkey" privkey="privkey"
+
+            Creates a SSH peer. For a list of properties, see 'help properties'.""")
+        self.entity_localdoc['SetEntityCommand'] = ("""\
+            Usage: set <property>=<value> ...
+
+            Examples: set password=new_secret
+                      set username=new_user
+
+            Sets a SSH peer property. For a list of properties, see 'help properties'.""")
+        self.entity_localdoc['DeleteEntityCommand'] = ("""\
+            Usage: delete
+
+            Deletes the specified SSH peer.""")
+        self.localdoc['ListCommand'] = ("""\
+            Usage: show
+
+            Lists all SSH peers. Optionally, filter or sort by property.
+            Use 'help properties' to list available properties.
+
+            Examples:
+                show
+                show | search name == foo""")
 
         self.add_property(
             descr='Peer address',
@@ -407,6 +456,37 @@ class AmazonS3Namespace(BasePeerNamespace):
     """
     def __init__(self, name, context):
         super(AmazonS3Namespace, self).__init__(name, 'amazon-s3', context)
+
+        self.localdoc['CreateEntityCommand'] = ("""\
+            Usage: create name=<name> address=<address> username=<username>
+                   password=<password> port=<port> privkey=<privkey> hostkey=<hostkey>
+
+            Examples: create name=mypeer access_key=my_access_key
+                             secret_key=my_secret_key bucket=my_bucket region=my_region
+                             folder=my_folder
+
+            Creates a Amazon S3 peer. For a list of properties, see 'help properties'.""")
+        self.entity_localdoc['SetEntityCommand'] = ("""\
+            Usage: set <property>=<value> ...
+
+            Examples: set bucket=new_bucket
+                      set access_key=new_access_key
+
+            Sets a Amazon S3 peer property.
+            For a list of properties, see 'help properties'.""")
+        self.entity_localdoc['DeleteEntityCommand'] = ("""\
+            Usage: delete
+
+            Deletes the specified SSH peer.""")
+        self.localdoc['ListCommand'] = ("""\
+            Usage: show
+
+            Lists all Amazon S3 peers. Optionally, filter or sort by property.
+            Use 'help properties' to list available properties.
+
+            Examples:
+                show
+                show | search name == foo""")
 
         self.add_property(
             descr='Access key',

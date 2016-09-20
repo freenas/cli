@@ -1266,7 +1266,8 @@ class EntitySubscriberBasedLoadMixin(object):
         self.context.entity_subscribers[self.entity_subscriber_name].wait_ready()
         return copy.deepcopy(self.context.entity_subscribers[self.entity_subscriber_name].query(
             (self.primary_key_name, '=', name), *self.extra_query_params,
-            single=True
+            single=True,
+            timeout=5
         ))
 
 

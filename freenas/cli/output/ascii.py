@@ -149,7 +149,11 @@ class AsciiOutputFormatter(object):
 
     @staticmethod
     def output_list(data, label, vt=ValueType.STRING, **kwargs):
-        sys.stdout.write(AsciiOutputFormatter.columnize(data))
+        ret = data
+        for d in data:
+            if isinstance(d, Table):
+                ret = [str(type(dd)) for dd in data]
+        sys.stdout.write(AsciiOutputFormatter.columnize(ret))
         sys.stdout.flush()
 
     @staticmethod

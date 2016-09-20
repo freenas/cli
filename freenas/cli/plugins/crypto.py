@@ -28,6 +28,7 @@
 
 
 import gettext
+from pathlib import PurePath, Path
 from freenas.cli.namespace import (
     Command, Namespace, EntityNamespace, TaskBasedSaveMixin,
     EntitySubscriberBasedLoadMixin, description, CommandException
@@ -353,6 +354,9 @@ class CertificateAuthorityNamespace(CertificateBaseNamespace):
     def __init__(self, name, context):
         super(CertificateAuthorityNamespace, self).__init__(name, context)
 
+        self.entity_commands = lambda this: {
+            'export': ExportCertificateCommand(this)
+        }
         self.extra_query_params = [
             ('type', 'in', ('CA_EXISTING', 'CA_INTERMEDIATE', 'CA_INTERNAL'))
         ]
@@ -494,6 +498,9 @@ class CertificateNamespace(CertificateBaseNamespace):
     def __init__(self, name, context):
         super(CertificateNamespace, self).__init__(name, context)
 
+        self.entity_commands = lambda this: {
+            'export': ExportCertificateCommand(this)
+        }
         self.extra_query_params = [
             ('type', 'in', ('CERT_INTERNAL', 'CERT_CSR', 'CERT_INTERMEDIATE', 'CERT_EXISTING'))
         ]
@@ -613,6 +620,42 @@ class ImportCertificateCommand(Command):
             NullComplete('privatekey_path='),
         ]
 
+@description("Exports Certificate/CA")
+class ExportCertificateCommand(Command):
+    """
+    Exports a Certificate / CA and a related privatekey to a user specified location.
+    Name of the certificate and privatekey files will be the same as certificate name,
+    with suffixes '.crt' and '.key' respectively
+
+    Usage:
+        export path=/abs/path/to/target/dir
+
+    Examples:
+        /crypto certificate mycert export path=/mnt/mypool/myexported_certs/
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        if not kwargs:
+            raise CommandException(_("Export requires more arguments. For help see 'help export'"))
+        if 'path' not in kwargs:
+            raise CommandException(_("Please specify path where the certificate should be exported. "
+                                     "For help see 'help import'"))
+        if self.parent.entity['certificate']:
+            p = Path(PurePath(kwargs['path']).joinpath(self.parent.entity['name']).with_suffix('.crt'))
+            with p.open('w') as f:
+                f.writelines(self.parent.entity['certificate'])
+        if self.parent.entity['privatekey']:
+            p = Path(PurePath(kwargs['path']).joinpath(self.parent.entity['name']).with_suffix('.key'))
+            with p.open('w') as f:
+                f.writelines(self.parent.entity['privatekey'])
+
+
+    def complete(self, context, **kwargs):
+        return [
+            NullComplete('path='),
+        ]
 
 def _init(context):
     context.attach_namespace('/', CryptoNamespace('crypto', context))

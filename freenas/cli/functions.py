@@ -241,7 +241,7 @@ def re_search(regex, text):
 
 
 def waitfor(promise):
-    promise.wait()
+    return promise.wait()
 
 
 functions = {

@@ -130,6 +130,9 @@ class Command(object):
         self.exec_path = None
         self.current_env = None
 
+    def __str__(self):
+        return '<command>'
+
     def run(self, context, args, kwargs, opargs):
         raise NotImplementedError()
 
@@ -137,7 +140,7 @@ class Command(object):
         return []
 
     def convert_exec_path_to_strings(self):
-        return [e.name if isinstance(e,Namespace) else e for e in self.exec_path]
+        return [e.name if isinstance(e, Namespace) else e for e in self.exec_path]
 
     def get_relative_namespace(self, context):
         tokens = self.convert_exec_path_to_strings() if self.exec_path and self.exec_path[-1] != self.cwd else []

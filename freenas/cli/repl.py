@@ -258,7 +258,7 @@ class VariableStore(object):
             'tasks_blocking': self.Variable(False, ValueType.BOOLEAN),
             'show_events': self.Variable(True, ValueType.BOOLEAN),
             'debug': self.Variable(False, ValueType.BOOLEAN),
-            'abort_on_errors': self.Variable(True, ValueType.BOOLEAN),
+            'abort_on_errors': self.Variable(False, ValueType.BOOLEAN),
             'output': self.Variable(None, ValueType.STRING),
             'verbosity': self.Variable(1, ValueType.NUMBER),
             'vm.console_interrupt': self.Variable(r'\035', ValueType.STRING),

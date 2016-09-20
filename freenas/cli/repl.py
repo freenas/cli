@@ -275,7 +275,7 @@ class VariableStore(object):
             'tasks_blocking': _('Toggle tasks blocking console output. Can be set to yes or no.'),
             'show_events': _('Toggle displaying of events. Can be set to yes or no.'),
             'debug': _('Toggle display of debug messages. Can be set to yes or no.'),
-            'abort_on_errors': _('Can be set to yes or no. When set to yes, command execution will abort on syntax or command errors.'),
+            'abort_on_errors': _('Can be set to yes or no. When set to yes, command execution will abort on command errors.'),
             'output': _('Either send all output to specified file or set to \'none\' to display output on the console.'),
             'verbosity': _('Increasing verbosity of event messages. Can be set from 1 to 5.'),
             'vm.console_interrupt': _(r'Set the console interrupt key sequence for virtual machines with support for octal characters of the form \nnn. Default is ^] or octal 035.'),

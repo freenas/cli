@@ -302,13 +302,33 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
         self.update_task = 'replication.update'
         self.delete_task = 'replication.delete'
 
+        self.entity_localdoc['SetEntityCommand'] = ("""\
+            Usage: set <property>=<value> ...
+
+            Examples: set bidirectional=yes
+                      set throttle=1M
+                      set encrypt=AES256
+                      set datasets=mypool1,mypool2/dataset1
+
+            Sets a replication property. For a list of properties, see 'help properties'.""")
+
+        self.localdoc['ListCommand'] = ("""\
+            Usage: show
+
+            Lists all replications. Optionally, filter or sort by property.
+            Use 'help properties' to list available properties.
+
+            Examples:
+                show
+                show | search name == foo""")
+
         self.entity_localdoc['DeleteEntityCommand'] = ("""\
             Usage: delete scrub=<scrub>
 
             Examples: delete
                       delete scrub=yes
 
-             Delete current entity. Scrub allows to delete related datasets at slave side.""")
+            Delete current entity. Scrub allows to delete related datasets at slave side.""")
 
         self.skeleton_entity = {
             'bidirectional': False,

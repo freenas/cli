@@ -120,11 +120,42 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
         self.entity_subscriber_name = 'docker.container'
         self.create_task = 'docker.container.create'
         self.delete_task = 'docker.container.delete'
+        self.allow_edit = False
         self.primary_key_name = 'names.0'
         self.required_props = ['name', 'image']
         self.skeleton_entity = {
             'command': []
         }
+        self.localdoc['CreateEntityCommand'] = ("""\
+            Usage: create <name> image=<image> command=<command> environment=<environment>
+                          hostname=<hostname> host=<host> ports=<ports>
+                          expose_ports=<expose_ports> autostart=<autostart>
+                          interactive=<interactive> volumes=<volumes>
+
+            Examples: create my_ubuntu_container image=ubuntu:latest interactive=yes
+                      create my_container image=dockerhub_image_name
+                             host=docker_host_vm_name hostname=container_hostname
+                      create my_container image=dockerhub_image_name autostart=yes
+                      create my_container image=dockerhub_image_name
+                             ports="8443:8443","25565:25565/TCP","1234:12356/UDP"
+                             expose_ports=yes
+                      create my_container image=dockerhub_image_name
+                             volumes="/container/directory:/host/my_pool/container_data"
+
+            Creates a Docker container. For a list of properties, see 'help properties'.""")
+        self.entity_localdoc['DeleteEntityCommand'] = ("""\
+            Usage: delete
+
+            Deletes the specified Docker container.""")
+        self.localdoc['ListCommand'] = ("""\
+            Usage: show
+
+            Lists all Docker containers. Optionally, filter or sort by property.
+            Use 'help properties' to list available properties.
+
+            Examples:
+                show
+                show | search name == foo""")
 
         def get_ports(o):
             return ['{0}:{1}/{2}'.format(i['container_port'], i['host_port'], i['protocol']) for i in o['ports']]
@@ -308,6 +339,19 @@ class DockerImageNamespace(EntitySubscriberBasedLoadMixin, DockerUtilsMixin, Ent
         self.primary_key_name = 'names.0'
         self.allow_create = False
         self.allow_edit = False
+        self.entity_localdoc['DeleteEntityCommand'] = ("""\
+            Usage: delete
+
+            Deletes the specified Docker container image.""")
+        self.localdoc['ListCommand'] = ("""\
+            Usage: show
+
+            Lists all Docker container images. Optionally, filter or sort by property.
+            Use 'help properties' to list available properties.
+
+            Examples:
+                show
+                show | search name == foo""")
 
         self.add_property(
             descr='Name',

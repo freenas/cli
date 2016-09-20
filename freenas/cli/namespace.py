@@ -81,6 +81,9 @@ class Namespace(object):
         self.required_props = None
         self.extra_required_props = None
 
+    def __str__(self):
+        return '<namespace "{0}">'.format(self.get_name())
+
     def help(self):
         pass
 
@@ -179,7 +182,6 @@ class FilteringCommand(Command):
 
 
 class PipeCommand(Command):
-
     def __init__(self):
         self.must_be_last = False
 

@@ -252,9 +252,10 @@ class PrintableNone(object):
 
 
 class TaskPromise(object):
-    def __init__(self, context, tid):
+    def __init__(self, context, tid, result=None):
         self.context = context
         self.tid = tid
+        self.result = result
 
     def __str__(self):
         task = self.context.entity_subscribers['task'].get(self.tid, timeout=5)
@@ -264,7 +265,13 @@ class TaskPromise(object):
         return "<Task #{0}: {1}>".format(self.tid, task['state'])
 
     def wait(self):
+        task = self.context.entity_subscribers['task'].get(self.tid, timeout=5)
+        if task['state'] in ('FINISHED', 'FAILED', 'ABORTED'):
+            return self.result
+
         generator = self.context.entity_subscribers['task'].listen(self.tid)
         for op, old, new in generator:
             if new['state'] in ('FINISHED', 'FAILED', 'ABORTED'):
                 break
+
+        return self.result

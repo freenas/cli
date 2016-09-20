@@ -30,7 +30,7 @@ from freenas.cli.output import ValueType, Object
 from freenas.cli.descriptions import tasks
 from freenas.cli.namespace import EntityNamespace, EntitySubscriberBasedLoadMixin, Command, BaseListCommand, description
 from freenas.cli.complete import NullComplete
-from freenas.cli.utils import describe_task_state
+from freenas.cli.utils import TaskPromise, describe_task_state
 from freenas.utils.query import get
 
 
@@ -50,7 +50,8 @@ class SubmitCommand(Command):
     """
     def run(self, context, args, kwargs, opargs):
         name = args.pop(0)
-        context.submit_task(name, *args)
+        tid = context.submit_task(name, *args)
+        return TaskPromise(context, tid)
 
 
 @description("Aborts running task")

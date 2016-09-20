@@ -771,7 +771,6 @@ class Context(object):
 
         if not self.variables.get('tasks_blocking'):
             tid = self.submit_task_common_routine(name, callback, *args)
-            output_msg(_("Task #{0} submitted".format(tid)))
             return tid
         else:
             # lets set the SIGTSTP (Ctrl+Z) handler

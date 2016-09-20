@@ -249,3 +249,22 @@ class PrintableNone(object):
             return None
 
         return value
+
+
+class TaskPromise(object):
+    def __init__(self, context, tid):
+        self.context = context
+        self.tid = tid
+
+    def __str__(self):
+        task = self.context.entity_subscribers['task'].get(self.tid, timeout=5)
+        if not task:
+            return "<Unknown task #{0}>".format(self.tid)
+
+        return "<Task #{0}: {1}>".format(self.tid, task['state'])
+
+    def wait(self):
+        generator = self.context.entity_subscribers['task'].listen(self.tid)
+        for op, old, new in generator:
+            if new['state'] in ('FINISHED', 'FAILED', 'ABORTED'):
+                break

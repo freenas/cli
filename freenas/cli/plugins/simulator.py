@@ -159,17 +159,18 @@ class DisksNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
 
     def save(self, this, new=False):
         if new:
-            self.context.submit_task(
+            return self.context.submit_task(
                 self.create_task,
                 this.entity,
-                callback=lambda s, t: self.post_save(this, s, t, new))
-            return
+                callback=lambda s, t: self.post_save(this, s, t, new)
+            )
 
-        self.context.submit_task(
+        return self.context.submit_task(
             self.update_task,
             this.orig_entity[self.save_key_name],
             this.get_diff(),
-            callback=lambda s, t: self.post_save(this, s, t, new))
+            callback=lambda s, t: self.post_save(this, s, t, new)
+        )
 
     def post_save(self, this, status, task, new):
         service_name = 'simulator'

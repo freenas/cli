@@ -30,6 +30,7 @@ from freenas.cli.namespace import (
     EntityNamespace, Command, EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, description
 )
 from freenas.cli.output import ValueType
+from freenas.cli.utils import TaskPromise
 
 
 t = gettext.translation('freenas-cli', fallback=True)
@@ -62,7 +63,8 @@ class SendAlertCommand(Command):
     Usage: send <message> [priority=INFO|WARNING|CRITICAL]
     """
     def run(self, context, args, kwargs, opargs):
-        context.submit_task('alert.send', args[0], kwargs.get('priority'))
+        tid = context.submit_task('alert.send', args[0], kwargs.get('priority'))
+        return TaskPromise(context, tid)
 
 
 @description("Set predicates for alert filter")

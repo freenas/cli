@@ -25,13 +25,13 @@
 #
 #####################################################################
 
-
 import gettext
 import copy
 import inspect
 from datetime import datetime
 from freenas.cli.namespace import ConfigNamespace, Command, description, CommandException
 from freenas.cli.output import output_msg, ValueType, Table, read_value
+from freenas.cli.utils import TaskPromise
 
 
 t = gettext.translation('freenas-cli', fallback=True)
@@ -143,7 +143,8 @@ class DownloadNowCommand(Command):
     """
 
     def run(self, context, args, kwargs, opargs):
-        return context.submit_task('update.download')
+        tid = context.submit_task('update.download')
+        return TaskPromise(context, tid)
 
 
 @description("Updates the system and reboots it (can be specified)")
@@ -164,7 +165,7 @@ class UpdateNowCommand(Command):
         self.context = None
 
     def task_callback(self, task_state, task_data):
-        if task_state in ('FINISHED') and task_data["result"]:
+        if task_state == 'FINISHED' and task_data["result"]:
             if self.reboot:
                 output_msg(_(
                     "Updates Downloaded and Installed Successfully."
@@ -188,6 +189,8 @@ class UpdateNowCommand(Command):
             self.reboot,
             callback=self.task_callback
         )
+
+        return TaskPromise(context, self.task_id)
 
 
 @description("Configure system updates")

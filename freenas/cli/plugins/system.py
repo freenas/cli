@@ -31,7 +31,7 @@ from freenas.cli.namespace import (
 )
 from freenas.cli.output import Object, Sequence, ValueType, format_value
 from freenas.cli.descriptions import events
-from freenas.cli.utils import post_save, parse_timedelta
+from freenas.cli.utils import TaskPromise, post_save, parse_timedelta
 import gettext
 
 t = gettext.translation('freenas-cli', fallback=True)
@@ -248,7 +248,9 @@ class SystemDatasetImportCommand(Command):
         vol = kwargs.get('volume', None)
         if not vol:
             raise CommandException(_('Please specify a volume name'))
-        context.submit_task('system_dataset.import', vol, callback=lambda s: post_save(self.parent, s))
+
+        tid = context.submit_task('system_dataset.import', vol, callback=lambda s: post_save(self.parent, s))
+        return TaskPromise(context, tid)
 
 
 @description("Time namespace")
@@ -602,11 +604,12 @@ class SystemDatasetNamespace(ConfigNamespace):
         }
 
     def save(self):
-        self.context.submit_task(
+        return self.context.submit_task(
             'system_dataset.migrate',
             self.entity['pool'],
             callback=lambda s, t: post_save(self, s, t)
         )
+
 
 @description("View event history")
 class EventsNamespace(RpcBasedLoadMixin, EntityNamespace):

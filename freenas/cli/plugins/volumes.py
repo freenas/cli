@@ -34,7 +34,7 @@ from freenas.cli.namespace import (
 )
 from freenas.cli.complete import NullComplete, EnumComplete, EntitySubscriberComplete
 from freenas.cli.output import Table, ValueType, output_tree, format_value, read_value, Sequence
-from freenas.cli.utils import post_save, iterate_vdevs, to_list, correct_disk_path
+from freenas.cli.utils import TaskPromise, post_save, iterate_vdevs, to_list, correct_disk_path
 from freenas.utils import first_or_default, extend
 
 
@@ -254,12 +254,15 @@ class OfflineVdevCommand(Command):
 
         if guid is None:
             raise CommandException(_("Disk {0} is not part of the volume.".format(disk)))
-        context.submit_task(
+
+        tid = context.submit_task(
             'volume.vdev.offline',
             self.parent.entity['id'],
             guid,
             callback=lambda s, t: post_save(self.parent, s, t)
         )
+
+        return TaskPromise(context, tid)
 
 
 @description("Onlines a disk in a volume")
@@ -291,12 +294,15 @@ class OnlineVdevCommand(Command):
 
         if guid is None:
             raise CommandException(_("Disk {0} is not part of the volume.".format(disk)))
-        context.submit_task(
+
+        tid = context.submit_task(
             'volume.vdev.online',
             self.parent.entity['id'],
             guid,
             callback=lambda s, t: post_save(self.parent, s, t)
         )
+
+        return TaskPromise(context, tid)
 
 
 @description("Finds volumes available to import")
@@ -376,7 +382,8 @@ class ImportVolumeCommand(Command):
                 id = vol['id']
                 oldname = vol['name']
 
-        context.submit_task('volume.import', id, kwargs.get('newname', oldname), {}, encryption, password)
+        tid = context.submit_task('volume.import', id, kwargs.get('newname', oldname), {}, encryption, password)
+        return TaskPromise(context, tid)
 
 
 @description("Imports items from a given volume")
@@ -398,7 +405,8 @@ class ImportFromVolumeCommand(Command):
         if scope not in ['all', 'vms', 'shares', 'system']:
             raise CommandException('Import scope must be one of all \ vms \ shares \ system')
 
-        context.submit_task('volume.autoimport', self.parent.entity['id'], scope)
+        tid = context.submit_task('volume.autoimport', self.parent.entity['id'], scope)
+        return TaskPromise(context, tid)
 
 
 @description("Detaches given volume")
@@ -432,7 +440,8 @@ class UpgradeVolumeCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        context.submit_task('volume.upgrade', self.parent.name)
+        tid = context.submit_task('volume.upgrade', self.parent.name)
+        return TaskPromise(context, tid)
 
 
 @description("Unlocks encrypted volume")
@@ -456,7 +465,8 @@ class UnlockVolumeCommand(Command):
             raise CommandException('Volume is already fully unlocked')
         password = self.parent.password
         name = self.parent.entity['id']
-        context.submit_task('volume.unlock', name, password, callback=lambda s, t: post_save(self.parent, s, t))
+        tid = context.submit_task('volume.unlock', name, password, callback=lambda s, t: post_save(self.parent, s, t))
+        return TaskPromise(context, tid)
 
 
 @description("Locks encrypted volume")
@@ -475,7 +485,8 @@ class LockVolumeCommand(Command):
         if self.parent.entity.get('providers_presence', 'NONE') == 'NONE':
             raise CommandException('Volume is already fully locked')
         name = self.parent.entity['id']
-        context.submit_task('volume.lock', name, callback=lambda s, t: post_save(self.parent, s, t))
+        tid = context.submit_task('volume.lock', name, callback=lambda s, t: post_save(self.parent, s, t))
+        return TaskPromise(context, tid)
 
 
 @description("Generates new user key for encrypted volume")
@@ -502,7 +513,8 @@ class RekeyVolumeCommand(Command):
         password = kwargs.get('password', None)
         key_encrypted = read_value(kwargs.pop('key_encrypted', 'yes'), ValueType.BOOLEAN)
         name = self.parent.entity['id']
-        context.submit_task('volume.rekey', name, key_encrypted, password)
+        tid = context.submit_task('volume.rekey', name, key_encrypted, password)
+        return TaskPromise(context, tid)
 
     def complete(self, context, **kwargs):
         return [
@@ -583,7 +595,8 @@ class RestoreVolumeMasterKeyCommand(Command):
             raise CommandException('You must provide a password protecting a backup file')
 
         name = self.parent.entity['id']
-        context.submit_task('volume.keys.restore', name, password, path)
+        tid = context.submit_task('volume.keys.restore', name, password, path)
+        return TaskPromise(context, tid)
 
     def complete(self, context, **kwargs):
         return [
@@ -646,7 +659,8 @@ class ScrubCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        context.submit_task('volume.scrub', self.parent.entity['id'])
+        tid = context.submit_task('volume.scrub', self.parent.entity['id'])
+        return TaskPromise(context, tid)
 
 
 @description("Replicates dataset to another system")
@@ -750,7 +764,8 @@ class ReplicateCommand(Command):
             )
 
         else:
-            context.submit_task(*args)
+            tid = context.submit_task(*args)
+            return TaskPromise(context, tid)
 
 
 class OpenFilesCommand(Command):
@@ -783,12 +798,14 @@ class PeekCommand(Command):
         if not path:
             raise CommandException('You have to specify path to your mountpoint')
 
-        context.submit_task(
+        tid = context.submit_task(
             'volume.dataset.temporary.mount',
             self.parent.entity['id'],
             path,
             callback=lambda s, t: post_save(self.parent, s, t)
         )
+
+        return TaskPromise(context, tid)
 
     def complete(self, context, **kwargs):
         return [
@@ -809,11 +826,13 @@ class UnpeekCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        context.submit_task(
+        tid = context.submit_task(
             'volume.dataset.temporary.umount',
             self.parent.entity['id'],
             callback=lambda s, t: post_save(self.parent, s, t)
         )
+
+        return TaskPromise(context, tid)
 
 
 @description("Datasets")
@@ -1020,7 +1039,7 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
         self.entity_commands = self.get_entity_commands
 
     def delete(self, this, kwargs):
-        self.context.submit_task(
+        return self.context.submit_task(
             'volume.dataset.delete',
             this.entity['id']
         )
@@ -1031,14 +1050,13 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
             if len(newname.split('/')) < 2:
                 raise CommandException(_("Please specify name as a relative path starting from the dataset's parent volume."))
 
-            self.context.submit_task(
+            return self.context.submit_task(
                 'volume.dataset.create',
                 extend(this.entity, {'volume': self.parent.entity['id']}),
                 callback=lambda s, t: post_save(this, s, t)
             )
-            return
 
-        self.context.submit_task(
+        return self.context.submit_task(
             'volume.dataset.update',
             this.orig_entity['id'],
             this.get_diff(),
@@ -1081,11 +1099,13 @@ class RollbackCommand(Command):
 
     def run(self, context, args, kwargs, opargs):
         force = kwargs.get('force', False)
-        context.submit_task(
+        tid = context.submit_task(
             'volume.snapshot.rollback',
             self.parent.entity['id'],
             force
         )
+
+        return TaskPromise(context, tid)
 
     def complete(self, context, **kwargs):
         return [
@@ -1110,11 +1130,14 @@ class CloneCommand(Command):
         new_name = kwargs.get('new_name')
         if not new_name:
             raise CommandException('Name of clone have to be specified')
-        context.submit_task(
+
+        tid = context.submit_task(
             'volume.snapshot.clone',
             self.parent.entity['id'],
             new_name
         )
+
+        return TaskPromise(context, tid)
 
     def complete(self, context, **kwargs):
         return [
@@ -1209,12 +1232,11 @@ class SnapshotsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Ent
     def save(self, this, new=False, callback=None):
         if new:
             recursive = this.entity.pop('recursive', False)
-            self.context.submit_task(
+            return self.context.submit_task(
                 self.create_task,
                 this.entity, recursive,
                 callback=callback or (lambda s, t: post_save(this, s, t))
             )
-            return
 
         super(SnapshotsNamespace, self).save(this, new, callback)
 
@@ -1375,7 +1397,7 @@ class CreateVolumeCommand(Command):
                 if disks != 'auto' and len(disks) < DISKS_PER_TYPE[VOLUME_LAYOUTS[layout]]:
                     raise CommandException(_("Volume layout {0} requires at least {1} disks".format(layout, DISKS_PER_TYPE[VOLUME_LAYOUTS[layout]])))
 
-            context.submit_task(
+            tid = context.submit_task(
                 'volume.create_auto',
                 name,
                 'zfs',
@@ -1388,7 +1410,7 @@ class CreateVolumeCommand(Command):
                 auto_unlock
             )
 
-            return
+            return TaskPromise(context, tid)
         elif volume_type == 'custom':
             if not isinstance(kwargs.get('topology'), dict):
                 raise CommandException(_("Volume topology needs to be passed as 'topology' parameter"))
@@ -1436,11 +1458,13 @@ class CreateVolumeCommand(Command):
         ns.entity['password_encrypted'] = True if password else False
         ns.entity['auto_unlock'] = auto_unlock
 
-        context.submit_task(
+        tid = context.submit_task(
             self.parent.create_task,
             ns.entity,
             password,
             callback=lambda s, t: post_save(ns, s, t))
+
+        return TaskPromise(context, tid)
 
     def complete(self, context, **kwargs):
         return [
@@ -1704,14 +1728,13 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
 
     def save(self, this, new=False):
         if new:
-            self.context.submit_task(
+            return self.context.submit_task(
                 self.create_task,
                 this.entity,
                 this.password,
                 callback=lambda s, t: post_save(this, s, t))
-            return
 
-        self.context.submit_task(
+        return self.context.submit_task(
             self.update_task,
             this.orig_entity[self.save_key_name],
             this.get_diff(),

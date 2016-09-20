@@ -31,6 +31,7 @@ from freenas.cli.namespace import (
     EntityNamespace, Command, EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, description
 )
 from freenas.cli.output import ValueType
+from freenas.cli.utils import TaskPromise
 from freenas.utils import extend
 
 
@@ -280,7 +281,8 @@ class FormatDiskCommand(Command):
 
     def run(self, context, args, kwargs, opargs):
         fstype = kwargs.pop('fstype', 'freebsd-zfs')
-        context.submit_task('disk.format.gpt', self.parent.entity['id'], fstype)
+        tid = context.submit_task('disk.format.gpt', self.parent.entity['id'], fstype)
+        return TaskPromise(context, tid)
 
 
 @description("Erases all data on disk safely")
@@ -299,7 +301,8 @@ class EraseDiskCommand(Command):
 
     def run(self, context, args, kwargs, opargs):
         erase_data = str.upper(kwargs.pop('wipe', 'quick'))
-        context.submit_task('disk.erase', self.parent.entity['id'], erase_data)
+        tid = context.submit_task('disk.erase', self.parent.entity['id'], erase_data)
+        return TaskPromise(context, tid)
 
 
 def _init(context):

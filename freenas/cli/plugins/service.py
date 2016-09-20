@@ -31,7 +31,7 @@ from freenas.cli.namespace import (
     Command, NestedEntityMixin, description
 )
 from freenas.cli.output import ValueType
-from freenas.cli.utils import post_save
+from freenas.cli.utils import TaskPromise, post_save
 
 
 t = gettext.translation('freenas-cli', fallback=True)
@@ -57,12 +57,14 @@ class ServiceManageCommand(Command):
         return '{0}s service'.format(self.action.title())
 
     def run(self, context, args, kwargs, opargs):
-        context.submit_task(
+        tid = context.submit_task(
             'service.manage',
             self.parent.entity['id'],
             self.action,
             callback=lambda s, t: post_save(self.parent, s, t)
         )
+
+        return TaskPromise(context, tid)
 
 
 @description("Configure and manage services")

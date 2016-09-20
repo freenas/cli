@@ -34,8 +34,9 @@ from freenas.cli.namespace import (
 )
 from freenas.cli.complete import NullComplete, EnumComplete
 from freenas.cli.output import ValueType, read_value
-from freenas.cli.utils import post_save, parse_timedelta
+from freenas.cli.utils import TaskPromise, post_save, parse_timedelta
 from freenas.utils import query as q
+
 
 t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
@@ -55,12 +56,13 @@ class SyncCommand(Command):
 
     def run(self, context, args, kwargs, opargs):
         name = self.parent.entity['name']
-
-        context.submit_task(
+        tid = context.submit_task(
             'replication.sync',
             name,
             callback=lambda s, t: post_save(self.parent, s, t)
         )
+
+        return TaskPromise(context, tid)
 
 
 @description(_("Switch roles of partners in bi-directional replication"))
@@ -87,12 +89,14 @@ class SwitchCommand(Command):
                 master = partner
                 break
 
-        context.submit_task(
+        tid = context.submit_task(
             'replication.update',
             name,
             {'master': master},
             callback=lambda s, t: post_save(self.parent, s, t)
         )
+
+        return TaskPromise(context, tid)
 
 
 @description(_("Creates a replication link"))
@@ -257,11 +261,13 @@ class CreateReplicationCommand(Command):
         ns.entity['snapshot_lifetime'] = parse_timedelta(kwargs.get('snapshot_lifetime', 365 * 24 * 60 * 60)).seconds
         ns.entity['followdelete'] = kwargs.get('followdelete', False)
 
-        context.submit_task(
+        tid = context.submit_task(
             self.parent.create_task,
             ns.entity,
             callback=lambda s, t: post_save(ns, s, t)
         )
+
+        return TaskPromise(context, tid)
 
     def complete(self, context, **kwargs):
         return [
@@ -585,7 +591,7 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
         return commands
 
     def delete(self, this, kwargs):
-        self.context.submit_task(self.delete_task, this.entity[self.save_key_name], kwargs.get('scrub', False))
+        return self.context.submit_task(self.delete_task, this.entity[self.save_key_name], kwargs.get('scrub', False))
 
 
 def _init(context):

@@ -25,14 +25,13 @@
 #
 #####################################################################
 
-
 import gettext
 from freenas.cli.namespace import (
     Namespace, EntityNamespace, ConfigNamespace, Command, NestedObjectLoadMixin, NestedObjectSaveMixin,
     RpcBasedLoadMixin, EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, description, CommandException
 )
 from freenas.cli.output import ValueType
-from freenas.cli.utils import post_save, netmask_to_cidr
+from freenas.cli.utils import TaskPromise, post_save, netmask_to_cidr
 from freenas.utils.query import get
 
 
@@ -76,17 +75,19 @@ class InterfaceManageCommand(Command):
 
     def run(self, context, args, kwargs, opargs):
         if self.up:
-            context.submit_task(
+            tid = context.submit_task(
                 'network.interface.up',
                 self.parent.primary_key,
                 callback=lambda s, t: post_save(self.parent, s, t)
             )
         else:
-            context.submit_task(
+            tid = context.submit_task(
                 'network.interface.down',
                 self.parent.primary_key,
                 callback=lambda s, t: post_save(self.parent, s, t)
             )
+
+        return TaskPromise(context, tid)
 
 
 @description("Renew IP lease")
@@ -102,11 +103,13 @@ class InterfaceRenewCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        context.submit_task(
+        tid = context.submit_task(
             'network.interface.renew',
             self.parent.primary_key,
             callback=lambda s, t: post_save(self.parent, s, t)
         )
+
+        return TaskPromise(context, tid)
 
 
 @description("Configure virtual interfaces")
@@ -933,7 +936,7 @@ class IPMINamespace(RpcBasedLoadMixin, EntityNamespace):
     def save(self, this, new=False):
         assert not new
 
-        self.context.submit_task(
+        return self.context.submit_task(
             'ipmi.update',
             this.entity['channel'],
             this.get_diff(),

@@ -186,8 +186,6 @@ class NTPServersNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
 
         self.primary_key = self.get_mapping('name')
 
-    def delete(self, this, kwargs):
-        self.context.submit_task('ntp_server.delete', this.entity['id'])
 
 def _init(context):
     context.attach_namespace('/', NTPServersNamespace('ntp', context))

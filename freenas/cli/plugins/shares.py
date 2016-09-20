@@ -33,7 +33,7 @@ from freenas.cli.namespace import (
     CommandException, ListCommand
 )
 from freenas.cli.output import ValueType, Table
-from freenas.cli.utils import post_save
+from freenas.cli.utils import TaskPromise, post_save
 from freenas.utils import first_or_default
 from freenas.utils.query import get
 
@@ -61,7 +61,8 @@ class KillConnectionCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        context.submit_task('share.terminate_connection', self.parent.type_name, args[0])
+        tid = context.submit_task('share.terminate_connection', self.parent.type_name, args[0])
+        return TaskPromise(context, tid)
 
 
 class ImportShareCommand(Command):
@@ -83,13 +84,15 @@ class ImportShareCommand(Command):
         if not path:
             raise CommandException(_("Please specify a valid path to your share."))
 
-        context.submit_task(
+        tid = context.submit_task(
             'share.import',
             path,
             name,
             self.parent.type_name.lower(),
             callback=lambda s, t: post_save(self.parent, s, t)
         )
+
+        return TaskPromise(context, tid)
 
 
 @description("Configure and manage shares")
@@ -333,13 +336,12 @@ class BaseSharesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, En
 
     def save(self, this, new=False):
         if new:
-            self.context.submit_task(
+            return self.context.submit_task(
                 self.create_task,
                 this.entity,
                 callback=lambda s, t: self.post_save(this, s, t, new))
-            return
 
-        self.context.submit_task(
+        return self.context.submit_task(
             self.update_task,
             this.orig_entity[self.save_key_name],
             this.get_diff(),

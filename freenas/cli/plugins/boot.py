@@ -31,7 +31,7 @@ from freenas.cli.namespace import (
     Namespace, EntityNamespace, Command, EntitySubscriberBasedLoadMixin,
     description, CommandException
 )
-from freenas.cli.utils import iterate_vdevs, post_save, correct_disk_path
+from freenas.cli.utils import TaskPromise, iterate_vdevs, post_save, correct_disk_path
 from freenas.cli.output import ValueType, Table, output_msg
 import inspect
 
@@ -185,17 +185,17 @@ class BootEnvironmentNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         raise NotImplementedError()
 
     def delete(self, this, kwargs):
-        self.context.submit_task('boot.environment.delete', this.entity['id'])
+        return self.context.submit_task('boot.environment.delete', this.entity['id'])
 
     def save(self, this, new=False):
         if new:
-            self.context.submit_task(
+            return self.context.submit_task(
                 'boot.environment.clone',
                 this.entity['id'],
                 callback=lambda s, t: post_save(this, s, t),
                 )
         else:
-            self.context.submit_task(
+            return self.context.submit_task(
                 'boot.environment.update',
                 this.orig_entity['id'],
                 this.get_diff(),
@@ -240,10 +240,12 @@ class ActivateBootEnvCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        context.submit_task(
+        tid = context.submit_task(
             'boot.environment.activate',
             self.parent.entity['id'],
             callback=lambda s, t: post_save(self.parent, s, t))
+
+        return TaskPromise(context, tid)
 
 
 @description("Manage devices in boot pool")
@@ -324,8 +326,8 @@ class BootPoolAttachDiskCommand(Command):
             output_msg("Disk " + disk + " is not usable.")
             return
 
-        context.submit_task('boot.disk.attach', disk)
-        return
+        tid = context.submit_task('boot.disk.attach', disk)
+        return TaskPromise(context, tid)
 
 
 @description("Detach a device from the boot pool")
@@ -346,8 +348,8 @@ class BootPoolDetachDiskCommand(Command):
             raise CommandException("detach_disk requires more arguments.\n{0}".format(inspect.getdoc(self)))
         disk = args.pop(0)
         disk = correct_disk_path(disk)
-        context.submit_task('boot.disk.detach', disk)
-        return
+        tid = context.submit_task('boot.disk.detach', disk)
+        return TaskPromise(context, tid)
 
 
 @description("Manage boot environments and the boot pool")

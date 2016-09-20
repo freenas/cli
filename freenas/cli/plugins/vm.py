@@ -32,7 +32,7 @@ from freenas.cli.namespace import (
     RpcBasedLoadMixin, TaskBasedSaveMixin, description, CommandException, ConfigNamespace
 )
 from freenas.cli.output import ValueType, get_humanized_size
-from freenas.cli.utils import post_save
+from freenas.cli.utils import TaskPromise, post_save
 from freenas.utils import first_or_default
 from freenas.utils.query import get, set
 from freenas.cli.complete import NullComplete, EntitySubscriberComplete, RpcComplete, MultipleSourceComplete
@@ -48,7 +48,8 @@ class StartVMCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        context.submit_task('vm.start', self.parent.entity['id'])
+        tid = context.submit_task('vm.start', self.parent.entity['id'])
+        return TaskPromise(context, tid)
 
 
 class StopVMCommand(Command):
@@ -56,7 +57,8 @@ class StopVMCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        context.submit_task('vm.stop', self.parent.entity['id'])
+        tid =context.submit_task('vm.stop', self.parent.entity['id'])
+        return TaskPromise(context, tid)
 
 
 class KillVMCommand(Command):
@@ -64,7 +66,8 @@ class KillVMCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        context.submit_task('vm.stop', self.parent.entity['id'], True)
+        tid = context.submit_task('vm.stop', self.parent.entity['id'], True)
+        return TaskPromise(context, tid)
 
 
 class RebootVMCommand(Command):
@@ -82,7 +85,8 @@ class RebootVMCommand(Command):
 
     def run(self, context, args, kwargs, opargs):
         force = kwargs.get('force', False)
-        context.submit_task('vm.reboot', self.parent.entity['id'], force)
+        tid = context.submit_task('vm.reboot', self.parent.entity['id'], force)
+        return TaskPromise(context, tid)
 
 
 class ConsoleCommand(Command):
@@ -137,7 +141,9 @@ class ImportVMCommand(Command):
         volume = kwargs.get('volume', None)
         if not volume:
             raise CommandException(_("Please specify which volume is containing a VM being imported."))
-        context.submit_task('vm.import', name, volume, callback=lambda s, t: post_save(self.parent, t))
+
+        tid = context.submit_task('vm.import', name, volume, callback=lambda s, t: post_save(self.parent, t))
+        return TaskPromise(context, tid)
 
 
 @description("Configure system-wide virtualization behavior")
@@ -927,13 +933,14 @@ class CreateVMSnapshotCommand(Command):
             name = kwargs.pop('name')
 
         descr = kwargs.pop('description', '')
-
-        context.submit_task(
+        tid = context.submit_task(
             self.parent.create_task,
             self.parent.parent.entity['id'],
             name,
             descr
         )
+
+        return TaskPromise(context, tid)
 
     def complete(self, context, **kwargs):
         return [
@@ -981,7 +988,7 @@ class PublishVMCommand(Command):
         if 'name' not in kwargs:
             raise CommandException(_('Please specify a name for your template'))
 
-        context.submit_task(
+        tid = context.submit_task(
             'vm.snapshot.publish',
             self.parent.entity['id'],
             kwargs.get('name', ''),
@@ -989,6 +996,8 @@ class PublishVMCommand(Command):
             kwargs.get('mail', ''),
             kwargs.get('description', ''),
         )
+
+        return TaskPromise(context, tid)
 
     def complete(self, context, **kwargs):
         return [
@@ -1013,10 +1022,12 @@ class RollbackVMCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        context.submit_task(
+        tid = context.submit_task(
             'vm.snapshot.rollback',
             self.parent.entity['id'],
         )
+
+        return TaskPromise(context, tid)
 
 
 @description("Container templates operations")
@@ -1179,7 +1190,8 @@ class DownloadImagesCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs, filtering=None):
-        context.submit_task('vm.cache.update', self.parent.entity['template']['name'])
+        tid = context.submit_task('vm.cache.update', self.parent.entity['template']['name'])
+        return TaskPromise(context, tid)
 
 
 @description("Shows readme entry of selected VM template")
@@ -1212,7 +1224,8 @@ class DeleteImagesCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs, filtering=None):
-        context.submit_task('vm.cache.delete', self.parent.entity['template']['name'])
+        tid = context.submit_task('vm.cache.delete', self.parent.entity['template']['name'])
+        return TaskPromise(context, tid)
 
 
 @description("Deletes VM images and VM template from the local cache")
@@ -1228,8 +1241,9 @@ class DeleteTemplateCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs, filtering=None):
-        context.submit_task('vm.template.delete', self.parent.entity['template']['name'])
+        tid = context.submit_task('vm.template.delete', self.parent.entity['template']['name'])
         context.ml.cd_up()
+        return TaskPromise(context, tid)al
 
 
 def _init(context):

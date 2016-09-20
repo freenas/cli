@@ -31,7 +31,8 @@ from freenas.cli.namespace import (
     EntityNamespace, Command, TaskBasedSaveMixin, description,
     CommandException, NestedEntityMixin, ItemNamespace, EntitySubscriberBasedLoadMixin
 )
-from freenas.cli.output import ValueType, format_value
+from freenas.cli.output import ValueType
+from freenas.cli.utils import TaskPromise
 from freenas.utils import first_or_default
 from freenas.utils import query as q
 
@@ -937,7 +938,8 @@ class RunCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        context.submit_task('calendar_task.run', self.parent.entity['id'])
+        tid = context.submit_task('calendar_task.run', self.parent.entity['id'])
+        return TaskPromise(context, tid)
 
 
 def _init(context):

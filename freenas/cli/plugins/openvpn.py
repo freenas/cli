@@ -27,11 +27,12 @@
 
 import gettext
 from freenas.cli.namespace import (
-    Namespace, EntityNamespace, Command, RpcBasedLoadMixin,
+    EntityNamespace, Command, RpcBasedLoadMixin,
     CommandException, description, ConfigNamespace
 )
 
 from freenas.cli.output import Sequence, ValueType
+from freenas.cli.utils import TaskPromise
 
 t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
@@ -304,6 +305,7 @@ class OpenVPNConfigNamespace(ConfigNamespace):
             PKI mode server CA'''),
         )
 
+
 @description("Allows to bridge openvpn interface to the main interface")
 class OpenVPNBridgeCommand(Command):
     """
@@ -319,7 +321,9 @@ class OpenVPNBridgeCommand(Command):
         if vpn_confg['mode'] == 'psk':
             raise CommandException(_('Bridging to main interface is possible only in pki mode.'))
 
-        context.submit_task('service.openvpn.bridge')
+        tid = context.submit_task('service.openvpn.bridge')
+        return TaskPromise(context, tid)
+
 
 @description("Allows to generate OpenVPN cryptographic properties")
 class OpenVPNCryptoCommand(Command):
@@ -343,7 +347,9 @@ class OpenVPNCryptoCommand(Command):
         if kwargs['key_type'] == 'dh-parameters' and kwargs['key_length'] not in [1024, 2048]:
             raise CommandException(_("wrong key_length value, see 'help generate_cryto' for more information"))
 
-        context.submit_task('service.openvpn.gen_key', kwargs['key_type'], kwargs.get('key_length'))
+        tid = context.submit_task('service.openvpn.gen_key', kwargs['key_type'], kwargs.get('key_length'))
+        return TaskPromise(context, tid)
+
 
 @description("Provides corresponding OpenVPN client configuration")
 class OpenVPNClientConfigCommand(Command):
@@ -357,6 +363,7 @@ class OpenVPNClientConfigCommand(Command):
 
         vpn_client_confg = context.call_sync('service.openvpn.client_config.provide_config')
         return Sequence(vpn_client_confg)
+
 
 @description("Provides OpenVPN static key")
 class OpenVPNStaticKeyCommand(Command):
@@ -419,6 +426,7 @@ class OpenVPNamespace(RpcBasedLoadMixin, EntityNamespace):
     def namespaces(self):
         return [OpenVPNConfigNamespace('config', self.context)]
 
+
 @description("Start/stop/restart/reload a service")
 class OpenVPNManageCommand(Command):
     """
@@ -438,11 +446,13 @@ class OpenVPNManageCommand(Command):
     def run(self, context, args, kwargs, opargs):
         self.service_id = context.entity_subscribers['service'].query(('name', '=', 'openvpn'),
                                                                       single=True, select='id')
-        context.submit_task(
+        tid = context.submit_task(
             'service.manage',
             self.service_id,
             self.action
-            )
+        )
+
+        return TaskPromise(context, tid)
 
 
 def _init(context):

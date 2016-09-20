@@ -28,11 +28,11 @@
 import gettext
 from freenas.cli.output import Sequence, Object, ValueType, Table, format_value, read_value
 from freenas.cli.namespace import (
-    ItemNamespace, EntityNamespace, Command, CommandException, EntitySubscriberBasedLoadMixin,
-    TaskBasedSaveMixin, NestedEntityMixin, description
+    EntityNamespace, Command, CommandException, EntitySubscriberBasedLoadMixin,
+    TaskBasedSaveMixin, description
 )
 from freenas.cli.complete import EnumComplete
-from freenas.cli.utils import get_related, set_related
+from freenas.cli.utils import TaskPromise, get_related, set_related
 from freenas.utils import query as q
 
 
@@ -215,7 +215,8 @@ class BackupSyncCommand(Command):
                 )
             )
         else:
-            context.submit_task('backup.sync', self.parent.entity['id'], snapshot)
+            tid = context.submit_task('backup.sync', self.parent.entity['id'], snapshot)
+            return TaskPromise(context, tid)
 
     def complete(self, context, **kwargs):
         return [
@@ -257,7 +258,8 @@ class BackupRestoreCommand(Command):
         dataset = kwargs.pop('dataset', None)
         snapshot = kwargs.pop('snapshot', None)
 
-        context.submit_task('backup.restore', self.parent.entity['id'], dataset, snapshot)
+        tid = context.submit_task('backup.restore', self.parent.entity['id'], dataset, snapshot)
+        return TaskPromise(context, tid)
 
 
 def _init(context):

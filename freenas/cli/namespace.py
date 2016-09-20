@@ -39,7 +39,7 @@ import contextlib
 from freenas.utils import first_or_default, query as q
 from freenas.cli.parser import CommandCall, Literal, Symbol, BinaryParameter, Comment
 from freenas.cli.complete import NullComplete, EnumComplete
-from freenas.cli.utils import post_save, edit_in_editor, PrintableNone
+from freenas.cli.utils import post_save, edit_in_editor, PrintableNone, TaskPromise
 from freenas.cli.output import (
     ValueType, Object, Table, Sequence,
     output_msg, read_value, format_value
@@ -490,7 +490,8 @@ class ItemNamespace(Namespace):
                     prop.do_remove(entity, v)
 
             self.parent.modified = True
-            self.parent.save()
+            tid = self.parent.save()
+            return TaskPromise(context, tid)
 
         def complete(self, context, **kwargs):
             if 'kwargs' in kwargs:
@@ -569,10 +570,12 @@ class ItemNamespace(Namespace):
             if len(args) > 0:
                 raise CommandException(_("Invalid syntax:{0}\n{1}.".format(args, inspect.getdoc(self))))
             entity_id = self.parent.primary_key
-            self.parent.parent.delete(self.parent, kwargs)
+            tid = self.parent.parent.delete(self.parent, kwargs)
             curr_ns = context.ml.path[-1]
             if curr_ns.get_name() == entity_id and isinstance(curr_ns.parent, self.parent.parent.__class__):
                 context.ml.cd_up()
+
+            return TaskPromise(context, tid)
 
     def __init__(self, name, context):
         super(ItemNamespace, self).__init__(name)
@@ -755,7 +758,7 @@ class ConfigNamespace(ItemNamespace):
         self.modified = False
 
     def save(self):
-        self.context.submit_task(
+        return self.context.submit_task(
             self.update_task,
             self.get_diff(),
             callback=lambda s, t: post_save(self, s, t)
@@ -895,7 +898,7 @@ class SingleItemNamespace(ItemNamespace):
         self.modified = False
 
     def save(self):
-        self.parent.save(self, not self.saved)
+        return self.parent.save(self, not self.saved)
 
     def commands(self):
         command_set = super(SingleItemNamespace, self).commands()
@@ -1103,7 +1106,8 @@ class CreateEntityCommand(Command):
         for prop, v in sorted(mappings, key=lambda i: i[0].index):
             prop.do_set(ns.entity, v)
 
-        self.parent.save(ns, new=True)
+        tid = self.parent.save(ns, new=True)
+        return TaskPromise(context, tid)
 
     def complete(self, context, **kwargs):
         if 'kwargs' in kwargs:
@@ -1271,20 +1275,19 @@ class TaskBasedSaveMixin(object):
             callback = lambda s, t: post_save(this, s, t)
 
         if new:
-            self.context.submit_task(
+            return self.context.submit_task(
                 self.create_task,
                 this.entity,
                 callback=callback)
-            return
 
-        self.context.submit_task(
+        return self.context.submit_task(
             self.update_task,
             this.orig_entity[self.save_key_name],
             this.get_diff(),
             callback=callback)
 
     def delete(self, this, kwargs):
-        self.context.submit_task(self.delete_task, this.entity[self.save_key_name])
+        return self.context.submit_task(self.delete_task, this.entity[self.save_key_name])
 
 
 class NestedObjectLoadMixin(object):

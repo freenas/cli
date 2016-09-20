@@ -240,6 +240,10 @@ def re_search(regex, text):
     return None
 
 
+def waitfor(promise):
+    promise.wait()
+
+
 functions = {
     'print': print_,
     'printf': printf,
@@ -281,5 +285,6 @@ functions = {
     'join': strjoin,
     'enumerate': lambda a: list(enumerate(a)),
     're_match': re_match,
-    're_search': re_search
+    're_search': re_search,
+    'waitfor': waitfor
 }

@@ -30,9 +30,8 @@ from freenas.cli.namespace import (
     Namespace, EntityNamespace, Command, EntitySubscriberBasedLoadMixin,
     TaskBasedSaveMixin, CommandException, description, ConfigNamespace
 )
-from freenas.cli.output import ValueType, Table
-from freenas.cli.output import Sequence
-from freenas.cli.utils import post_save
+from freenas.cli.output import ValueType, Table, Sequence
+from freenas.cli.utils import TaskPromise, post_save
 from freenas.utils.query import get, set
 from freenas.cli.complete import NullComplete, EntitySubscriberComplete
 from freenas.cli.console import Console
@@ -444,7 +443,8 @@ class DockerImagePullCommand(Command):
         if host:
             hostid = context.entity_subscribers['docker.host'].query(('name', '=', host), single=True, select='id')
 
-        context.submit_task('docker.image.pull', name, hostid)
+        tid = context.submit_task('docker.image.pull', name, hostid)
+        return TaskPromise(context, tid)
 
     def complete(self, context, **kwargs):
         return [
@@ -522,12 +522,14 @@ class DockerImageDeleteCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        context.submit_task(
+        tid = context.submit_task(
             'docker.image.delete',
             get(self.parent.entity, 'names.0'),
             self.parent.entity['host'],
             callback=lambda s, t: post_save(self.parent, s, t)
         )
+
+        return TaskPromise(context, tid)
 
 
 @description("Start container")
@@ -547,7 +549,8 @@ class DockerContainerStartCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        context.submit_task('docker.container.start', self.parent.entity['id'])
+        tid = context.submit_task('docker.container.start', self.parent.entity['id'])
+        return TaskPromise(context, tid)
 
 
 @description("Stop container")
@@ -563,7 +566,8 @@ class DockerContainerStopCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        context.submit_task('docker.container.stop', self.parent.entity['id'])
+        tid = context.submit_task('docker.container.stop', self.parent.entity['id'])
+        return TaskPromise(context, tid)
 
 
 @description("Start Docker container console")

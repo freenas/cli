@@ -236,6 +236,12 @@ def set_related(context, name, obj, field, value):
     set(obj, field, thing['id'])
 
 
+def add_tty_formatting(context, input):
+    set_bold_font = '\033[1m'
+    reset_font = '\033[0m'
+    return set_bold_font + str(input) + reset_font if context.is_interactive else input
+
+
 class PrintableNone(object):
     def __bool__(self):
         return False

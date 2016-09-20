@@ -53,7 +53,7 @@ from freenas.cli.output import Object as output_obj, get_terminal_size
 from freenas.cli.output import ProgressBar
 from freenas.cli.descriptions.tasks import translate as translate_task
 from freenas.cli.utils import (
-    describe_task_state, parse_timedelta, SIGTSTPException, SIGTSTP_setter
+    describe_task_state, parse_timedelta, SIGTSTPException, SIGTSTP_setter, add_tty_formatting
 )
 from freenas.dispatcher.shell import ShellClient
 
@@ -727,11 +727,6 @@ class IndexCommand(Command):
     """
 
     def run(self, context, args, kwargs, opargs):
-        def add_tty_formatting(input):
-            set_bold_font = '\033[1m'
-            reset_font = '\033[0m'
-            return set_bold_font + str(input) + reset_font if context.is_interactive else input
-
         obj = self.get_relative_namespace(context)
         nss = obj.namespaces()
         cmds = obj.commands()
@@ -748,7 +743,7 @@ class IndexCommand(Command):
         ns_seq = Sequence(
             _("Current namespace items:"),
             sorted(list(cmds)) +
-            [add_tty_formatting(ns.get_name()) for ns in sorted(nss, key=lambda i: str(i.get_name()))]
+            [add_tty_formatting(context, ns.get_name()) for ns in sorted(nss, key=lambda i: str(i.get_name()))]
         )
         if outseq is not None:
             outseq += ns_seq

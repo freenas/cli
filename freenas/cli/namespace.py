@@ -256,6 +256,7 @@ class PropertyMapping(object):
         self.complete = kwargs.pop('complete', None)
         self.ns = kwargs.pop('ns', None)
         self.display_width_percentage = kwargs.pop('display_width_percentage', None)
+        self.strict = kwargs.pop('strict', True)
 
     def can_set(self, obj):
         if not self.set:
@@ -287,7 +288,7 @@ class PropertyMapping(object):
 
         value = read_value(value, self.type)
 
-        if self.enum or (self.complete and self.context):
+        if self.strict and (self.enum or (self.complete and self.context)):
             enum_val = self.enum() if callable(self.enum) else self.enum or self.complete.choices(self.context, None)
             if self.type == ValueType.SET:
                 for e in value:

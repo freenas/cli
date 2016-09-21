@@ -185,6 +185,7 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             usersetable=False,
             list=True,
             complete=EntitySubscriberComplete('image=', 'docker.image', lambda i: get(i, 'names.0')),
+            strict=False,
             usage=_('Name of container image used to create an instance of a container.')
         )
 

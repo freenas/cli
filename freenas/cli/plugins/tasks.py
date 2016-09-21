@@ -104,7 +104,7 @@ class QueryCommand(Command):
 
 class TaskListCommand(BaseListCommand):
     """
-    Usage: list <state>
+    Usage: list [all|aborted|finished|failed|running]
 
     Examples:
         list

@@ -83,7 +83,10 @@ class CurrentTrainCommand(Command):
     """
     Usage: current_train
 
-    Displays the current update train.
+    Examples:
+        current_train
+
+    Displays the current update train that this system is on.
     """
 
     def run(self, context, args, kwargs, opargs):
@@ -95,7 +98,10 @@ class ShowTrainsCommand(Command):
     """
     Usage: show_trains
 
-    Displays the available update trains from the update server.
+    Examples:
+        show_trains
+
+    Displays the set of available trains from the update server.
     """
 
     def run(self, context, args, kwargs, opargs):
@@ -119,6 +125,9 @@ class CheckNowCommand(Command):
     """
     Usage: check_now
 
+    Examples:
+        check_now
+
     Checks for updates.
     """
 
@@ -139,7 +148,10 @@ class DownloadNowCommand(Command):
     """
     Usage: download
 
-    Downloads and Saves Updates.
+    Examples:
+        download
+
+    Downloads and Saves the latest update available.
     """
 
     def run(self, context, args, kwargs, opargs):
@@ -152,10 +164,12 @@ class UpdateNowCommand(Command):
     """
     Usage: update_now [reboot=False]
 
-    Installs updates if they are available and restarts the system if told to do so.
+    Examples:
+        update_now (This will not reboot the system post update)
+        update_now reboot=True (This will reboot the system post update)
 
-    Example: update_now (This will not reboot the system post update)
-             update_now reboot=True (This will reboot the system post update)
+    Installs updates if they are available and reboots the system if
+    told to do so via the `reboot` flag.
     """
 
     def __init__(self):
@@ -196,8 +210,7 @@ class UpdateNowCommand(Command):
 @description("Configure system updates")
 class UpdateNamespace(ConfigNamespace):
     """
-    The update namespace provides commands for updating and for
-    configuring system updates.
+    The update namespace provides commands for updating and configuring system updates.
     """
 
     def __init__(self, name, context):
@@ -211,7 +224,8 @@ class UpdateNamespace(ConfigNamespace):
             name='train',
             type=ValueType.STRING,
             get='train',
-            set='train'
+            set='train',
+            usage=_("The Update Train to be used for checking/downloading updates")
         )
 
         self.add_property(
@@ -219,7 +233,8 @@ class UpdateNamespace(ConfigNamespace):
             name='check_auto',
             type=ValueType.BOOLEAN,
             get='check_auto',
-            set='check_auto'
+            set='check_auto',
+            usage=_("Flag that controls automatic periodic check for downloading new updates")
         )
 
         self.add_property(
@@ -227,6 +242,7 @@ class UpdateNamespace(ConfigNamespace):
             name='update_server',
             get='update_server',
             set=None,
+            usage=_("The Update Server configured to be used by the system")
         )
 
         self.add_property(
@@ -234,7 +250,8 @@ class UpdateNamespace(ConfigNamespace):
             name='available',
             type=ValueType.BOOLEAN,
             get=lambda x: self.update_info['available'],
-            set=None
+            set=None,
+            usage=_("Flag stating whether an update is available for download/install")
         )
 
         self.add_property(
@@ -243,7 +260,8 @@ class UpdateNamespace(ConfigNamespace):
             type=ValueType.STRING,
             get=lambda x: self.update_info['changelog'],
             list=True,
-            set=None
+            set=None,
+            usage=_("Contains the changelog describing the the fixes/features added in this update w.r.t to your current system version")
         )
 
         self.add_property(
@@ -251,7 +269,8 @@ class UpdateNamespace(ConfigNamespace):
             name='downloaded',
             type=ValueType.BOOLEAN,
             get=lambda x: self.update_info['downloaded'],
-            set=None
+            set=None,
+            usage=_("Flag stating whether the update available was already downloaded")
         )
 
         self.add_property(
@@ -259,7 +278,8 @@ class UpdateNamespace(ConfigNamespace):
             name='version',
             type=ValueType.STRING,
             get=lambda x: self.update_info['version'],
-            set=None
+            set=None,
+            usage=_("The version of the update that is either available, downloaded, or already installed")
         )
 
         self.add_property(
@@ -267,7 +287,8 @@ class UpdateNamespace(ConfigNamespace):
             name='installed',
             type=ValueType.BOOLEAN,
             get=lambda x: self.update_info['installed'],
-            set=None
+            set=None,
+            usage=_("Flag stating whether the update available was already installed")
         )
 
         self.add_property(
@@ -275,7 +296,8 @@ class UpdateNamespace(ConfigNamespace):
             name='installed_version',
             type=ValueType.STRING,
             get=lambda x: self.update_info['installed_version'],
-            set=None
+            set=None,
+            usage=_("Version of the Installed Update (if any)")
         )
 
         self.subcommands = {

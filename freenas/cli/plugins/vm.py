@@ -44,6 +44,14 @@ _ = t.gettext
 
 
 class StartVMCommand(Command):
+    """
+    Usage: start
+
+    Examples:
+        start
+
+    Starts the VM
+    """
     def __init__(self, parent):
         self.parent = parent
 
@@ -53,6 +61,16 @@ class StartVMCommand(Command):
 
 
 class StopVMCommand(Command):
+    """
+    Usage: stop
+
+    Examples:
+        stop
+
+    Gracefully shutsdown the VM.
+    Note: This only works for some compatible OS's.
+    If this command fails try the `kill` command.
+    """
     def __init__(self, parent):
         self.parent = parent
 
@@ -62,6 +80,14 @@ class StopVMCommand(Command):
 
 
 class KillVMCommand(Command):
+    """
+    Usage: kill
+
+    Examples:
+        kill
+
+    Abruptly kills a stuck (or one that does not support the gracefull shutdown) VM.
+    """
     def __init__(self, parent):
         self.parent = parent
 
@@ -78,7 +104,7 @@ class RebootVMCommand(Command):
         reboot
         reboot force=yes
 
-    Reboots VM
+    Reboots the VM
     """
     def __init__(self, parent):
         self.parent = parent
@@ -111,7 +137,7 @@ class ConsoleVGACommand(Command):
 
     Examples: console_vga
 
-    Returns link to VM VGA console.
+    Returns a link to the VM's VGA console.
     """
 
     def __init__(self, parent):
@@ -127,7 +153,10 @@ class ImportVMCommand(Command):
     """
     Usage: import <name> volume=<volume>
 
-    Imports a VM.
+    Examples:
+        vm import name=freebsd-12-zfs volume=jhol
+
+    Imports a VM from an existing pool.
     """
 
     def __init__(self, parent):
@@ -157,12 +186,14 @@ class VMConfigNamespace(ConfigNamespace):
             descr='Management network',
             name='management_network',
             get='network.management',
+            usage=_("The address range for the vm management(internal) network")
         )
 
         self.add_property(
             descr='NAT network',
             name='nat_network',
             get='network.nat',
+            usage=_("The address range from which VM's with natted nics will be allocated ips")
         )
 
 
@@ -223,21 +254,24 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             descr='VM Name',
             name='name',
             get='name',
-            list=True
+            list=True,
+            usage=_("Name of the VM")
         )
 
         self.add_property(
             descr='Template name',
             name='template',
             get='template.name',
-            complete=RpcComplete('template=', 'vm.template.query', lambda i: get(i, 'template.name'))
+            complete=RpcComplete('template=', 'vm.template.query', lambda i: get(i, 'template.name')),
+            usage=_("Name of the template used to create the VM from")
         )
 
         self.add_property(
             descr='State',
             name='state',
             get='status.state',
-            set=None
+            set=None,
+            usage=_("The current state of the VM [RUNNING|STOPPED]")
         )
 
         self.add_property(
@@ -246,14 +280,16 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             get='target',
             createsetable=True,
             usersetable=False,
-            complete=EntitySubscriberComplete('volume=', 'volume', lambda i: i['id'])
+            complete=EntitySubscriberComplete('volume=', 'volume', lambda i: i['id']),
+            usage=_("The volume on which the VM is stored")
         )
 
         self.add_property(
             descr='Description',
             name='description',
             get='description',
-            list=False
+            list=False,
+            usage=_("Its a description D'OH!")
         )
 
         self.add_property(
@@ -262,7 +298,8 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             get=lambda o: get(o, 'config.memsize') * 1024 * 1024,
             set=set_memsize,
             list=True,
-            type=ValueType.SIZE
+            type=ValueType.SIZE,
+            usage=_("Size of the Memory allocated to the VM")
         )
 
         self.add_property(
@@ -270,14 +307,16 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             name='cores',
             get='config.ncpus',
             list=True,
-            type=ValueType.NUMBER
+            type=ValueType.NUMBER,
+            usage=_("Number of cpu cores assigned to the VM")
         )
 
         self.add_property(
             descr='Start on boot',
             name='autostart',
             get='config.autostart',
-            type=ValueType.BOOLEAN
+            type=ValueType.BOOLEAN,
+            usage=_("Property that controls whether the VM is autostarted on System Boot up")
         )
 
         self.add_property(
@@ -285,7 +324,7 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             name='boot_device',
             get='config.boot_device',
             list=False,
-            usage="The device from the devices namespace from which to boot from",
+            usage=_("The device from the devices namespace from which to boot from"),
             complete=RpcComplete(
                 'boot_device=',
                 'vm.query',
@@ -298,7 +337,7 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             name='boot_directory',
             get='config.boot_directory',
             list=False,
-            usage="The directory in VM's dataset under the files directory that contains grub.cfg"
+            usage=_("The directory in VM's dataset under the files directory that contains grub.cfg")
         )
 
         self.add_property(
@@ -306,7 +345,7 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             name='boot_partition',
             get='config.boot_partition',
             list=False,
-            usage="The partition on the os's boot device to boot from (i.e. msdos1 for the first partition of a BIOS partition layout)"
+            usage=_("The partition on the os's boot device to boot from (i.e. msdos1 for the first partition of a BIOS partition layout)")
         )
 
         self.add_property(
@@ -314,7 +353,8 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             name='bootloader',
             get='config.bootloader',
             list=False,
-            enum=['BHYVELOAD', 'GRUB', 'UEFI', 'UEFI_CSM']
+            enum=['BHYVELOAD', 'GRUB', 'UEFI', 'UEFI_CSM'],
+            usage=_("Type of Bootloader"),
         )
 
         self.add_property(
@@ -332,7 +372,8 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
                 'windows64',
                 'solaris64',
                 'other'
-            ]
+            ],
+            usage=_("Type of the guest os (i.e. freebsd32, windows64, linux64, etc.)")
         )
 
         self.add_property(
@@ -340,6 +381,7 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             name='cloud_init',
             get='config.cloud_init',
             list=False,
+            usage=_("Bread goes in, Toast comes out. You can't explain that (or this!)")
         )
 
         self.add_property(
@@ -347,7 +389,8 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             name='enabled',
             get='enabled',
             list=True,
-            type=ValueType.BOOLEAN
+            type=ValueType.BOOLEAN,
+            usage=_("Enables/Disables the VM")
         )
 
         self.add_property(
@@ -356,7 +399,8 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             get='immutable',
             list=False,
             usersetable=False,
-            type=ValueType.BOOLEAN
+            type=ValueType.BOOLEAN,
+            usage=_("Sets VM as immutable")
         )
 
         self.add_property(
@@ -365,7 +409,8 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             get='config.readme',
             set='config.readme',
             list=False,
-            type=ValueType.TEXT_FILE
+            type=ValueType.TEXT_FILE,
+            usage=_("Information about this VM including instructions on how to login, username and password, etc.")
         )
 
         self.add_property(
@@ -374,7 +419,8 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             get='status.nat_lease.client_ip',
             set=None,
             list=False,
-            condition=lambda o: get(o, 'status.state') != 'STOPPED' and get(o, 'status.nat_lease')
+            condition=lambda o: get(o, 'status.state') != 'STOPPED' and get(o, 'status.nat_lease'),
+            usage=_("Displays the natted ip address of the VM")
         )
 
         self.primary_key = self.get_mapping('name')
@@ -454,6 +500,7 @@ class VMDeviceNamespace(NestedObjectLoadMixin, EntityNamespace):
             name='type',
             get=lambda obj: obj['type'].lower(),
             set=None,
+            usage=_("Type of VM device (i.e. DISK, CDROM, USB, etc.)")
         )
 
         self.add_property(
@@ -461,6 +508,7 @@ class VMDeviceNamespace(NestedObjectLoadMixin, EntityNamespace):
             name='name',
             get='name',
             set=None,
+            usage=_("Name of the device")
         )
 
         self.add_property(
@@ -468,6 +516,7 @@ class VMDeviceNamespace(NestedObjectLoadMixin, EntityNamespace):
             name='device_summary',
             get=get_humanized_summary,
             set=None,
+            usage=_("Brief Summary of the VM device")
         )
 
     def load(self):
@@ -514,6 +563,7 @@ class VMDeviceNamespaceBaseClass(NestedObjectLoadMixin, NestedObjectSaveMixin, E
             name='name',
             get='name',
             set='name',
+            usage=_("Name of the device")
         )
 
         self.primary_key = self.get_mapping('name')
@@ -562,7 +612,7 @@ class VMDeviceGraphicsNamespace(VMDeviceNamespaceBaseClass):
                    Usage: create name=<device-name> property=<value>
 
                    Examples:
-                       create name=framebuffer resolution=1280,1024
+                       create name=framebuffer resolution=1280x1024
 
                    Creates device with selected properties.
                    For full list of propertise type 'help properties'""")
@@ -585,6 +635,7 @@ class VMDeviceGraphicsNamespace(VMDeviceNamespaceBaseClass):
                 [800, 600],
                 [640, 480]
             ],
+            usage=_("Resolution of the graphics device attached to the VM (example: 1024x768)")
         )
 
         self.add_property(
@@ -593,6 +644,7 @@ class VMDeviceGraphicsNamespace(VMDeviceNamespaceBaseClass):
             get='properties.vnc_enabled',
             list=True,
             type=ValueType.BOOLEAN,
+            usage=_("Flag controlling wether the VNC server to VM's framebuffer is enabled or not")
         )
 
         self.add_property(
@@ -602,6 +654,7 @@ class VMDeviceGraphicsNamespace(VMDeviceNamespaceBaseClass):
             list=True,
             set=set_vnc_port,
             type=ValueType.NUMBER,
+            usage=_("Port to be used for the VNC server (if enabled) of VM. Please ensure a uniqure port number (one that is not already in use)")
         )
 
     @staticmethod
@@ -635,6 +688,7 @@ class VMDeviceUsbNamespace(VMDeviceNamespaceBaseClass):
             get='properties.device',
             enum=['tablet'],
             list=True,
+            usage=_("Type of emulated usb device (currently only 'tablet' is supported)")
         )
 
     @staticmethod
@@ -668,6 +722,7 @@ class VMDeviceNicNamespace(VMDeviceNamespaceBaseClass):
             get='properties.mode',
             enum=['NAT', 'BRIDGED', 'MANAGEMENT'],
             list=True,
+            usage=_("Mode of NIC device [NAT|BRIDGED|MANAGEMENT]")
         )
 
         self.add_property(
@@ -676,6 +731,7 @@ class VMDeviceNicNamespace(VMDeviceNamespaceBaseClass):
             get='properties.device',
             enum=['VIRTIO', 'E1000', 'NE2K'],
             list=True,
+            usage=_("The type of virtual NIC emulation [VIRTIO|E1000|NE2K]")
         )
 
         self.add_property(
@@ -689,7 +745,8 @@ class VMDeviceNicNamespace(VMDeviceNamespaceBaseClass):
                     EntitySubscriberComplete('bridge=', 'network.interface', lambda i: i['name'])
                 ),
                 extra=['default']
-            )
+            ),
+            usage=_("The interface to bridge NIC device with (if this NIC device is in BRIDGED mode)")
         )
 
         self.add_property(
@@ -697,6 +754,7 @@ class VMDeviceNicNamespace(VMDeviceNamespaceBaseClass):
             name='macaddr',
             get='properties.link_address',
             list=True,
+            usage=_("Mac address of NIC device")
         )
 
     @staticmethod
@@ -733,6 +791,7 @@ class VMDeviceDiskNamespace(VMDeviceNamespaceBaseClass):
             get='properties.mode',
             enum=['AHCI', 'VIRTIO'],
             list=True,
+            usage=_("The virtual disk emulation mode [AHCI|VIRTIO]")
         )
 
         self.add_property(
@@ -741,6 +800,7 @@ class VMDeviceDiskNamespace(VMDeviceNamespaceBaseClass):
             get='properties.size',
             type=ValueType.SIZE,
             list=True,
+            usage=_("States the size of the disk")
         )
 
     @staticmethod
@@ -776,6 +836,7 @@ class VMDeviceCdromNamespace(VMDeviceNamespaceBaseClass):
             name='image_path',
             get='properties.path',
             list=True,
+            usage=_("The path on the filesystem where the image file(iso, img, etc.) for this CDROM device lives")
         )
 
     @staticmethod
@@ -784,6 +845,10 @@ class VMDeviceCdromNamespace(VMDeviceNamespaceBaseClass):
 
 
 class VMVolumeNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNamespace):
+    """
+    The VM Volume namespace provides commands for creating and managing volume resources
+    available on selected virtual machine
+    """
     def __init__(self, name, context, parent):
         super(VMVolumeNamespace, self).__init__(name, context)
         self.parent = parent
@@ -825,33 +890,42 @@ class VMVolumeNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityName
         self.add_property(
             descr='Volume name',
             name='name',
-            get='name'
+            get='name',
+            usage=_("Name of the Volume")
         )
 
         self.add_property(
             descr='Volume type',
             name='type',
             get='properties.type',
-            enum=['VT9P']
+            enum=['VT9P'],
+            usage=_("I'd tell you, but then I'd have to kill you")
         )
 
         self.add_property(
             descr='Destination path',
             name='destination',
-            get='properties.destination'
+            get='properties.destination',
+            usage=_("The path on the filesystem where the volume is stored")
         )
 
         self.add_property(
             descr='Automatically create storage',
             name='auto',
             get='properties.auto',
-            type=ValueType.BOOLEAN
+            type=ValueType.BOOLEAN,
+            usage=_("Flag which controls automatic creation of storage")
         )
 
         self.primary_key = self.get_mapping('name')
 
 
 class VMSnapshotsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):
+    """
+    The VM Snapshoot namespace provides commands for creating and managing snapshots of the
+    selected VM. It also provides commands to either publish a particular snapshot as well
+    as rollback to a selected one.
+    """
     def __init__(self, name, context, parent):
         super(VMSnapshotsNamespace, self).__init__(name, context)
         self.parent = parent
@@ -872,14 +946,16 @@ class VMSnapshotsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             descr='VM snapshot name',
             name='name',
             get='name',
-            list=True
+            list=True,
+            usage=_("Name of the VM snapshot")
         )
 
         self.add_property(
             descr='Description',
             name='description',
             get='description',
-            list=True
+            list=True,
+            usage=_("Description of the VM snapshot")
         )
 
         self.primary_key = self.get_mapping('name')
@@ -1048,7 +1124,8 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
             name='name',
             get='template.name',
             usersetable=False,
-            list=True
+            list=True,
+            usage=_("Name of the template")
         )
 
         self.add_property(
@@ -1056,7 +1133,8 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
             name='description',
             get='template.description',
             usersetable=False,
-            list=True
+            list=True,
+            usage=_("Description of template")
         )
 
         self.add_property(
@@ -1064,7 +1142,8 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
             name='source',
             get='template.driver',
             usersetable=False,
-            list=True
+            list=True,
+            usage=_("The source of the template's json file (i.e. git, ipfs, etc.)")
         )
 
         self.add_property(
@@ -1073,7 +1152,8 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
             get='template.fetch_size',
             usersetable=False,
             list=True,
-            type=ValueType.SIZE
+            type=ValueType.SIZE,
+            usage=_("Size of the template")
         )
 
         self.add_property(
@@ -1082,7 +1162,8 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
             get='template.hash',
             usersetable=False,
             list=False,
-            condition=lambda e: get(e, 'template.driver') == 'ipfs'
+            condition=lambda e: get(e, 'template.driver') == 'ipfs',
+            usage=_("The IPFS has of temaplate")
         )
 
         self.add_property(
@@ -1091,7 +1172,8 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
             get='template.created_at',
             usersetable=False,
             list=False,
-            type=ValueType.TIME
+            type=ValueType.TIME,
+            usage=_("Date and time of template's creation)")
         )
 
         self.add_property(
@@ -1100,7 +1182,8 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
             get='template.updated_at',
             usersetable=False,
             list=True,
-            type=ValueType.TIME
+            type=ValueType.TIME,
+            usage=_("Date and time template was last updated)")
         )
 
         self.add_property(
@@ -1108,7 +1191,8 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
             name='author',
             get='template.author',
             usersetable=False,
-            list=False
+            list=False,
+            usage=_("Person who penned this template")
         )
 
         self.add_property(
@@ -1117,7 +1201,8 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
             get='config.memsize',
             usersetable=False,
             list=False,
-            type=ValueType.NUMBER
+            type=ValueType.NUMBER,
+            usage=_("Size of the Memory to be used by template")
         )
 
         self.add_property(
@@ -1126,7 +1211,8 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
             get='config.ncpus',
             usersetable=False,
             list=False,
-            type=ValueType.NUMBER
+            type=ValueType.NUMBER,
+            usage=_("Number of cpu cores to be used by template")
         )
 
         self.add_property(
@@ -1134,7 +1220,8 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
             name='boot_device',
             get='config.boot_device',
             usersetable=False,
-            list=False
+            list=False,
+            usage=_("Specifies the boot device (from the list of template devices)"),
         )
 
         self.add_property(
@@ -1143,7 +1230,8 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
             get='config.bootloader',
             list=False,
             usersetable=False,
-            enum=['BHYVELOAD', 'GRUB']
+            enum=['BHYVELOAD', 'GRUB', 'UEFI', 'UEFI_CSM'],
+            usage=_("Type of Bootloader"),
         )
 
         self.add_property(
@@ -1152,7 +1240,8 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
             get='template.cached',
             usersetable=False,
             list=False,
-            type=ValueType.BOOLEAN
+            type=ValueType.BOOLEAN,
+            usage=_("Flag describing wehter template's images are cached or not")
         )
 
         self.primary_key = self.get_mapping('name')
@@ -1199,7 +1288,7 @@ class ReadmeCommand(Command):
     """
     Usage: readme
 
-    Example: readme
+    Examples: readme
 
     Shows readme entry of selected VM
     """
@@ -1216,7 +1305,7 @@ class DeleteImagesCommand(Command):
     """
     Usage: delete_cache
 
-    Example: delete_cache
+    Examples: delete_cache
 
     Deletes VM template images from the local cache.
     """
@@ -1233,7 +1322,7 @@ class DeleteTemplateCommand(Command):
     """
     Usage: delete
 
-    Example: delete
+    Examples: delete
 
     Deletes VM template images and VM template from the local cache.
     """

@@ -43,10 +43,10 @@ class SubmitCommand(Command):
     """
     Usage: submit <task>
 
-    Submits a task to the dispatcher for execution
-
     Examples:
         submit update.check
+
+    Submits a task to the dispatcher for execution
     """
     def run(self, context, args, kwargs, opargs):
         name = args.pop(0)
@@ -59,10 +59,10 @@ class AbortCommand(Command):
     """
     Usage: abort
 
-    Submits a task to the dispatcher for execution
-
     Examples:
-        submit update.check
+        abort
+
+    Aborts the task (the task whose namespace you are in)
     """
     def __init__(self, parent):
         self.parent = parent
@@ -71,10 +71,15 @@ class AbortCommand(Command):
         context.call_sync('task.abort', self.parent.entity['id'])
 
 
-@description("Shows detailed informations about a task")
+@description("Shows detailed information about a task")
 class QueryCommand(Command):
     """
     Usage: query
+
+    Examples:
+        query
+
+    Shows details information about the task (the task whose namespace you are in)
     """
     def __init__(self, parent):
         self.parent = parent
@@ -98,6 +103,24 @@ class QueryCommand(Command):
 
 
 class TaskListCommand(BaseListCommand):
+    """
+    Usage: list <state>
+
+    Examples:
+        list
+        list all
+        list aborted
+        list failed
+        list running
+
+    Shows the list of tasks in the provided state.
+    The available states are:
+        all
+        aborted
+        failed
+        running
+    If state is not specified it defaults to `runnning`
+    """
     RUNNING_STATES = ['CREATED', 'WAITING', 'EXECUTING', 'ROLLBACK']
 
     def run(self, context, args, kwargs, opargs, filtering=None):
@@ -168,7 +191,7 @@ class TasksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             usage=_("""\
             Task description. Read-only value assigned by the operating
             system."""),
-            get=self.describe_task,
+            get=self.describe_task
         )
 
         self.add_property(
@@ -220,7 +243,8 @@ class TasksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             type=ValueType.SET,
             set=None,
             list=False,
-            condition=lambda t: get(t, 'error.type') == 'ValidationException'
+            condition=lambda t: get(t, 'error.type') == 'ValidationException',
+            usage=_("List of validation errors encountered by the middleware at the time of task verification (before task submission)")
         )
 
         self.primary_key = self.get_mapping('id')

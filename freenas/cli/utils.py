@@ -262,6 +262,7 @@ class TaskPromise(object):
         self.context = context
         self.tid = tid
         self.result = result
+        self.task = None
 
     def __str__(self):
         task = self.context.entity_subscribers['task'].get(self.tid, timeout=5)
@@ -271,13 +272,27 @@ class TaskPromise(object):
         return "<Task #{0}: {1}>".format(self.tid, task['state'])
 
     def wait(self):
-        task = self.context.entity_subscribers['task'].get(self.tid, timeout=5)
-        if task['state'] in ('FINISHED', 'FAILED', 'ABORTED'):
+        self.task = self.context.entity_subscribers['task'].get(self.tid, timeout=5)
+        if self.task and self.task['state'] in ('FINISHED', 'FAILED', 'ABORTED'):
             return self.result
 
         generator = self.context.entity_subscribers['task'].listen(self.tid)
         for op, old, new in generator:
             if new['state'] in ('FINISHED', 'FAILED', 'ABORTED'):
-                break
+                self.task = new
+                return self.result
+
+
+class EntityPromise(TaskPromise):
+    def __init__(self, context, tid, ns, result=None):
+        super(EntityPromise, self).__init__(context, tid, result)
+        self.ns = ns
+
+    def wait(self):
+        self.result = super(EntityPromise, self).wait()
+        if self.task and self.task['state'] == 'FINISHED' and self.task['result'] is not None:
+            key = self.ns.primary_key_name
+
+            self.ns.query((key, '=', self.ns.entity[key]), single=True, timeout=None)
 
         return self.result

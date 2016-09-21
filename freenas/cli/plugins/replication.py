@@ -34,7 +34,7 @@ from freenas.cli.namespace import (
 )
 from freenas.cli.complete import NullComplete, EnumComplete
 from freenas.cli.output import ValueType, read_value
-from freenas.cli.utils import TaskPromise, post_save, parse_timedelta
+from freenas.cli.utils import TaskPromise, EntityPromise,post_save, parse_timedelta
 from freenas.utils import query as q
 
 
@@ -267,7 +267,7 @@ class CreateReplicationCommand(Command):
             callback=lambda s, t: post_save(ns, s, t)
         )
 
-        return TaskPromise(context, tid)
+        return EntityPromise(context, tid, ns)
 
     def complete(self, context, **kwargs):
         return [

@@ -33,7 +33,7 @@ from freenas.cli.namespace import (
 )
 from freenas.cli.complete import NullComplete, RpcComplete
 from freenas.cli.output import ValueType, Sequence, Table
-from freenas.cli.utils import TaskPromise
+from freenas.cli.utils import EntityPromise
 from freenas.utils import first_or_default
 
 t = gettext.translation('freenas-cli', fallback=True)
@@ -128,7 +128,7 @@ class CreateFreeNASPeerCommand(Command):
                 }
             )
 
-        return TaskPromise(context, tid)
+        return EntityPromise(context, tid, self.parent)
 
     def complete(self, context, **kwargs):
         return [

@@ -33,7 +33,7 @@ from freenas.cli.namespace import (
     CommandException, ListCommand
 )
 from freenas.cli.output import ValueType, Table
-from freenas.cli.utils import TaskPromise, post_save
+from freenas.cli.utils import TaskPromise, EntityPromise, post_save
 from freenas.utils import first_or_default
 from freenas.utils.query import get
 
@@ -92,7 +92,7 @@ class ImportShareCommand(Command):
             callback=lambda s, t: post_save(self.parent, s, t)
         )
 
-        return TaskPromise(context, tid)
+        return EntityPromise(context, tid, self.parent)
 
 
 @description("Configure and manage shares")

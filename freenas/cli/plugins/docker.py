@@ -31,7 +31,7 @@ from freenas.cli.namespace import (
     TaskBasedSaveMixin, CommandException, description, ConfigNamespace
 )
 from freenas.cli.output import ValueType, Table, Sequence
-from freenas.cli.utils import TaskPromise, post_save
+from freenas.cli.utils import TaskPromise, post_save, EntityPromise
 from freenas.utils.query import get, set
 from freenas.cli.complete import NullComplete, EntitySubscriberComplete
 from freenas.cli.console import Console
@@ -396,7 +396,7 @@ class DockerImageNamespace(EntitySubscriberBasedLoadMixin, DockerUtilsMixin, Ent
 
         self.primary_key = self.get_mapping('name')
         self.extra_commands = {
-            'pull': DockerImagePullCommand(),
+            'pull': DockerImagePullCommand(self),
             'search': DockerImageSearchCommand(),
             'readme': DockerImageReadmeCommand()
         }
@@ -465,6 +465,9 @@ class DockerImagePullCommand(Command):
     Pulls container image from Docker Hub to selected Docker host.
     If no host is specified, then default Docker host is selected.
     """
+    def __init__(self, parent):
+        self.parent = parent
+
     def run(self, context, args, kwargs, opargs):
         if not args and not kwargs:
             raise CommandException(_("Pull requires more arguments, see 'help pull' for more information"))
@@ -488,7 +491,7 @@ class DockerImagePullCommand(Command):
             hostid = context.entity_subscribers['docker.host'].query(('name', '=', host), single=True, select='id')
 
         tid = context.submit_task('docker.image.pull', name, hostid)
-        return TaskPromise(context, tid)
+        return EntityPromise(context, tid, self.parent)
 
     def complete(self, context, **kwargs):
         return [

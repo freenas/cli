@@ -39,7 +39,7 @@ import contextlib
 from freenas.utils import first_or_default, query as q
 from freenas.cli.parser import CommandCall, Literal, Symbol, BinaryParameter, Comment
 from freenas.cli.complete import NullComplete, EnumComplete
-from freenas.cli.utils import post_save, edit_in_editor, PrintableNone, TaskPromise
+from freenas.cli.utils import post_save, edit_in_editor, PrintableNone, TaskPromise, EntityPromise
 from freenas.cli.output import (
     ValueType, Object, Table, Sequence,
     output_msg, read_value, format_value
@@ -1112,7 +1112,7 @@ class CreateEntityCommand(Command):
             prop.do_set(ns.entity, v)
 
         tid = self.parent.save(ns, new=True)
-        return TaskPromise(context, tid)
+        return EntityPromise(context, tid, ns)
 
     def complete(self, context, **kwargs):
         if 'kwargs' in kwargs:

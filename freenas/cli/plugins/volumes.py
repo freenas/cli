@@ -34,7 +34,7 @@ from freenas.cli.namespace import (
 )
 from freenas.cli.complete import NullComplete, EnumComplete, EntitySubscriberComplete
 from freenas.cli.output import Table, ValueType, output_tree, format_value, read_value, Sequence
-from freenas.cli.utils import TaskPromise, post_save, iterate_vdevs, to_list, correct_disk_path
+from freenas.cli.utils import TaskPromise, EntityPromise, post_save, iterate_vdevs, to_list, correct_disk_path
 from freenas.utils import first_or_default, extend
 
 
@@ -347,6 +347,9 @@ class ImportVolumeCommand(Command):
     Imports a detached volume.
     When importing encrypted volume key and/or password and disks must be provided.
     """
+    def __init__(self, parent):
+        self.parent = parent
+
     def run(self, context, args, kwargs, opargs):
         if len(args) < 1:
             raise CommandException('Not enough arguments passed')
@@ -383,7 +386,7 @@ class ImportVolumeCommand(Command):
                 oldname = vol['name']
 
         tid = context.submit_task('volume.import', id, kwargs.get('newname', oldname), {}, encryption, password)
-        return TaskPromise(context, tid)
+        return EntityPromise(context, tid, self.parent)
 
 
 @description("Imports items from a given volume")
@@ -1137,7 +1140,7 @@ class CloneCommand(Command):
             new_name
         )
 
-        return TaskPromise(context, tid)
+        return EntityPromise(context, tid, self.parent)
 
     def complete(self, context, **kwargs):
         return [
@@ -1410,7 +1413,7 @@ class CreateVolumeCommand(Command):
                 auto_unlock
             )
 
-            return TaskPromise(context, tid)
+            return EntityPromise(context, tid, self.parent)
         elif volume_type == 'custom':
             if not isinstance(kwargs.get('topology'), dict):
                 raise CommandException(_("Volume topology needs to be passed as 'topology' parameter"))
@@ -1464,7 +1467,7 @@ class CreateVolumeCommand(Command):
             password,
             callback=lambda s, t: post_save(ns, s, t))
 
-        return TaskPromise(context, tid)
+        return EntityPromise(context, tid, ns)
 
     def complete(self, context, **kwargs):
         return [
@@ -1669,7 +1672,7 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
         self.extra_commands = {
             'find': FindVolumesCommand(),
             'find_media': FindMediaCommand(),
-            'import': ImportVolumeCommand(),
+            'import': ImportVolumeCommand(self),
         }
 
         self.entity_commands = self.get_entity_commands

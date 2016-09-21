@@ -31,7 +31,7 @@ from freenas.cli.namespace import (
 )
 from freenas.cli.output import Object, Sequence, ValueType, format_value
 from freenas.cli.descriptions import events
-from freenas.cli.utils import TaskPromise, post_save, parse_timedelta
+from freenas.cli.utils import EntityPromise, post_save, parse_timedelta
 import gettext
 
 t = gettext.translation('freenas-cli', fallback=True)
@@ -250,7 +250,7 @@ class SystemDatasetImportCommand(Command):
             raise CommandException(_('Please specify a volume name'))
 
         tid = context.submit_task('system_dataset.import', vol, callback=lambda s: post_save(self.parent, s))
-        return TaskPromise(context, tid)
+        return EntityPromise(context, tid, self.parent)
 
 
 @description("Time namespace")

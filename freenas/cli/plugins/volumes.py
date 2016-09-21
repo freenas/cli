@@ -232,7 +232,7 @@ class OfflineVdevCommand(Command):
 
     Example: offline ada1
 
-    Offlines a disk in a volume"
+    Offlines a disk in a volume.
     """
     def __init__(self, parent):
         self.parent = parent
@@ -310,6 +310,9 @@ class FindVolumesCommand(Command):
     """
     Usage: find
 
+    Examples:
+            find
+
     Finds volumes that can be imported.
     """
     def run(self, context, args, kwargs, opargs):
@@ -325,6 +328,11 @@ class FindVolumesCommand(Command):
 class FindMediaCommand(Command):
     """
     Usage: find_media
+
+    Examples:
+            find_media
+
+    Finds media that can be used to import data from.
     """
     def run(self, context, args, kwargs, opargs):
         media = context.call_sync('volume.find_media')
@@ -394,6 +402,10 @@ class ImportFromVolumeCommand(Command):
     """
     Usage: import <all\vms\shares\system>
 
+    Examples:
+            import all
+            import vms
+
     Imports services from a volume.
     """
     def __init__(self, parent):
@@ -436,6 +448,8 @@ class DetachVolumeCommand(Command):
 class UpgradeVolumeCommand(Command):
     """
     Usage: upgrade
+
+    Examples: upgrade
 
     Upgrades a volume.
     """
@@ -613,6 +627,8 @@ class ShowTopologyCommand(Command):
     """
     Usage: show_topology
 
+    Example: show_topology
+
     Shows the volume topology.
     """
     def __init__(self, parent):
@@ -634,6 +650,8 @@ class ShowTopologyCommand(Command):
 class ShowDisksCommand(Command):
     """
     Usage: show_disks
+
+    Examples: show_disks
 
     Shows disk status for the volume.
     """
@@ -772,6 +790,13 @@ class ReplicateCommand(Command):
 
 
 class OpenFilesCommand(Command):
+    """
+    Usage: open_files
+
+    Examples: open_files
+
+    Shows the files currently open.
+    """
     def __init__(self, parent):
         self.parent = parent
 
@@ -865,6 +890,8 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
         self.entity_localdoc['DeleteEntityCommand'] = ("""\
             Usage: delete
 
+            Examples: delete
+
             Deletes a dataset.""")
         self.localdoc['ListCommand'] = ("""\
             Usage: show
@@ -885,14 +912,16 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
             descr='Name',
             name='name',
             get='id',
-            list=True
+            list=True,
+            usage=_("The name of the dataset.")
         )
 
         self.add_property(
             descr='Type',
             name='type',
             get='type',
-            list=True
+            list=True,
+            usage=_("The type of dataset (can be either FILESYSTEM which is a basic ZFS dataset or a VOLUME which is a ZVOL")
         )
 
         self.add_property(
@@ -900,7 +929,8 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
             name='permissions_type',
             get='permissions_type',
             list=False,
-            condition=lambda o: o['type'] == 'FILESYSTEM'
+            condition=lambda o: o['type'] == 'FILESYSTEM',
+            usage=_("Type of permissions (can be either standard PERM or ACL)") 
         )
 
         self.add_property(
@@ -908,7 +938,8 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
             name='owner',
             get='permissions.user',
             list=False,
-            condition=lambda o: o['type'] == 'FILESYSTEM'
+            condition=lambda o: o['type'] == 'FILESYSTEM',
+            usage=_("User that is the owner of the dataset.")
         )
 
         self.add_property(
@@ -916,7 +947,8 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
             name='group',
             get='permissions.group',
             list=False,
-            condition=lambda o: o['type'] == 'FILESYSTEM'
+            condition=lambda o: o['type'] == 'FILESYSTEM',
+            usage=_("Group that has ownership permissions for the dataset.")
         )
 
         self.add_property(
@@ -928,7 +960,8 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
             enum=[
                 'on', 'off', 'gzip', 'gzip-1', 'gzip-2', 'gzip-3', 'gzip-4', 'gzip-5',
                 'gzip-6', 'gzip-7', 'gzip-8', 'gzip-9', 'lzjb', 'lz4', 'zle'
-            ]
+            ],
+            usage=_("Type of compression, (i.e. gzip, lz4, etc.)")
         )
 
         self.add_property(
@@ -936,7 +969,8 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
             name='used',
             get='properties.used.value',
             set=None,
-            list=True
+            list=True,
+            usage=_("Amount of space is used on the dataset.")
         )
 
         self.add_property(
@@ -944,7 +978,8 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
             name='available',
             get='properties.available.value',
             set=None,
-            list=True
+            list=True,
+            usage=_("Amount of space is available on the dataset.")
         )
 
         self.add_property(
@@ -953,7 +988,8 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
             get='properties.atime.parsed',
             list=False,
             type=ValueType.BOOLEAN,
-            condition=lambda o: o['type'] == 'FILESYSTEM'
+            condition=lambda o: o['type'] == 'FILESYSTEM',
+            usage=_("Last time the dataset was accessed.")
         )
 
         self.add_property(
@@ -964,7 +1000,8 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
             enum=[
                 'on', 'off', 'verify', 'sha256', 'sha256,verify',
                 'sha512', 'sha512,verify', 'skein', 'skein,verify', 'edonr,verify'
-            ]
+            ],
+            usage=_("Type of deduplication, use 'off' for none.")
         )
 
         self.add_property(
@@ -973,7 +1010,8 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
             get='properties.refquota.parsed',
             list=False,
             type=ValueType.SIZE,
-            condition=lambda o: o['type'] == 'FILESYSTEM'
+            condition=lambda o: o['type'] == 'FILESYSTEM',
+            usage=_("Size quota for dataset")
         )
 
         self.add_property(
@@ -982,7 +1020,8 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
             get='properties.quota.parsed',
             list=False,
             type=ValueType.SIZE,
-            condition=lambda o: o['type'] == 'FILESYSTEM'
+            condition=lambda o: o['type'] == 'FILESYSTEM',
+            usage=_("Size quota for the child datasets")
         )
 
         self.add_property(
@@ -991,7 +1030,8 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
             get='properties.refreservation.parsed',
             list=False,
             type=ValueType.SIZE,
-            condition=lambda o: o['type'] == 'FILESYSTEM'
+            condition=lambda o: o['type'] == 'FILESYSTEM',
+            usage=_("Amount of space reserved for this dataset")
         )
 
         self.add_property(
@@ -1000,7 +1040,8 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
             get='properties.reservation.parsed',
             list=False,
             type=ValueType.SIZE,
-            condition=lambda o: o['type'] == 'FILESYSTEM'
+            condition=lambda o: o['type'] == 'FILESYSTEM',
+            usage=_("Amount of space reserved for the child datasets")
         )
 
         self.add_property(
@@ -1010,7 +1051,8 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
             set='volsize',
             list=False,
             type=ValueType.SIZE,
-            condition=lambda o: o['type'] == 'VOLUME'
+            condition=lambda o: o['type'] == 'VOLUME',
+            usage=_("Size of the volume.")
         )
 
         self.add_property(
@@ -1018,7 +1060,8 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
             name='blocksize',
             get='properties.volblocksize.parsed',
             list=False,
-            condition=lambda o: o['type'] == 'VOLUME'
+            condition=lambda o: o['type'] == 'VOLUME',
+            usage=_("Blocksize for the volume.")
         )
 
         self.add_property(
@@ -1026,7 +1069,8 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
             name='mounted',
             get='mounted',
             list=True,
-            type=ValueType.BOOLEAN
+            type=ValueType.BOOLEAN,
+            usage=_("Tells if the volume is mounted or not.")
         )
 
         self.add_property(
@@ -1035,7 +1079,8 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
             get='temp_mountpoint',
             list=False,
             usersetable=False,
-            condition=lambda o: o['temp_mountpoint']
+            condition=lambda o: o['temp_mountpoint'],
+            usage=_("Shows the mountpoint if a volume is currently mounted to one")
         )
 
         self.primary_key = self.get_mapping('name')
@@ -1171,13 +1216,17 @@ class SnapshotsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Ent
             name='id',
             get='id',
             set='id',
-            list=True)
+            list=True,
+            usage=_("ID of the snapshot.")
+        )
 
         self.add_property(
             descr='Dataset name',
             name='dataset',
             get='dataset',
-            list=True)
+            list=True,
+            usage=_("Name of the dataset.")
+        )
 
         self.add_property(
             descr='Recursive',
@@ -1185,14 +1234,17 @@ class SnapshotsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Ent
             get=None,
             set='recursive',
             list=False,
-            type=ValueType.BOOLEAN)
+            type=ValueType.BOOLEAN,
+            usage=_("Boolean that sets whether or not the snapshots are recursive.")
+        )
 
         self.add_property(
             descr='Replicable',
             name='replicable',
             get='replicable',
             list=False,
-            type=ValueType.BOOLEAN
+            type=ValueType.BOOLEAN,
+            usage=_("Boolean that sets whether or not the snapshots are replicable.")
         )
 
         self.add_property(
@@ -1200,7 +1252,8 @@ class SnapshotsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Ent
             name='lifetime',
             get='lifetime',
             list=False,
-            type=ValueType.NUMBER
+            type=ValueType.NUMBER,
+            usage=_("Lifetime of the snapshot.")
         )
 
         self.add_property(
@@ -1208,7 +1261,9 @@ class SnapshotsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Ent
             name='compression',
             get='properties.compression.parsed',
             set='properties.compression.parsed',
-            list=True)
+            list=True,
+            usage=_("Type of compression, (i.e. gzip, lz4, etc.)")
+        )
 
         self.add_property(
             descr='Used',
@@ -1216,7 +1271,9 @@ class SnapshotsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Ent
             get='properties.used.parsed',
             set=None,
             type=ValueType.SIZE,
-            list=True)
+            list=True,
+            usage=_("Amount of space used on the dataset.")
+        )
 
         self.add_property(
             descr='Available',
@@ -1224,7 +1281,9 @@ class SnapshotsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Ent
             get='properties.available.parsed',
             set=None,
             type=ValueType.SIZE,
-            list=True)
+            list=True,
+            usage=_("Amount of space is available on the dataset.")
+        )
 
         self.primary_key = self.get_mapping('id')
         self.entity_commands = lambda this: {
@@ -1253,7 +1312,8 @@ class FilesystemNamespace(EntityNamespace):
         self.add_property(
             descr='Name',
             name='name',
-            get='name'
+            get='name',
+            usage=_("The name of the file.")
         )
 
 
@@ -1488,6 +1548,8 @@ class SetPasswordCommand(Command):
     """
     Usage: password <password>
 
+    Example: password mypassword
+
     Allows to provide a password that protects an encrypted volume.
     """
     def __init__(self, parent):
@@ -1516,6 +1578,8 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
         self.entity_localdoc['DeleteEntityCommand'] = ("""\
             Usage: delete
 
+            Examples: delete
+
             Deletes a volume.""")
         self.localdoc['ListCommand'] = ("""\
             Usage: show
@@ -1538,56 +1602,71 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
             descr='Volume name',
             name='name',
             get='id',
-            list=True)
+            list=True,
+            usage=_("The name of the volume.")
+        )
 
         self.add_property(
             descr='Encrypted by key',
             name='key_encrypted',
             get='key_encrypted',
             type=ValueType.BOOLEAN,
-            set=None)
+            set=None,
+            usage=_("Flag that tells whether or not the volume is encrypted with a key.")
+        )
 
         self.add_property(
             descr='Encrypted by password',
             name='password_encrypted',
             get='password_encrypted',
             type=ValueType.BOOLEAN,
-            set=None)
+            set=None,
+            usage=_("Flag that tells whether or not the volume is encrypted with a password.")
+        )
 
         self.add_property(
             descr='Automatic unlock',
             name='auto_unlock',
             get='auto_unlock',
             type=ValueType.BOOLEAN,
-            condition=lambda o: o.get('key_encrypted') and not o.get('password_encrypted'))
+            condition=lambda o: o.get('key_encrypted') and not o.get('password_encrypted'),
+            usage=_("Flag that tells whether or not the volume is set to automatically unlock.")
+        )
 
         self.add_property(
             descr='Providers',
             name='providers',
             get='providers_presence',
             type=ValueType.STRING,
-            set=None)
+            set=None,
+            usage=_("The provider of the volume if any.")
+        )
 
         self.add_property(
             descr='Status',
             name='status',
             get='status',
             set=None,
-            list=True)
+            list=True,
+            usage=_("The status of the volume.")    
+        )
 
         self.add_property(
             descr='Mount point',
             name='mountpoint',
             get='mountpoint',
             set=None,
-            list=True)
+            list=True,
+            usage=_("Displays the current mount point of the volume.")
+        )
 
         self.add_property(
             descr='Last scrub time',
             name='last_scrub_time',
             get='scan.end_time',
             set=None,
-            list=False
+            list=False,
+            usage=_("Shows the last scrub time.")
         )
 
         self.add_property(
@@ -1595,7 +1674,8 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
             name='last_scrub_errors',
             get='scan.errors',
             set=None,
-            list=False
+            list=False,
+            usage=_("Shows the last scrub errors if any.")
         )
 
         self.add_property(
@@ -1604,7 +1684,8 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
             get='properties.size.parsed',
             set=None,
             type=ValueType.SIZE,
-            list=False
+            list=False,
+            usage=_("Shows the size of the volume.")
         )
 
         self.add_property(
@@ -1613,7 +1694,8 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
             get='properties.allocated.parsed',
             set=None,
             type=ValueType.SIZE,
-            list=False
+            list=False,
+            usage=_("Shows the allocated size of the volume.")
         )
 
         self.add_property(
@@ -1622,7 +1704,8 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
             get='properties.free.parsed',
             set=None,
             type=ValueType.SIZE,
-            list=False
+            list=False,
+            usage=_("Shows the amount of space free on the volume.")
         )
 
         self.add_property(
@@ -1630,7 +1713,8 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
             name='capacity',
             get='properties.capacity.parsed',
             set=None,
-            list=False
+            list=False,
+            usage=_("Shows the capacity of the volume.")
         )
 
         self.add_property(
@@ -1638,7 +1722,8 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
             name='fragmentation',
             get='properties.fragmentation.parsed',
             set=None,
-            list=False
+            list=False,
+            usage=_("Shows the volume's fragmentation.")
         )
 
         self.add_property(
@@ -1647,7 +1732,8 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
             get='root_vdev.stats.read_errors',
             set=None,
             type=ValueType.NUMBER,
-            list=False
+            list=False,
+            usage=_("Shows the number of read errors on the volume.")
         )
 
         self.add_property(
@@ -1656,7 +1742,8 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
             get='root_vdev.stats.write_errors',
             set=None,
             type=ValueType.NUMBER,
-            list=False
+            list=False,
+            usage=_("Shows the number of write errors on the volume.")
         )
 
         self.add_property(
@@ -1665,7 +1752,8 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
             get='root_vdev.stats.checksum_errors',
             set=None,
             type=ValueType.NUMBER,
-            list=False
+            list=False,
+            usage=_("Shows the number of checksum errors on the volume.")
         )
 
         self.primary_key = self.get_mapping('name')

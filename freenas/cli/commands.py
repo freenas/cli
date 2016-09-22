@@ -98,11 +98,11 @@ class SetoptCommand(Command):
     def run(self, context, args, kwargs, opargs):
         if args:
             raise CommandException(_(
-                "Incorrect syntax {0}\n{1}".format(args, inspect.getdoc(self))
+                "Incorrect syntax {0}. For help see 'help <command>'".format(args)
             ))
         if not kwargs:
             raise CommandException(_(
-                'Please specify a variable to set.\n{0}'.format(inspect.getdoc(self))
+                'Please specify a variable to set. For help see "help <command>"'
             ))
 
         for k, v in list(kwargs.items()):
@@ -143,7 +143,7 @@ class ChangeNamespaceCommand(Command):
                 'You cannot specify command like properties in this navigation command'
             ))
         if len(args) > 1:
-            raise CommandException(_('Invalid syntax: {0}.\n{1}'.format(args, inspect.getdoc(self))))
+            raise CommandException(_('Invalid syntax: {0}. For help see "help <command>"'.format(args)))
         elif len(args) == 1:
             path = args[0][0] + args[0][1:].replace('/', ' ').strip()
             return context.ml.process(path)
@@ -216,7 +216,7 @@ class PrintoptCommand(Command):
 
     def run(self, context, args, kwargs, opargs):
         if len(kwargs) > 0:
-            raise CommandException(_("Invalid syntax {0}.\n{1}".format(kwargs, inspect.getdoc(self))))
+            raise CommandException(_("Invalid syntax {0}. For help see 'help <command>'".format(kwargs)))
 
         if len(args) == 0:
             var_dict_list = []
@@ -238,7 +238,7 @@ class PrintoptCommand(Command):
             except KeyError:
                 raise CommandException(_("No such Environment Variable exists"))
         else:
-            raise CommandException(_("Invalid syntax {0}.\n{1}".format(args, inspect.getdoc(self))))
+            raise CommandException(_("Invalid syntax {0}. For help see 'help <command>'".format(args)))
 
     def complete(self, context, **kwargs):
         return [create_variable_completer(k, v) for k, v in context.variables.get_all()]
@@ -271,7 +271,7 @@ class SaveoptCommand(Command):
             return "Environment Variables Saved to file: {0}".format(args[0])
         if len(args) > 1:
             raise CommandException(_(
-                "Incorrect syntax: {0}\n{1}".format(args, inspect.getdoc(self))
+                "Incorrect syntax: {0}. For help see 'help <command>'".format(args)
             ))
 
 
@@ -493,9 +493,8 @@ class LoginCommand(Command):
 
     def run(self, context, args, kwargs, opargs):
         if len(args) < 2:
-            raise CommandException("Not enough arguments provided.\n" +
-                                   inspect.getdoc(self))
-        context.connection.login_user(args[0], args[1])
+            raise CommandException("Not enough arguments provided. For help see 'help <command>'")
+        context.connection.login_user(args[0], args[1], check_password=True)
         context.connection.subscribe_events('*')
         context.start_entity_subscribers()
         context.login_plugins()
@@ -818,7 +817,7 @@ class HistoryCommand(Command):
         if args:
             if len(args) != 1:
                 raise CommandException(_(
-                    "Invalid Syntax for history command.\n{0}".format(inspect.getdoc(self))
+                    "Invalid Syntax for history command. For help see 'help <command>'"
                 ))
             try:
                 desired_range = int(args[0])
@@ -851,8 +850,7 @@ class SourceCommand(Command):
 
     def run(self, context, args, kwargs, opargs):
         if len(args) == 0:
-            raise CommandException(_("Please provide a filename.\n") +
-                                   inspect.getdoc(self))
+            raise CommandException(_("Please provide a filename. For help see 'help <command>'"))
         else:
             for arg in args:
                 arg = os.path.expanduser(arg)
@@ -889,7 +887,7 @@ class DumpCommand(Command):
     def run(self, context, args, kwargs, opargs):
         ns = self.exec_path[-1]
         if len(args) > 1:
-            raise CommandException(_('Invalid syntax: {0}.\n{1}'.format(args, inspect.getdoc(self))))
+            raise CommandException(_('Invalid syntax: {0}. For help see "help <command>"'.format(args)))
         result = []
         if getattr(ns, 'serialize'):
             try:
@@ -1174,14 +1172,12 @@ class SearchPipeCommand(PipeCommand):
 
         if len(kwargs) > 0:
             raise CommandException(_(
-                "Invalid syntax {0}.\n".format(kwargs) +
-                inspect.getdoc(self)
+                "Invalid syntax {0}. For help see 'help <command>'".format(kwargs)
             ))
 
         if len(args) > 0:
             raise CommandException(_(
-                "Invalid syntax {0}.\n".format(args) +
-                inspect.getdoc(self)
+                "Invalid syntax {0}. For help see 'help <command>'".format(args)
             ))
 
         return {"filter": mapped_opargs}
@@ -1270,14 +1266,12 @@ class ExcludePipeCommand(PipeCommand):
 
         if len(kwargs) > 0:
             raise CommandException(_(
-                "Invalid syntax {0}.\n".format(kwargs) +
-                inspect.getdoc(self)
+                "Invalid syntax {0}. For help see 'help <command>'".format(kwargs)
             ))
 
         if len(args) > 0:
             raise CommandException(_(
-                "Invalid syntax {0}.\n".format(args) +
-                inspect.getdoc(self)
+                "Invalid syntax {0}. For help see 'help <command>'".format(args)
             ))
 
         result = []
@@ -1319,8 +1313,7 @@ class LimitPipeCommand(PipeCommand):
             raise CommandException(_("Please specify a number to limit."))
         if not isinstance(args[0], int) or len(args) > 1:
             raise CommandException(_(
-                "Invalid syntax {0}.\n".format(args) +
-                inspect.getdoc(self)
+                "Invalid syntax {0}. For help see 'help <command>'".format(args)
             ))
         return {"params": {"limit": args[0]}}
 

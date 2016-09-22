@@ -63,7 +63,8 @@ from freenas.cli.parser import (
     parse, unparse, Symbol, Literal, BinaryParameter, UnaryExpr, BinaryExpr, PipeExpr, AssignmentStatement,
     IfStatement, ForStatement, ForInStatement, WhileStatement, FunctionCall, CommandCall, Subscript,
     ExpressionExpansion, CommandExpansion, SyncCommandExpansion, FunctionDefinition, ReturnStatement,
-    BreakStatement, UndefStatement, Redirection, AnonymousFunction, ShellEscape, Parentheses, ConstStatement
+    BreakStatement, UndefStatement, Redirection, AnonymousFunction, ShellEscape, Parentheses, ConstStatement,
+    Quote
 )
 from freenas.cli.output import (
     ValueType, ProgressBar, output_lock, output_msg, read_value, format_value,
@@ -1504,6 +1505,9 @@ class MainLoop(object):
                     [self.eval(t) for t in convert_to_literals(token.args)],
                     {}, {}
                 )
+
+            if isinstance(token, Quote):
+                return token
 
             if isinstance(token, Redirection):
                 with open(token.path, 'a+') as f:

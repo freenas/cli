@@ -128,7 +128,11 @@ def post_save(this, status, task):
         this.entity = copy.deepcopy(this.orig_entity)
 
     if status in ['FINISHED', 'FAILED', 'ABORTED', 'CANCELLED']:
+        if task['result'] is not None:
+            this.entity[this.parent.primary_key_name] = task['result']
+
         this.modified = False
+        this.wait()
         this.load()
         this.update_commands()
 
@@ -287,12 +291,9 @@ class EntityPromise(TaskPromise):
     def __init__(self, context, tid, ns, result=None):
         super(EntityPromise, self).__init__(context, tid, result)
         self.ns = ns
+        print(ns.entity)
 
     def wait(self):
         self.result = super(EntityPromise, self).wait()
-        if self.task and self.task['state'] == 'FINISHED' and self.task['result'] is not None:
-            key = self.ns.primary_key_name
-
-            self.ns.query((key, '=', self.ns.entity[key]), single=True, timeout=None)
-
-        return self.result
+        self.ns.wait()
+        return self.ns

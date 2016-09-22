@@ -625,6 +625,9 @@ class ItemNamespace(Namespace):
     def load(self):
         raise NotImplementedError()
 
+    def wait(self):
+        raise NotImplementedError()
+
     def save(self):
         raise NotImplementedError()
 
@@ -761,6 +764,7 @@ class ConfigNamespace(ItemNamespace):
         else:
             # This is in case the task failed!
             self.entity = copy.deepcopy(self.orig_entity)
+
         self.modified = False
 
     def save(self):
@@ -902,6 +906,9 @@ class SingleItemNamespace(ItemNamespace):
             # This is in case the task failed!
             self.entity = copy.deepcopy(self.orig_entity)
         self.modified = False
+
+    def wait(self):
+        self.parent.wait_one(self.get_name())
 
     def save(self):
         return self.parent.save(self, not self.saved)
@@ -1162,6 +1169,9 @@ class EntityNamespace(Namespace):
     def get_one(self, name):
         raise NotImplementedError()
 
+    def wait_one(self, name):
+        return
+
     def update_entity(self, name):
         raise NotImplementedError()
 
@@ -1269,6 +1279,13 @@ class EntitySubscriberBasedLoadMixin(object):
             (self.primary_key_name, '=', name), *self.extra_query_params,
             single=True
         ))
+
+    def wait_one(self, name):
+        self.context.entity_subscribers[self.entity_subscriber_name].query(
+            (self.primary_key_name, '=', name), *self.extra_query_params,
+            single=True,
+            timeout=None
+        )
 
 
 class TaskBasedSaveMixin(object):

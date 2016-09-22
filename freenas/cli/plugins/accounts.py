@@ -59,6 +59,7 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
     The user namespace provides commands for listing and managing local user accounts.
     """
     shells = None
+
     def __init__(self, name, context):
         super(UsersNamespace, self).__init__(name, context)
 

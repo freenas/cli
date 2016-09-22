@@ -79,6 +79,7 @@ BinaryParameter = ASTObject('BinaryParameter', 'left', 'op', 'right')
 Literal = ASTObject('Literal', 'value', 'type')
 Parentheses = ASTObject('Parentheses', 'expr')
 CommandExpansion = ASTObject('CommandExpansion', 'expr')
+SyncCommandExpansion = ASTObject('SyncCommandExpansion', 'expr')
 ExpressionExpansion = ASTObject('ExpressionExpansion', 'expr')
 PipeExpr = ASTObject('PipeExpr', 'left', 'right')
 FunctionCall = ASTObject('FunctionCall', 'name', 'args')
@@ -123,8 +124,9 @@ tokens = list(reserved.values()) + [
     'ATOM', 'NUMBER', 'HEXNUMBER', 'BINNUMBER', 'OCTNUMBER', 'STRING',
     'ASSIGN', 'LPAREN', 'RPAREN', 'EQ', 'NE', 'GT', 'GE', 'LT', 'LE',
     'REGEX', 'UP', 'PIPE', 'LIST', 'COMMA', 'INC', 'DEC', 'PLUS', 'MINUS',
-    'MUL', 'DIV', 'EOPEN', 'COPEN', 'LBRACE', 'RBRACE', 'LBRACKET', 'RBRACKET',
-    'NEWLINE', 'SEMICOLON', 'COLON', 'REDIRECT', 'MOD', 'SHELL'
+    'MUL', 'DIV', 'EOPEN', 'EOPEN_SYNC', 'COPEN', 'LBRACE', 'RBRACE',
+    'LBRACKET', 'RBRACKET', 'NEWLINE', 'SEMICOLON', 'COLON', 'REDIRECT',
+    'MOD', 'SHELL'
 ]
 
 
@@ -261,7 +263,7 @@ def t_script_ATOM(t):
 
 
 def t_INITIAL_ATOM(t):
-    r'[0-9a-zA-Z_\-\+\*\:#@\/][0-9a-zA-Z_\.\/#@\:\-\+\*\/]*'
+    r'[0-9a-zA-Z_\-\+\*\:#\/][0-9a-zA-Z_\.\/#@\:\-\+\*\/]*'
     return common_atom_routine(t)
 
 
@@ -291,6 +293,7 @@ t_script_COLON = r':'
 t_REDIRECT = r'>>'
 t_SHELL = r'!'
 
+
 precedence = (
     ('left', 'AND', 'OR'),
     ('right', 'NOT'),
@@ -312,6 +315,12 @@ def t_ESCAPE_COMMENTS(t):
 
 def t_ANY_EOPEN(t):
     r'\$\('
+    t.lexer.push_state('INITIAL')
+    return t
+
+
+def t_ANY_EOPEN_SYNC(t):
+    r'@\$\('
     t.lexer.push_state('INITIAL')
     return t
 
@@ -605,6 +614,7 @@ def p_expr(p):
     expr : subscript_expr
     expr : anon_function_expr
     expr : expr_expansion
+    expr : sync_expr_expansion
     expr : expr_parens
     expr : COPEN expr RBRACE
     """
@@ -626,7 +636,14 @@ def p_expr_expansion(p):
     """
     expr_expansion : EOPEN command RPAREN
     """
-    p[0] = CommandExpansion(p[2])
+    p[0] = CommandExpansion(p[2], p=p)
+
+
+def p_sync_expr_expansion(p):
+    """
+    sync_expr_expansion : EOPEN_SYNC command RPAREN
+    """
+    p[0] = SyncCommandExpansion(p[2], p=p)
 
 
 def p_array_literal(p):

@@ -40,7 +40,7 @@ import logging
 import copy
 import getpass
 from datetime import datetime
-from freenas.cli.parser import parse, unparse
+from freenas.cli.parser import Quote, parse, unparse
 from freenas.cli.complete import NullComplete, EnumComplete
 from freenas.cli.namespace import (
     Command, PipeCommand, CommandException, description,
@@ -1116,11 +1116,11 @@ class TimeCommand(Command):
     Measures execution time of <code>
     """
     def run(self, context, args, kwargs, opargs):
-        if len(args) < 1:
+        if len(args) < 1 or not isinstance(args[0], Quote):
             raise CommandException("Provide code fragment to evaluate")
 
         start = datetime.now()
-        result = context.eval(parse(args[0], '<time>'))
+        result = context.eval(args[0].body)
         end = datetime.now()
         msg = "Execution time: {0} seconds".format((end - start).total_seconds())
 

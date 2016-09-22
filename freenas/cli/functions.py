@@ -38,7 +38,7 @@ from threading import Timer
 from builtins import input
 from freenas.cli.namespace import Command
 from freenas.cli.output import format_output, output_msg, Table, Sequence
-from freenas.cli.parser import parse, unparse, FunctionDefinition
+from freenas.cli.parser import parse, unparse, read_ast as parser_read_ast, FunctionDefinition
 from freenas.cli import config
 from freenas.utils import decode_escapes
 
@@ -245,7 +245,11 @@ def waitfor(promise):
 
 
 def dump_ast(ast):
-    print(json.dumps(ast.to_json(), indent=4))
+    return ast.to_json()
+
+
+def read_ast(value):
+    return parser_read_ast(value)
 
 
 functions = {
@@ -291,5 +295,6 @@ functions = {
     're_match': re_match,
     're_search': re_search,
     'waitfor': waitfor,
-    'dump_ast': dump_ast
+    'dump_ast': dump_ast,
+    'read_ast': read_ast
 }

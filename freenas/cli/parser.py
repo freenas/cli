@@ -77,7 +77,7 @@ def ASTObject(name, *args):
 
             return value
 
-        for i in self.__args_list:
+        for i in self.args_list:
             value = getattr(self, i)
 
             if isinstance(value, list):
@@ -93,7 +93,7 @@ def ASTObject(name, *args):
     dct['__init__'] = init
     dct['__str__'] = string
     dct['__repr__'] = string
-    dct['__args_list'] = args
+    dct['args_list'] = args
     dct['to_json'] = to_json
     return type(name, (), dct)
 
@@ -155,7 +155,7 @@ tokens = list(reserved.values()) + [
     'REGEX', 'UP', 'PIPE', 'LIST', 'COMMA', 'INC', 'DEC', 'PLUS', 'MINUS',
     'MUL', 'DIV', 'EOPEN', 'EOPEN_SYNC', 'COPEN', 'LBRACE', 'RBRACE',
     'LBRACKET', 'RBRACKET', 'NEWLINE', 'SEMICOLON', 'COLON', 'REDIRECT',
-    'MOD', 'SHELL', 'QUOTE'
+    'MOD', 'SHELL', 'LQUOTE', 'RQUOTE'
 ]
 
 
@@ -321,7 +321,6 @@ t_LIST = r'\?'
 t_script_COLON = r':'
 t_REDIRECT = r'>>'
 t_SHELL = r'!'
-t_QUOTE = '`'
 
 
 precedence = (
@@ -334,7 +333,7 @@ precedence = (
     ('left', 'MUL', 'DIV', 'MOD'),
     ('left', 'REGEX'),
     ('right', 'LBRACKET', 'RBRACKET'),
-    ('left', 'INC', 'DEC'),
+    ('left', 'INC', 'DEC')
 )
 
 
@@ -384,6 +383,18 @@ def t_ANY_RBRACE(t):
     r'}'
     t.lexer.pop_state()
     t.lexer.parens -= 1
+    return t
+
+
+def t_ANY_QUOTE(t):
+    r'`'
+    if t.lexer.seen_quote:
+        t.type = 'RQUOTE'
+        t.lexer.seen_quote = False
+        return t
+
+    t.lexer.seen_quote = True
+    t.type = 'LQUOTE'
     return t
 
 
@@ -837,7 +848,7 @@ def p_binary_expr(p):
 
 def p_quote_expr(p):
     """
-    quote : QUOTE stmt_list QUOTE
+    quote : LQUOTE stmt_list RQUOTE
     """
     p[0] = Quote(p[2], p=p)
 
@@ -945,6 +956,7 @@ def p_unary_parameter(p):
     unary_parameter : literal
     unary_parameter : array_literal
     unary_parameter : dict_literal
+    unary_parameter : quote
     unary_parameter : COPEN expr RBRACE
     """
     if len(p) == 4:
@@ -1025,13 +1037,14 @@ def p_error(p):
 
 
 lexer = lex.lex()
-parser = yacc.yacc(debug=False, optimize=True, write_tables=False)
+parser = yacc.yacc(debug=True, optimize=True, write_tables=False)
 
 
 def parse(s, filename, recover_errors=False):
     lexer.lineno = 1
     lexer.parens = 0
     lexer.breaknl = False
+    lexer.seen_quote = False
     parser.input = s
     parser.filename = filename
     parser.recover_errors = recover_errors
@@ -1181,3 +1194,18 @@ def unparse(token, indent=0, oneliner=False):
         return '`{0}`'.format(unparse(token.body))
 
     return ''
+
+
+def read_ast(value):
+    if isinstance(value, list):
+        return [read_ast(i) for i in value]
+
+    if isinstance(value, dict):
+        type = globals()[value['type']]
+        args = []
+        for i in type.args_list:
+            args.append(read_ast(value[i]))
+
+        return type(*args)
+
+    return value

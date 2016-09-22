@@ -57,11 +57,19 @@ class TunablesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Enti
 
             Examples: create var=my.tunable value=1 type=SYSCTL
 
-            Crates a tunable. For a list of properties, see 'help properties'.""")
+            Crates a tunable.
+            Tunables of type 'SYSCTL' make changes to the FreeBSD kernel running on a FreeNAS system
+            and can be used to tune the system.
+            Tunables of type 'LOADER' can be used to pass a parameter to the kernel or to load
+            an additional kernem module on system boot.
+            Tunables of type 'RC' are used to pass system configuration options to the system startup scripts
+            as the system boots.
+            For a list of properties, see 'help properties'.""")
 
         self.add_property(
             descr='Variable',
             name='var',
+            usage=(_('Typically name of sysctl or driver to load, as indicated by its man page')),
             get='var',
             set='var',
             list=True)
@@ -69,6 +77,8 @@ class TunablesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Enti
         self.add_property(
             descr='Value',
             name='value',
+            usage=(_('Value to associate with the Variable. Typically this is set to YES to enable '
+                     'the sysctl or driver specified by the Variable')),
             get='value',
             set='value',
             list=True)
@@ -76,6 +86,7 @@ class TunablesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Enti
         self.add_property(
             descr='Type',
             name='type',
+            usage=(_('Type of the Variable. Available chocies are [LOADER|RC|SYSCTL]')),
             get='type',
             set='type',
             enum=['LOADER', 'RC', 'SYSCTL'],
@@ -84,6 +95,7 @@ class TunablesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Enti
         self.add_property(
             descr='Comment',
             name='comment',
+            usage=(_('Optional comment')),
             get='comment',
             set='comment',
             list=True)
@@ -91,6 +103,7 @@ class TunablesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Enti
         self.add_property(
             descr='Enabled',
             name='enabled',
+            usage=(_('Enable switch for the Variable')),
             get='enabled',
             set='enabled',
             type=ValueType.BOOLEAN,

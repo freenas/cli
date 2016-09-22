@@ -27,7 +27,7 @@
 
 from freenas.cli.namespace import (
     Namespace, ConfigNamespace, Command, CommandException, description,
-    RpcBasedLoadMixin, EntityNamespace
+    RpcBasedLoadMixin, EntityNamespace, TaskBasedSaveMixin
 )
 from freenas.cli.output import Object, Sequence, ValueType, format_value
 from freenas.cli.descriptions import events
@@ -251,6 +251,155 @@ class SystemDatasetImportCommand(Command):
 
         tid = context.submit_task('system_dataset.import', vol, callback=lambda s: post_save(self.parent, s))
         return EntityPromise(context, tid, self.parent)
+
+
+@description(_("Manage NTP servers"))
+class NTPServersNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
+    """ The NTP server namespace provides commands for managing NTP servers """
+    def __init__(self, name, context):
+        super(NTPServersNamespace, self).__init__(name, context)
+
+        self.context = context
+        self.query_call = 'ntp_server.query'
+        self.create_task = 'ntp_server.create'
+        self.update_task = 'ntp_server.update'
+        self.delete_task = 'ntp_server.delete'
+        self.required_props = ['name', 'address']
+        self.primary_key_name = 'id'
+        self.localdoc['CreateEntityCommand'] = _("""\
+            Usage: create <name> address=<address> <property>=<value> ...
+
+            Examples: create myntp address=utcnist.colorado.edu
+
+            Adds an NTP server for syncing with. For a list of properties, see 'help properties'.""")
+        self.entity_localdoc['SetEntityCommand'] = _("""\
+            Usage: set <property>=<value> ...
+
+            Examples: set address=utcnist2.colorado.edu
+                      set burst=True
+                      set preferred=yes
+                      set minpoll=6
+                      set maxpoll=15
+
+            Sets a user property. For a list of properties, see 'help properties'.""")
+        self.entity_localdoc['DeleteEntityCommand'] = _("""\
+            Usage: delete
+
+            Examples: delete
+
+            Deletes the specified NTP server.""")
+        self.entity_localdoc['EditEntityCommand'] = ("""\
+            Usage: edit <field>
+
+            Examples: edit name
+
+            Opens the default editor for the specified property. The default editor
+            is inherited from the shell's $EDITOR which can be set from the shell.
+            For a list of properties for the current namespace, see 'help properties'.""")
+        self.entity_localdoc['ShowEntityCommand'] = ("""\
+            Usage: show
+
+            Examples: show
+
+            Display the property values for the current NTP server.""")
+        self.entity_localdoc['GetEntityCommand'] = ("""\
+            Usage: get <field>
+
+            Examples:
+                get name
+                get address
+
+            Display value of specified field.""")
+        self.localdoc['ListCommand'] = ("""\
+            Usage: show
+
+            Lists all NTP servers. Optionally, filter or sort by property.
+            Use 'help properties' to list available properties.
+
+            Examples:
+                show
+                show | search address ~= utcnist """)
+
+        self.add_property(
+            descr='Name',
+            name='name',
+            get='id',
+            set='id',
+            list=True,
+            usage=_("The id of the NTP server, accepts strings"),
+            type=ValueType.STRING
+        )
+
+        self.add_property(
+            descr='Address',
+            name='address',
+            get='address',
+            set='address',
+            list=True,
+            usage=_("Must be a valid hostname for an NTP server"),
+            type=ValueType.STRING
+        )
+
+        self.add_property(
+            descr='Burst',
+            name='burst',
+            get='burst',
+            set='burst',
+            list=True,
+            usage=_("""\
+                    Can be set to true or false, if true this option will send 8 packets
+                    instead of 1 on each poll interval to the server while the server is
+                    reachable for improved timekeeping."""),
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
+            descr='Initial Burst',
+            name='iburst',
+            get='iburst',
+            set='iburst',
+            list=True,
+            usage=_("""\
+                    Can be set to true or false, if true this option will send 8 packets
+                    instead of 1 on each poll interval to the server while the server is
+                    not reachable for improved synchronization."""),
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
+            descr='Preferred',
+            name='prefer',
+            get='prefer',
+            set='prefer',
+            list=True,
+            usage=_("""\
+                    Can be set to yes or no, if true then this will be the preferred server."""),
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
+            descr='Min Poll',
+            name='minpoll',
+            get='minpoll',
+            set='minpoll',
+            list=True,
+            usage=_("""\
+                    An integer value that ranges between 4 and 1 minus the max poll value."""),
+            type=ValueType.NUMBER
+        )
+
+        self.add_property(
+            descr='Max Poll',
+            name='maxpoll',
+            get='maxpoll',
+            set='maxpoll',
+            usage=_("""\
+                    An integer value that ranges between 17 and 1 plus the min poll value."""),
+            list=True,
+            type=ValueType.NUMBER
+        )
+
+        self.primary_key = self.get_mapping('name')
 
 
 @description("Time namespace")
@@ -755,6 +904,7 @@ class SystemNamespace(ConfigNamespace):
             SystemUINamespace('ui', self.context),
             AdvancedNamespace('advanced', self.context),
             TimeNamespace('time', self.context),
+            NTPServersNamespace('ntp', self.context),
             MailNamespace('mail', self.context),
             EventsNamespace('event', self.context),
             SystemDatasetNamespace('system_dataset', self.context),

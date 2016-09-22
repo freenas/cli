@@ -38,6 +38,7 @@ import textwrap
 import re
 import logging
 import copy
+import getpass
 from datetime import datetime
 from freenas.cli.parser import parse, unparse
 from freenas.cli.complete import NullComplete, EnumComplete
@@ -486,14 +487,24 @@ class LoginCommand(Command):
     """
     Usage: login <username> <password>
 
-    Example: login my_username secret
+    Example:
+        login my_username secret
+        login my_username
+        Password: secret
+        login
+        Username: my_username
+        Password: secret
+
 
     Login to the CLI as the specified user.
+    If password or username is not specified with the command user will be prompted for it.
     """
 
     def run(self, context, args, kwargs, opargs):
+        if not args:
+           args = [input('Username:')]
         if len(args) < 2:
-            raise CommandException("Not enough arguments provided. For help see 'help <command>'")
+            args.append(getpass.getpass('Password:'))
         context.connection.login_user(args[0], args[1], check_password=True)
         context.connection.subscribe_events('*')
         context.start_entity_subscribers()

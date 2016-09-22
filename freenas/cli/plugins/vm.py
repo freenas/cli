@@ -476,6 +476,7 @@ class VMDeviceNamespace(NestedObjectLoadMixin, EntityNamespace):
         self.parent = parent
         self.parent_path = 'devices'
         self.allow_create = False
+        self.extra_query_params = [('type', 'in', ('GRAPHICS', 'CDROM', 'NIC', 'USB', 'DISK'))]
         self.has_entities_in_subnamespaces_only = True
 
         self.humanized_summaries = {

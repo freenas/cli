@@ -288,10 +288,9 @@ class TaskPromise(object):
 
 
 class EntityPromise(TaskPromise):
-    def __init__(self, context, tid, ns, result=None):
-        super(EntityPromise, self).__init__(context, tid, result)
+    def __init__(self, context, tid, ns):
+        super(EntityPromise, self).__init__(context, tid, ns)
         self.ns = ns
-        print(ns.entity)
 
     def wait(self):
         self.result = super(EntityPromise, self).wait()

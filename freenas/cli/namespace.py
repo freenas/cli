@@ -80,6 +80,7 @@ class Namespace(object):
         self.localdoc = {}
         self.required_props = []
         self.extra_required_props = None
+        self.conditional_required_props = []
 
     def __str__(self):
         return '<namespace "{0}">'.format(self.get_name())
@@ -1104,10 +1105,11 @@ class CreateEntityCommand(Command):
                                 missing = True
                     if found_one and missing:
                         missing_args.append(' and '.join(prop_set))
-            if hasattr(self.parent, 'conditional_required_props'):
-                for prop in self.parent.conditional_required_props(kwargs):
-                    if prop not in kwargs.keys():
-                        missing_args.append(prop)
+            if self.parent.conditional_required_props:
+                for get_required_props_func in self.parent.conditional_required_props:
+                    for prop in get_required_props_func(kwargs):
+                        if prop not in kwargs.keys():
+                            missing_args.append(prop)
             if len(missing_args) > 0:
                 output_msg(_('Required properties not provided: {0}'.format(', '.join(missing_args))))
                 return

@@ -244,6 +244,10 @@ def waitfor(promise):
     return promise.wait()
 
 
+def dump_ast(ast):
+    print(json.dumps(ast.to_json(), indent=4))
+
+
 functions = {
     'print': print_,
     'printf': printf,
@@ -286,5 +290,6 @@ functions = {
     'enumerate': lambda a: list(enumerate(a)),
     're_match': re_match,
     're_search': re_search,
-    'waitfor': waitfor
+    'waitfor': waitfor,
+    'dump_ast': dump_ast
 }

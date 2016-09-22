@@ -63,10 +63,38 @@ def ASTObject(name, *args):
                     self.args[0].name = str_name[1:]
                     self.args.insert(0, Symbol('/'))
 
+    def to_json(self):
+        ret = {
+            'type': self.__class__.__name__,
+        }
+
+        def to_json_fragment(value):
+            if hasattr(value, 'to_json'):
+                return to_json(value)
+
+            if isinstance(value, type):
+                return {'type': value.__name__}
+
+            return value
+
+        for i in self.__args_list:
+            value = getattr(self, i)
+
+            if isinstance(value, list):
+                value = [to_json_fragment(i) for i in value]
+            else:
+                value = to_json_fragment(value)
+
+            ret[i] = value
+
+        return ret
+
     dct = {k: None for k in args}
     dct['__init__'] = init
     dct['__str__'] = string
     dct['__repr__'] = string
+    dct['__args_list'] = args
+    dct['to_json'] = to_json
     return type(name, (), dct)
 
 

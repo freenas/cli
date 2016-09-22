@@ -505,8 +505,10 @@ class LoginCommand(Command):
            args = [input('Username:')]
         if len(args) < 2:
             args.append(getpass.getpass('Password:'))
-        context.connection.login_user(args[0], args[1], check_password=True)
         context.connection.subscribe_events('*')
+        context.connection.login_user(args[0], args[1], check_password=True)
+        context.user = context.call_sync('session.whoami')
+        context.session_id = context.call_sync('session.get_my_session_id')
         context.start_entity_subscribers()
         context.login_plugins()
 

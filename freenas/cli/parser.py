@@ -1064,6 +1064,9 @@ def unparse(token, indent=0, oneliner=False):
     if isinstance(token, CommandExpansion):
         return '$({0})'.format(unparse(token.expr))
 
+    if isinstance(token, SyncCommandExpansion):
+        return '@$({0})'.format(unparse(token.expr))
+
     if isinstance(token, ExpressionExpansion):
         return '${{{0}}}'.format(unparse(token.expr))
 

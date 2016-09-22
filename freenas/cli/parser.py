@@ -442,6 +442,8 @@ def p_stmt(p):
     stmt : undef_stmt
     stmt : const_stmt
     stmt : command
+    stmt : expr_expansion
+    stmt : sync_expr_expansion
     stmt : call
     stmt : expr_parens
     stmt : shell

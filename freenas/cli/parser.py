@@ -1149,4 +1149,7 @@ def unparse(token, indent=0, oneliner=False):
     if isinstance(token, ShellEscape):
         return ind('!{0}'.format(' '.join(unparse(i) for i in token.args)))
 
+    if isinstance(token, Quote):
+        return '`{0}`'.format(unparse(token.body))
+
     return ''

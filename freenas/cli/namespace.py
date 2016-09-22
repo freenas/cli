@@ -78,7 +78,7 @@ class Namespace(object):
         self.nslist = []
         self.property_mappings = []
         self.localdoc = {}
-        self.required_props = None
+        self.required_props = []
         self.extra_required_props = None
 
     def __str__(self):

@@ -98,6 +98,7 @@ FunctionDefinition = ASTObject('FunctionDefinition', 'name', 'args', 'body')
 AnonymousFunction = ASTObject('AnonymousFunction', 'args', 'body')
 Redirection = ASTObject('Redirection', 'body', 'path')
 ShellEscape = ASTObject('ShellEscape', 'args')
+Quote = ASTObject('Quote', 'body')
 
 
 reserved = {
@@ -126,7 +127,7 @@ tokens = list(reserved.values()) + [
     'REGEX', 'UP', 'PIPE', 'LIST', 'COMMA', 'INC', 'DEC', 'PLUS', 'MINUS',
     'MUL', 'DIV', 'EOPEN', 'EOPEN_SYNC', 'COPEN', 'LBRACE', 'RBRACE',
     'LBRACKET', 'RBRACKET', 'NEWLINE', 'SEMICOLON', 'COLON', 'REDIRECT',
-    'MOD', 'SHELL'
+    'MOD', 'SHELL', 'QUOTE'
 ]
 
 
@@ -292,6 +293,7 @@ t_LIST = r'\?'
 t_script_COLON = r':'
 t_REDIRECT = r'>>'
 t_SHELL = r'!'
+t_QUOTE = '`'
 
 
 precedence = (
@@ -618,6 +620,7 @@ def p_expr(p):
     expr : expr_expansion
     expr : sync_expr_expansion
     expr : expr_parens
+    expr : quote
     expr : COPEN expr RBRACE
     """
     if len(p) == 4:
@@ -802,6 +805,13 @@ def p_binary_expr(p):
     binary_expr : expr MOD expr
     """
     p[0] = BinaryExpr(p[1], p[2], p[3], p=p)
+
+
+def p_quote_expr(p):
+    """
+    quote : QUOTE stmt_list QUOTE
+    """
+    p[0] = Quote(p[2], p=p)
 
 
 def p_command_1(p):

@@ -42,6 +42,9 @@ class DismissAlertCommand(Command):
     """
     Usage: dismiss
 
+    Examples:
+        dismiss
+
     Dismisses the current alert
     """
     def __init__(self, parent):
@@ -61,6 +64,11 @@ class DismissAlertCommand(Command):
 class SendAlertCommand(Command):
     """
     Usage: send <message> [priority=INFO|WARNING|CRITICAL]
+
+    Examples:
+        send "@everyone our system will go down on Friday, the 13th at noon" priority=WARNING
+
+    Sends user-defined alert
     """
     def run(self, context, args, kwargs, opargs):
         tid = context.submit_task('alert.send', args[0], kwargs.get('priority'))
@@ -70,7 +78,16 @@ class SendAlertCommand(Command):
 @description("Set predicates for alert filter")
 class SetPredicateCommand(Command):
     """
-    Usage: XXX
+    Usage: predicate <property> <op> <value> ...
+
+    Examples:
+        predicate severity>WARNING
+        predicate active==yes
+
+    Sets predicate for alert filter.
+    Properties can be one of [class|type|subtype|target|description|severity|active|dismissed]
+    Op (operator) can be one of [==, !=, <=, >=, >, <, ~]
+    Value is either a string, integer, or boolean
     """
     def __init__(self, parent):
         self.parent = parent
@@ -116,7 +133,8 @@ class AlertNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             name='id',
             get='id',
             set=None,
-            list=True
+            list=True,
+            usage=_("Alert ID (read only)")
         )
 
         self.add_property(
@@ -125,7 +143,8 @@ class AlertNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             get='created_at',
             set=None,
             list=True,
-            type=ValueType.TIME
+            type=ValueType.TIME,
+            usage=_("The time at which the alert was created (read only)")
         )
 
         self.add_property(
@@ -134,6 +153,7 @@ class AlertNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             get='severity',
             list=True,
             set=None,
+            usage=_("Specifies the severity level of the alert (read only)")
         )
 
         self.add_property(
@@ -142,6 +162,7 @@ class AlertNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             get='description',
             list=True,
             set=None,
+            usage=_("Description of this alert (read only)")
         )
 
         self.add_property(
@@ -149,7 +170,8 @@ class AlertNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             name='dismissed',
             get='dismissed',
             list=True,
-            type=ValueType.BOOLEAN
+            type=ValueType.BOOLEAN,
+            usage=_("Flag that controls whether the alert is dismissed")
         )
 
         self.primary_key = self.get_mapping('id')
@@ -189,7 +211,8 @@ class AlertFilterNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             descr='Name',
             name='name',
             get='id',
-            list=True
+            list=True,
+            usage=_("Alert Filter name")
         )
 
         self.add_property(
@@ -197,7 +220,8 @@ class AlertFilterNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             name='emitter',
             get='emitter',
             list=True,
-            enum=['EMAIL']
+            enum=['EMAIL'],
+            usage=_("Alert Filter's method of notification (currently only EMAIL is allowed)")
         )
 
         self.add_property(
@@ -205,14 +229,16 @@ class AlertFilterNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             name='email',
             get='parameters.addresses',
             type=ValueType.SET,
-            condition=lambda o: o.get('emitter') == 'EMAIL'
+            condition=lambda o: o.get('emitter') == 'EMAIL',
+            usgae=_("Destination email address(es) if EMAIL is the chose notification (emitter) type")
         )
 
         self.add_property(
             descr='Predicates',
             name='predicates',
             get=self.get_predicates,
-            type=ValueType.ARRAY
+            type=ValueType.ARRAY,
+            usage=_("Lists this Alert Filter's predicates")
         )
 
         self.primary_key = self.get_mapping('name')

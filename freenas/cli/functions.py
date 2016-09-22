@@ -159,7 +159,7 @@ def unparse_(fn):
 
 
 def rpc(name, *args):
-    return config.instance.call_sync(name, *args)
+    return Sequence(*config.instance.call_sync(name, *args))
 
 
 def call_task(name, *args):

@@ -982,7 +982,7 @@ class IPMINamespace(RpcBasedLoadMixin, EntityNamespace):
 
         return self.context.submit_task(
             'ipmi.update',
-            this.entity['channel'],
+            this.entity['id'],
             this.get_diff(),
             callback=lambda s, t: post_save(this, s, t)
         )

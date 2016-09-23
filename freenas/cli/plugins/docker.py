@@ -357,10 +357,10 @@ class DockerImageNamespace(EntitySubscriberBasedLoadMixin, DockerUtilsMixin, Ent
                 show | search name == foo""")
 
         if not DockerImageNamespace.freenas_images:
-            DockerImageNamespace.freenas_images = context.call_sync(
+            DockerImageNamespace.freenas_images = list(context.call_sync(
                 'docker.image.get_collection_images',
                 'freenas'
-            )
+            ))
 
         self.add_property(
             descr='Name',
@@ -528,7 +528,7 @@ class DockerImageSearchCommand(Command):
         name = kwargs.get('name') or args[0]
 
         return Table(context.call_sync('docker.image.search', name), [
-            Table.Column('Name', 'name'),
+            Table.Column('Name', 'name', display_width_percentage=30),
             Table.Column('Description', 'description')
         ])
 

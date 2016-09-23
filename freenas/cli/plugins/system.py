@@ -720,6 +720,13 @@ class AdvancedNamespace(ConfigNamespace):
             type=ValueType.NUMBER
         )
 
+        self.add_property(
+            descr='Remote Graphite servers',
+            name='graphite_servers',
+            get='graphite_servers',
+            type=ValueType.SET
+        )
+
 
 @description("Configuration database operations")
 class ConfigDbNamespace(Namespace):

@@ -374,7 +374,7 @@ def t_ANY_COPEN(t):
 
 def t_LBRACE(t):
     r'{'
-    t.lexer.push_state('script')
+    t.lexer.push_state('INITIAL')
     t.lexer.parens += 1
     return t
 
@@ -391,9 +391,11 @@ def t_ANY_QUOTE(t):
     if t.lexer.seen_quote:
         t.type = 'RQUOTE'
         t.lexer.seen_quote = False
+        t.lexer.pop_state()
         return t
 
     t.lexer.seen_quote = True
+    t.lexer.push_state('INITIAL')
     t.type = 'LQUOTE'
     return t
 
@@ -552,10 +554,24 @@ def p_while_stmt(p):
 
 def p_assignment_stmt(p):
     """
-    assignment_stmt : ATOM ASSIGN expr
-    assignment_stmt : subscript_left ASSIGN expr
+    assignment_stmt : ATOM ASSIGN push_script expr pop_script
+    assignment_stmt : subscript_left ASSIGN push_script expr pop_script
     """
-    p[0] = AssignmentStatement(p[1], p[3], p=p)
+    p[0] = AssignmentStatement(p[1], p[4], p=p)
+
+
+def p_push_script(p):
+    """
+    push_script :
+    """
+    p.lexer.push_state('script')
+
+
+def p_pop_script(p):
+    """
+    pop_script :
+    """
+    p.lexer.pop_state()
 
 
 def p_const_stmt(p):
@@ -1037,7 +1053,7 @@ def p_error(p):
 
 
 lexer = lex.lex()
-parser = yacc.yacc(debug=False, optimize=True, write_tables=False)
+parser = yacc.yacc(debug=True, optimize=True, write_tables=False)
 
 
 def parse(s, filename, recover_errors=False):

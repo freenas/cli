@@ -222,7 +222,9 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
             descr='Description',
             name='description',
             get='name',
-            list=True
+            list=True,
+            usage=_("""\
+                    A description for the network interface""")
         )
 
         self.add_property(
@@ -254,7 +256,8 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
             name='mtu',
             get='mtu',
             type=ValueType.NUMBER,
-            list=False
+            list=False,
+            usage=_("The maximum transport unit, defaults to 1500 bytes.")
         )
 
         self.add_property(
@@ -263,7 +266,8 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
             get='status.dhcp.state',
             set=None,
             list=False,
-            condition=lambda e: e['dhcp']
+            condition=lambda e: e['dhcp'],
+            usage=_("The current status of the DHCP connection.")
         )
 
         self.add_property(
@@ -272,7 +276,8 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
             get='status.dhcp.server_address',
             set=None,
             list=False,
-            condition=lambda e: e['dhcp']
+            condition=lambda e: e['dhcp'],
+            usage=_("The IP address of the DHCP server.")
         )
 
         self.add_property(
@@ -282,7 +287,8 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
             set=None,
             list=False,
             type=ValueType.TIME,
-            condition=lambda e: e['dhcp']
+            condition=lambda e: e['dhcp'],
+            usage=_("The starting time of the current DHCP lease.")
         )
 
         self.add_property(
@@ -292,7 +298,8 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
             set=None,
             list=False,
             type=ValueType.TIME,
-            condition=lambda e: e['dhcp']
+            condition=lambda e: e['dhcp'],
+            usage=_("The ending time of the current DHCP lease.")
         )
 
         self.add_property(
@@ -301,7 +308,8 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
             get='status.dhcp.error',
             set=None,
             list=False,
-            condition=lambda e: get(e, 'status.dhcp.error')
+            condition=lambda e: get(e, 'status.dhcp.error'),
+            usage=_("The DHCP connection error message, if any.")
         )
 
         self.add_property(
@@ -519,14 +527,16 @@ class AliasesNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNames
             name='type',
             get='type',
             list=True,
-            enum=['INET', 'INET6']
+            enum=['INET', 'INET6'],
+            usage=_("Address type, acceepts INET or INET6.")
         )
 
         self.add_property(
             descr='IP address',
             name='address',
             get='address',
-            list=True
+            list=True,
+            usage=_("The IP address of the alias.")
         )
 
         self.add_property(
@@ -534,14 +544,16 @@ class AliasesNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNames
             name='netmask',
             get='netmask',
             set=set_netmask,
-            list=True
+            list=True,
+            usage=_("The subnet mask of the alias.")
         )
 
         self.add_property(
             descr='Broadcast address',
             name='broadcast',
             get='broadcast',
-            list=True
+            list=True,
+            usage=_("The broadcast address of the alias.")
         )
 
         self.primary_key = self.get_mapping('address')
@@ -856,6 +868,38 @@ class IPMINamespace(RpcBasedLoadMixin, EntityNamespace):
         self.context = context
         self.query_call = 'ipmi.query'
         self.allow_create = False
+
+        self.entity_localdoc['GetEntityCommand'] = ("""\
+            Usage: get <field>
+
+            Examples:
+                get gateway
+                get network
+                get netmask
+
+            Display value of specified field.""")
+        self.entity_localdoc['ShowEntityCommand'] = ("""\
+            Usage: show
+
+            Examples: show
+
+            Display the property values for the IPMI.""")
+        self.entity_localdoc['SetEntityCommand'] = ("""\
+            Usage: set <property>=<value> ...
+
+            Examples: set address=192.168.1.101
+                      set gateway=172.16.0.1
+                      set netmask=16
+
+            Sets a network route property. For a list of properties, see 'help properties'.""")
+        self.entity_localdoc['EditEntityCommand'] = ("""\
+            Usage: edit <field>
+
+            Examples: edit address
+
+            Opens the default editor for the specified property. The default editor
+            is inherited from the shell's $EDITOR which can be set from the shell.
+            For a list of properties for the current namespace, see 'help properties'.""")
 
         self.add_property(
             descr='Channel',

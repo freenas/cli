@@ -72,6 +72,15 @@ class Object(list):
             self.vt = vt
             self.editable = editable
 
+        def __getstate__(self):
+            return {
+                'descr': self.descr,
+                'name': self.name,
+                'value': list(self.value) if hasattr(self.value, '__next__') else self.value,
+                'vt': self.vt.name,
+                'editable': self.editable
+            }
+
     def append(self, p_object):
         if not isinstance(p_object, self.Item):
             raise ValueError('Can only add Object.Item instances')
@@ -91,6 +100,12 @@ class Object(list):
 
         super(Object, self).__setitem__(key, value)
 
+    def __getstate__(self):
+        return {
+            'type': self.__class__.__name__,
+            'data': [i.__getstate__() for i in self]
+        }
+
     def __init__(self, *args):
         for i in args:
             self.append(i)
@@ -104,6 +119,13 @@ class Table(object):
             self.vt = vt
             self.display_width_percentage = display_width_percentage
 
+        def __getstate__(self):
+            return {
+                'label': self.label,
+                'vt': self.vt.name,
+                'display_width_percentage': self.display_width_percentage
+            }
+
     def __init__(self, data, columns):
         self.data = data
         self.columns = columns
@@ -113,6 +135,15 @@ class Table(object):
 
     def __getitem__(self, item):
         return self.data[item]
+
+    def __getstate__(self):
+        return {
+            'type': self.__class__.__name__
+            'columns': [i.__getstate__() for i in self.columns],
+            'data': [
+                [resolve_cell(i, c.accessor) for c in self.columns] for i in self.data
+            ]
+        }
 
     def pop(self, pop_index):
         return self.data.pop(pop_index)
@@ -131,6 +162,12 @@ class Sequence(list):
             return
 
         self.append(item)
+
+    def __getstate__(self):
+        return {
+            'type': self.__class__.__name__,
+            'data': list(self)
+        }
 
 
 class ProgressBar(object):

@@ -1225,3 +1225,10 @@ def read_ast(value):
         return type(*args)
 
     return value
+
+
+def dump_ast(ast):
+    if isinstance(ast, list):
+        return [dump_ast(i) for i in ast]
+
+    return ast.to_json()

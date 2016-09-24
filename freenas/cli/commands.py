@@ -1016,65 +1016,6 @@ class WaitCommand(Command):
                 'No recently submitted tasks (which are still active) found'
             ))
 
-        # def update(progress, task):
-        #     message = task['progress']['message'] if 'progress' in task else task['state']
-        #     percentage = task['progress']['percentage'] if 'progress' in task else None
-        #     progress.update(percentage=percentage, message=message)
-
-        # generator = None
-        # progress = None
-        # try:
-        #     task = context.entity_subscribers['task'].get(tid, timeout=5)
-        #     if not task:
-        #         return _("Task {0} not found".format(tid))
-
-        #     if task['state'] in ('FINISHED', 'FAILED', 'ABORTED'):
-        #         return _("The task with id: {0} ended in {1} state".format(tid, task['state']))
-
-        #     # lets set the SIGTSTP (Ctrl+Z) handler
-        #     SIGTSTP_setter(set_flag=True)
-        #     output_msg(_("Hit Ctrl+C to terminate task if needed"))
-        #     output_msg(_("To background running task press 'Ctrl+Z'"))
-
-        #     progress = ProgressBar()
-        #     update(progress, task)
-        #     generator = context.entity_subscribers['task'].listen(tid)
-        #     for op, old, new in generator:
-        #         update(progress, new)
-
-        #         if new['state'] == 'FINISHED':
-        #             progress.finish()
-        #             break
-
-        #         if new['state'] == 'FAILED':
-        #             six.print_()
-        #             break
-
-        #         if new['state'] == 'ABORTED':
-        #             six.print_()
-        #             break
-        # except KeyboardInterrupt:
-        #     if progress:
-        #         progress.end()
-        #     six.print_()
-        #     output_msg(_("User requested task termination. Abort signal sent"))
-        #     context.call_sync('task.abort', tid)
-        # except SIGTSTPException:
-        #         # The User backgrounded the task by sending SIGTSTP (Ctrl+Z)
-        #         if progress:
-        #             progress.end()
-        #         six.print_()
-        #         output_msg(_("Task {0} will continue to run in the background.".format(tid)))
-        #         output_msg(_("To bring it back to the foreground execute 'wait {0}'".format(tid)))
-        #         output_msg(_("Use the 'pending' command to see pending tasks (of this session)"))
-        # finally:
-        #     # Now that we are done with the task unset the Ctrl+Z handler
-        #     # lets set the SIGTSTP (Ctrl+Z) handler
-        #     if progress:
-        #         progress.end()
-        #     if generator:
-        #         del generator
-        #     SIGTSTP_setter(set_flag=False)
         return context.wait_for_task_with_progress(tid)
 
 

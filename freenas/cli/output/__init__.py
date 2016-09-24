@@ -138,7 +138,7 @@ class Table(object):
 
     def __getstate__(self):
         return {
-            'type': self.__class__.__name__
+            'type': self.__class__.__name__,
             'columns': [i.__getstate__() for i in self.columns],
             'data': [
                 [resolve_cell(i, c.accessor) for c in self.columns] for i in self.data

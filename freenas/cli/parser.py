@@ -155,7 +155,7 @@ tokens = list(reserved.values()) + [
     'REGEX', 'UP', 'PIPE', 'LIST', 'COMMA', 'INC', 'DEC', 'PLUS', 'MINUS',
     'MUL', 'DIV', 'EOPEN', 'EOPEN_SYNC', 'COPEN', 'LBRACE', 'RBRACE',
     'LBRACKET', 'RBRACKET', 'NEWLINE', 'SEMICOLON', 'COLON', 'REDIRECT',
-    'MOD', 'SHELL', 'LQUOTE', 'RQUOTE'
+    'MOD', 'SHELL', 'LQUOTE', 'RQUOTE', 'PLUSPLUS', 'MINUSMINUS'
 ]
 
 
@@ -312,6 +312,8 @@ t_LE = r'<='
 t_script_PLUS = r'\+'
 t_script_MINUS = r'-'
 t_script_MUL = r'\*'
+t_script_PLUSPLUS = r'\+\+'
+t_script_MINUSMINUS = r'--'
 t_DIV = r'\/'
 t_script_MOD = r'\%'
 t_REGEX = r'~='
@@ -833,12 +835,20 @@ def p_anon_function_expr_4(p):
     p[0] = AnonymousFunction(p[3], p[6], p=p)
 
 
-def p_unary_expr(p):
+def p_unary_expr_1(p):
     """
     unary_expr : MINUS expr
     unary_expr : NOT expr
     """
     p[0] = UnaryExpr(p[2], p[1], p=p)
+
+
+def p_unary_expr_2(p):
+    """
+    unary_expr : expr PLUSPLUS
+    unary_expr : expr MINUSMINUS
+    """
+    p[0] = UnaryExpr(p[1], p[2], p=p)
 
 
 def p_binary_expr(p):
@@ -1156,6 +1166,12 @@ def unparse(token, indent=0, oneliner=False):
 
     if isinstance(token, BinaryExpr):
         return ind(' '.join([unparse(token.left), token.op, unparse(token.right)]))
+
+    if isinstance(token, UnaryExpr):
+        if token.op in ('++', '--'):
+            return ind(unparse(token.expr) + token.op)
+
+        return ind(token.op + unparse(token.expr))
 
     if isinstance(token, Parentheses):
         return ind('({0})'.format(unparse(token.expr)))

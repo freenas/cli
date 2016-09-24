@@ -766,56 +766,78 @@ class Context(object):
         self.global_env['_last_task_id'] = Environment.Variable(tid)
         return tid
 
-    def submit_task(self, name, *args, **kwargs):
-        callback = kwargs.pop('callback', None)
-        message_formatter = kwargs.pop('message_formatter', None)
+    def wait_for_task_with_progress(self, tid):
+        def update(progress, task):
+            message = task['progress']['message'] if 'progress' in task else task['state']
+            percentage = task['progress']['percentage'] if 'progress' in task else None
+            progress.update(percentage=percentage, message=message)
 
-        if not self.variables.get('tasks_blocking'):
-            tid = self.submit_task_common_routine(name, callback, *args)
-            return tid
-        else:
+        generator = None
+        progress = None
+
+        try:
+            task = self.entity_subscribers['task'].get(tid, timeout=5)
+            if not task:
+                return _("Task {0} not found".format(tid))
+
+            if task['state'] in ('FINISHED', 'FAILED', 'ABORTED'):
+                return _("The task with id: {0} ended in {1} state".format(tid, task['state']))
+
             # lets set the SIGTSTP (Ctrl+Z) handler
             SIGTSTP_setter(set_flag=True)
             output_msg(_("Hit Ctrl+C to terminate task if needed"))
             output_msg(_("To background running task press 'Ctrl+Z'"))
-            self.event_divert = True
-            tid = self.submit_task_common_routine(name, callback, *args)
+
             progress = ProgressBar()
-            try:
-                while True:
-                    event, data = self.event_queue.get()
+            update(progress, task)
+            generator = self.entity_subscribers['task'].listen(tid)
 
-                    if event == 'task.progress' and data['id'] == tid:
-                        message = data['message']
-                        if isinstance(message_formatter, collections.Callable):
-                            message = message_formatter(message)
-                        progress.update(percentage=data['percentage'], message=message)
+            for op, old, new in generator:
+                update(progress, new)
 
-                    if event == 'task.updated' and data['id'] == tid:
-                        progress.update(message=data['state'])
-                        if data['state'] == 'FINISHED':
-                            progress.finish()
-                            break
+                if new['state'] == 'FINISHED':
+                    progress.finish()
+                    break
 
-                        if data['state'] == 'FAILED':
-                            six.print_()
-                            break
-            except KeyboardInterrupt:
-                six.print_()
-                output_msg(_("User requested task termination. Task abort signal sent"))
-                self.call_sync('task.abort', tid)
+                if new['state'] == 'FAILED':
+                    six.print_()
+                    break
 
-            except SIGTSTPException:
+                if new['state'] == 'ABORTED':
+                    six.print_()
+                    break
+        except KeyboardInterrupt:
+            if progress:
+                progress.end()
+            six.print_()
+            output_msg(_("User requested task termination. Abort signal sent"))
+            self.call_sync('task.abort', tid)
+        except SIGTSTPException:
                 # The User backgrounded the task by sending SIGTSTP (Ctrl+Z)
+                if progress:
+                    progress.end()
                 six.print_()
                 output_msg(_("Task {0} will continue to run in the background.".format(tid)))
                 output_msg(_("To bring it back to the foreground execute 'wait {0}'".format(tid)))
                 output_msg(_("Use the 'pending' command to see pending tasks (of this session)"))
+        finally:
+            # Now that we are done with the task unset the Ctrl+Z handler
+            # lets set the SIGTSTP (Ctrl+Z) handler
+            SIGTSTP_setter(set_flag=False)
+            if progress:
+                progress.end()
+            if generator:
+                del generator
 
-        # Now that we are done with the task unset the Ctrl+Z handler
-        # lets set the SIGTSTP (Ctrl+Z) handler
-        SIGTSTP_setter(set_flag=False)
-        self.event_divert = False
+    def submit_task(self, name, *args, **kwargs):
+        callback = kwargs.pop('callback', None)
+        tid = self.submit_task_common_routine(name, callback, *args)
+
+        if self.variables.get('tasks_blocking'):
+            error_msgs = self.wait_for_task_with_progress(tid)
+            if error_msgs:
+                output_msg(error_msgs)
+
         return tid
 
     def eval(self, *args, **kwargs):

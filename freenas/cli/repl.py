@@ -941,46 +941,46 @@ class Environment(dict):
 
 class MainLoop(object):
     pipe_commands = {
-        'search': SearchPipeCommand(),
-        'exclude': ExcludePipeCommand(),
-        'sort': SortPipeCommand(),
-        'limit': LimitPipeCommand(),
-        'select': SelectPipeCommand(),
-        'find': FindPipeCommand(),
-        'more': MorePipeCommand(),
-        'less': MorePipeCommand(),
-        'older_than': OlderThanPipeCommand(),
-        'newer_than': NewerThanPipeCommand()
+        'search': SearchPipeCommand,
+        'exclude': ExcludePipeCommand,
+        'sort': SortPipeCommand,
+        'limit': LimitPipeCommand,
+        'select': SelectPipeCommand,
+        'find': FindPipeCommand,
+        'more': MorePipeCommand,
+        'less': MorePipeCommand,
+        'older_than': OlderThanPipeCommand,
+        'newer_than': NewerThanPipeCommand
     }
     base_builtin_commands = {
-        '?': IndexCommand(),
-        'login': LoginCommand(),
-        'exit': ExitCommand(),
-        'setopt': SetoptCommand(),
-        'printopt': PrintoptCommand(),
-        'saveopt': SaveoptCommand(),
-        'setenv': SetenvCommand(),
-        'printenv': PrintenvCommand(),
-        'shell': ShellCommand(),
-        'help': HelpCommand(),
-        'top': TopCommand(),
-        'showips': ShowIpsCommand(),
-        'showurls': ShowUrlsCommand(),
-        'source': SourceCommand(),
-        'dump': DumpCommand(),
-        'clear': ClearCommand(),
-        'history': HistoryCommand(),
-        'echo': EchoCommand(),
-        'whoami': WhoamiCommand(),
-        'pending': PendingCommand(),
-        'wait': WaitCommand(),
-        'alias': AliasCommand(),
-        'unalias': UnaliasCommand(),
-        'vars': ListVarsCommand(),
-        'attach_debugger': AttachDebuggerCommand(),
-        'cd': ChangeNamespaceCommand(),
-        'w': WCommand(),
-        'time': TimeCommand()
+        '?': IndexCommand,
+        'login': LoginCommand,
+        'exit': ExitCommand,
+        'setopt': SetoptCommand,
+        'printopt': PrintoptCommand,
+        'saveopt': SaveoptCommand,
+        'setenv': SetenvCommand,
+        'printenv': PrintenvCommand,
+        'shell': ShellCommand,
+        'help': HelpCommand,
+        'top': TopCommand,
+        'showips': ShowIpsCommand,
+        'showurls': ShowUrlsCommand,
+        'source': SourceCommand,
+        'dump': DumpCommand,
+        'clear': ClearCommand,
+        'history': HistoryCommand,
+        'echo': EchoCommand,
+        'whoami': WhoamiCommand,
+        'pending': PendingCommand,
+        'wait': WaitCommand,
+        'alias': AliasCommand,
+        'unalias': UnaliasCommand,
+        'vars': ListVarsCommand,
+        'attach_debugger': AttachDebuggerCommand,
+        'cd': ChangeNamespaceCommand,
+        'w': WCommand,
+        'time': TimeCommand
     }
     builtin_commands = base_builtin_commands.copy()
     builtin_commands.update(pipe_commands)
@@ -1101,9 +1101,10 @@ class MainLoop(object):
             self.process(line)
             output_lock.release()
 
-    def find_in_scope(self, token, cwd=None):
-        if not cwd:
-            cwd = self.cwd
+    def find_in_scope(self, token, **kwargs):
+        cwd = kwargs.pop('cwd', self.cwd)
+        env = kwargs.pop('env', self.context.global_env)
+        variables = kwargs.pop('variables', self.context.variables)
 
         if hasattr(cwd, 'namespace_by_name'):
             ns = cwd.namespace_by_name(token)
@@ -1122,16 +1123,23 @@ class MainLoop(object):
 
         for name, cmd in cwd_commands:
             if token == name:
+                cmd.env = env
+                cmd.variables = variables
                 return cmd
 
         if token in list(self.builtin_commands.keys()):
-            return self.builtin_commands[token]
+            cmd = self.builtin_commands[token]()
+            cmd.env = env
+            cmd.variables = variables
+            return cmd
 
         if token in list(self.aliases.keys()):
             return Alias(self.context, self.aliases[token])
 
         for ns, name, fn in self.context.user_commands:
             if fnmatch.fnmatch(self.path_string, ns) and name == token:
+                fn.env = env
+                fn.variables = variables
                 return fn
 
         return None
@@ -1179,6 +1187,7 @@ class MainLoop(object):
         dry_run = kwargs.pop('dry_run', None)
         first = kwargs.pop('first', False)
         env = kwargs.pop('env', self.context.global_env)
+        variables = kwargs.pop('variables', self.context.variables)
         cwd = self.get_cwd(path)
 
         if first:
@@ -1227,10 +1236,10 @@ class MainLoop(object):
                     item = env.find(token.name)
                     return item.value if isinstance(item, Environment.Variable) else item
                 except KeyError:
-                    item = self.find_in_scope(token.name, cwd=cwd)
+                    item = self.find_in_scope(token.name, **kwargs)
                     if item is not None:
                         return item
-                    item = self.find_in_scope(token.name.split('/')[0], cwd=cwd) if isinstance(token.name, str) else None
+                    item = self.find_in_scope(token.name.split('/')[0], **kwargs) if isinstance(token.name, str) else None
                     if item is not None:
                         raise SyntaxError("Use of slashes as separators not allowed. Please use spaces instead or "
                                           "use the 'cd' command to navigate")
@@ -1441,6 +1450,7 @@ class MainLoop(object):
                         item.exec_path = path if len(path) >= 1 else self.path
                         item.cwd = self.cwd
                         item.current_env = env
+                        item.variables = variables
                         if dry_run:
                             return item, cwd, args, kwargs, opargs
 

@@ -40,7 +40,7 @@ import logging
 import copy
 import getpass
 from datetime import datetime
-from freenas.cli.parser import Quote, parse, unparse
+from freenas.cli.parser import Quote, parse, unparse, dump_ast
 from freenas.cli.complete import NullComplete, EnumComplete
 from freenas.cli.namespace import (
     Command, PipeCommand, CommandException, description,
@@ -107,11 +107,11 @@ class SetoptCommand(Command):
             ))
 
         for k, v in list(kwargs.items()):
-            context.variables.verify(k, v)
-            context.variables.set(k, v)
+            self.variables.verify(k, v)
+            self.variables.set(k, v)
 
     def complete(self, context, **kwargs):
-        return [create_variable_completer(k, v) for k, v in context.variables.get_all()]
+        return [create_variable_completer(k, v) for k, v in self.variables.get_all()]
 
 
 @description("Changes the namespace to the specified one")
@@ -221,10 +221,10 @@ class PrintoptCommand(Command):
 
         if len(args) == 0:
             var_dict_list = []
-            for k, v in context.variables.get_all_printable():
+            for k, v in self.variables.get_all_printable():
                 var_dict = {
                     'varname': k,
-                    'vardescr': context.variables.variable_doc[k],
+                    'vardescr': self.variables.variable_doc[k],
                     'varvalue': v,
                 }
                 var_dict_list.append(var_dict)
@@ -235,14 +235,14 @@ class PrintoptCommand(Command):
 
         if len(args) == 1:
             try:
-                return format_value(context.variables.variables[args[0]])
+                return format_value(self.variables.variables[args[0]])
             except KeyError:
                 raise CommandException(_("No such Environment Variable exists"))
         else:
             raise CommandException(_("Invalid syntax {0}. For help see 'help <command>'".format(args)))
 
     def complete(self, context, **kwargs):
-        return [create_variable_completer(k, v) for k, v in context.variables.get_all()]
+        return [create_variable_completer(k, v) for k, v in self.variables.get_all()]
 
 
 @description("Save configuration variables to CLI configuration file")
@@ -263,12 +263,12 @@ class SaveoptCommand(Command):
 
     def run(self, context, args, kwargs, opargs):
         if len(args) == 0:
-            context.variables.save()
+            self.variables.save()
             return "Environment Variables Saved to file: {0}".format(
                 context.variables.save_to_file
             )
         if len(args) == 1:
-            context.variables.save(args[0])
+            self.variables.save(args[0])
             return "Environment Variables Saved to file: {0}".format(args[0])
         if len(args) > 1:
             raise CommandException(_(
@@ -1053,10 +1053,11 @@ class WCommand(Command):
 
 class TimeCommand(Command):
     """
-    Usage: time "<code>"
+    Usage: time `<code>`
 
     Measures execution time of <code>
     """
+
     def run(self, context, args, kwargs, opargs):
         if len(args) < 1 or not isinstance(args[0], Quote):
             raise CommandException("Provide code fragment to evaluate")

@@ -1142,7 +1142,7 @@ class MainLoop(object):
 
         for stmt in block:
             try:
-                ret = self.eval(stmt, env, first=True)
+                ret = self.eval(stmt, env=env, first=True)
             except BaseException as e:
                 if self.context.variables.get('abort_on_errors'):
                     raise e
@@ -1172,39 +1172,39 @@ class MainLoop(object):
     def reset_on_first_run(self):
         self.context.pipe_cwd = None
 
-    def eval(self, token, env=None, path=None, serialize_filter=None, input_data=None, dry_run=False, first=False,
-             printable_none=False):
+    def eval(self, token, **kwargs):
+        path = kwargs.pop('path', [])
+        serialize_filter = kwargs.pop('serialize_filter', None)
+        input_data = kwargs.pop('input_data', None)
+        dry_run = kwargs.pop('dry_run', None)
+        first = kwargs.pop('first', False)
+        env = kwargs.pop('env', self.context.global_env)
+        cwd = self.get_cwd(path)
 
         if first:
             self.reset_on_first_run()
-
-        cwd = self.get_cwd(path)
-        path = path or []
 
         if self.start_from_root:
             path = self.root_path[:]
             self.start_from_root = False
 
-        if env is None:
-            env = self.context.global_env
-
         try:
             if isinstance(token, list):
-                return [self.eval(i, env, path) for i in token]
+                return [self.eval(i, env=env, path=path) for i in token]
 
             if isinstance(token, Parentheses):
-                return self.eval(token.expr, env, path)
+                return self.eval(token.expr, env=env, path=path)
 
             if isinstance(token, UnaryExpr):
-                expr = self.eval(token.expr, env)
+                expr = self.eval(token.expr, env=env)
                 if token.op == '-':
                     return -expr
 
                 return self.context.builtin_operators[token.op](expr)
 
             if isinstance(token, BinaryExpr):
-                left = self.eval(token.left, env)
-                right = self.eval(token.right, env)
+                left = self.eval(token.left, env=env)
+                right = self.eval(token.right, env=env)
                 return self.context.builtin_operators[token.op](left, right)
 
             if isinstance(token, Literal):
@@ -1212,10 +1212,10 @@ class MainLoop(object):
                     return token.value.replace('\\\"', '"')
 
                 if token.type is list:
-                    return [self.eval(i, env) for i in token.value]
+                    return [self.eval(i, env=env) for i in token.value]
 
                 if token.type is dict:
-                    return {self.eval(k, env): self.eval(v, env) for k, v in token.value.items()}
+                    return {self.eval(k, env=env): self.eval(v, env=env) for k, v in token.value.items()}
 
                 return token.value
 
@@ -1245,7 +1245,7 @@ class MainLoop(object):
                 raise SyntaxError(_('{0} not found'.format(token.name)))
 
             if isinstance(token, AssignmentStatement):
-                expr = self.eval(token.expr, env, first=first)
+                expr = self.eval(token.expr, env=env, first=first)
                
                 # Table data needs to be flattened upon assignment
                 if isinstance(expr, Table):
@@ -1258,8 +1258,8 @@ class MainLoop(object):
                     ))
 
                 if isinstance(token.name, Subscript):
-                    array = self.eval(token.name.expr, env)
-                    index = self.eval(token.name.index, env)
+                    array = self.eval(token.name.expr, env=env)
+                    index = self.eval(token.name.index, env=env)
                     array[index] = expr
                     return
 
@@ -1275,12 +1275,12 @@ class MainLoop(object):
                 return
 
             if isinstance(token, ConstStatement):
-                expr = self.eval(token.expr, env, first=first)
+                expr = self.eval(token.expr, env=env, first=first)
                 env[token.name.name] = Environment.Variable(expr, True)
                 return
 
             if isinstance(token, IfStatement):
-                expr = self.eval(token.expr, env)
+                expr = self.eval(token.expr, env=env)
                 body = token.body if expr else token.else_body
                 local_env = Environment(self.context, outer=env)
                 self.eval_block(body, local_env, False)
@@ -1288,17 +1288,17 @@ class MainLoop(object):
 
             if isinstance(token, ForStatement):
                 local_env = Environment(self.context, outer=env)
-                self.eval(token.stmt1, local_env)
+                self.eval(token.stmt1, env=local_env)
 
-                while self.eval(token.expr, local_env):
+                while self.eval(token.expr, env=local_env):
                     self.eval_block(token.body, local_env, True)
-                    self.eval(token.stmt2, local_env)
+                    self.eval(token.stmt2, env=local_env)
 
                 return
 
             if isinstance(token, ForInStatement):
                 local_env = Environment(self.context, outer=env)
-                expr = self.eval(token.expr, env)
+                expr = self.eval(token.expr, env=env)
                 if isinstance(token.var, tuple):
                     if isinstance(expr, dict):
                         expr_iter = expr.items()
@@ -1330,7 +1330,7 @@ class MainLoop(object):
             if isinstance(token, WhileStatement):
                 local_env = Environment(self.context, outer=env)
                 while True:
-                    expr = self.eval(token.expr, env)
+                    expr = self.eval(token.expr, env=env)
                     if not expr:
                         return
 
@@ -1345,7 +1345,7 @@ class MainLoop(object):
             if isinstance(token, ReturnStatement):
                 return FlowControlInstruction(
                     FlowControlInstructionType.RETURN,
-                    self.eval(token.expr, env)
+                    self.eval(token.expr, env=env)
                 )
 
             if isinstance(token, BreakStatement):
@@ -1356,12 +1356,12 @@ class MainLoop(object):
                 return
 
             if isinstance(token, SyncCommandExpansion):
-                expr = self.eval(token.expr, env, first=first)
+                expr = self.eval(token.expr, env=env, first=first)
                 if hasattr(expr, 'wait'):
                     return expr.wait()
 
             if isinstance(token, (ExpressionExpansion, CommandExpansion)):
-                expr = self.eval(token.expr, env, first=first)
+                expr = self.eval(token.expr, env=env, first=first)
 
                 # Table data needs to be flattened upon assignment
                 if isinstance(expr, Table):
@@ -1403,26 +1403,26 @@ class MainLoop(object):
                                 self.path[-2].on_enter()
 
                         path.append('..')
-                        return self.eval(token, env, path=path, dry_run=dry_run)
+                        return self.eval(token, env=env, path=path, dry_run=dry_run)
                     elif isinstance(top, Symbol) and top.name == '/':
                         if first:
                             self.start_from_root = True
-                            return self.eval(token, env, path=path, dry_run=dry_run)
+                            return self.eval(token, env=env, path=path, dry_run=dry_run)
 
                     if isinstance(top, ExpressionExpansion):
-                        top = Symbol(self.eval(top, env, path=path))
+                        top = Symbol(self.eval(top, env=env, path=path))
 
                     if isinstance(top, Literal):
                         top = Symbol(top.value)
 
-                    item = self.eval(top, env, path=path, dry_run=dry_run)
+                    item = self.eval(top, env=env, path=path, dry_run=dry_run)
 
                     if isinstance(item, Namespace):
                         item.on_enter()
-                        return self.eval(token, env, path=path+[item], dry_run=dry_run)
+                        return self.eval(token, env=env, path=path+[item], dry_run=dry_run)
 
                     if isinstance(item, Alias):
-                        return self.eval(item.ast, env, path=path)[0]
+                        return self.eval(item.ast, env=env, path=path)[0]
 
                     if isinstance(item, Command):
                         completions = item.complete(self.context)
@@ -1434,7 +1434,7 @@ class MainLoop(object):
                         else:
                             args, kwargs, opargs = expand_wildcards(
                                 self.context,
-                                *sort_args([self.eval(i, env) for i in token_args]),
+                                *sort_args([self.eval(i, env=env) for i in token_args]),
                                 completions=completions
                             )
 
@@ -1470,7 +1470,7 @@ class MainLoop(object):
                 raise SyntaxError("Command or namespace {0} not found".format(top.name))
 
             if isinstance(token, FunctionCall):
-                args = list(map(lambda a: self.eval(a, env, first=True), token.args))
+                args = list(map(lambda a: self.eval(a, env=env, first=True), token.args))
                 func = env.find(token.name)
                 if func:
                     if isinstance(func, Environment.Variable):
@@ -1486,8 +1486,8 @@ class MainLoop(object):
                 raise SyntaxError("Function {0} not found".format(token.name))
 
             if isinstance(token, Subscript):
-                expr = self.eval(token.expr, env)
-                index = self.eval(token.index, env)
+                expr = self.eval(token.expr, env=env)
+                index = self.eval(token.index, env=env)
                 return expr[index]
 
             if isinstance(token, FunctionDefinition):
@@ -1495,15 +1495,15 @@ class MainLoop(object):
                 return
 
             if isinstance(token, BinaryParameter):
-                return token.left, token.op, self.eval(token.right, env)
+                return token.left, token.op, self.eval(token.right, env=env)
 
             if isinstance(token, PipeExpr):
                 if serialize_filter:
-                    self.eval(token.left, env, path, serialize_filter=serialize_filter)
-                    self.eval(token.right, env, path, serialize_filter=serialize_filter)
+                    self.eval(token.left, env=env, path=path, serialize_filter=serialize_filter)
+                    self.eval(token.right, env=env, path=path, serialize_filter=serialize_filter)
                     return
 
-                cmd, cwd, args, kwargs, opargs = self.eval(token.left, env, path, dry_run=True, first=first)
+                cmd, cwd, args, kwargs, opargs = self.eval(token.left, env=env, path=path, dry_run=True, first=first)
 
                 if self.context.pipe_cwd is None:
                     cwd.on_enter()
@@ -1512,7 +1512,7 @@ class MainLoop(object):
                 if isinstance(cmd, FilteringCommand):
                     # Do serialize_filter pass
                     filt = {"filter": [], "params": {}}
-                    self.eval(token.right, env, path, serialize_filter=filt)
+                    self.eval(token.right, env=env, path=path, serialize_filter=filt)
                     result = cmd.run(self.context, args, kwargs, opargs, filtering=filt)
                 elif isinstance(cmd, PipeCommand):
                     result = cmd.run(self.context, args, kwargs, opargs, input=input_data)
@@ -1533,7 +1533,7 @@ class MainLoop(object):
 
             if isinstance(token, Redirection):
                 with open(token.path, 'a+') as f:
-                    format_output(self.eval(token.body, env, path, first=first), file=f)
+                    format_output(self.eval(token.body, env=env, path=path, first=first), file=f)
                     return None
 
         except SystemExit as err:

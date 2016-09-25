@@ -1890,8 +1890,8 @@ def main(argv=None):
         builtin_cmds = context.ml.base_builtin_commands
         filtering_cmds = context.ml.pipe_commands
 
-        base_commands = [[name, instance] for name, instance in builtin_cmds.items()]
-        filtering_commands = [[name, instance] for name, instance in filtering_cmds.items()]
+        base_commands = [[name, instance()] for name, instance in builtin_cmds.items()]
+        filtering_commands = [[name, instance()] for name, instance in filtering_cmds.items()]
         root_namespaces = context.root_ns.namespaces()
 
         docgen = CliDocGen()

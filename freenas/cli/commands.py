@@ -47,15 +47,12 @@ from freenas.cli.namespace import (
     SingleItemNamespace, Namespace, FilteringCommand
 )
 from freenas.cli.output import (
-    Table, ValueType, output_msg, output_less, format_value,
+    Table, ValueType, output_less, format_value,
     Sequence, read_value, format_output
 )
 from freenas.cli.output import Object as output_obj, get_terminal_size
-from freenas.cli.output import ProgressBar
 from freenas.cli.descriptions.tasks import translate as translate_task
-from freenas.cli.utils import (
-    describe_task_state, parse_timedelta, SIGTSTPException, SIGTSTP_setter, add_tty_formatting
-)
+from freenas.cli.utils import TaskPromise, describe_task_state, parse_timedelta, add_tty_formatting
 from freenas.dispatcher.shell import ShellClient
 
 
@@ -1068,6 +1065,22 @@ class TimeCommand(Command):
         msg = "Execution time: {0} seconds".format((end - start).total_seconds())
 
         return Sequence(*(result + [msg]))
+
+
+class RemoteCommand(Command):
+    """
+    Usage: remote `<code>`
+
+    Executes <code> using remote, background CLI instance.
+    """
+
+    def run(self, context, args, kwargs, opargs):
+        if len(args) < 1 or not isinstance(args[0], Quote):
+            raise CommandException("Provide code fragment to evaluate")
+
+        ast = dump_ast(args[0])
+        tid = context.submit_task('cli.eval.ast', ast)
+        return TaskPromise(context, tid)
 
 
 @description("Scroll through long output")

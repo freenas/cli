@@ -83,7 +83,7 @@ from freenas.cli.commands import (
     SelectPipeCommand, FindPipeCommand, LoginCommand, DumpCommand, WhoamiCommand, PendingCommand,
     WaitCommand, OlderThanPipeCommand, NewerThanPipeCommand, IndexCommand, AliasCommand,
     UnaliasCommand, ListVarsCommand, AttachDebuggerCommand, ChangeNamespaceCommand,
-    WCommand, TimeCommand
+    WCommand, TimeCommand, RemoteCommand
 )
 from freenas.cli.docgen import CliDocGen
 
@@ -980,7 +980,8 @@ class MainLoop(object):
         'attach_debugger': AttachDebuggerCommand,
         'cd': ChangeNamespaceCommand,
         'w': WCommand,
-        'time': TimeCommand
+        'time': TimeCommand,
+        'remote': RemoteCommand
     }
     builtin_commands = base_builtin_commands.copy()
     builtin_commands.update(pipe_commands)

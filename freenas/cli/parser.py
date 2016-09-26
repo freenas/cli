@@ -42,7 +42,7 @@ LITERAL_TYPES = {
     'none': type(None),
 }
 
-
+LITERAL_TYPES_REVERSED = {v: k for k, v in LITERAL_TYPES.items()}
 logger = logging.getLogger('freenascli.parser')
 
 
@@ -76,7 +76,7 @@ def ASTObject(name, *args):
 
     def to_json(self):
         ret = {
-            'type': self.__class__.__name__,
+            'ast_object_type': self.__class__.__name__,
         }
 
         def to_json_fragment(value):
@@ -84,7 +84,10 @@ def ASTObject(name, *args):
                 return to_json(value)
 
             if isinstance(value, type):
-                return {'type': LITERAL_TYPES[value]}
+                return {
+                    'ast_object_type': 'TypeReference',
+                    'value': LITERAL_TYPES_REVERSED[value]
+                }
 
             return value
 
@@ -1244,7 +1247,11 @@ def read_ast(value):
         return [read_ast(i) for i in value]
 
     if isinstance(value, dict):
-        type = globals()[value['type']]
+        type = value['ast_object_type']
+        if type == 'TypeReference':
+            return LITERAL_TYPES[value['value']]
+
+        type = globals()[type]
         args = []
         for i in type.args_list:
             args.append(read_ast(value[i]))

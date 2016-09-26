@@ -32,8 +32,8 @@ from freenas.cli.namespace import (
 )
 from freenas.cli.output import ValueType, Table, Sequence
 from freenas.cli.utils import TaskPromise, post_save, EntityPromise
-from freenas.utils.query import get, set
-from freenas.cli.complete import NullComplete, EntitySubscriberComplete
+from freenas.utils import query as q
+from freenas.cli.complete import NullComplete, EntitySubscriberComplete, EnumComplete
 from freenas.cli.console import Console
 
 
@@ -184,7 +184,7 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             get='image',
             usersetable=False,
             list=True,
-            complete=EntitySubscriberComplete('image=', 'docker.image', lambda i: get(i, 'names.0')),
+            complete=EntitySubscriberComplete('image=', 'docker.image', lambda i: q.get(i, 'names.0')),
             strict=False,
             usage=_('Name of container image used to create an instance of a container.')
         )
@@ -327,6 +327,11 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             'console': DockerContainerConsoleCommand(this)
         }
 
+    def commands(self):
+        ret = super(DockerContainerNamespace, self).commands()
+        ret['create'] = DockerContainerCreateCommand(self)
+        return ret
+
 
 @description("Configure and manage Docker container images")
 class DockerImageNamespace(EntitySubscriberBasedLoadMixin, DockerUtilsMixin, EntityNamespace):
@@ -431,7 +436,7 @@ class DockerConfigNamespace(DockerUtilsMixin, ConfigNamespace):
             descr='Default Docker host',
             name='default_host',
             get=lambda o: self.get_host({'host': o['default_host']}),
-            set=lambda o, v: set(o, 'default_host', self.set_host({}, v)),
+            set=lambda o, v: q.set(o, 'default_host', self.set_host({}, v)),
             complete=EntitySubscriberComplete('default_host=', 'docker.host', lambda d: d['name']),
             usage=_('''\
             Name of a Docker host selected by default for any
@@ -443,7 +448,7 @@ class DockerConfigNamespace(DockerUtilsMixin, ConfigNamespace):
             descr='Forward Docker remote API to host',
             name='api_forwarding',
             get=lambda o: self.get_host({'host': o['default_host']}),
-            set=lambda o, v: set(o, 'default_host', self.set_host({}, v)),
+            set=lambda o, v: q.set(o, 'default_host', self.set_host({}, v)),
             complete=EntitySubscriberComplete('default_host=', 'docker.host', lambda d: d['name']),
             usage=_('''\
             Defines which (if any) Docker host - Virtual Machine hosting
@@ -593,12 +598,73 @@ class DockerImageDeleteCommand(Command):
     def run(self, context, args, kwargs, opargs):
         tid = context.submit_task(
             'docker.image.delete',
-            get(self.parent.entity, 'names.0'),
+            q.get(self.parent.entity, 'names.0'),
             self.parent.entity['host'],
             callback=lambda s, t: post_save(self.parent, s, t)
         )
 
         return TaskPromise(context, tid)
+
+
+class DockerContainerCreateCommand(Command):
+    """
+    Usage: ...
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        if not kwargs.get('name') and not args:
+            raise CommandException('Name is a required property')
+
+        name = kwargs.get('name') or args[0]
+        env = ['{0}={1}'.format(k, v) for k, v in kwargs.items() if k.isupper()]
+        volumes = []
+
+        for k, v in kwargs.items():
+            if k.startswith('volume:'):
+                _, container_path = k.split(':', maxsplit=1)
+                volumes.append({
+                    'container_path': container_path,
+                    'host_path': v,
+                    'readonly': False
+                })
+
+        tid = context.submit_task('docker.container.create', {
+            'names': [name],
+            'image': kwargs['image'],
+            'hostname': kwargs.get('hostname'),
+            'command': kwargs.get('command'),
+            'host': kwargs.get('host'),
+            'expose_ports': kwargs.get('expose_ports'),
+            'environment': env,
+            'volumes': volumes
+        })
+
+        return TaskPromise(context, tid)
+
+    def complete(self, context, **kwargs):
+        props = []
+        name = q.get(kwargs, 'kwargs.image')
+        if name:
+            image = context.entity_subscribers['docker.image'].query(('names', 'in', name), single=True)
+            if not image:
+                image = q.query(DockerImageNamespace.freenas_images, ('name', '=', name), single=True)
+
+            if image and image['presets']:
+                props += [NullComplete('{0}='.format(i['id'])) for i in image['presets']['settings']]
+                props += [NullComplete('volume:{0}='.format(v['container_path'])) for v in image['presets']['volumes']]
+
+        return props + [
+            NullComplete('name='),
+            NullComplete('command='),
+            NullComplete('hostname='),
+            EntitySubscriberComplete('image=', 'docker.image', lambda i: q.get(i, 'names.0')),
+            EntitySubscriberComplete('host=', 'docker.host', lambda i: q.get(i, 'name')),
+            EnumComplete('interactive=', ['yes', 'no']),
+            EnumComplete('autostart=', ['yes', 'no']),
+            EnumComplete('expose_ports=', ['yes', 'no']),
+        ]
 
 
 @description("Start container")

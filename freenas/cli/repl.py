@@ -1236,10 +1236,14 @@ class MainLoop(object):
                     item = env.find(token.name)
                     return item.value if isinstance(item, Environment.Variable) else item
                 except KeyError:
-                    item = self.find_in_scope(token.name, **kwargs)
+                    item = self.find_in_scope(token.name, cwd=cwd, env=env, variables=variables)
                     if item is not None:
                         return item
-                    item = self.find_in_scope(token.name.split('/')[0], **kwargs) if isinstance(token.name, str) else None
+
+                    item = self.find_in_scope(token.name.split('/')[0], cwd=cwd, env=env, variables=variables) \
+                        if isinstance(token.name, str) \
+                        else None
+
                     if item is not None:
                         raise SyntaxError("Use of slashes as separators not allowed. Please use spaces instead or "
                                           "use the 'cd' command to navigate")

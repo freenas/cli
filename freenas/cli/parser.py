@@ -371,6 +371,7 @@ def t_ANY_RPAREN(t):
 def t_ANY_COPEN(t):
     r'\${'
     t.lexer.push_state('script')
+    t.lexer.parens += 1
     return t
 
 

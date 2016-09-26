@@ -282,13 +282,19 @@ class TaskPromise(object):
     def wait(self):
         self.task = self.context.entity_subscribers['task'].get(self.tid, timeout=5)
         if self.task and self.task['state'] in ('FINISHED', 'FAILED', 'ABORTED'):
-            return self.result
+            ret = self.result
+        else:
+            generator = self.context.entity_subscribers['task'].listen(self.tid)
+            for op, old, new in generator:
+                if new['state'] in ('FINISHED', 'FAILED', 'ABORTED'):
+                    self.task = new
+                    ret = self.result
+                    break
 
-        generator = self.context.entity_subscribers['task'].listen(self.tid)
-        for op, old, new in generator:
-            if new['state'] in ('FINISHED', 'FAILED', 'ABORTED'):
-                self.task = new
-                return self.result
+        if self.task['state'] != 'FINISHED':
+            raise RuntimeError('Task {0} failed'.format(self.tid))
+
+        return ret
 
 
 class EntityPromise(TaskPromise):

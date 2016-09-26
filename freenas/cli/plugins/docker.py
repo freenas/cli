@@ -615,11 +615,19 @@ class DockerContainerCreateCommand(Command):
 
     def run(self, context, args, kwargs, opargs):
         if not kwargs.get('name') and not args:
-            raise CommandException('Name is a required property')
+            raise CommandException('name is a required property')
+
+        if not kwargs.get('image'):
+            raise CommandException('image is a required property')
 
         name = kwargs.get('name') or args[0]
+        image = context.entity_subscribers['docker.image'].query(('names', 'in', kwargs['image']), single=True)
+        if not image:
+            image = q.query(DockerImageNamespace.freenas_images, ('name', '=', kwargs['image']), single=True)
+
         env = ['{0}={1}'.format(k, v) for k, v in kwargs.items() if k.isupper()]
         volumes = []
+        presets = image['presets'] or {}
 
         for k, v in kwargs.items():
             if k.startswith('volume:'):
@@ -634,9 +642,10 @@ class DockerContainerCreateCommand(Command):
             'names': [name],
             'image': kwargs['image'],
             'hostname': kwargs.get('hostname'),
-            'command': kwargs.get('command'),
+            'command': kwargs.get('command', []),
             'host': kwargs.get('host'),
-            'expose_ports': kwargs.get('expose_ports'),
+            'expose_ports': kwargs.get('expose_ports', q.get(presets, 'expose_ports', False)),
+            'interactive': kwargs.get('interactive', q.get(presets, 'interactive', False)),
             'environment': env,
             'volumes': volumes
         })

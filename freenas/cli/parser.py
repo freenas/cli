@@ -724,16 +724,15 @@ def p_array_literal(p):
 def p_dict_literal_1(p):
     """
     dict_literal : LBRACE RBRACE
-    dict_literal : LBRACE newline RBRACE
     """
     p[0] = Literal(dict(), dict)
 
 
 def p_dict_literal_2(p):
     """
-    dict_literal : LBRACE dict_pair_list RBRACE
+    dict_literal : LBRACE push_script dict_pair_list pop_script RBRACE
     """
-    p[0] = Literal(dict(p[2]), dict)
+    p[0] = Literal(dict(p[3]), dict)
 
 
 def p_dict_pair_list(p):

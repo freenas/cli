@@ -167,7 +167,6 @@ class AsciiOutputFormatter(object):
 
     @staticmethod
     def output_object(obj, file=sys.stdout, **kwargs):
-
         values = []
         editable_column = False
         for item in obj:

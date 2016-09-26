@@ -454,8 +454,10 @@ def format_output(object, **kwargs):
     elif isinstance(object, Sequence):
         for i in object:
             format_output(i, **kwargs)
+
     elif isinstance(object, list):
         output_list(object, **kwargs)
+
     else:
         output_msg(object, **kwargs)
 

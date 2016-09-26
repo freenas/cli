@@ -294,7 +294,7 @@ class TaskPromise(object):
         if self.task['state'] != 'FINISHED':
             raise RuntimeError('Task {0} failed'.format(self.tid))
 
-        return ret
+        return ret or self.task['result']
 
 
 class EntityPromise(TaskPromise):

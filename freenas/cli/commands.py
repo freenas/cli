@@ -1078,7 +1078,7 @@ class RemoteCommand(Command):
         if len(args) < 1 or not isinstance(args[0], Quote):
             raise CommandException("Provide code fragment to evaluate")
 
-        ast = dump_ast(args[0])
+        ast = dump_ast(args[0].body)
         tid = context.submit_task('cli.eval.ast', ast)
         return TaskPromise(context, tid)
 

@@ -32,6 +32,17 @@ import ply.yacc as yacc
 from freenas.cli import config
 import logging
 
+
+LITERAL_TYPES = {
+    'int': int,
+    'str': str,
+    'bool': bool,
+    'list': list,
+    'dict': dict,
+    'none': type(None),
+}
+
+
 logger = logging.getLogger('freenascli.parser')
 
 
@@ -73,7 +84,7 @@ def ASTObject(name, *args):
                 return to_json(value)
 
             if isinstance(value, type):
-                return {'type': value.__name__}
+                return {'type': LITERAL_TYPES[value]}
 
             return value
 

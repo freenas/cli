@@ -1536,7 +1536,7 @@ class MainLoop(object):
                 return self.eval(token.right, input_data=result)
 
             if isinstance(token, ShellEscape):
-                return self.builtin_commands['shell'].run(
+                return self.builtin_commands['shell']().run(
                     self.context,
                     [self.eval(t) for t in convert_to_literals(token.args)],
                     {}, {}

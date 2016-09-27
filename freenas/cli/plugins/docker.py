@@ -627,7 +627,7 @@ class DockerContainerCreateCommand(Command):
 
         env = ['{0}={1}'.format(k, v) for k, v in kwargs.items() if k.isupper()]
         volumes = []
-        presets = image['presets'] if image else {}
+        presets = image.get('presets') or {} if image else {}
 
         for k, v in kwargs.items():
             if k.startswith('volume:'):
@@ -645,7 +645,7 @@ class DockerContainerCreateCommand(Command):
 
         if 'hostname' in kwargs:
             create_args['hostname'] = kwargs.get('hostname')
-            
+
         if 'command' in kwargs:
             command = kwargs.get('command', [])
             command = command if isinstance(command, (list, tuple)) else [command]

@@ -30,7 +30,7 @@ from freenas.cli.namespace import (
     Namespace, EntityNamespace, Command, EntitySubscriberBasedLoadMixin,
     TaskBasedSaveMixin, CommandException, description, ConfigNamespace
 )
-from freenas.cli.output import ValueType, Table, Sequence
+from freenas.cli.output import ValueType, Table, Sequence, read_value
 from freenas.cli.utils import TaskPromise, post_save, EntityPromise
 from freenas.utils import query as q
 from freenas.cli.complete import NullComplete, EntitySubscriberComplete, EnumComplete
@@ -638,17 +638,41 @@ class DockerContainerCreateCommand(Command):
                     'readonly': False
                 })
 
-        tid = context.submit_task('docker.container.create', {
+        create_args ={
             'names': [name],
             'image': kwargs['image'],
-            'hostname': kwargs.get('hostname'),
-            'command': kwargs.get('command', []),
-            'host': kwargs.get('host'),
-            'expose_ports': kwargs.get('expose_ports', q.get(presets, 'expose_ports', False)),
-            'interactive': kwargs.get('interactive', q.get(presets, 'interactive', False)),
-            'environment': env,
-            'volumes': volumes
-        })
+        }
+
+        if 'hostname' in kwargs:
+            create_args['hostname'] = kwargs.get('hostname')
+            
+        if 'command' in kwargs:
+            command = kwargs.get('command', [])
+            command = command if isinstance(command, (list, tuple)) else [command]
+            create_args['command'] = command
+
+        if 'host' in kwargs:
+            create_args['host'] = kwargs.get('host')
+
+        if 'expose_ports' in kwargs or 'expose_ports' in presets:
+            create_args['expose_ports'] = read_value(
+                kwargs.get('expose_ports', q.get(presets, 'expose_ports', False)),
+                ValueType.BOOLEAN
+            )
+
+        if 'interactive' in kwargs or 'interactive' in presets:
+            create_args['interactive'] = read_value(
+                kwargs.get('interactive', q.get(presets, 'interactive', False)),
+                ValueType.BOOLEAN
+            )
+
+        if env:
+            create_args['environment'] = env
+
+        if volumes:
+            create_args['volumes'] = volumes
+
+        tid = context.submit_task(self.parent.create_task, create_args)
 
         return TaskPromise(context, tid)
 

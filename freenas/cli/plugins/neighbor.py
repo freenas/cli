@@ -32,6 +32,7 @@ class NeighborNamespace(RpcBasedLoadMixin,EntityNamespace):
     def __init__(self, name, context):
         super(NeighborNamespace, self).__init__(name, context)
         self.query_call = 'neighbor.query'
+        self.allow_create = False
 
         self.add_property(
             descr='Neighbor hostname',

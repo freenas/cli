@@ -35,6 +35,7 @@ from freenas.cli.utils import TaskPromise, post_save, EntityPromise
 from freenas.utils import query as q
 from freenas.cli.complete import NullComplete, EntitySubscriberComplete, EnumComplete
 from freenas.cli.console import Console
+from freenas.utils import first_or_default
 
 
 t = gettext.translation('freenas-cli', fallback=True)
@@ -625,9 +626,12 @@ class DockerContainerCreateCommand(Command):
         if not image:
             image = q.query(DockerImageNamespace.freenas_images, ('name', '=', kwargs['image']), single=True)
 
+        command = kwargs.get('command', [])
+        command = command if isinstance(command, (list, tuple)) else [command]
         env = ['{0}={1}'.format(k, v) for k, v in kwargs.items() if k.isupper()]
-        volumes = []
         presets = image.get('presets') or {} if image else {}
+        volumes = []
+        ports = []
 
         for k, v in kwargs.items():
             if k.startswith('volume:'):
@@ -638,43 +642,49 @@ class DockerContainerCreateCommand(Command):
                     'readonly': False
                 })
 
-        create_args ={
+            if k.startswith('port:'):
+                _, portspec = k.split(':', maxsplit=1)
+                port, protocol = portspec.split('/', maxsplit=1)
+                protocol = protocol.upper()
+                try:
+                    port = int(port)
+                except ValueError:
+                    continue
+
+                if protocol not in ('TCP', 'UDP'):
+                    continue
+
+                mapping = first_or_default(lambda m: m['container_port'] == port and m['protocol'] == protocol, ports)
+                if mapping:
+                    mapping['host_port'] = v
+                    continue
+
+                ports.append({
+                    'container_port': port,
+                    'host_port': v,
+                    'protocol': protocol
+                })
+
+        create_args = {
             'names': [name],
             'image': kwargs['image'],
-        }
-
-        if 'hostname' in kwargs:
-            create_args['hostname'] = kwargs.get('hostname')
-
-        if 'command' in kwargs:
-            command = kwargs.get('command', [])
-            command = command if isinstance(command, (list, tuple)) else [command]
-            create_args['command'] = command
-
-        if 'host' in kwargs:
-            create_args['host'] = kwargs.get('host')
-
-        if 'expose_ports' in kwargs or 'expose_ports' in presets:
-            create_args['expose_ports'] = read_value(
+            'host': kwargs.get('host'),
+            'hostname': kwargs.get('hostname'),
+            'command': command,
+            'environment': env,
+            'volumes': volumes,
+            'expose_ports': read_value(
                 kwargs.get('expose_ports', q.get(presets, 'expose_ports', False)),
                 ValueType.BOOLEAN
-            )
-
-        if 'interactive' in kwargs or 'interactive' in presets:
-            create_args['interactive'] = read_value(
+            ),
+            'interactive': read_value(
                 kwargs.get('interactive', q.get(presets, 'interactive', False)),
                 ValueType.BOOLEAN
             )
-
-        if env:
-            create_args['environment'] = env
-
-        if volumes:
-            create_args['volumes'] = volumes
+        }
 
         tid = context.submit_task(self.parent.create_task, create_args)
-
-        return TaskPromise(context, tid)
+        return EntityPromise(context, tid, self.parent)
 
     def complete(self, context, **kwargs):
         props = []

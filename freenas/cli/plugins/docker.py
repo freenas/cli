@@ -685,8 +685,10 @@ class DockerContainerCreateCommand(Command):
                 image = q.query(DockerImageNamespace.freenas_images, ('name', '=', name), single=True)
 
             if image and image['presets']:
-                props += [NullComplete('{0}='.format(i['id'])) for i in image['presets']['settings']]
-                props += [NullComplete('volume:{0}='.format(v['container_path'])) for v in image['presets']['volumes']]
+                presets = image['presets']
+                props += [NullComplete('{id}='.format(**i)) for i in presets['settings']]
+                props += [NullComplete('volume:{container_path}='.format(**v)) for v in presets['volumes']]
+                props += [NullComplete('port:{container_port}/{protocol}='.format(**v)) for v in presets['ports']]
 
         return props + [
             NullComplete('name='),

@@ -54,6 +54,7 @@ from freenas.cli.output import Object as output_obj, get_terminal_size
 from freenas.cli.descriptions.tasks import translate as translate_task
 from freenas.cli.utils import TaskPromise, describe_task_state, parse_timedelta, add_tty_formatting
 from freenas.dispatcher.shell import ShellClient
+from freenas.utils.url import wrap_address
 
 
 if platform.system() != 'Windows':
@@ -460,8 +461,8 @@ class ShowUrlsCommand(Command):
 
     def run(self, context, args, kwargs, opargs):
         # Enclose ipv6 urls in '[]' according to ipv6 url spec
-        my_ips = ['[{}]'.format(ip) if ':' in ip else ip for ip in context.call_sync('network.config.get_my_ips')]
-        my_protocols = context.call_sync('system.ui.get_config')
+        my_ips = [wrap_address(ip) for ip in context.call_sync('network.config.get_my_ips', timeout=60)]
+        my_protocols = context.call_sync('system.ui.get_config', timeout=60)
         urls = []
         for proto in my_protocols['webui_protocol']:
             proto_port = my_protocols['webui_{0}_port'.format(proto.lower())]

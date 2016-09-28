@@ -1134,7 +1134,7 @@ class CreateEntityCommand(Command):
                 with contextlib.suppress(BaseException):
                     prop.do_set(ns.entity, v)
 
-            return [create_completer(x) for x in self.parent.property_mappings if x.can_set(ns.entity)]
+            return [create_completer(x) for x in self.parent.property_mappings if x.can_set(ns.entity) and x.createsetable]
 
         return []
 

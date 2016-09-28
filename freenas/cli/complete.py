@@ -26,6 +26,7 @@
 #####################################################################
 
 from freenas.cli.output import format_value
+from copy import deepcopy
 
 
 class NullComplete(object):
@@ -72,9 +73,24 @@ class RpcComplete(EntitySubscriberComplete):
         super(RpcComplete, self).__init__(name, datasource, mapper, extra, **kwargs)
 
     def choices(self, context, token):
-        result = []
-        for o in list(context.call_sync(self.datasource)) + self.extra:
-            r = self.mapper(o)
+        result = deepcopy(self.extra)
+        datasource = context.call_sync(self.datasource)
+        r = None
+
+        if isinstance(datasource, dict):
+            if self.mapper:
+                r = self.mapper(datasource)
+            else:
+                for k, v in datasource.items():
+                    result.append(v)
+        else:
+            for o in datasource:
+                if self.mapper:
+                    r = self.mapper(o)
+                else:
+                    r = o
+
+        if r:
             if isinstance(r, (list, tuple)):
                 result.extend(r)
             else:
@@ -90,8 +106,7 @@ class MultipleSourceComplete(NullComplete):
         self.extra = extra or []
 
     def choices(self, context, token):
-        result = []
-        result.extend(self.extra)
+        result = deepcopy(self.extra)
         for c in self.components:
             result.extend(c.choices(context, token))
 

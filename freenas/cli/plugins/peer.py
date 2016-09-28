@@ -283,6 +283,16 @@ class BasePeerNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Enti
             usage=_('Type of a peer.')
         )
 
+        self.add_property(
+            descr='Online',
+            name='online',
+            get='online',
+            usersetable=False,
+            list=True,
+            type=ValueType.BOOLEAN,
+            usage=_('Health status of a peer.')
+        )
+
         self.primary_key = self.get_mapping('name')
         self.primary_key_name = 'name'
         self.save_key_name = 'id'
@@ -561,6 +571,16 @@ class PeerNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             createsetable=False,
             usersetable=False,
             usage=_('Type of a peer.')
+        )
+
+        self.add_property(
+            descr='Online',
+            name='online',
+            get='online',
+            usersetable=False,
+            list=True,
+            type=ValueType.BOOLEAN,
+            usage=_('Health status of a peer.')
         )
 
     def namespaces(self):

@@ -203,8 +203,14 @@ def table(data, columns):
     return Table(data, [Table.Column(l, a) for l, a in columns])
 
 
-def eval_(line):
-    return Sequence(*config.instance.eval(parse(line, '<stdin>')))
+def eval_(ast):
+    if isinstance(ast, str):
+        ast = parse(ast, '<eval>')
+
+    if isinstance(ast, Quote):
+        ast = ast.body
+
+    return Sequence(*config.instance.eval(ast))
 
 
 # Reads a json object from a file or a str and returns a parsed dict of it

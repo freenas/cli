@@ -280,17 +280,27 @@ class BasePeerNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Enti
             name='type',
             get='type',
             usersetable=False,
+            createsetable=False,
             usage=_('Type of a peer.')
         )
 
         self.add_property(
-            descr='Online',
-            name='online',
-            get='online',
+            descr='State',
+            name='state',
+            get='status.state',
             usersetable=False,
             list=True,
-            type=ValueType.BOOLEAN,
-            usage=_('Health status of a peer.')
+            usage=_('Health status of a peer.'),
+        )
+
+        self.add_property(
+            descr='RTT',
+            name='rtt',
+            get='status.rtt',
+            usersetable=False,
+            type=ValueType.NUMBER,
+            list=True,
+            usage=_('Round trip time to a peer in seconds.')
         )
 
         self.primary_key = self.get_mapping('name')
@@ -574,12 +584,11 @@ class PeerNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         )
 
         self.add_property(
-            descr='Online',
-            name='online',
-            get='online',
+            descr='State',
+            name='state',
+            get='status.state',
             usersetable=False,
             list=True,
-            type=ValueType.BOOLEAN,
             usage=_('Health status of a peer.')
         )
 

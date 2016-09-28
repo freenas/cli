@@ -87,7 +87,7 @@ class MultipleSourceComplete(NullComplete):
     def __init__(self, name, components, extra=None, **kwargs):
         super(MultipleSourceComplete, self).__init__(name, **kwargs)
         self.components = components
-        self.extra = [] or extra
+        self.extra = extra or []
 
     def choices(self, context, token):
         result = []

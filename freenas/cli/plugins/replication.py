@@ -280,6 +280,28 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
                 }
             set_transport_option(obj, get_transport_option(obj, 'encrypt'), opt)
 
+        def get_peer(obj, role):
+            if obj[role] == self.context.call_sync('system.info.host_uuid'):
+                return self.context.call_sync('system.general.get_config')['hostname']
+            else:
+                return self.context.entity_subscribers['peer'].query(
+                    ('id', '=', obj[role]),
+                    single=True,
+                    select='name'
+                )
+
+        def set_peer(obj, val, role):
+            if val == self.context.call_sync('system.general.get_config')['hostname']:
+                obj[role] = self.context.call_sync('system.info.host_uuid')
+            else:
+                peer_id = self.context.entity_subscribers['peer'].query(
+                    ('name', '=', val),
+                    ('type', '=', 'freenas'),
+                    single=True,
+                    select='id'
+                )
+                obj[role] = peer_id
+
         self.add_property(
             descr='Name',
             name='name',
@@ -292,8 +314,9 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
         self.add_property(
             descr='Master',
             name='master',
-            get='master',
-            set='master',
+            get=lambda o: get_peer(o, 'master'),
+            set=lambda o, v: set_peer(o, v, 'master'),
+            usersetable=False,
             list=False,
             complete=PeerComplete('master='),
             usage=_('Name of FreeNAS machine (peer) acting as a sending side.')
@@ -302,7 +325,8 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
         self.add_property(
             descr='Slave',
             name='slave',
-            get='slave',
+            get=lambda o: get_peer(o, 'slave'),
+            set=lambda o, v: set_peer(o, v, 'slave'),
             usersetable=False,
             list=True,
             complete=PeerComplete('slave='),

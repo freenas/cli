@@ -121,6 +121,7 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
         self.create_task = 'replication.create'
         self.update_task = 'replication.update'
         self.delete_task = 'replication.delete'
+        self.required_props = ['name', 'datasets', 'master', 'slave']
 
         self.localdoc['CreateEntityCommand'] = ("""\
             Usage: create <name> master=<master> slave=<slave> recursive=<recursive>

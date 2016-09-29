@@ -124,6 +124,7 @@ ENTITY_SUBSCRIBERS = [
     'user',
     'group',
     'disk',
+    'disk.enclosure',
     'volume',
     'volume.dataset',
     'volume.snapshot',

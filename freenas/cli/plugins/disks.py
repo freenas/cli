@@ -278,6 +278,7 @@ class EnclosureNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
     def __init__(self, name, context):
         super(EnclosureNamespace, self).__init__(name, context)
         self.entity_subscriber_name = 'disk.enclosure'
+        self.primary_key_name = 'name'
 
         self.add_property(
             descr='Enclosure name',
@@ -302,6 +303,8 @@ class EnclosureNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             set=None,
             list=True
         )
+
+        self.primary_key = self.get_mapping('name')
 
 
 @description("Formats given disk")

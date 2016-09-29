@@ -30,7 +30,7 @@ import os
 from freenas.cli.namespace import (
     EntityNamespace, Command, EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, description
 )
-from freenas.cli.output import ValueType
+from freenas.cli.output import ValueType, Table
 from freenas.cli.utils import TaskPromise
 from freenas.utils import extend, query as q
 
@@ -338,6 +338,28 @@ class EnclosureNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         )
 
         self.primary_key = self.get_mapping('name')
+        self.entity_commands = lambda this: {
+            'devices': EnclosureDevicesCommand(this)
+        }
+
+
+@description("Shows enclosure contents")
+class EnclosureDevicesCommand(Command):
+    """
+    Usage: devices
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        devices = sorted(self.parent.entity['devices'], key=lambda d: d['index'])
+        return Table(devices, [
+            Table.Column('Index', 'index', display_width_percentage=10),
+            Table.Column('Disk name', 'disk_name', display_width_percentage=20),
+            Table.Column('Slot description', 'name'),
+            Table.Column('Slot status', 'status')
+        ])
+
 
 
 @description("Formats given disk")

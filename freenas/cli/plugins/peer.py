@@ -259,7 +259,6 @@ class BasePeerNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Enti
         self.create_task = 'peer.create'
         self.update_task = 'peer.update'
         self.delete_task = 'peer.delete'
-        self.required_props = ['name', ['type', 'credentials']]
 
         self.skeleton_entity = {
             'type': type_name,

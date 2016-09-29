@@ -268,6 +268,41 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityN
 
         return 'unknown'
 
+    def namespaces(self, name=None):
+        return list(super(DisksNamespace, self).namespaces()) + [
+            EnclosureNamespace('enclosure', self.context)
+        ]
+
+
+class EnclosureNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
+    def __init__(self, name, context):
+        super(EnclosureNamespace, self).__init__(name, context)
+        self.entity_subscriber_name = 'disk.enclosure'
+
+        self.add_property(
+            descr='Enclosure name',
+            name='name',
+            get='name',
+            set=None,
+            list=True
+        )
+
+        self.add_property(
+            descr='Enclosure ID',
+            name='id',
+            get='id',
+            set=None,
+            list=True
+        )
+
+        self.add_property(
+            descr='Enclosure description',
+            name='description',
+            get='description',
+            set=None,
+            list=True
+        )
+
 
 @description("Formats given disk")
 class FormatDiskCommand(Command):

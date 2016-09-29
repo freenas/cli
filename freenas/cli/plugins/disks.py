@@ -32,7 +32,7 @@ from freenas.cli.namespace import (
 )
 from freenas.cli.output import ValueType
 from freenas.cli.utils import TaskPromise
-from freenas.utils import extend
+from freenas.utils import extend, query as q
 
 
 t = gettext.translation('freenas-cli', fallback=True)
@@ -56,6 +56,17 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityN
         self.extra_query_params = [
             ('online', '=', True)
         ]
+
+        def get_enclosure(disk):
+            enc_id = q.get(disk, 'status.enclosure')
+            if not enc_id:
+                return
+
+            enclosure = context.entity_subscribers['disk.enclosure'].get(enc_id)
+            if not enclosure:
+                return
+
+            return '{description} ({name})'.format(**enclosure)
 
         self.add_property(
             descr='Path',
@@ -110,6 +121,17 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityN
             usage=_("""\
             Serial number as reported by the device. This is
             a read-only value."""),
+            list=False,
+            type=ValueType.STRING
+        )
+
+        self.add_property(
+            descr='Enclosure',
+            name='enclosure',
+            get=get_enclosure,
+            set=None,
+            usage=_("""\
+            Name of enclosure containing the disk (if any). This is a read-only value."""),
             list=False,
             type=ValueType.STRING
         )
@@ -279,6 +301,8 @@ class EnclosureNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         super(EnclosureNamespace, self).__init__(name, context)
         self.entity_subscriber_name = 'disk.enclosure'
         self.primary_key_name = 'name'
+        self.allow_create = False
+        self.allow_edit = False
 
         self.add_property(
             descr='Enclosure name',
@@ -297,11 +321,20 @@ class EnclosureNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         )
 
         self.add_property(
-            descr='Enclosure description',
+            descr='Description',
             name='description',
             get='description',
             set=None,
             list=True
+        )
+
+        self.add_property(
+            descr='Status',
+            name='status',
+            get='status',
+            set=None,
+            list=True,
+            type=ValueType.SET
         )
 
         self.primary_key = self.get_mapping('name')

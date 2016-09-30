@@ -300,22 +300,22 @@ class EnclosureNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
     def __init__(self, name, context):
         super(EnclosureNamespace, self).__init__(name, context)
         self.entity_subscriber_name = 'disk.enclosure'
-        self.primary_key_name = 'name'
+        self.primary_key_name = 'id'
         self.allow_create = False
         self.allow_edit = False
 
         self.add_property(
             descr='Enclosure name',
             name='name',
-            get='name',
+            get='id',
             set=None,
             list=True
         )
 
         self.add_property(
             descr='Enclosure ID',
-            name='id',
-            get='id',
+            name='serial',
+            get='serial',
             set=None,
             list=True
         )

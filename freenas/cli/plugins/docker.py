@@ -630,8 +630,8 @@ class DockerContainerCreateCommand(Command):
         command = command if isinstance(command, (list, tuple)) else [command]
         env = ['{0}={1}'.format(k, v) for k, v in kwargs.items() if k.isupper()]
         presets = image.get('presets') or {} if image else {}
+        ports = presets.get('ports', [])
         volumes = []
-        ports = []
 
         for k, v in kwargs.items():
             if k.startswith('volume:'):
@@ -678,6 +678,7 @@ class DockerContainerCreateCommand(Command):
             'command': command,
             'environment': env,
             'volumes': volumes,
+            'ports': ports,
             'expose_ports': read_value(
                 kwargs.get('expose_ports', q.get(presets, 'expose_ports', False)),
                 ValueType.BOOLEAN

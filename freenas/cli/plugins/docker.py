@@ -226,6 +226,15 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
         )
 
         self.add_property(
+            descr='Web UI URL',
+            name='web_ui_url',
+            get='web_ui_url',
+            set=None,
+            usersetable=False,
+            list=True,
+        )
+
+        self.add_property(
             descr='Container host name',
             name='hostname',
             get='hostname',

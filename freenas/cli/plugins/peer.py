@@ -34,7 +34,7 @@ from freenas.cli.namespace import (
 from freenas.cli.complete import NullComplete, RpcComplete
 from freenas.cli.output import ValueType, Sequence, Table
 from freenas.cli.utils import EntityPromise
-from freenas.utils import first_or_default
+from freenas.utils import first_or_default, query as q
 
 t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
@@ -599,5 +599,27 @@ class PeerNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         ]
 
 
+def find_peer_namespace(context, task):
+    if task['name'] == 'peer.create':
+        peer_type = q.get(task, 'args.0.type')
+
+    elif task['name'] == 'peer.update':
+        peer_id = q.get(task, 'args.0')
+        peer_type = context.entity_subscribers['peer'].query(('id', '=', peer_id), single=True)
+
+    else:
+        return
+
+    if peer_type == 'ssh':
+        return SSHPeerNamespace
+
+    if peer_type == 'amazon-s3':
+        return AmazonS3Namespace
+
+    if peer_type == 'freenas':
+        return FreeNASPeerNamespace
+
+
 def _init(context):
     context.attach_namespace('/', PeerNamespace('peer', context))
+    context.map_tasks('peer.*', find_peer_namespace)

@@ -526,3 +526,5 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
 
 def _init(context):
     context.attach_namespace('/', ReplicationNamespace('replication', context))
+    context.map_tasks('replication.*', ReplicationNamespace)
+

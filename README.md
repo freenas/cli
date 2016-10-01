@@ -9,6 +9,7 @@
 5. [System information and configuration](#section-5)
   1. [System information](#section-5-1)
   2. [System configuration](#section-5-2)
+  3. [System session information and configuration](#section-5-3)
 6. [Network configuration](#section-6)
   1. [Simple static IP setup](#section-6-1)
 7. [Volume creation and management](#section-7)
@@ -39,7 +40,7 @@ In FreeNAS 10, we have created an entirely new CLI which is intended to offer fu
 
 * By accessing it from the webgui's console page: freenas_10_ip/console
 
-* By running it directly on your client machine and connecting to a remote FreeNAS instance (still to be documented)
+* By running it directly on your client machine and connecting to a remote FreeNAS instance (this is still advanced class and not yet officially supported, though the CLI is a fairly simple python program)
 
 One way or the other, once you have invoked the cli it will greet you with the following text:
 
@@ -130,7 +131,6 @@ To see the properties of a given namespace, use 'help properties'
 
 Help on a higher level command will show the commands it expands to, for example:
 
-
 ```
 127.0.0.1:>help account
 Command                               Description                             
@@ -201,30 +201,12 @@ System version (system_version)        FreeBSD freenas.local 10.2-STABLE
                                        amd64 
 ```
 
-If you want to know things like system up-time and the number of clients connected, use `system status`:
+If you want to know things like system up-time and the number of things connected to the middlware, use `system status`:
 
 ```
 127.0.0.1:>system status
-connected-clients=12  started-at=1448327368.791504  up-since=18 minutes ago
+middleware-connections=12  started-at=1448327368.791504  up-since=18 minutes ago
 ```
-
-You can view system sessions with the `system session` top level command:
-
-```
-127.0.0.1:>system session show
-Session ID   IP Address     User name        Started at          Ended at     
-1            127.0.0.1    dispatcherctl   4 hours ago        4 hours ago      
-2            unix         task.130        4 hours ago        none             
-3            unix         task.129        4 hours ago        an hour ago      
-4            unix         task.132        4 hours ago        none             
-5            unix         task.131        4 hours ago        none             
-6            127.0.0.1    dispatcherctl   4 hours ago        4 hours ago      
-7            127.0.0.1    dispatcherctl   4 hours ago        4 hours ago      
-8            127.0.0.1    etcd            4 hours ago        none             
-9            127.0.0.1    dispatcherctl   4 hours ago        4 hours ago      
-...
-```
-
 You can view system events with the `system event` top level command:
 
 ```
@@ -306,6 +288,42 @@ Message of the day (motd)              FreeBSD ?.?.?  (UNKNOWN)
 Periodic Notify User UID               0                                    
 (periodic_notify_user) 
 ```
+
+## System session commands <a id="section=5-3"></a>
+
+There is also a namespace in the FreeNAS CLI specifically for dealing with connected sessions, which administrators may find very useful.
+
+You can view connected session information and history with the `session` top level command, or limit that information to just logged-in sessions with the `w` command:
+```
+127.0.0.1:>session show
+Session ID   IP Address     User name        Started at          Ended at     
+1            127.0.0.1    dispatcherctl   4 hours ago        4 hours ago      
+2            unix         task.130        4 hours ago        none             
+3            unix         task.129        4 hours ago        an hour ago      
+4            unix         task.132        4 hours ago        none             
+5            unix         task.131        4 hours ago        none             
+6            127.0.0.1    dispatcherctl   4 hours ago        4 hours ago      
+7            127.0.0.1    dispatcherctl   4 hours ago        4 hours ago      
+8            127.0.0.1    etcd            4 hours ago        none             
+9            127.0.0.1    dispatcherctl   4 hours ago        4 hours ago      
+
+127.0.0.1::>w
+ Session ID          User name           Address             Started at         
+                                                                                
+ 1978                root                unix,2133           22 hours ago       
+ 1981                root                unix,6020           21 minutes ago     
+
+...
+```
+
+You can also use the `session` command to send messages to all logged in users, e.g.
+```
+session wall "Hey, hosers! I'm shutting the system down in 5 minutes!"
+```
+As well as to send a message to a specific logged-in user; just get the session ID from the `w` command and
+then `session id send "some text"`.
+
+You can also use the `session id` sub-namespace to query individual attributes of a session and, in the future, to terminate a session with great prejudice.
 
 ## Network configuration <a id="section-6"></a>
 
@@ -431,7 +449,6 @@ Disk path   Disk name     Size      Online       Allocation
 ```
 
 The valid types for volume create are: disk, mirror, raidz1, raidz2, raidz3 and auto.  If you do not specify a type `auto` is assumed and FreeNAS will try to decide the best topology for you (if you use a multiple of 2 disks, you will get a stripe of mirrors or if you use a multiple of 3 disks you get a stripe of raidz1).
-
 
 ```
 127.0.0.1:>volume create tank disks=ada1,ada2,ada3,ada4
@@ -989,4 +1006,3 @@ Port (port)                                           22
 ```
 
 Note: some services like sshd will restart upon setting a property, while others will do a graceful reload, depending on what the service supports.
-

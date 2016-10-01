@@ -84,7 +84,7 @@ class StatusCommand(Command):
         status_dict = context.call_sync('management.status')
         status_dict['up-since'] = format_value(status_dict['started-at'], vt=ValueType.TIME)
         return Object(
-            Object.Item("Connected clients", 'connected-clients', status_dict['connected-clients']),
+            Object.Item("Number of middleware connections", 'middleware-connections', status_dict['connected-clients']),
             Object.Item("Uptime", 'up-since', status_dict['up-since']),
             Object.Item("Started at", 'started-at', status_dict['started-at'])
         )

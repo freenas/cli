@@ -289,11 +289,12 @@ Periodic Notify User UID               0
 (periodic_notify_user) 
 ```
 
-## System session commands <a id="section=5-3"></a>
+### System session commands <a id="section=5-3"></a>
 
 There is also a namespace in the FreeNAS CLI specifically for dealing with connected sessions, which administrators may find very useful.
 
 You can view connected session information and history with the `session` top level command, or limit that information to just logged-in sessions with the `w` command:
+
 ```
 127.0.0.1:>session show
 Session ID   IP Address     User name        Started at          Ended at     
@@ -307,13 +308,11 @@ Session ID   IP Address     User name        Started at          Ended at
 8            127.0.0.1    etcd            4 hours ago        none             
 9            127.0.0.1    dispatcherctl   4 hours ago        4 hours ago      
 
-127.0.0.1::>w
+127.0.0.1:>w
  Session ID          User name           Address             Started at         
                                                                                 
  1978                root                unix,2133           22 hours ago       
  1981                root                unix,6020           21 minutes ago     
-
-...
 ```
 
 You can also use the `session` command to send messages to all logged in users, e.g.

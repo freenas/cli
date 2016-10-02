@@ -234,13 +234,14 @@ class ReplaceCommand(Command):
         if len(args) != 2:
             raise CommandException("Please specify old and new disk names as positional arguments")
 
-        disk = correct_disk_path(args[0])
-        vdev = vdev_by_path(self.parent.entity['topology'], disk)
+        old_disk = correct_disk_path(args[0])
+        new_disk = correct_disk_path(args[1])
+        vdev = vdev_by_path(self.parent.entity['topology'], old_disk)
 
         if not vdev:
-            raise CommandException('Cannot find vdev for disk {0}'.format(disk))
+            raise CommandException('Cannot find vdev for disk {0}'.format(old_disk))
 
-        tid = context.submit_task('volume.replace', self.parent.entity['id'], vdev['guid'], disk)
+        tid = context.submit_task('volume.replace', self.parent.entity['id'], vdev['guid'], new_disk)
         return TaskPromise(context, tid)
 
 

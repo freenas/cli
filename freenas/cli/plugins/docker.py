@@ -803,3 +803,8 @@ class DockerNamespace(Namespace):
 
 def _init(context):
     context.attach_namespace('/', DockerNamespace('docker', context))
+    context.map_tasks('docker.config.*', DockerConfigNamespace)
+    context.map_tasks('docker.container.*', DockerContainerNamespace)
+    context.map_tasks('docker.host.*', DockerHostNamespace)
+    context.map_tasks('docker.image.*', DockerImageNamespace)
+

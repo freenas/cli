@@ -674,7 +674,7 @@ class DockerContainerCreateCommand(Command):
                     'protocol': protocol
                 })
 
-        if len(presets['volumes']) != len(volumes):
+        if len(presets.get('volumes', [])) != len(volumes):
             presets_volumes = set(i['container_path'] for i in presets['volumes'])
             entered_volumes = set(i['container_path'] for i in volumes)
             raise CommandException('Required volumes missing: {0}'.format(', '.join(presets_volumes - entered_volumes)))

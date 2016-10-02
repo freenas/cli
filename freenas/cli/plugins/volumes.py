@@ -34,8 +34,8 @@ from freenas.cli.namespace import (
 )
 from freenas.cli.complete import NullComplete, EnumComplete, EntitySubscriberComplete
 from freenas.cli.output import Table, ValueType, output_tree, format_value, read_value, Sequence
-from freenas.cli.utils import TaskPromise, EntityPromise, post_save, iterate_vdevs, vdev_by_path, to_list
-from freenas.cli.utils import correct_disk_path
+from freenas.cli.utils import TaskPromise, EntityPromise, post_save, iterate_vdevs, vdev_by_path, mirror_by_path
+from freenas.cli.utils import to_list, correct_disk_path
 from freenas.utils import first_or_default, extend
 
 
@@ -194,10 +194,10 @@ class ExtendVdevCommand(Command):
         if disk not in context.call_sync('volume.get_available_disks'):
             raise CommandException(_("Disk {0} is not available".format(disk)))
 
-        vdev = vdev_by_path(self.parent.entity['topology'], disk)
+        vdev = mirror_by_path(self.parent.entity['topology'], vdev_ident)
 
         if not vdev:
-            raise CommandException('Cannot find vdev for disk {0}'.format(disk))
+            raise CommandException('Cannot find vdev for disk {0}'.format(vdev_ident))
 
         if vdev['type'] == 'disk':
             vdev['type'] = 'mirror'

@@ -117,6 +117,18 @@ def vdev_by_path(topology, path):
     return None
 
 
+def mirror_by_path(topology, path):
+    for vdev in topology['data']:
+        if vdev['type'] != 'mirror':
+            continue
+
+        for member in vdev['children']:
+            if member.get('path') == path:
+                return vdev
+
+    return None
+
+
 def errors_by_path(errors, path):
     for i in errors:
         if i['path'][:len(path)] == path:

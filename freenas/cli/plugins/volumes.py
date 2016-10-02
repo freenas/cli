@@ -214,6 +214,35 @@ class ExtendVdevCommand(Command):
         self.parent.save()
 
 
+@description("Replaces a disk in a pool")
+class ReplaceCommand(Command):
+    """
+    Usage:
+        replace <olddisk> <newdisk>
+
+    Example:
+        extend_vdev ada1 ada2
+
+    Replaces <olddisk> with <newdisk> in a volume. If <newdisk> is a spare of current volume,
+    it will be removed from the spares list.
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        if len(args) != 2:
+            raise CommandException("Please specify old and new disk names as positional arguments")
+
+        disk = correct_disk_path(args[0])
+        vdev = vdev_by_path(self.parent.entity['topology'], disk)
+
+        if not vdev:
+            raise CommandException('Cannot find vdev for disk {0}'.format(disk))
+
+        tid = context.submit_task('volume.replace', self.parent.entity['id'], vdev['guid'], disk)
+        return TaskPromise(context, tid)
+
+
 @description("Removes vdev from volume")
 class DeleteVdevCommand(Command):
     def __init__(self, parent):
@@ -1784,6 +1813,7 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
             'offline': OfflineVdevCommand(this),
             'online': OnlineVdevCommand(this),
             'extend_vdev': ExtendVdevCommand(this),
+            'replace': ReplaceCommand(this),
             'import': ImportFromVolumeCommand(this),
             'detach': DetachVolumeCommand(this),
             'upgrade': UpgradeVolumeCommand(this)

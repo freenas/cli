@@ -34,8 +34,9 @@ from freenas.cli.namespace import (
 )
 from freenas.cli.complete import NullComplete, EnumComplete, EntitySubscriberComplete
 from freenas.cli.output import Table, ValueType, output_tree, format_value, read_value, Sequence
-from freenas.cli.utils import TaskPromise, EntityPromise, post_save, iterate_vdevs, to_list, correct_disk_path
-from freenas.utils import vdev_by_path, first_or_default, extend
+from freenas.cli.utils import TaskPromise, EntityPromise, post_save, iterate_vdevs, vdev_by_path, to_list
+from freenas.cli.utils import correct_disk_path
+from freenas.utils import first_or_default, extend
 
 
 t = gettext.translation('freenas-cli', fallback=True)

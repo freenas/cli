@@ -109,6 +109,14 @@ def iterate_vdevs(topology):
                     yield subvdev
 
 
+def vdev_by_path(topology, path):
+    for i in iterate_vdevs(topology):
+        if i.get('path') == path:
+            return i
+
+    return None
+
+
 def errors_by_path(errors, path):
     for i in errors:
         if i['path'][:len(path)] == path:

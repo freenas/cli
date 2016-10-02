@@ -241,7 +241,7 @@ class ReplaceCommand(Command):
         if not vdev:
             raise CommandException('Cannot find vdev for disk {0}'.format(old_disk))
 
-        tid = context.submit_task('volume.replace', self.parent.entity['id'], vdev['guid'], new_disk)
+        tid = context.submit_task('volume.vdev.replace', self.parent.entity['id'], vdev['guid'], new_disk)
         return TaskPromise(context, tid)
 
 

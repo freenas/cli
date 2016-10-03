@@ -80,6 +80,11 @@ class RpcComplete(EntitySubscriberComplete):
         if isinstance(datasource, dict):
             if self.mapper:
                 r = self.mapper(datasource)
+                if r:
+                    if isinstance(r, (list, tuple)):
+                        result.extend(r)
+                    else:
+                        result.append(r)
             else:
                 for k, v in datasource.items():
                     result.append(v)
@@ -90,11 +95,11 @@ class RpcComplete(EntitySubscriberComplete):
                 else:
                     r = o
 
-        if r:
-            if isinstance(r, (list, tuple)):
-                result.extend(r)
-            else:
-                result.append(r)
+                if r:
+                    if isinstance(r, (list, tuple)):
+                        result.extend(r)
+                    else:
+                        result.append(r)
 
         return result
 

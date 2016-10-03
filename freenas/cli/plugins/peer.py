@@ -215,6 +215,7 @@ class FreeNASPeerNamespaceMixin(BaseVariantMixin):
             get='credentials.address',
             usersetable=False,
             createsetable=True,
+            list=False,
             usage=_('Address of a FreeNAS peer.'),
             condition=lambda o: o['type'] == 'freenas'
         )
@@ -225,6 +226,7 @@ class FreeNASPeerNamespaceMixin(BaseVariantMixin):
             get=None,
             set='0.username',
             create_arg=True,
+            list=False,
             condition=lambda o: o['type'] == 'freenas'
         )
 
@@ -234,6 +236,7 @@ class FreeNASPeerNamespaceMixin(BaseVariantMixin):
             get=None,
             set='0.password',
             create_arg=True,
+            list=False,
             condition=lambda o: o['type'] == 'freenas'
         )
 
@@ -243,13 +246,13 @@ class FreeNASPeerNamespaceMixin(BaseVariantMixin):
             get=None,
             set='0.auth_code',
             create_arg=True,
+            list=False,
             condition=lambda o: o['type'] == 'freenas'
         )
 
     def commands(self):
         cmds = super(FreeNASPeerNamespaceMixin, self).commands()
         cmds.update({
-            #'create': CreateFreeNASPeerCommand(self),
             'create_token': FreeNASPeerGetAuthTokenCommand(self),
             'invalidate_token': FreeNASPeerInvalidateTokenCommand(self),
             'list_tokens': FreeNASPeerListTokensCommand(self)
@@ -300,6 +303,7 @@ class SSHPeerNamespaceMixin(BaseVariantMixin):
             descr='Peer address',
             name='ssh_address',
             get='credentials.address',
+            list=False,
             usage=_('Address of a SSH peer.'),
             condition=lambda o: o['type'] == 'ssh'
         )

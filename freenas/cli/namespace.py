@@ -255,6 +255,7 @@ class PropertyMapping(object):
         self.condition = kwargs.pop('condition', None)
         self.complete = kwargs.pop('complete', None)
         self.ns = kwargs.pop('ns', None)
+        self.create_arg = kwargs.pop('create_arg', False)
         self.display_width_percentage = kwargs.pop('display_width_percentage', None)
         self.strict = kwargs.pop('strict', True)
 
@@ -787,6 +788,7 @@ class SingleItemNamespace(ItemNamespace):
         self.leaf_entity_namespace = self.parent.leaf_entity_namespace
         self.leaf_ns = None
         self.password = None
+        self.create_args = []
 
         if parent.entity_commands:
             self.subcommands = parent.entity_commands(self)
@@ -826,6 +828,9 @@ class SingleItemNamespace(ItemNamespace):
             name = 'unnamed'
 
         return name
+
+    def get_create_args(self):
+        return [self.entity] + self.create_args
 
     def serialize(self):
         self.on_enter()
@@ -1117,7 +1122,12 @@ class CreateEntityCommand(Command):
 
         mappings = map(lambda i: (self.parent.get_mapping(i[0]), i[1]), kwargs.items())
         for prop, v in sorted(mappings, key=lambda i: i[0].index):
-            prop.do_set(ns.entity, v)
+            if prop.create_arg:
+                prop.do_set(ns.create_args, v)
+            else:
+                prop.do_set(ns.entity, v)
+
+
 
         tid = self.parent.save(ns, new=True)
         return EntityPromise(context, tid, ns)
@@ -1300,7 +1310,7 @@ class TaskBasedSaveMixin(object):
         if new:
             return self.context.submit_task(
                 self.create_task,
-                this.entity,
+                *this.get_create_args(),
                 callback=callback)
 
         return self.context.submit_task(

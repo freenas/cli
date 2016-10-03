@@ -1245,8 +1245,15 @@ class SnapshotsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Ent
             descr='Snapshot id',
             name='id',
             get='id',
-            set='id',
             list=True,
+            usage=_("ID of the snapshot.")
+        )
+
+        self.add_property(
+            descr='Snapshot name',
+            name='name',
+            get='name',
+            list=False,
             usage=_("ID of the snapshot.")
         )
 
@@ -1262,10 +1269,11 @@ class SnapshotsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Ent
             descr='Recursive',
             name='recursive',
             get=None,
-            set='recursive',
+            set='0',
             list=False,
             type=ValueType.BOOLEAN,
-            usage=_("Boolean that sets whether or not the snapshots are recursive.")
+            usage=_("Boolean that sets whether or not the snapshots are recursive."),
+            create_arg=True
         )
 
         self.add_property(
@@ -1320,17 +1328,6 @@ class SnapshotsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Ent
             'rollback': RollbackCommand(this),
             'clone': CloneCommand(this)
         }
-
-    def save(self, this, new=False, callback=None):
-        if new:
-            recursive = this.entity.pop('recursive', False)
-            return self.context.submit_task(
-                self.create_task,
-                this.entity, recursive,
-                callback=callback or (lambda s, t: post_save(this, s, t))
-            )
-
-        super(SnapshotsNamespace, self).save(this, new, callback)
 
 
 @description("Filesystem contents")

@@ -1389,3 +1389,8 @@ class NestedEntityMixin(object):
 
     def save(self):
         return self.parent.save()
+
+
+class BaseVariantMixin(object):
+    def add_properties(self):
+        pass

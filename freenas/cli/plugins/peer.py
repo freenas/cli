@@ -29,7 +29,7 @@ import gettext
 from datetime import datetime
 from freenas.cli.namespace import (
     Command, CommandException, EntityNamespace, TaskBasedSaveMixin,
-    EntitySubscriberBasedLoadMixin, description
+    EntitySubscriberBasedLoadMixin, BaseVariantMixin, description
 )
 from freenas.cli.complete import RpcComplete
 from freenas.cli.output import ValueType, Sequence, Table
@@ -157,11 +157,13 @@ class BasePeerNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Enti
 
 
 @description(_("Manage FreeNAS peers"))
-class FreeNASPeerNamespaceMixin(object):
+class FreeNASPeerNamespaceMixin(BaseVariantMixin):
     """
     The FreeNAS peer namespace provides commands for listing and managing FreeNAS peers.
     """
     def add_properties(self):
+        super(FreeNASPeerNamespaceMixin, self).add_properties()
+
         self.entity_localdoc['DeleteEntityCommand'] = ("""\
             Usage: delete
 
@@ -178,7 +180,7 @@ class FreeNASPeerNamespaceMixin(object):
 
         self.add_property(
             descr='Port',
-            name='port',
+            name='freenas_port',
             get='credentials.port',
             list=False,
             type=ValueType.NUMBER,
@@ -189,7 +191,7 @@ class FreeNASPeerNamespaceMixin(object):
 
         self.add_property(
             descr='Public key',
-            name='pubkey',
+            name='freenas_pubkey',
             get='credentials.pubkey',
             list=False,
             usersetable=False,
@@ -199,7 +201,7 @@ class FreeNASPeerNamespaceMixin(object):
 
         self.add_property(
             descr='Host key',
-            name='hostkey',
+            name='freenas_hostkey',
             get='credentials.hostkey',
             list=False,
             usersetable=False,
@@ -209,7 +211,7 @@ class FreeNASPeerNamespaceMixin(object):
 
         self.add_property(
             descr='Peer address',
-            name='address',
+            name='freenas_address',
             get='credentials.address',
             usersetable=False,
             createsetable=True,
@@ -219,26 +221,29 @@ class FreeNASPeerNamespaceMixin(object):
 
         self.add_property(
             descr='Username',
-            name='username',
+            name='freenas_username',
             get=None,
             set='0.username',
-            create_arg=True
+            create_arg=True,
+            condition=lambda o: o['type'] == 'freenas'
         )
 
         self.add_property(
             descr='Password',
-            name='password',
+            name='freenas_password',
             get=None,
             set='0.password',
-            create_arg=True
+            create_arg=True,
+            condition=lambda o: o['type'] == 'freenas'
         )
 
         self.add_property(
             descr='Token',
-            name='token',
+            name='freenas_token',
             get=None,
             set='0.auth_code',
-            create_arg=True
+            create_arg=True,
+            condition=lambda o: o['type'] == 'freenas'
         )
 
     def commands(self):
@@ -253,11 +258,13 @@ class FreeNASPeerNamespaceMixin(object):
 
 
 @description(_("Manage SSH peers"))
-class SSHPeerNamespaceMixin(object):
+class SSHPeerNamespaceMixin(BaseVariantMixin):
     """
     The SSH peer namespace provides commands for listing and managing SSH peers.
     """
     def add_properties(self):
+        super(SSHPeerNamespaceMixin, self).add_properties()
+
         self.localdoc['CreateEntityCommand'] = ("""\
             Usage: create name=<name> address=<address> username=<username>
                    password=<password> port=<port> privkey=<privkey> hostkey=<hostkey>
@@ -291,7 +298,7 @@ class SSHPeerNamespaceMixin(object):
 
         self.add_property(
             descr='Peer address',
-            name='address',
+            name='ssh_address',
             get='credentials.address',
             usage=_('Address of a SSH peer.'),
             condition=lambda o: o['type'] == 'ssh'
@@ -299,7 +306,7 @@ class SSHPeerNamespaceMixin(object):
 
         self.add_property(
             descr='Username',
-            name='username',
+            name='ssh_username',
             get='credentials.username',
             list=False,
             usage=_('Username used to connect to a SSH peer.'),
@@ -308,7 +315,7 @@ class SSHPeerNamespaceMixin(object):
 
         self.add_property(
             descr='Password',
-            name='password',
+            name='ssh_password',
             get='credentials.password',
             list=False,
             usage=_('Password used to connect to a SSH peer.'),
@@ -317,7 +324,7 @@ class SSHPeerNamespaceMixin(object):
 
         self.add_property(
             descr='Port',
-            name='port',
+            name='ssh_port',
             get='credentials.port',
             list=False,
             type=ValueType.NUMBER,
@@ -327,7 +334,7 @@ class SSHPeerNamespaceMixin(object):
 
         self.add_property(
             descr='Private key',
-            name='privkey',
+            name='ssh_privkey',
             get='credentials.privkey',
             list=False,
             usage=_('Private SSH peer used to connect to SSH peer.'),
@@ -336,7 +343,7 @@ class SSHPeerNamespaceMixin(object):
 
         self.add_property(
             descr='Host key',
-            name='hostkey',
+            name='ssh_hostkey',
             get='credentials.hostkey',
             list=False,
             usage=_('SSH host key of a SSH peer.'),
@@ -345,11 +352,13 @@ class SSHPeerNamespaceMixin(object):
 
 
 @description(_("Manage Amazon S3 peers"))
-class AmazonS3NamespaceMixin(object):
+class AmazonS3NamespaceMixin(BaseVariantMixin):
     """
     The Amazon S3 peer namespace provides commands for listing and managing Amazon S3 peers.
     """
     def add_properties(self):
+        super(AmazonS3NamespaceMixin, self).add_properties()
+
         self.localdoc['CreateEntityCommand'] = ("""\
             Usage: create name=<name> address=<address> username=<username>
                    password=<password> port=<port> privkey=<privkey> hostkey=<hostkey>
@@ -383,7 +392,7 @@ class AmazonS3NamespaceMixin(object):
 
         self.add_property(
             descr='Access key',
-            name='access_key',
+            name='s3_access_key',
             get='credentials.access_key',
             list=False,
             usage=_('Access key to Amazon S3.'),
@@ -392,7 +401,7 @@ class AmazonS3NamespaceMixin(object):
 
         self.add_property(
             descr='Secret key',
-            name='secret_key',
+            name='s3_secret_key',
             get='credentials.secret_key',
             list=False,
             usage=_('Secret key to Amazon S3.'),
@@ -401,7 +410,7 @@ class AmazonS3NamespaceMixin(object):
 
         self.add_property(
             descr='Region',
-            name='region',
+            name='s3_region',
             get='credentials.region',
             list=False,
             usage=_('Region property used to connect to Amazon S3 peer.'),
@@ -410,7 +419,7 @@ class AmazonS3NamespaceMixin(object):
 
         self.add_property(
             descr='Bucket',
-            name='bucket',
+            name='s3_bucket',
             get='credentials.bucket',
             list=False,
             usage=_('Bucket property used to connect to Amazon S3 peer.'),
@@ -419,7 +428,7 @@ class AmazonS3NamespaceMixin(object):
 
         self.add_property(
             descr='Folder',
-            name='folder',
+            name='s3_folder',
             get='credentials.folder',
             list=False,
             usage=_('Folder property used to connect to Amazon S3 peer.'),

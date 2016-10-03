@@ -158,25 +158,8 @@ class BasePeerNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Enti
 
 @description(_("Manage FreeNAS peers"))
 class FreeNASPeerNamespaceMixin(BaseVariantMixin):
-    """
-    The FreeNAS peer namespace provides commands for listing and managing FreeNAS peers.
-    """
     def add_properties(self):
         super(FreeNASPeerNamespaceMixin, self).add_properties()
-
-        self.entity_localdoc['DeleteEntityCommand'] = ("""\
-            Usage: delete
-
-            Deletes the specified FreeNAS peer.""")
-        self.localdoc['ListCommand'] = ("""\
-            Usage: show
-
-            Lists all FreeNAS peers. Optionally, filter or sort by property.
-            Use 'help properties' to list available properties.
-
-            Examples:
-                show
-                show | search name == foo""")
 
         self.add_property(
             descr='Port',
@@ -262,42 +245,8 @@ class FreeNASPeerNamespaceMixin(BaseVariantMixin):
 
 @description(_("Manage SSH peers"))
 class SSHPeerNamespaceMixin(BaseVariantMixin):
-    """
-    The SSH peer namespace provides commands for listing and managing SSH peers.
-    """
     def add_properties(self):
         super(SSHPeerNamespaceMixin, self).add_properties()
-
-        self.localdoc['CreateEntityCommand'] = ("""\
-            Usage: create name=<name> address=<address> username=<username>
-                   password=<password> port=<port> privkey=<privkey> hostkey=<hostkey>
-
-            Examples: create name=mypeer address=anotherhost.local username=myuser
-                             password=secret
-                      create name=mypeer address=192.168.0.105 username=myuser
-                             hostkey="hostkey" privkey="privkey"
-
-            Creates a SSH peer. For a list of properties, see 'help properties'.""")
-        self.entity_localdoc['SetEntityCommand'] = ("""\
-            Usage: set <property>=<value> ...
-
-            Examples: set password=new_secret
-                      set username=new_user
-
-            Sets a SSH peer property. For a list of properties, see 'help properties'.""")
-        self.entity_localdoc['DeleteEntityCommand'] = ("""\
-            Usage: delete
-
-            Deletes the specified SSH peer.""")
-        self.localdoc['ListCommand'] = ("""\
-            Usage: show
-
-            Lists all SSH peers. Optionally, filter or sort by property.
-            Use 'help properties' to list available properties.
-
-            Examples:
-                show
-                show | search name == foo""")
 
         self.add_property(
             descr='Peer address',
@@ -357,42 +306,8 @@ class SSHPeerNamespaceMixin(BaseVariantMixin):
 
 @description(_("Manage Amazon S3 peers"))
 class AmazonS3NamespaceMixin(BaseVariantMixin):
-    """
-    The Amazon S3 peer namespace provides commands for listing and managing Amazon S3 peers.
-    """
     def add_properties(self):
         super(AmazonS3NamespaceMixin, self).add_properties()
-
-        self.localdoc['CreateEntityCommand'] = ("""\
-            Usage: create name=<name> address=<address> username=<username>
-                   password=<password> port=<port> privkey=<privkey> hostkey=<hostkey>
-
-            Examples: create name=mypeer access_key=my_access_key
-                             secret_key=my_secret_key bucket=my_bucket region=my_region
-                             folder=my_folder
-
-            Creates a Amazon S3 peer. For a list of properties, see 'help properties'.""")
-        self.entity_localdoc['SetEntityCommand'] = ("""\
-            Usage: set <property>=<value> ...
-
-            Examples: set bucket=new_bucket
-                      set access_key=new_access_key
-
-            Sets a Amazon S3 peer property.
-            For a list of properties, see 'help properties'.""")
-        self.entity_localdoc['DeleteEntityCommand'] = ("""\
-            Usage: delete
-
-            Deletes the specified SSH peer.""")
-        self.localdoc['ListCommand'] = ("""\
-            Usage: show
-
-            Lists all Amazon S3 peers. Optionally, filter or sort by property.
-            Use 'help properties' to list available properties.
-
-            Examples:
-                show
-                show | search name == foo""")
 
         self.add_property(
             descr='Access key',
@@ -440,8 +355,44 @@ class AmazonS3NamespaceMixin(BaseVariantMixin):
         )
 
 
+@description(_("Manage Amazon S3 peers"))
+class VMwareNamespaceMixin(BaseVariantMixin):
+    def add_properties(self):
+        super(VMwareNamespaceMixin, self).add_properties()
+
+        self.add_property(
+            descr='Address',
+            name='vmware_address',
+            get='credentials.address',
+            list=False,
+            usage=_('Address of a VMware ESXi instance'),
+            condition=lambda o: o['type'] == 'vmware'
+        )
+
+        self.add_property(
+            descr='Username',
+            name='vmware_username',
+            get='credentials.username',
+            list=False,
+            usage=_('User name'),
+            condition=lambda o: o['type'] == 'vmware'
+        )
+
+        self.add_property(
+            descr='Password',
+            name='vmware_password',
+            get='credentials.password',
+            list=False,
+            usage=_('Password'),
+            condition=lambda o: o['type'] == 'vmware'
+        )
+
+
 @description("Configure and manage peers")
-class PeerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, FreeNASPeerNamespaceMixin, SSHPeerNamespaceMixin, AmazonS3NamespaceMixin, EntityNamespace):
+class PeerNamespace(
+    EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, FreeNASPeerNamespaceMixin, SSHPeerNamespaceMixin,
+    AmazonS3NamespaceMixin, VMwareNamespaceMixin, EntityNamespace
+):
     """
     The peer namespace contains the namespaces
     for managing SSH, FreeNAS and Amazon S3
@@ -456,6 +407,38 @@ class PeerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, FreeNASP
         self.update_task = 'peer.update'
         self.delete_task = 'peer.delete'
         self.primary_key_name = 'name'
+
+        self.localdoc['CreateEntityCommand'] = ("""\
+            Usage: create name=<name> type=<type> [more properties...]
+
+            Examples: create name=mypeer type=ssh address=freenas-2.local username=root \\
+                      password=meh
+
+            Creates a peer. For a list of properties, see 'help properties'.""")
+
+        self.entity_localdoc['SetEntityCommand'] = ("""\
+            Usage: set <property>=<value> ...
+
+            Examples: set bucket=new_bucket
+                      set access_key=new_access_key
+
+            Sets a peer property.
+            For a list of properties, see 'help properties'.""")
+
+        self.entity_localdoc['DeleteEntityCommand'] = ("""\
+            Usage: delete
+
+            Deletes the specified peer.""")
+
+        self.localdoc['ListCommand'] = ("""\
+            Usage: show
+
+            Lists all peers. Optionally, filter or sort by property.
+            Use 'help properties' to list available properties.
+
+            Examples:
+                show
+                show | search name == foo""")
 
         self.skeleton_entity = {
             'type': None,

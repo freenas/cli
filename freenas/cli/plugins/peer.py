@@ -29,7 +29,7 @@ import gettext
 from datetime import datetime
 from freenas.cli.namespace import (
     Command, CommandException, EntityNamespace, TaskBasedSaveMixin,
-    EntitySubscriberBasedLoadMixin, description
+    EntitySubscriberBasedLoadMixin, CreateEntityCommand, description
 )
 from freenas.cli.complete import NullComplete, RpcComplete
 from freenas.cli.output import ValueType, Sequence, Table
@@ -41,7 +41,7 @@ _ = t.gettext
 
 
 @description(_("Exchange keys with remote host and create known FreeNAS peer entry at both sides"))
-class CreateFreeNASPeerCommand(Command):
+class CreateFreeNASPeerCommand(CreateEntityCommand):
     """
     Usage: create name=<name> address=<address> username=<username>
                   password=<password> token=<token>
@@ -256,66 +256,14 @@ class BasePeerNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Enti
         self.type_name = type_name
         self.entity_subscriber_name = 'peer'
         self.extra_query_params = [('type', '=', type_name)]
-        self.create_task = 'peer.create'
-        self.update_task = 'peer.update'
-        self.delete_task = 'peer.delete'
-
-        self.skeleton_entity = {
-            'type': type_name,
-            'credentials': {
-                'type': type_name
-            }
-        }
-
-        self.add_property(
-            descr='Peer Name',
-            name='name',
-            get='name',
-            usage=_('Name of a peer.')
-        )
-
-        self.add_property(
-            descr='Peer Type',
-            name='type',
-            get='type',
-            usersetable=False,
-            createsetable=False,
-            usage=_('Type of a peer.')
-        )
-
-        self.add_property(
-            descr='State',
-            name='state',
-            get='status.state',
-            usersetable=False,
-            list=True,
-            usage=_('Health status of a peer.'),
-        )
-
-        self.add_property(
-            descr='RTT',
-            name='rtt',
-            get='status.rtt',
-            usersetable=False,
-            type=ValueType.NUMBER,
-            list=True,
-            usage=_('Round trip time to a peer in seconds.')
-        )
-
-        self.primary_key = self.get_mapping('name')
-        self.primary_key_name = 'name'
-        self.save_key_name = 'id'
 
 
 @description(_("Manage FreeNAS peers"))
-class FreeNASPeerNamespace(BasePeerNamespace):
+class FreeNASPeerNamespaceMixin(object):
     """
     The FreeNAS peer namespace provides commands for listing and managing FreeNAS peers.
     """
-    def __init__(self, name, context):
-        super(FreeNASPeerNamespace, self).__init__(name, 'freenas', context)
-        self.allow_edit = False
-
+    def add_properties(self):
         self.entity_localdoc['DeleteEntityCommand'] = ("""\
             Usage: delete
 
@@ -337,7 +285,8 @@ class FreeNASPeerNamespace(BasePeerNamespace):
             list=False,
             type=ValueType.NUMBER,
             usersetable=False,
-            usage=_('SSH port used to reach a FreeNAS peer.')
+            usage=_('SSH port used to reach a FreeNAS peer.'),
+            condition=lambda o: o['type'] == 'freenas'
         )
 
         self.add_property(
@@ -346,7 +295,8 @@ class FreeNASPeerNamespace(BasePeerNamespace):
             get='credentials.pubkey',
             list=False,
             usersetable=False,
-            usage=_('Public SSH key of a FreeNAS peer.')
+            usage=_('Public SSH key of a FreeNAS peer.'),
+            condition=lambda o: o['type'] == 'freenas'
         )
 
         self.add_property(
@@ -355,7 +305,8 @@ class FreeNASPeerNamespace(BasePeerNamespace):
             get='credentials.hostkey',
             list=False,
             usersetable=False,
-            usage=_('SSH host key of a FreeNAS peer.')
+            usage=_('SSH host key of a FreeNAS peer.'),
+            condition=lambda o: o['type'] == 'freenas'
         )
 
         self.add_property(
@@ -363,16 +314,39 @@ class FreeNASPeerNamespace(BasePeerNamespace):
             name='address',
             get='credentials.address',
             usersetable=False,
-            usage=_('Address of a FreeNAS peer.')
+            createsetable=True,
+            usage=_('Address of a FreeNAS peer.'),
+            condition=lambda o: o['type'] == 'freenas'
         )
 
-        name_mapping = self.get_mapping('name')
-        name_mapping.usersetable = False
+        self.add_property(
+            descr='Username',
+            name='username',
+            get=None,
+            set='0.username',
+            create_arg=True
+        )
+
+        self.add_property(
+            descr='Password',
+            name='password',
+            get=None,
+            set='0.password',
+            create_arg=True
+        )
+
+        self.add_property(
+            descr='Token',
+            name='token',
+            get=None,
+            set='0.auth_code',
+            create_arg=True
+        )
 
     def commands(self):
-        cmds = super(FreeNASPeerNamespace, self).commands()
+        cmds = super(FreeNASPeerNamespaceMixin, self).commands()
         cmds.update({
-            'create': CreateFreeNASPeerCommand(self),
+            #'create': CreateFreeNASPeerCommand(self),
             'create_token': FreeNASPeerGetAuthTokenCommand(self),
             'invalidate_token': FreeNASPeerInvalidateTokenCommand(self),
             'list_tokens': FreeNASPeerListTokensCommand(self)
@@ -381,13 +355,11 @@ class FreeNASPeerNamespace(BasePeerNamespace):
 
 
 @description(_("Manage SSH peers"))
-class SSHPeerNamespace(BasePeerNamespace):
+class SSHPeerNamespaceMixin(object):
     """
     The SSH peer namespace provides commands for listing and managing SSH peers.
     """
-    def __init__(self, name, context):
-        super(SSHPeerNamespace, self).__init__(name, 'ssh', context)
-
+    def add_properties(self):
         self.localdoc['CreateEntityCommand'] = ("""\
             Usage: create name=<name> address=<address> username=<username>
                    password=<password> port=<port> privkey=<privkey> hostkey=<hostkey>
@@ -423,7 +395,8 @@ class SSHPeerNamespace(BasePeerNamespace):
             descr='Peer address',
             name='address',
             get='credentials.address',
-            usage=_('Address of a SSH peer.')
+            usage=_('Address of a SSH peer.'),
+            condition=lambda o: o['type'] == 'ssh'
         )
 
         self.add_property(
@@ -431,7 +404,8 @@ class SSHPeerNamespace(BasePeerNamespace):
             name='username',
             get='credentials.username',
             list=False,
-            usage=_('Username used to connect to a SSH peer.')
+            usage=_('Username used to connect to a SSH peer.'),
+            condition=lambda o: o['type'] == 'ssh'
         )
 
         self.add_property(
@@ -439,7 +413,8 @@ class SSHPeerNamespace(BasePeerNamespace):
             name='password',
             get='credentials.password',
             list=False,
-            usage=_('Password used to connect to a SSH peer.')
+            usage=_('Password used to connect to a SSH peer.'),
+            condition=lambda o: o['type'] == 'ssh'
         )
 
         self.add_property(
@@ -448,7 +423,8 @@ class SSHPeerNamespace(BasePeerNamespace):
             get='credentials.port',
             list=False,
             type=ValueType.NUMBER,
-            usage=_('SSH port used to connect to a SSH peer.')
+            usage=_('SSH port used to connect to a SSH peer.'),
+            condition=lambda o: o['type'] == 'ssh'
         )
 
         self.add_property(
@@ -456,7 +432,8 @@ class SSHPeerNamespace(BasePeerNamespace):
             name='privkey',
             get='credentials.privkey',
             list=False,
-            usage=_('Private SSH peer used to connect to SSH peer.')
+            usage=_('Private SSH peer used to connect to SSH peer.'),
+            condition=lambda o: o['type'] == 'ssh'
         )
 
         self.add_property(
@@ -464,18 +441,17 @@ class SSHPeerNamespace(BasePeerNamespace):
             name='hostkey',
             get='credentials.hostkey',
             list=False,
-            usage=_('SSH host key of a SSH peer.')
+            usage=_('SSH host key of a SSH peer.'),
+            condition=lambda o: o['type'] == 'ssh'
         )
 
 
 @description(_("Manage Amazon S3 peers"))
-class AmazonS3Namespace(BasePeerNamespace):
+class AmazonS3NamespaceMixin(object):
     """
     The Amazon S3 peer namespace provides commands for listing and managing Amazon S3 peers.
     """
-    def __init__(self, name, context):
-        super(AmazonS3Namespace, self).__init__(name, 'amazon-s3', context)
-
+    def add_properties(self):
         self.localdoc['CreateEntityCommand'] = ("""\
             Usage: create name=<name> address=<address> username=<username>
                    password=<password> port=<port> privkey=<privkey> hostkey=<hostkey>
@@ -512,7 +488,8 @@ class AmazonS3Namespace(BasePeerNamespace):
             name='access_key',
             get='credentials.access_key',
             list=False,
-            usage=_('Access key to Amazon S3.')
+            usage=_('Access key to Amazon S3.'),
+            condition=lambda o: o['type'] == 'amazon-s3'
         )
 
         self.add_property(
@@ -520,7 +497,8 @@ class AmazonS3Namespace(BasePeerNamespace):
             name='secret_key',
             get='credentials.secret_key',
             list=False,
-            usage=_('Secret key to Amazon S3.')
+            usage=_('Secret key to Amazon S3.'),
+            condition=lambda o: o['type'] == 'amazon-s3'
         )
 
         self.add_property(
@@ -528,7 +506,8 @@ class AmazonS3Namespace(BasePeerNamespace):
             name='region',
             get='credentials.region',
             list=False,
-            usage=_('Region property used to connect to Amazon S3 peer.')
+            usage=_('Region property used to connect to Amazon S3 peer.'),
+            condition=lambda o: o['type'] == 'amazon-s3'
         )
 
         self.add_property(
@@ -536,7 +515,8 @@ class AmazonS3Namespace(BasePeerNamespace):
             name='bucket',
             get='credentials.bucket',
             list=False,
-            usage=_('Bucket property used to connect to Amazon S3 peer.')
+            usage=_('Bucket property used to connect to Amazon S3 peer.'),
+            condition=lambda o: o['type'] == 'amazon-s3'
         )
 
         self.add_property(
@@ -544,12 +524,13 @@ class AmazonS3Namespace(BasePeerNamespace):
             name='folder',
             get='credentials.folder',
             list=False,
-            usage=_('Folder property used to connect to Amazon S3 peer.')
+            usage=_('Folder property used to connect to Amazon S3 peer.'),
+            condition=lambda o: o['type'] == 'amazon-s3'
         )
 
 
 @description("Configure and manage peers")
-class PeerNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
+class PeerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, FreeNASPeerNamespaceMixin, SSHPeerNamespaceMixin, AmazonS3NamespaceMixin, EntityNamespace):
     """
     The peer namespace contains the namespaces
     for managing SSH, FreeNAS and Amazon S3
@@ -560,15 +541,24 @@ class PeerNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         self.context = context
         self.entity_subscriber_name = 'peer'
         self.primary_key_name = 'name'
-        self.allow_create = False
+        self.create_task = 'peer.create'
+        self.update_task = 'peer.update'
+        self.delete_task = 'peer.delete'
+        self.primary_key_name = 'name'
+
+        self.skeleton_entity = {
+            'type': None,
+            'credentials': {}
+        }
+
+        def set_type(o, v):
+            q.set(o, 'type', v)
+            q.set(o, 'credentials.type', '{0}-credentials'.format(v))
 
         self.add_property(
             descr='Peer Name',
             name='name',
             get='name',
-            set=None,
-            createsetable=False,
-            usersetable=False,
             usage=_('Name of a peer.')
         )
 
@@ -576,9 +566,8 @@ class PeerNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             descr='Peer Type',
             name='type',
             get='type',
-            set=None,
-            createsetable=False,
-            usersetable=False,
+            set=set_type,
+            enum=['ssh', 'amazon-s3', 'freenas', 'vmware', 'dropbox'],
             usage=_('Type of a peer.')
         )
 
@@ -591,35 +580,10 @@ class PeerNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             usage=_('Health status of a peer.')
         )
 
-    def namespaces(self):
-        return [
-            FreeNASPeerNamespace('freenas', self.context),
-            SSHPeerNamespace('ssh', self.context),
-            AmazonS3Namespace('amazons3', self.context)
-        ]
-
-
-def find_peer_namespace(context, task):
-    if task['name'] == 'peer.create':
-        peer_type = q.get(task, 'args.0.type')
-
-    elif task['name'] == 'peer.update':
-        peer_id = q.get(task, 'args.0')
-        peer_type = context.entity_subscribers['peer'].query(('id', '=', peer_id), single=True)
-
-    else:
-        return
-
-    if peer_type == 'ssh':
-        return SSHPeerNamespace
-
-    if peer_type == 'amazon-s3':
-        return AmazonS3Namespace
-
-    if peer_type == 'freenas':
-        return FreeNASPeerNamespace
+        super(PeerNamespace, self).add_properties()
+        self.primary_key = self.get_mapping('name')
 
 
 def _init(context):
     context.attach_namespace('/', PeerNamespace('peer', context))
-    context.map_tasks('peer.*', find_peer_namespace)
+    context.map_tasks('peer.*', PeerNamespace)

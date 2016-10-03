@@ -29,116 +29,14 @@ import gettext
 from datetime import datetime
 from freenas.cli.namespace import (
     Command, CommandException, EntityNamespace, TaskBasedSaveMixin,
-    EntitySubscriberBasedLoadMixin, CreateEntityCommand, description
+    EntitySubscriberBasedLoadMixin, description
 )
-from freenas.cli.complete import NullComplete, RpcComplete
+from freenas.cli.complete import RpcComplete
 from freenas.cli.output import ValueType, Sequence, Table
-from freenas.cli.utils import EntityPromise
 from freenas.utils import first_or_default, query as q
 
 t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
-
-
-@description(_("Exchange keys with remote host and create known FreeNAS peer entry at both sides"))
-class CreateFreeNASPeerCommand(CreateEntityCommand):
-    """
-    Usage: create name=<name> address=<address> username=<username>
-                  password=<password> token=<token>
-
-    Example: create address=freenas-2.local username=root password=secret
-             create address=10.0.0.1 username=my_username password=secret
-             create address=my_username@10.0.0.1 password=secret
-             create address=my_username@10.0.0.1 password=secret port=1234
-             create address=freenas-2.local token=123456
-
-    Exchange keys with remote host and create known FreeNAS host entry
-    at both sides.
-
-    FreeNAS peer name always equals to the remote host name.
-
-    User name and password are used only once to authorize key exchange.
-    Default SSH port is 22.
-
-    Peer creation using authentication tokens have two steps:
-    before issuing actual 'create' command, one has to generate
-    a temporary token on remote machine via 'get_token' command.
-
-    User used for pairing purposes must belong to 'wheel' group at remote host.
-    """
-
-    def __init__(self, parent):
-        self.parent = parent
-
-    def run(self, context, args, kwargs, opargs):
-        if not args and not kwargs:
-            raise CommandException(_("Create requires more arguments, see 'help create' for more information"))
-        if len(args) > 0:
-            raise CommandException(_("Wrong syntax for create, see 'help create' for more information"))
-
-        if 'address' not in kwargs:
-            raise CommandException(_('Please specify an address of your remote'))
-        else:
-            address = kwargs.pop('address')
-
-        port = kwargs.pop('port', 22)
-
-        token = kwargs.get('token')
-
-        if token:
-            tid = context.submit_task(
-                self.parent.create_task,
-                {
-                    'type': 'freenas',
-                    'credentials': {
-                        'port': port,
-                        'type': 'freenas-auth',
-                        'address': address,
-                        'auth_code': token
-                    }
-                }
-            )
-        else:
-            split_address = address.split('@')
-            if len(split_address) == 2:
-                kwargs['username'] = split_address[0]
-                address = split_address[1]
-
-            if 'username' not in kwargs:
-                raise CommandException(_('Please specify a valid user name'))
-            else:
-                username = kwargs.pop('username')
-
-            if 'password' not in kwargs:
-                raise CommandException(_('Please specify a valid password'))
-            else:
-                password = kwargs.pop('password')
-
-            tid = context.submit_task(
-                self.parent.create_task,
-                {
-                    'type': 'freenas',
-                    'credentials': {
-                        'username': username,
-                        'password': password,
-                        'port': port,
-                        'type': 'freenas-auth',
-                        'address': address
-                    }
-                }
-            )
-
-        return EntityPromise(context, tid, self.parent)
-
-    def complete(self, context, **kwargs):
-        return [
-            NullComplete('name='),
-            NullComplete('address='),
-            NullComplete('username='),
-            NullComplete('password='),
-            NullComplete('port='),
-            NullComplete('token=')
-        ]
 
 
 @description(_("Generate FreeNAS peer one-time authentication token"))

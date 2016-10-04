@@ -256,10 +256,14 @@ class PropertyMapping(object):
         self.complete = kwargs.pop('complete', None)
         self.ns = kwargs.pop('ns', None)
         self.create_arg = kwargs.pop('create_arg', False)
+        self.update_arg = kwargs.pop('update_arg', False)
         self.display_width_percentage = kwargs.pop('display_width_percentage', None)
         self.strict = kwargs.pop('strict', True)
 
     def can_set(self, obj):
+        if self.update_arg:
+            return True
+
         if not self.set:
             return False
 
@@ -284,7 +288,7 @@ class PropertyMapping(object):
         return q.get(obj, self.get)
 
     def do_set(self, obj, value):
-        if self.condition and not self.condition(obj):
+        if not self.can_set(obj):
             raise ValueError(_("Property '{0}' is not settable for this entity".format(self.name)))
 
         value = read_value(value, self.type)
@@ -481,7 +485,12 @@ class ItemNamespace(Namespace):
                     raise CommandException('Property {0} is not writable'.format(k))
                 if prop.regex is not None and not re.match(prop.regex, str(v)):
                     raise CommandException('Invalid input {0} for property {1}.'.format(v, k))
-                prop.do_set(entity, v)
+                if prop.update_arg:
+                    prop.do_set(self.parent.update_args, v)
+                elif not prop.create_arg:
+                    prop.do_set(entity, v)
+                else:
+                    raise CommandException('Property {0} is a create time argument only. It cannot be set'.format(k))
 
             for k, op, v in opargs:
                 if op not in ('=+', '=-'):
@@ -541,7 +550,15 @@ class ItemNamespace(Namespace):
                 value = edit_in_editor(prop.do_get(self.parent.entity), remove_newline_at_eof=False)
             else:
                 raise CommandException(_("The edit command can only be used on string or text file properties"))
-            prop.do_set(self.parent.entity, value)
+            if prop.update_arg:
+                prop.do_set(self.parent.update_args, value)
+            elif not prop.create_arg:
+                prop.do_set(self.parent.entity, value)
+            else:
+                raise CommandException(
+                    'Property {0} is a create time argument only. It cannot be edited'.format(args[0])
+                )
+
             self.parent.modified = True
             self.parent.save()
 
@@ -789,6 +806,7 @@ class SingleItemNamespace(ItemNamespace):
         self.leaf_ns = None
         self.password = None
         self.create_args = []
+        self.update_args = []
 
         if parent.entity_commands:
             self.subcommands = parent.entity_commands(self)
@@ -831,6 +849,9 @@ class SingleItemNamespace(ItemNamespace):
 
     def get_create_args(self):
         return [self.entity] + self.create_args
+
+    def get_update_args(self):
+        return [self.get_diff()] + self.update_args
 
     def serialize(self):
         self.on_enter()
@@ -1124,7 +1145,7 @@ class CreateEntityCommand(Command):
         for prop, v in sorted(mappings, key=lambda i: i[0].index):
             if prop.create_arg:
                 prop.do_set(ns.create_args, v)
-            else:
+            elif not prop.update_arg:
                 prop.do_set(ns.entity, v)
 
         tid = self.parent.save(ns, new=True)
@@ -1314,7 +1335,7 @@ class TaskBasedSaveMixin(object):
         return self.context.submit_task(
             self.update_task,
             this.orig_entity[self.save_key_name],
-            this.get_diff(),
+            *this.get_update_args(),
             callback=callback)
 
     def delete(self, this, kwargs):

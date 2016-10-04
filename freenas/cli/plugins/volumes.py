@@ -74,11 +74,15 @@ VOLUME_LAYOUTS = {
 class AddVdevCommand(Command):
     """
     Usage: add_vdev type=<type> disks=<disk1>,<disk2>,<disk3> ...
+                    password=<password>
 
     Example:
             add_vdev type=mirror disks=ada3,ada4
+            add_vdev type=mirror disks=ada3,ada4 password=secret
 
     Valid types are: mirror disk raidz1 raidz2 raidz3 cache log
+    If volume is encrypted by password you have to provide
+    the current valid password to this command.
 
     Adds a new vdev to volume
     """
@@ -91,6 +95,16 @@ class AddVdevCommand(Command):
             raise CommandException(_(
                 "Please specify a type of vdev, see 'help add_vdev' for more information"
             ))
+
+        password = kwargs.get('password')
+        password_encrypted = self.parent.entity.get('password_encrypted', False)
+        if password_encrypted and not password:
+            raise CommandException('Volume is password encrypted. You have to provide a password.')
+        if password and not password_encrypted:
+            raise CommandException('Volume is not encrypted by password.')
+
+        password_prop = self.parent.get_mapping('password')
+        password_prop.do_set(self.parent.update_args, password)
 
         disks_per_type = DISKS_PER_TYPE.copy()
         disks_per_type.pop('auto', None)
@@ -163,7 +177,8 @@ class AddVdevCommand(Command):
     def complete(self, context, **kwargs):
         return [
             EnumComplete('type=', ['mirror', 'disk', 'raidz1', 'raidz2', 'raidz3', 'cache', 'log']),
-            EntitySubscriberComplete('disks=', 'disk', lambda d: d['name'], ['auto'], list=True)
+            EntitySubscriberComplete('disks=', 'disk', lambda d: d['name'], ['auto'], list=True),
+            NullComplete('password=')
         ]
 
 
@@ -494,15 +509,12 @@ class UpgradeVolumeCommand(Command):
 @description("Unlocks encrypted volume")
 class UnlockVolumeCommand(Command):
     """
-    Usage: unlock
+    Usage: unlock password=<password>
 
     Example: unlock
+             unlock password=secret
 
     Unlocks an encrypted volume.
-    If your volume is password protected you have to provide it's password
-    first by typing:
-
-    password <password>
     """
     def __init__(self, parent):
         self.parent = parent
@@ -510,10 +522,21 @@ class UnlockVolumeCommand(Command):
     def run(self, context, args, kwargs, opargs):
         if self.parent.entity.get('providers_presence', 'ALL') == 'ALL':
             raise CommandException('Volume is already fully unlocked')
-        password = self.parent.password
+        password = kwargs.get('password')
+        password_encrypted = self.parent.entity.get('password_encrypted', False)
+        if password_encrypted and not password:
+            raise CommandException('Volume is password encrypted. You have to provide a password.')
+        if password and not password_encrypted:
+            raise CommandException('Volume is not encrypted by password.')
+
         name = self.parent.entity['id']
         tid = context.submit_task('volume.unlock', name, password, callback=lambda s, t: post_save(self.parent, s, t))
         return TaskPromise(context, tid)
+
+    def complete(self, context, **kwargs):
+        return [
+            NullComplete('password=')
+        ]
 
 
 @description("Locks encrypted volume")
@@ -1570,22 +1593,6 @@ class CreateVolumeCommand(Command):
         ]
 
 
-@description("Allows to provide a password that protects an encrypted volume")
-class SetPasswordCommand(Command):
-    """
-    Usage: password <password>
-
-    Example: password mypassword
-
-    Allows to provide a password that protects an encrypted volume.
-    """
-    def __init__(self, parent):
-        self.parent = parent
-
-    def run(self, context, args, kwargs, opargs):
-        self.parent.password = args[0]
-
-
 @description("Manage volumes, snapshots, replications, and scrubs")
 class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):
     """
@@ -1783,6 +1790,17 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
             usage=_("Shows the number of checksum errors on the volume.")
         )
 
+        self.add_property(
+            descr='Password',
+            name='password',
+            get=None,
+            set='0',
+            update_arg=True,
+            list=False,
+            condition=lambda o: o.get('password_encrypted'),
+            usage=_("Allows to provide password of encrypted volume when update operation does require it.")
+        )
+
         self.primary_key = self.get_mapping('name')
         self.extra_commands = {
             'find': FindVolumesCommand(),
@@ -1820,7 +1838,6 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
 
         if this.entity is not None:
             if this.entity.get('key_encrypted') or this.entity.get('password_encrypted'):
-                commands['password'] = SetPasswordCommand(this)
                 prov_presence = this.entity.get('providers_presence', 'NONE')
                 if prov_presence == 'NONE':
                     commands['unlock'] = UnlockVolumeCommand(this)
@@ -1834,7 +1851,6 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
                     commands['lock'] = LockVolumeCommand(this)
 
         if getattr(self, 'is_docgen_instance', False):
-            commands['password'] = SetPasswordCommand(this)
             commands['unlock'] = UnlockVolumeCommand(this)
             commands['restore_key'] = RestoreVolumeMasterKeyCommand(this)
             commands['lock'] = LockVolumeCommand(this)
@@ -1844,21 +1860,6 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
             commands['lock'] = LockVolumeCommand(this)
 
         return commands
-
-    def save(self, this, new=False):
-        if new:
-            return self.context.submit_task(
-                self.create_task,
-                this.entity,
-                this.password,
-                callback=lambda s, t: post_save(this, s, t))
-
-        return self.context.submit_task(
-            self.update_task,
-            this.orig_entity[self.save_key_name],
-            this.get_diff(),
-            this.password,
-            callback=lambda s, t: post_save(this, s, t))
 
 
 def _init(context):

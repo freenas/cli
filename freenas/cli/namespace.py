@@ -1127,8 +1127,6 @@ class CreateEntityCommand(Command):
             else:
                 prop.do_set(ns.entity, v)
 
-
-
         tid = self.parent.save(ns, new=True)
         return EntityPromise(context, tid, ns)
 

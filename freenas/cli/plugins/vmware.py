@@ -26,6 +26,7 @@
 #####################################################################
 
 from freenas.cli.namespace import Namespace, EntityNamespace, EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin
+from freenas.cli.utils import get_related, set_related
 
 
 class VMwareNamespace(Namespace):
@@ -72,7 +73,8 @@ class VMwareDatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin
         self.add_property(
             descr='VMware peer',
             name='peer',
-            get='peer',
+            get=lambda o: get_related(self.context, 'peer', o, 'peer'),
+            set=lambda o, v: set_related(self.context, 'peer', o, 'peer', v),
             list=True
         )
 

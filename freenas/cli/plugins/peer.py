@@ -469,7 +469,7 @@ class PeerNamespace(
             descr='State',
             name='state',
             get='status.state',
-            usersetable=False,
+            set=None,
             list=True,
             usage=_('Health status of a peer.')
         )

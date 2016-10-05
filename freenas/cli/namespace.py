@@ -1154,7 +1154,13 @@ class CreateEntityCommand(Command):
             ns.orig_entity = copy.deepcopy(self.parent.skeleton_entity)
             ns.entity = copy.deepcopy(self.parent.skeleton_entity)
             kwargs = collections.OrderedDict(kwargs)
-            mappings = map(lambda i: (self.parent.get_mapping(i[0]), i[1]), kwargs['kwargs'].items())
+            mappings = filter(
+                lambda i: i[0],
+                map(
+                    lambda i: (self.parent.get_mapping(i[0]), i[1]),
+                    kwargs['kwargs'].items()
+                )
+            )
 
             for prop, v in sorted(mappings, key=lambda i: i[0].index):
                 with contextlib.suppress(BaseException):

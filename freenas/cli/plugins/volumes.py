@@ -1265,14 +1265,6 @@ class SnapshotsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Ent
             ]
 
         self.add_property(
-            descr='Snapshot id',
-            name='name',
-            get='id',
-            list=True,
-            usage=_("ID of the snapshot.")
-        )
-
-        self.add_property(
             descr='Snapshot name',
             name='snapshot_name',
             get='name',

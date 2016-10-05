@@ -89,8 +89,8 @@ class QueryCommand(Command):
         return Object(
             Object.Item('ID', 'id', t['id']),
             Object.Item('Name', 'name', t['name']),
-            Object.Item('Description', 'description', get('description.message')),
-            Object.Item('Object name', 'object', get('description.name')),
+            Object.Item('Description', 'description', get(t, 'description.message')),
+            Object.Item('Object name', 'object', get(t, 'description.name')),
             Object.Item('State', 'state', t['state']),
             Object.Item('Started at', 'started_at', t['started_at']),
             Object.Item('Started by', 'started_by', t['user']),

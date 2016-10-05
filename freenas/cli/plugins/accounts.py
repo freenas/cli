@@ -294,7 +294,7 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             list=False
         )
 
-        self.primary_key = self.get_mapping('username')
+        self.primary_key = self.get_mapping('name')
         self.extra_commands = {
             'shells': ShellsCommand()
         }

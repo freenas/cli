@@ -453,6 +453,7 @@ class PeerNamespace(
             descr='Peer Name',
             name='name',
             get='name',
+            condition=lambda o: 'id' in o or o['type'] != 'freenas',
             usage=_('Name of a peer.')
         )
 

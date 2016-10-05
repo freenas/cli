@@ -609,7 +609,7 @@ class RsyncNamespace(CalendarTasksNamespaceBaseClass):
             get=lambda obj: self.get_rsync_args(obj, 'remote_path'),
             set=lambda obj, val: self.set_rsync_args(obj, 'remote_path', val),
             type=ValueType.STRING,
-            condition=lambda obj: q.get('args.rsync_mode') == 'SSH',
+            condition=lambda obj: q.get(obj, 'args.rsync_mode') == 'SSH',
             usage=_(
                 'Specifies the path on the Remote Host to copy'
                 ' to/from for this rsync task (could very well '
@@ -625,7 +625,7 @@ class RsyncNamespace(CalendarTasksNamespaceBaseClass):
             get=lambda obj: self.get_rsync_args(obj, 'remote_ssh_port'),
             set=lambda obj, val: self.set_rsync_args(obj, 'remote_ssh_port', val),
             type=ValueType.NUMBER,
-            condition=lambda obj: q.get('args.remote_ssh_port') == 'SSH',
+            condition=lambda obj: q.get(obj, 'args.remote_ssh_port') == 'SSH',
             list=False,
             usage=_(
                 '(Optional) Specifies Remote Host\'s rsync port.'
@@ -639,7 +639,7 @@ class RsyncNamespace(CalendarTasksNamespaceBaseClass):
             get=lambda obj: self.get_rsync_args(obj, 'remote_module'),
             set=lambda obj, val: self.set_rsync_args(obj, 'remote_module', val),
             type=ValueType.STRING,
-            condition=lambda obj: q.get('args.rsync_mode') == 'MODULE',
+            condition=lambda obj: q.get(obj, 'args.rsync_mode') == 'MODULE',
             usage=_('Specifies the module on the Remote Host to copy'
                 ' to/from for this rsync task (could very well '
                 ' be the local rsync module itself if the task is copying '

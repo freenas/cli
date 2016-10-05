@@ -48,7 +48,7 @@ from freenas.cli.namespace import (
 )
 from freenas.cli.output import (
     Table, ValueType, output_less, format_value,
-    Sequence, read_value, format_output
+    Sequence, read_value, format_output, output_msg
 )
 from freenas.cli.output import Object as output_obj, get_terminal_size
 from freenas.cli.descriptions.tasks import translate as translate_task
@@ -392,6 +392,14 @@ class ShellCommand(Command):
 
         self.closed = False
         name = ' '.join(str(i) for i in args) if len(args) > 0 else '/bin/sh'
+        if name == '/bin/sh':
+            output_msg(context.connection.call_sync(
+                'system.general.cowsay',
+                "To make configuration changes, return to CLI and use the CLI command set.\n" +
+                " Any configuration changes used outside " +
+                "of the FreeNAS CLI are not saved to the configuration database.",
+                "/usr/local/share/cows/surgery.cow"
+            )[0])
         size = get_terminal_size()
         token = context.call_sync('shell.spawn', name, size[1], size[0])
         shell = ShellClient(context.hostname, token)

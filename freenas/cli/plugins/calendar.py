@@ -111,6 +111,7 @@ class CalendarTasksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
     def namespaces(self):
         return [
             ScrubNamespace('scrub', self.context),
+            RsyncNamespace('rsync', self.context),
             SmartNamespace('smart', self.context),
             SnapshotNamespace('snapshot', self.context),
             ReplicationNamespace('replication', self.context),
@@ -422,7 +423,7 @@ class ScrubNamespace(CalendarTasksNamespaceBaseClass):
 
             Examples: create myscrub volume=mypool
                       create somescrub volume=somepool schedule={"hour":2,"day_of_week":5}
-            
+
             Creates a scrub calendar task. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
             Usage: set <property>=<value> ...
@@ -467,6 +468,266 @@ class ScrubNamespace(CalendarTasksNamespaceBaseClass):
         )
 
 
+class RsyncNamespace(CalendarTasksNamespaceBaseClass):
+    """
+    Rsync calendar namespace provides commands to create `rsync` type calendar tasks.
+    An `rsync` task requires various parameters to be specified for the actual rsync push/pull
+    operation.
+    """
+
+    def get_rsync_args(self, entity, name):
+        return q.get(entity, 'args.{0}'.format(name))
+
+    def set_rsync_args(self, entity, name, value):
+        q.set(entity, 'args.{0}'.format(name), value)
+
+    def __init__(self, name, context):
+        super(RsyncNamespace, self).__init__(name, context)
+        self.extra_query_params = [('task', '=', 'rsync.copy')]
+        self.required_props.extend(['user', 'path', 'remote_host', 'direction', 'mode'])
+        self.skeleton_entity['task'] = 'rsync.copy'
+        self.localdoc['CreateEntityCommand'] = ("""\
+            Usage:
+                create <name> user=<user> path=<path> direction=<PUSH|PULL> mode=<SSH|MODULE>
+                    remote_host=<remote_host> remote_user=<remote_user> remote_path=<remote_path>
+                    remote_module=<remote_module> remote_ssh_port=<remote_ssh_port_number>
+                    recursive=<yes|no> compress=<yes|no> times=<yes|no> archive=<yes|no>
+                    rsync_delete=<yes|no> preserve_permissions=<yes|no> preserve_attributes=<yes|no>
+                    delay_updates=<yes|no> extra=<string containing extra rsync options>
+                    <property>=<value>
+
+            Examples:
+        """)
+
+        self.entity_localdoc['SetEntityCommand'] = ("""\
+            Usage:
+                set <preoperty>=<value> ...
+
+            Examples:
+                set user=testuser
+        """)
+
+        self.entity_localdoc['GetEntityCommand'] = ("""\
+            Usage: get <field>
+
+            Examples:
+                get test_type
+                get disks
+
+            Display value of specified field.""")
+
+        self.entity_localdoc['EditEntityCommand'] = ("""\
+            Usage:
+                edit <field>
+
+            Examples:
+                edit user
+
+            Opens the default editor for the specified property. The default editor
+            is inherited from the shell's $EDITOR which can be set from the shell.
+            For a list of properties for the current namespace, see 'help properties'.
+            """)
+
+        self.localdoc['ListCommand'] = ("""\
+            Usage: show
+
+            Lists all rsync tasks. Optionally, filter or sort by property.
+            Use 'help properties' to list available properties.
+
+            Examples:
+                show
+                show | search user == bazuser
+            """)
+
+        self.add_property(
+            descr='User',
+            name='user',
+            get=lambda obj: self.get_rsync_args(obj, 'user'),
+            set=lambda obj, val: self.set_rsync_args(obj, 'user', val),
+            type=ValueType.STRING,
+            usage=_('Username underwhich the rsync task should be executed')
+        )
+
+        self.add_property(
+            descr='Remote Rsync User',
+            name='remote_user',
+            get=lambda obj: self.get_rsync_args(obj, 'remote_user'),
+            set=lambda obj, val: self.set_rsync_args(obj, 'remote_user', val),
+            type=ValueType.STRING,
+            usage=_(
+                'Username underwhich the rsync operation should be carried out'
+                ' at the remote host (could very well be a local user if the'
+                ' task is copying to/from local volumes)'
+            )
+        )
+
+        self.add_property(
+            descr='Direction',
+            name='direction',
+            get=lambda obj: self.get_rsync_args(obj, 'rsync_direction'),
+            set=lambda obj, val: self.set_rsync_args(obj, 'rsync_direction', val),
+            type=ValueType.STRING,
+            enum=['PUSH', 'PULL'],
+            usage=_('States and Controls whether this rsync task is a PUSH or a PULL')
+        )
+
+        self.add_property(
+            descr='Rsync Mode',
+            name='mode',
+            get=lambda obj: self.get_rsync_args(obj, 'rsync_mode'),
+            set=lambda obj, val: self.set_rsync_args(obj, 'rsync_mode', val),
+            type=ValueType.STRING,
+            enum=['MODULE', 'SSH'],
+            usage=_('States and Controls the transport medium for this rsync task')
+        )
+
+        self.add_property(
+            descr='Remote Host',
+            name='remote_host',
+            get=lambda obj: self.get_rsync_args(obj, 'remote_host'),
+            set=lambda obj, val: self.set_rsync_args(obj, 'remote_host'),
+            type=ValueType.STRING,
+            usage=_(
+                'Specifies the remote host for this rsync task'
+                ' (could very well be the localhost itself if'
+                ' the task is copying to & from local volumes)'
+            )
+        )
+
+        self.add_property(
+            descr='Path',
+            name='path',
+            get=lambda obj: self.get_rsync_args(obj, 'path'),
+            set=lambda obj, val: self.set_rsync_args(obj, 'path'),
+            type=ValueType.STRING,
+            usage=_('Specifies the path on the localhost to copy to/from for this rsync task')
+        )
+
+        self.add_property(
+            descr='Remote Path',
+            name='remote_path',
+            get=lambda obj: self.get_rsync_args(obj, 'remote_path'),
+            set=lambda obj, val: self.set_rsync_args(obj, 'remote_path', val),
+            type=ValueType.STRING,
+            condition=lambda obj: q.get('args.rsync_mode') == 'SSH',
+            usage=_('Specifies the path on the Remote Host to copy'
+                ' to/from for this rsync task (could very well '
+                ' be the localhost itself if the task is copying '
+                ' to/from local volumes). NOTE: This is only used'
+                ' if the rsync mode is SSH'
+            )
+        )
+
+        self.add_property(
+            descr='Remote SSH Port',
+            name='remote_ssh_port',
+            get=lambda obj: self.get_rsync_args(obj, 'remote_ssh_port'),
+            set=lambda obj, val: self.set_rsync_args(obj, 'remote_ssh_port', val),
+            type=ValueType.NUMBER,
+            condition=lambda obj: q.get('args.remote_ssh_port') == 'SSH',
+            usage=_(
+                '(Optional) Specifies Remote Host\'s rsync port.'
+                ' Only needed in case the remote host has non-standard ssh port setup'
+            )
+        )
+
+        self.add_property(
+            descr='Remote Module',
+            name='remote_module',
+            get=lambda obj: self.get_rsync_args(obj, 'remote_module'),
+            set=lambda obj, val: self.set_rsync_args(obj, 'remote_module', val),
+            type=ValueType.STRING,
+            condition=lambda obj: q.get('args.rsync_mode') == 'MODULE',
+            usage=_('Specifies the module on the Remote Host to copy'
+                ' to/from for this rsync task (could very well '
+                ' be the local rsync module itself if the task is copying '
+                ' to/from local volumes). NOTE: This is only used'
+                ' if the rsync mode is MODULE'
+            )
+        )
+
+        self.add_property(
+            descr='Recursive (rsync property)',
+            name='recursive',
+            get=lambda obj: self.get_rsync_args(obj, 'rsync_properties.recursive'),
+            set=lambda obj, val: self.set_rsync_args(obj, 'rsync_properties.recursive', val),
+            type=ValueType.BOOLEAN,
+            usage=_('Specifies the boolean rsync property: recursive')
+        )
+
+        self.add_property(
+            descr='Compress (rsync property)',
+            name='compress',
+            get=lambda obj: self.get_rsync_args(obj, 'rsync_properties.compress'),
+            set=lambda obj, val: self.set_rsync_args(obj, 'rsync_properties.compress', val),
+            type=ValueType.BOOLEAN,
+            usage=_('Specifies the boolean rsync property: compress')
+        )
+
+        self.add_property(
+            descr='Times (rsync property)',
+            name='times',
+            get=lambda obj: self.get_rsync_args(obj, 'rsync_properties.times'),
+            set=lambda obj, val: self.set_rsync_args(obj, 'rsync_properties.times', val),
+            type=ValueType.BOOLEAN,
+            usage=_('Specifies the boolean rsync property: times')
+        )
+
+        self.add_property(
+            descr='Archive (rsync property)',
+            name='times',
+            get=lambda obj: self.get_rsync_args(obj, 'rsync_properties.times'),
+            set=lambda obj, val: self.set_rsync_args(obj, 'rsync_properties.times', val),
+            type=ValueType.BOOLEAN,
+            usage=_('Specifies the boolean rsync property: times')
+        )
+
+        self.add_property(
+            descr='Delete (rsync property)',
+            name='rsync_delete',
+            get=lambda obj: self.get_rsync_args(obj, 'rsync_properties.delete'),
+            set=lambda obj, val: self.set_rsync_args(obj, 'rsync_properties.delete', val),
+            type=ValueType.BOOLEAN,
+            usage=_('Specifies the boolean rsync property: delete')
+        )
+
+        self.add_property(
+            descr='Preserve Permissions (rsync property)',
+            name='preserve_permissions',
+            get=lambda obj: self.get_rsync_args(obj, 'rsync_properties.preserve_permissions'),
+            set=lambda obj, val: self.set_rsync_args(obj, 'rsync_properties.preserve_permissions', val),
+            type=ValueType.BOOLEAN,
+            usage=_('Specifies the boolean rsync property: preserve permissions')
+        )
+
+        self.add_property(
+            descr='Preserve Attributes (rsync property)',
+            name='preserve_attributes',
+            get=lambda obj: self.get_rsync_args(obj, 'rsync_properties.preserve_attributes'),
+            set=lambda obj, val: self.set_rsync_args(obj, 'rsync_properties.preserve_attributes', val),
+            type=ValueType.BOOLEAN,
+            usage=_('Specifies the boolean rsync property: preserve_attributes')
+        )
+
+        self.add_property(
+            descr='Delay Updates (rsync property)',
+            name='delay_updates',
+            get=lambda obj: self.get_rsync_args(obj, 'rsync_properties.delay_updates'),
+            set=lambda obj, val: self.set_rsync_args(obj, 'rsync_properties.delay_updates', val),
+            type=ValueType.BOOLEAN,
+            usage=_('Specifies the boolean rsync property: delay_updates')
+        )
+
+        self.add_property(
+            descr='Extra Rsync args',
+            name='extra',
+            get=lambda obj: self.get_rsync_args(obj, 'rsync_properties.extra'),
+            set=lambda obj, val: self.set_rsync_args(obj, 'rsync_properties.extra', val),
+            type=ValueType.STRING,
+            usage=_('Specifies any other custom arguments for this rsync task.')
+        )
+
+
 class SmartNamespace(CalendarTasksNamespaceBaseClass):
     """
     SMART namespaces provides commands to create 'smart' type calendar tasks
@@ -490,7 +751,7 @@ class SmartNamespace(CalendarTasksNamespaceBaseClass):
 
             Examples: create mysmart disks=ada0,ada1,ada2 test_type=SHORT
                       create somesmart disks=ada0,ada1,ada2 test_type=LONG schedule={"hour":"*/4"}
-            
+
             Creates a SMART calendar task. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
             Usage: set <property>=<value> ...
@@ -918,6 +1179,7 @@ class CommandNamespace(CalendarTasksNamespaceBaseClass):
 TASK_TYPES = {
     'scrub': 'volume.scrub',
     'smart': 'disk.parallel_test',
+    'rsync': 'rsync.copy',
     'snapshot': 'volume.snapshot_dataset',
     'replication': 'replication.replicate_dataset',
     'check_update': 'update.checkfetch',

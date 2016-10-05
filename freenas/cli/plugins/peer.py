@@ -448,7 +448,7 @@ class PeerNamespace(
 
         def set_type(o, v):
             q.set(o, 'type', v)
-            q.set(o, 'credentials.type', '{0}-credentials'.format(v))
+            q.set(o, 'credentials.%type', '{0}-credentials'.format(v))
 
         self.add_property(
             descr='Peer Name',

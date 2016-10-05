@@ -89,6 +89,8 @@ class QueryCommand(Command):
         return Object(
             Object.Item('ID', 'id', t['id']),
             Object.Item('Name', 'name', t['name']),
+            Object.Item('Description', 'description', get('description.message')),
+            Object.Item('Object name', 'object', get('description.name')),
             Object.Item('State', 'state', t['state']),
             Object.Item('Started at', 'started_at', t['started_at']),
             Object.Item('Started by', 'started_by', t['user']),
@@ -191,7 +193,7 @@ class TasksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             usage=_("""\
             Task description. Read-only value assigned by the operating
             system."""),
-            get=self.describe_task
+            get='description.message'
         )
 
         self.add_property(
@@ -263,9 +265,6 @@ class TasksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
 
     def describe_validation_errors(self, task):
         return ('{0}: {1}'.format(p, m) for p, __, m in self.context.get_validation_errors(task))
-
-    def describe_task(self, task):
-        return tasks.translate(self.context, task['name'], task['args'])
 
 
 def _init(context):

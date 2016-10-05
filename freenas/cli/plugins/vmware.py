@@ -26,6 +26,7 @@
 #####################################################################
 
 from freenas.cli.namespace import Namespace, EntityNamespace, EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin
+from freenas.cli.output import ValueType
 from freenas.cli.utils import get_related, set_related
 
 
@@ -76,6 +77,22 @@ class VMwareDatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin
             get=lambda o: get_related(self.context, 'peer', o, 'peer'),
             set=lambda o, v: set_related(self.context, 'peer', o, 'peer', v),
             list=True
+        )
+
+        self.add_property(
+            descr='VM filtering',
+            name='vm_filter_op ',
+            get='vm_filter_op',
+            list=False,
+            enum=['NONE', 'INCLUDE', 'EXCLUDE']
+        )
+
+        self.add_property(
+            descr='VM filter entries',
+            name='vm_filter_entries',
+            get='vm_filter__entries',
+            list=False,
+            type=ValueType.SET
         )
 
         self.primary_key = self.get_mapping('name')

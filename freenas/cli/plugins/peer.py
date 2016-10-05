@@ -230,6 +230,7 @@ class FreeNASPeerNamespaceMixin(BaseVariantMixin):
             set='0.auth_code',
             create_arg=True,
             list=False,
+            type=ValueType.NUMBER,
             condition=lambda o: o['type'] == 'freenas'
         )
 

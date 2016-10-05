@@ -610,7 +610,8 @@ class RsyncNamespace(CalendarTasksNamespaceBaseClass):
             set=lambda obj, val: self.set_rsync_args(obj, 'remote_path', val),
             type=ValueType.STRING,
             condition=lambda obj: q.get('args.rsync_mode') == 'SSH',
-            usage=_('Specifies the path on the Remote Host to copy'
+            usage=_(
+                'Specifies the path on the Remote Host to copy'
                 ' to/from for this rsync task (could very well '
                 ' be the localhost itself if the task is copying '
                 ' to/from local volumes). NOTE: This is only used'
@@ -625,6 +626,7 @@ class RsyncNamespace(CalendarTasksNamespaceBaseClass):
             set=lambda obj, val: self.set_rsync_args(obj, 'remote_ssh_port', val),
             type=ValueType.NUMBER,
             condition=lambda obj: q.get('args.remote_ssh_port') == 'SSH',
+            list=False,
             usage=_(
                 '(Optional) Specifies Remote Host\'s rsync port.'
                 ' Only needed in case the remote host has non-standard ssh port setup'
@@ -652,6 +654,7 @@ class RsyncNamespace(CalendarTasksNamespaceBaseClass):
             get=lambda obj: self.get_rsync_args(obj, 'rsync_properties.recursive'),
             set=lambda obj, val: self.set_rsync_args(obj, 'rsync_properties.recursive', val),
             type=ValueType.BOOLEAN,
+            list=False,
             usage=_('Specifies the boolean rsync property: recursive')
         )
 
@@ -661,6 +664,7 @@ class RsyncNamespace(CalendarTasksNamespaceBaseClass):
             get=lambda obj: self.get_rsync_args(obj, 'rsync_properties.compress'),
             set=lambda obj, val: self.set_rsync_args(obj, 'rsync_properties.compress', val),
             type=ValueType.BOOLEAN,
+            list=False,
             usage=_('Specifies the boolean rsync property: compress')
         )
 
@@ -670,6 +674,7 @@ class RsyncNamespace(CalendarTasksNamespaceBaseClass):
             get=lambda obj: self.get_rsync_args(obj, 'rsync_properties.times'),
             set=lambda obj, val: self.set_rsync_args(obj, 'rsync_properties.times', val),
             type=ValueType.BOOLEAN,
+            list=False,
             usage=_('Specifies the boolean rsync property: times')
         )
 
@@ -679,6 +684,7 @@ class RsyncNamespace(CalendarTasksNamespaceBaseClass):
             get=lambda obj: self.get_rsync_args(obj, 'rsync_properties.times'),
             set=lambda obj, val: self.set_rsync_args(obj, 'rsync_properties.times', val),
             type=ValueType.BOOLEAN,
+            list=False,
             usage=_('Specifies the boolean rsync property: times')
         )
 
@@ -688,6 +694,7 @@ class RsyncNamespace(CalendarTasksNamespaceBaseClass):
             get=lambda obj: self.get_rsync_args(obj, 'rsync_properties.delete'),
             set=lambda obj, val: self.set_rsync_args(obj, 'rsync_properties.delete', val),
             type=ValueType.BOOLEAN,
+            list=False,
             usage=_('Specifies the boolean rsync property: delete')
         )
 
@@ -697,6 +704,7 @@ class RsyncNamespace(CalendarTasksNamespaceBaseClass):
             get=lambda obj: self.get_rsync_args(obj, 'rsync_properties.preserve_permissions'),
             set=lambda obj, val: self.set_rsync_args(obj, 'rsync_properties.preserve_permissions', val),
             type=ValueType.BOOLEAN,
+            list=False,
             usage=_('Specifies the boolean rsync property: preserve permissions')
         )
 
@@ -706,6 +714,7 @@ class RsyncNamespace(CalendarTasksNamespaceBaseClass):
             get=lambda obj: self.get_rsync_args(obj, 'rsync_properties.preserve_attributes'),
             set=lambda obj, val: self.set_rsync_args(obj, 'rsync_properties.preserve_attributes', val),
             type=ValueType.BOOLEAN,
+            list=False,
             usage=_('Specifies the boolean rsync property: preserve_attributes')
         )
 
@@ -715,6 +724,7 @@ class RsyncNamespace(CalendarTasksNamespaceBaseClass):
             get=lambda obj: self.get_rsync_args(obj, 'rsync_properties.delay_updates'),
             set=lambda obj, val: self.set_rsync_args(obj, 'rsync_properties.delay_updates', val),
             type=ValueType.BOOLEAN,
+            list=False,
             usage=_('Specifies the boolean rsync property: delay_updates')
         )
 
@@ -724,6 +734,7 @@ class RsyncNamespace(CalendarTasksNamespaceBaseClass):
             get=lambda obj: self.get_rsync_args(obj, 'rsync_properties.extra'),
             set=lambda obj, val: self.set_rsync_args(obj, 'rsync_properties.extra', val),
             type=ValueType.STRING,
+            list=False,
             usage=_('Specifies any other custom arguments for this rsync task.')
         )
 

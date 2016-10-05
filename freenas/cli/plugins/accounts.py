@@ -153,7 +153,7 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
         self.add_property(
             display_width_percentage=25,
             descr='User name',
-            name='username',
+            name='name',
             get='username',
             usage=_("""\
             Maximum 16 characters, though a maximum of 8 is recommended for

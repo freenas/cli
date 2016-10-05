@@ -261,9 +261,6 @@ class PropertyMapping(object):
         self.strict = kwargs.pop('strict', True)
 
     def can_set(self, obj):
-        if self.update_arg:
-            return True
-
         if not self.set:
             return False
 
@@ -279,7 +276,7 @@ class PropertyMapping(object):
             return self.usersetable
 
     def do_get(self, obj):
-        if self.condition and not self.condition(obj):
+        if self.create_arg or self.condition and not self.condition(obj):
             return None
 
         if isinstance(self.get, collections.Callable):
@@ -287,8 +284,8 @@ class PropertyMapping(object):
 
         return q.get(obj, self.get)
 
-    def do_set(self, obj, value):
-        if not self.can_set(obj):
+    def do_set(self, obj, value, check_entity=None):
+        if not self.can_set(check_entity if check_entity else obj):
             raise ValueError(_("Property '{0}' is not settable for this entity".format(self.name)))
 
         value = read_value(value, self.type)
@@ -486,7 +483,7 @@ class ItemNamespace(Namespace):
                 if prop.regex is not None and not re.match(prop.regex, str(v)):
                     raise CommandException('Invalid input {0} for property {1}.'.format(v, k))
                 if prop.update_arg:
-                    prop.do_set(self.parent.update_args, v)
+                    prop.do_set(self.parent.update_args, v, entity)
                 elif not prop.create_arg:
                     prop.do_set(entity, v)
                 else:
@@ -551,7 +548,7 @@ class ItemNamespace(Namespace):
             else:
                 raise CommandException(_("The edit command can only be used on string or text file properties"))
             if prop.update_arg:
-                prop.do_set(self.parent.update_args, value)
+                prop.do_set(self.parent.update_args, value, self.parent.entity)
             elif not prop.create_arg:
                 prop.do_set(self.parent.entity, value)
             else:
@@ -1144,7 +1141,7 @@ class CreateEntityCommand(Command):
         mappings = map(lambda i: (self.parent.get_mapping(i[0]), i[1]), kwargs.items())
         for prop, v in sorted(mappings, key=lambda i: i[0].index):
             if prop.create_arg:
-                prop.do_set(ns.create_args, v)
+                prop.do_set(ns.create_args, v, ns.entity)
             elif not prop.update_arg:
                 prop.do_set(ns.entity, v)
 

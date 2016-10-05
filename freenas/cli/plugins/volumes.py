@@ -104,7 +104,7 @@ class AddVdevCommand(Command):
             raise CommandException('Volume is not encrypted by password.')
 
         password_prop = self.parent.get_mapping('password')
-        password_prop.do_set(self.parent.update_args, password)
+        password_prop.do_set(self.parent.update_args, password, self.parent.entity)
 
         disks_per_type = DISKS_PER_TYPE.copy()
         disks_per_type.pop('auto', None)

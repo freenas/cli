@@ -1256,7 +1256,7 @@ class SnapshotsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Ent
         self.update_task = 'volume.snapshot.update'
         self.delete_task = 'volume.snapshot.delete'
         self.primary_key_name = 'id'
-        self.required_props = ['name', 'dataset']
+        self.required_props = ['name']
         self.large = True
 
         if parent:
@@ -1266,7 +1266,7 @@ class SnapshotsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Ent
 
         self.add_property(
             descr='Snapshot id',
-            name='id',
+            name='name',
             get='id',
             list=True,
             usage=_("ID of the snapshot.")
@@ -1274,7 +1274,7 @@ class SnapshotsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Ent
 
         self.add_property(
             descr='Snapshot name',
-            name='name',
+            name='snapshot_name',
             get='name',
             list=False,
             usage=_("ID of the snapshot.")
@@ -1346,7 +1346,7 @@ class SnapshotsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Ent
             usage=_("Amount of space is available on the dataset.")
         )
 
-        self.primary_key = self.get_mapping('id')
+        self.primary_key = self.get_mapping('name')
         self.entity_commands = lambda this: {
             'rollback': RollbackCommand(this),
             'clone': CloneCommand(this)

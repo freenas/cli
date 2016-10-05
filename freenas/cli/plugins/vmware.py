@@ -26,10 +26,12 @@
 #####################################################################
 
 from freenas.cli.namespace import Namespace, EntityNamespace, EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin
+from freenas.cli.namespace import description
 from freenas.cli.output import ValueType
 from freenas.cli.utils import get_related, set_related
 
 
+@description("Configure VMware integrations")
 class VMwareNamespace(Namespace):
     def __init__(self, name, context):
         super(VMwareNamespace, self).__init__(name)
@@ -41,6 +43,7 @@ class VMwareNamespace(Namespace):
         ]
 
 
+@description("Configure VMware datastore mappings")
 class VMwareDatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
     def __init__(self, name, context):
         super(VMwareDatasetsNamespace, self).__init__(name, context)

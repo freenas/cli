@@ -27,7 +27,6 @@
 
 import gettext
 from freenas.cli.output import ValueType, Object
-from freenas.cli.descriptions import tasks
 from freenas.cli.namespace import EntityNamespace, EntitySubscriberBasedLoadMixin, Command, BaseListCommand, description
 from freenas.cli.complete import NullComplete
 from freenas.cli.utils import TaskPromise, describe_task_state

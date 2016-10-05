@@ -334,7 +334,8 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
         self.entity_commands = lambda this: {
             'start': DockerContainerStartCommand(this),
             'stop': DockerContainerStopCommand(this),
-            'console': DockerContainerConsoleCommand(this)
+            'console': DockerContainerConsoleCommand(this),
+            'exec': DockerContainerExecConsoleCommand(this)
         }
 
     def commands(self):
@@ -772,13 +773,35 @@ class DockerContainerConsoleCommand(Command):
 
     Examples: console
 
-    Connects to a container serial console. ^] returns to CLI
+    Connects to a container's serial console. ^] returns to CLI
     """
     def __init__(self, parent):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
         console = Console(context, self.parent.entity['id'])
+        console.start()
+
+
+@description("Create a new process inside of a container and attach a serial console to that process")
+class DockerContainerExecConsoleCommand(Command):
+    """
+    Usage: exec <command>
+
+    Examples: exec /bin/sh
+
+    Creates and attaches console to a new process on a container.
+    ^] returns to CLI
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        if not len(args):
+            raise CommandException('Please specify a command to run on a container')
+
+        exec_id = context.call_sync('docker.container.create_exec', self.parent.entity['id'], args[0])
+        console = Console(context, exec_id)
         console.start()
 
 

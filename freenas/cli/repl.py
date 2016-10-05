@@ -752,6 +752,9 @@ class Context(object):
     def call_sync(self, name, *args, **kwargs):
         return self.connection.call_sync(name, *args, **kwargs) if not self.docgen_run else {}
 
+    def call_async(self, name, callback, *args, **kwargs):
+        return self.connection.call_async(name, callback, *args, **kwargs)
+
     def call_task_sync(self, name, *args, **kwargs):
         return self.connection.call_task_sync(name, *args)
 

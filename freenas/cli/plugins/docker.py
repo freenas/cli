@@ -350,7 +350,7 @@ class DockerImageNamespace(EntitySubscriberBasedLoadMixin, DockerUtilsMixin, Ent
     The docker image namespace provides commands for listing,
     creating, and managing Docker container images.
     """
-    freenas_images = None
+    freenas_images = []
 
     def __init__(self, name, context):
         super(DockerImageNamespace, self).__init__(name, context)
@@ -373,10 +373,11 @@ class DockerImageNamespace(EntitySubscriberBasedLoadMixin, DockerUtilsMixin, Ent
                 show | search name == foo""")
 
         if not DockerImageNamespace.freenas_images:
-            DockerImageNamespace.freenas_images = list(context.call_sync(
+            context.call_async(
                 'docker.image.get_collection_images',
+                lambda r: DockerImageNamespace.freenas_images.extend(list(r)),
                 'freenas'
-            ))
+            )
 
         self.add_property(
             descr='Name',

@@ -1259,7 +1259,7 @@ class SnapshotsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Ent
 
         self.add_property(
             descr='Snapshot name',
-            name='snapshot_name',
+            name='name',
             get='name',
             list=False,
             usage=_("ID of the snapshot.")

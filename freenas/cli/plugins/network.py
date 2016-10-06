@@ -374,6 +374,14 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
         )
 
         self.add_property(
+            descr='Active media type',
+            name='media_type',
+            get=self.get_media_type,
+            set=None,
+            list=False
+        )
+
+        self.add_property(
             descr='State',
             name='state',
             get=self.get_iface_state,
@@ -480,6 +488,12 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
 
     def get_link_state(self, entity):
         return self.link_states[get(entity, 'status.link_state')]
+
+    def get_media_type(self, entity):
+        return '{0} {1}'.format(
+            get(entity, 'status.active_media_type'),
+            get(entity, 'status.active_media_subtype')
+        )
 
     def get_iface_state(self, entity):
         return _("up") if 'UP' in get(entity, 'status.flags') else _("down")

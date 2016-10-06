@@ -387,6 +387,16 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
         )
 
         self.add_property(
+            descr='Capabilities',
+            name='capabilities',
+            get='status.capabilities',
+            set=None,
+            list=False,
+            usage="Shows capabilities NIC supported by the NIC",
+            type=ValueType.SET
+        )
+
+        self.add_property(
             descr='VLAN parent interface',
             name='vlan_parent',
             get='vlan.parent',

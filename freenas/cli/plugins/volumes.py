@@ -958,12 +958,13 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
                 show | search name ~= mypool
                 show | search compression == lz4 | sort name""")
 
-        self.skeleton_entity = {
-            'type': 'FILESYSTEM',
-            'volume': self.parent.entity['id'],
-            'temp_mountpoint': None,
-            'properties': {}
-        }
+        if not getattr(self, 'is_docgen_instance', False):
+            self.skeleton_entity = {
+                'type': 'FILESYSTEM',
+                'volume': self.parent.entity['id'],
+                'temp_mountpoint': None,
+                'properties': {}
+            }
 
         self.add_property(
             descr='Name',

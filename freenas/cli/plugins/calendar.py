@@ -586,7 +586,7 @@ class RsyncNamespace(CalendarTasksNamespaceBaseClass):
             descr='Remote Host',
             name='remote_host',
             get=lambda obj: self.get_rsync_args(obj, 'remote_host'),
-            set=lambda obj, val: self.set_rsync_args(obj, 'remote_host'),
+            set=lambda obj, val: self.set_rsync_args(obj, 'remote_host', val),
             type=ValueType.STRING,
             usage=_(
                 'Specifies the remote host for this rsync task'
@@ -599,7 +599,7 @@ class RsyncNamespace(CalendarTasksNamespaceBaseClass):
             descr='Path',
             name='path',
             get=lambda obj: self.get_rsync_args(obj, 'path'),
-            set=lambda obj, val: self.set_rsync_args(obj, 'path'),
+            set=lambda obj, val: self.set_rsync_args(obj, 'path', val),
             type=ValueType.STRING,
             usage=_('Specifies the path on the localhost to copy to/from for this rsync task')
         )

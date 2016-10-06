@@ -1040,8 +1040,7 @@ class MainLoop(object):
         #     _("Welcome to the FreeNAS CLI! Type 'help' to get started."))
         output_msg(self.context.connection.call_sync(
             'system.general.cowsay',
-            "Welcome to the FreeNAS CLI! Type 'help' to get started.",
-            "default"
+            "Welcome to the FreeNAS CLI! Type 'help' to get started."
         )[0])
         output_msg("")
 

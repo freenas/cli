@@ -602,24 +602,58 @@ class DockerImageReadmeCommand(Command):
 @description("Delete cached container image")
 class DockerImageDeleteCommand(Command):
     """
-    Usage: delete
+    Usage: delete host=<host>
 
     Example: delete
+             delete host=docker_host_0
 
     Deletes cached container image.
+    When no host is specified image is going to be deleted
+    from all available Docker hosts at once.
     """
     def __init__(self, parent):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        tid = context.submit_task(
-            'docker.image.delete',
-            q.get(self.parent.entity, 'names.0'),
-            self.parent.entity['host'],
-            callback=lambda s, t: post_save(self.parent, s, t)
-        )
+        host = kwargs.get('host')
+        name = q.get(self.parent.entity, 'names.0')
+
+        if not host:
+            tid = context.submit_task(
+                'docker.container.recursive_delete',
+                name,
+                callback=lambda s, t: post_save(self.parent, s, t)
+            )
+        else:
+            host = context.call_sync('docker.host.query', [('name', '=', host)], {'single': True, 'select': 'id'})
+            if not host:
+                raise CommandException(_('Docker host {0} not found'.format(kwargs.get('host'))))
+
+            if host not in self.parent.entity['hosts']:
+                raise CommandException(_('Image {0} does not exist on {1}'.format(
+                    name,
+                    kwargs.get('host')
+                )))
+
+            tid = context.submit_task(
+                'docker.image.delete',
+                name,
+                host,
+                callback=lambda s, t: post_save(self.parent, s, t)
+            )
 
         return TaskPromise(context, tid)
+
+    def complete(self, context, **kwargs):
+        return [
+            EnumComplete(
+                'host=',
+                context.entity_subscribers['docker.host'].query(
+                    ('id', 'in', self.parent.entity['hosts']),
+                    select='name'
+                )
+            )
+        ]
 
 
 class DockerContainerCreateCommand(Command):

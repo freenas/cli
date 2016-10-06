@@ -641,7 +641,8 @@ class RsyncNamespace(CalendarTasksNamespaceBaseClass):
             set=lambda obj, val: self.set_rsync_args(obj, 'remote_module', val),
             type=ValueType.STRING,
             condition=lambda obj: q.get(obj['args'][0], 'rsync_mode') == 'MODULE',
-            usage=_('Specifies the module on the Remote Host to copy'
+            usage=_(
+                'Specifies the module on the Remote Host to copy'
                 ' to/from for this rsync task (could very well '
                 ' be the local rsync module itself if the task is copying '
                 ' to/from local volumes). NOTE: This is only used'
@@ -681,12 +682,12 @@ class RsyncNamespace(CalendarTasksNamespaceBaseClass):
 
         self.add_property(
             descr='Archive (rsync property)',
-            name='times',
-            get=lambda obj: self.get_rsync_args(obj, 'rsync_properties.times'),
-            set=lambda obj, val: self.set_rsync_args(obj, 'rsync_properties.times', val),
+            name='archive',
+            get=lambda obj: self.get_rsync_args(obj, 'rsync_properties.archive'),
+            set=lambda obj, val: self.set_rsync_args(obj, 'rsync_properties.archive', val),
             type=ValueType.BOOLEAN,
             list=False,
-            usage=_('Specifies the boolean rsync property: times')
+            usage=_('Specifies the boolean rsync property: archive')
         )
 
         self.add_property(

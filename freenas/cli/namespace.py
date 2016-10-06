@@ -1379,7 +1379,7 @@ class NestedObjectSaveMixin(object):
             )
             entity.update(this.entity)
 
-        self.parent.save()
+        return self.parent.save()
 
     def delete(self, this, kwargs):
         q.set(
@@ -1391,7 +1391,7 @@ class NestedObjectSaveMixin(object):
             ))
         )
 
-        self.parent.save()
+        return self.parent.save()
 
 
 class NestedEntityMixin(object):

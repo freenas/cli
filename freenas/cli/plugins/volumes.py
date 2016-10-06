@@ -923,6 +923,8 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
         self.parent = parent
         self.path = name
         self.entity_subscriber_name = 'volume.dataset'
+        self.create_task = 'volume.dataset.create'
+        self.update_task = 'volume.dataset.update'
         self.required_props = ['name']
 
         if self.parent and self.parent.entity:
@@ -958,6 +960,7 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
 
         self.skeleton_entity = {
             'type': 'FILESYSTEM',
+            'volume': self.parent.entity['id'],
             'temp_mountpoint': None,
             'properties': {}
         }
@@ -1152,18 +1155,7 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
             if len(newname.split('/')) < 2:
                 raise CommandException(_("Please specify name as a relative path starting from the dataset's parent volume."))
 
-            return self.context.submit_task(
-                'volume.dataset.create',
-                extend(this.entity, {'volume': self.parent.entity['id']}),
-                callback=lambda s, t: post_save(this, s, t)
-            )
-
-        return self.context.submit_task(
-            'volume.dataset.update',
-            this.orig_entity['id'],
-            this.get_diff(),
-            callback=lambda s, t: post_save(this, s, t)
-        )
+        return super(DatasetsNamespace, self).save(this, new)
 
     def get_entity_commands(self, this):
         this.load()

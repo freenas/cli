@@ -75,7 +75,6 @@ class RpcComplete(EntitySubscriberComplete):
     def choices(self, context, token):
         result = deepcopy(self.extra)
         datasource = context.call_sync(self.datasource)
-        r = None
 
         if isinstance(datasource, dict):
             if self.mapper:

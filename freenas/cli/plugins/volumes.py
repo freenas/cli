@@ -1261,7 +1261,7 @@ class SnapshotsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Ent
             descr='Snapshot name',
             name='name',
             get='id',
-            list=False,
+            list=True,
             usage=_("ID of the snapshot.")
         )
 

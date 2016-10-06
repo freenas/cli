@@ -958,6 +958,7 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
 
         self.skeleton_entity = {
             'type': 'FILESYSTEM',
+            'temp_mountpoint': None,
             'properties': {}
         }
 

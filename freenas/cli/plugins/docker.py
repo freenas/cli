@@ -47,6 +47,9 @@ class DockerUtilsMixin(object):
         h = self.context.entity_subscribers['docker.host'].query(('id', '=', o['host']), single=True)
         return h['name'] if h else None
 
+    def get_hosts(self, o):
+        return list(self.context.entity_subscribers['docker.host'].query(('id', 'in', o['hosts']), select='name')) or []
+
     def set_host(self, o, v):
         h = self.context.entity_subscribers['docker.host'].query(('name', '=', v), single=True)
         if h:
@@ -413,11 +416,12 @@ class DockerImageNamespace(EntitySubscriberBasedLoadMixin, DockerUtilsMixin, Ent
         self.add_property(
             descr='Host',
             name='host',
-            get=self.get_host,
+            get=self.get_hosts,
             set=None,
             usersetable=False,
-            list=True,
-            usage=_('Name of a Docker host storing a container image.')
+            list=False,
+            type=ValueType.SET,
+            usage=_('Names of a Docker hosts storing this container image.')
         )
 
         self.primary_key = self.get_mapping('name')

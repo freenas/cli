@@ -35,9 +35,7 @@ from freenas.cli.namespace import (
 from freenas.cli.complete import NullComplete, EnumComplete, EntitySubscriberComplete
 from freenas.cli.output import Table, ValueType, output_tree, format_value, read_value, Sequence
 from freenas.cli.utils import TaskPromise, EntityPromise, post_save, iterate_vdevs, vdev_by_path, mirror_by_path
-from freenas.cli.utils import to_list, correct_disk_path
-from freenas.utils import first_or_default, extend
-
+from freenas.cli.utils import to_list, correct_disk_path, get_related, set_related
 
 t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
@@ -1133,6 +1131,9 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
 
         self.primary_key = self.get_mapping('name')
         self.entity_commands = self.get_entity_commands
+        self.entity_namespaces = lambda this: [
+            VMwareDatasetsNamespace('vmware_snapshots', self.context, this)
+        ]
 
     def delete(self, this, kwargs):
         return self.context.submit_task(
@@ -1341,6 +1342,63 @@ class FilesystemNamespace(EntityNamespace):
             get='name',
             usage=_("The name of the file.")
         )
+
+
+@description("Configure VMware datastore mappings")
+class VMwareDatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
+    def __init__(self, name, context, parent=None):
+        super(VMwareDatasetsNamespace, self).__init__(name, context)
+        self.parent = parent
+        self.entity_subscriber_name = 'vmware.dataset'
+        self.create_task = 'vmware.dataset.create'
+        self.update_task = 'vmware.dataset.update'
+        self.delete_task = 'vmware.dataset.delete'
+        self.primary_key_name = 'name'
+
+        if self.parent and self.parent.entity:
+            self.skeleton_entity = {
+                'dataset': self.parent.entity['id']
+            }
+
+        self.add_property(
+            descr='Mapping name',
+            name='name',
+            get='name',
+            list=True
+        )
+
+        self.add_property(
+            descr='Datastore name',
+            name='datastore',
+            get='datastore',
+            list=True
+        )
+
+        self.add_property(
+            descr='VMware peer',
+            name='peer',
+            get=lambda o: get_related(self.context, 'peer', o, 'peer'),
+            set=lambda o, v: set_related(self.context, 'peer', o, 'peer', v),
+            list=True
+        )
+
+        self.add_property(
+            descr='VM filtering',
+            name='vm_filter_op',
+            get='vm_filter_op',
+            list=False,
+            enum=['NONE', 'INCLUDE', 'EXCLUDE']
+        )
+
+        self.add_property(
+            descr='VM filter entries',
+            name='vm_filter_entries',
+            get='vm_filter__entries',
+            list=False,
+            type=ValueType.SET
+        )
+
+        self.primary_key = self.get_mapping('name')
 
 
 def check_disks(context, disks, cache_disks=None, log_disks=None):
@@ -1843,3 +1901,4 @@ def _init(context):
     context.map_tasks('volume.dataset.*', DatasetsNamespace)
     context.map_tasks('volume.snapshot.*', SnapshotsNamespace)
     context.map_tasks('volume.*', VolumesNamespace)
+    context.map_tasks('vmware.dataset.*', VMwareDatasetsNamespace)

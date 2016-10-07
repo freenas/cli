@@ -361,7 +361,7 @@ class FindVolumesCommand(Command):
     Finds volumes that can be imported.
     """
     def run(self, context, args, kwargs, opargs):
-        vols = context.call_sync('volume.find')
+        vols = context.call_sync('volume.find', timeout=300)
         return Table(vols, [
             Table.Column('ID', 'id', vt=ValueType.STRING),
             Table.Column('Volume name', 'name'),
@@ -428,15 +428,6 @@ class ImportVolumeCommand(Command):
         else:
             encryption = {}
             password = None
-
-            if not args[0].isdigit():
-                vols = context.call_sync('volume.find')
-                vol = first_or_default(lambda v: v['name'] == args[0], vols)
-                if not vol:
-                    raise CommandException('Importable volume {0} not found'.format(args[0]))
-
-                id = vol['id']
-                oldname = vol['name']
 
         tid = context.submit_task('volume.import', id, kwargs.get('newname', oldname), {}, encryption, password)
         return EntityPromise(context, tid, self.parent)

@@ -262,10 +262,11 @@ class BootPoolNamespace(Namespace):
             'show_disks': BootPoolShowDisksCommand(),
             'attach_disk': BootPoolAttachDiskCommand(),
             'detach_disk': BootPoolDetachDiskCommand(),
+            'show': BootPoolShowCommand(),
         }
 
 
-@description("Shows boot pool summary")
+@description("Shows boot pool space usage")
 class BootPoolShowCommand(Command):
     """
     Usage: show
@@ -273,7 +274,17 @@ class BootPoolShowCommand(Command):
     Examples: show
     """
     def run(self, context, args, kwargs, opargs):
-        pass
+        volume = context.call_sync('zfs.pool.get_boot_pool')['properties']
+        result = [
+            {'free': volume['free']['value'],
+             'occupied': volume['allocated']['value'],
+             'total': volume['size']['value']}
+        ]
+        return Table(result, [
+            Table.Column('Total size', 'total', ValueType.STRING),
+            Table.Column('Occupied space', 'occupied', ValueType.STRING),
+            Table.Column('Free space', 'free', ValueType.STRING),
+        ])
 
 
 @description("List the devices in the boot pool")

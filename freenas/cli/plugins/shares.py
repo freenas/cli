@@ -217,7 +217,7 @@ class BaseSharesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, En
             'enabled': True,
             'target_type': 'DATASET',
             'properties': {
-                'type': 'share-{0}'.format(type_name)
+                '%type': 'share-{0}'.format(type_name)
             }
         }
 

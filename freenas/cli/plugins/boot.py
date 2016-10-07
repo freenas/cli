@@ -274,7 +274,7 @@ class BootPoolShowCommand(Command):
     Examples: show
     """
     def run(self, context, args, kwargs, opargs):
-        volume = context.call_sync('zfs.pool.get_boot_pool')['properties']
+        volume = context.call_sync('boot.pool.get_config')['properties']
         result = [
             {'free': volume['free']['value'],
              'occupied': volume['allocated']['value'],

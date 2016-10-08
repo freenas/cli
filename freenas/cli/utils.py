@@ -270,6 +270,15 @@ def add_tty_formatting(context, input):
     return set_bold_font + str(input) + reset_font if context.is_interactive else input
 
 
+def quote(value):
+    value = str(value)
+
+    if not value.isdigit() and value[0].isdigit():
+        return '"{0}"'.format(value)
+
+    return value
+
+
 class PrintableNone(object):
     def __bool__(self):
         return False

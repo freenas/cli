@@ -1728,7 +1728,7 @@ class MainLoop(object):
                     return None
 
                 if issubclass(type(obj), Namespace):
-                    choices = [str(i.get_name()) for i in obj.namespaces()]
+                    choices = [quote(i.get_name()) for i in obj.namespaces()]
                     choices += obj.commands().keys()
                     choices += ['..', '/', '-']
 

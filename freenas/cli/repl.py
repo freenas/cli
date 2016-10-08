@@ -52,7 +52,7 @@ from six.moves.urllib.parse import urlparse
 from socket import gaierror as socket_error
 from freenas.cli.output import Table
 from freenas.cli.descriptions import events
-from freenas.cli.utils import SIGTSTPException, SIGTSTP_setter, errors_by_path
+from freenas.cli.utils import SIGTSTPException, SIGTSTP_setter, errors_by_path, quote
 from freenas.cli import functions
 from freenas.cli import config
 from freenas.cli.namespace import (

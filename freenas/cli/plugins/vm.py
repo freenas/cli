@@ -1261,7 +1261,7 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
                 if template.get('cached', False):
                     commands['delete_cache'] = DeleteImagesCommand(this)
 
-                if template.get('driver') != 'git':
+                if template.get('source') != 'github':
                     commands['delete'] = DeleteTemplateCommand(this)
 
         return commands

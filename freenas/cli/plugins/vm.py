@@ -1247,6 +1247,9 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
 
         self.primary_key = self.get_mapping('name')
         self.entity_commands = self.get_entity_commands
+        self.extra_commands = {
+            'flush_cache': FlushCacheCommand(self)
+        }
 
     def get_entity_commands(self, this):
         this.load() if hasattr(this, 'load') else None
@@ -1322,6 +1325,26 @@ class DeleteImagesCommand(Command):
         tid = context.submit_task(
             'vm.cache.delete',
             self.parent.entity['template']['name'],
+            callback=lambda s, t: post_save(self.parent, s, t)
+        )
+        return TaskPromise(context, tid)
+
+
+@description("Deletes all VM images from the local cache")
+class FlushCacheCommand(Command):
+    """
+    Usage: flush_cache
+
+    Examples: flush_cache
+
+    Deletes all VM template images from the local cache.
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs, filtering=None):
+        tid = context.submit_task(
+            'vm.cache.flush',
             callback=lambda s, t: post_save(self.parent, s, t)
         )
         return TaskPromise(context, tid)

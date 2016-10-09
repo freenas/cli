@@ -171,7 +171,7 @@ class ImportVMCommand(Command):
         if not volume:
             raise CommandException(_("Please specify which volume is containing a VM being imported."))
 
-        tid = context.submit_task('vm.import', name, volume, callback=lambda s, t: post_save(self.parent, t))
+        tid = context.submit_task('vm.import', name, volume, callback=lambda s, t: post_save(self.parent, s, t))
         return EntityPromise(context, tid, self.parent)
 
 

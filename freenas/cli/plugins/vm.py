@@ -1281,7 +1281,11 @@ class DownloadImagesCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs, filtering=None):
-        tid = context.submit_task('vm.cache.update', self.parent.entity['template']['name'])
+        tid = context.submit_task(
+            'vm.cache.update',
+            self.parent.entity['template']['name'],
+            callback=lambda s, t: post_save(self.parent, s, t)
+        )
         return TaskPromise(context, tid)
 
 
@@ -1315,7 +1319,11 @@ class DeleteImagesCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs, filtering=None):
-        tid = context.submit_task('vm.cache.delete', self.parent.entity['template']['name'])
+        tid = context.submit_task(
+            'vm.cache.delete',
+            self.parent.entity['template']['name'],
+            callback=lambda s, t: post_save(self.parent, s, t)
+        )
         return TaskPromise(context, tid)
 
 

@@ -1251,7 +1251,6 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
     def get_entity_commands(self, this):
         this.load() if hasattr(this, 'load') else None
         commands = {
-            'download': DownloadImagesCommand(this),
             'readme': ReadmeCommand(this, 'template')
         }
 
@@ -1260,6 +1259,8 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
             if template:
                 if template.get('cached', False):
                     commands['delete_cache'] = DeleteImagesCommand(this)
+                else:
+                    commands['download'] = DownloadImagesCommand(this)
 
                 if template.get('source') != 'github':
                     commands['delete'] = DeleteTemplateCommand(this)

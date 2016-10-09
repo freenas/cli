@@ -263,6 +263,7 @@ class BootPoolNamespace(Namespace):
             'attach_disk': BootPoolAttachDiskCommand(),
             'detach_disk': BootPoolDetachDiskCommand(),
             'show': BootPoolShowCommand(),
+            'scrub': BootPoolScrubCommand(),
         }
 
 
@@ -285,6 +286,20 @@ class BootPoolShowCommand(Command):
             Table.Column('Occupied space', 'occupied', ValueType.STRING),
             Table.Column('Free space', 'free', ValueType.STRING),
         ])
+
+
+@description("Scrub the boot pool")
+class BootPoolScrubCommand(Command):
+    """
+    Usage: scrub
+`
+    Examples: scrub
+
+    Scrub the boot pool.
+    """
+
+    def run(self, context, args, kwargs, opargs):
+        context.submit_task('boot.pool.scrub')
 
 
 @description("List the devices in the boot pool")

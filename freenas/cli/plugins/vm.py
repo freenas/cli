@@ -579,7 +579,7 @@ class VMDeviceNamespaceBaseClass(NestedObjectLoadMixin, NestedObjectSaveMixin, E
         }
 
         if new:
-            this.entity['properties']['@type'] = types[this.entity['type']]
+            this.entity['properties']['%type'] = types[this.entity['type']]
 
         super(VMDeviceNamespaceBaseClass, self).save(this, new)
 

@@ -361,7 +361,6 @@ class EnclosureDevicesCommand(Command):
         ])
 
 
-
 @description("Formats given disk")
 class FormatDiskCommand(Command):
     """

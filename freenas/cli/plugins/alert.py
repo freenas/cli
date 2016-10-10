@@ -203,7 +203,7 @@ class AlertFilterNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
         self.skeleton_entity = {
             'predicates': [],
             'parameters': {
-                'type': 'alert-emitter-email'
+                '%type': 'alert-emitter-email'
             }
         }
 

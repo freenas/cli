@@ -48,6 +48,7 @@ import paramiko
 import inspect
 import re
 import contextlib
+import rollbar
 from six.moves.urllib.parse import urlparse
 from socket import gaierror as socket_error
 from freenas.cli.output import Table
@@ -104,8 +105,13 @@ CLI_LOG_DIR = None
 if os.environ.get('FREENAS_SYSTEM') == 'YES':
     DEFAULT_MIDDLEWARE_CONFIGFILE = '/usr/local/etc/middleware.conf'
     CLI_LOG_DIR = '/var/tmp'
+    rollbar.init('9d317f74118c41059f4046afc446a01e', 'cli_local')
+else:
+    rollbar.init('9d317f74118c41059f4046afc446a01e', 'cli_remote')
 
 DEFAULT_CLI_CONFIGFILE = os.path.join(os.getcwd(), '.freenascli.conf')
+
+
 
 t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
@@ -564,11 +570,14 @@ class Context(object):
 
         self.logger.debug(_("Loading plugin from %s"), path)
         name, ext = os.path.splitext(os.path.basename(path))
-        plugin = imp.load_source(name, path)
-
-        if hasattr(plugin, '_init'):
-            plugin._init(self)
-            self.plugins[path] = plugin
+        try:
+            plugin = imp.load_source(name, path)
+            if hasattr(plugin, '_init'):
+                plugin._init(self)
+                self.plugins[path] = plugin
+        except Exception:
+            rollbar.report_exc_info()
+            raise
 
     def __try_reconnect(self):
         output_lock.acquire()

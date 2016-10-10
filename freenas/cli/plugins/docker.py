@@ -130,23 +130,7 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
         self.skeleton_entity = {
             'command': []
         }
-        self.localdoc['CreateEntityCommand'] = ("""\
-            Usage: create <name> image=<image> command=<command> environment=<environment>
-                          hostname=<hostname> host=<host> ports=<ports>
-                          expose_ports=<expose_ports> autostart=<autostart>
-                          interactive=<interactive> volumes=<volumes>
 
-            Examples: create my_ubuntu_container image=ubuntu:latest interactive=yes
-                      create my_container image=dockerhub_image_name
-                             host=docker_host_vm_name hostname=container_hostname
-                      create my_container image=dockerhub_image_name autostart=yes
-                      create my_container image=dockerhub_image_name
-                             ports="8443:8443","25565:25565/TCP","1234:12356/UDP"
-                             expose_ports=yes
-                      create my_container image=dockerhub_image_name
-                             volumes="/container/directory:/host/my_pool/container_data"
-
-            Creates a Docker container. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['DeleteEntityCommand'] = ("""\
             Usage: delete
 
@@ -162,16 +146,10 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
                 show | search name == foo""")
 
         def get_ports(o):
-            return ['{0}:{1}/{2}'.format(i['container_port'], i['host_port'], i['protocol']) for i in o['ports']]
-
-        def set_ports(o, v):
-            o['ports'] = [{'container_port': int(ch[0]), 'host_port': int(ch[1]), 'protocol': p.upper()} for ch, p in ((t[0].split(':'), t[1]) if len(t) == 2 else (t[0].split(':'), 'tcp') for t in (x.rsplit('/') for x in v))]
+            return ['{0}/{2}={1}'.format(i['container_port'], i['host_port'], i['protocol']) for i in o['ports']]
 
         def get_volumes(o):
-            return ['{0}:{1}'.format(i['container_path'], i['host_path']) for i in o['volumes']]
-
-        def set_volumes(o, v):
-            o['volumes'] = [{'container_path': c, 'host_path': h, 'readonly': False} for c, h in (x.split(':') for x in v)]
+            return ['{0}={1}'.format(i['container_path'], i['host_path']) for i in o['volumes']]
 
         self.add_property(
             descr='Name',
@@ -268,14 +246,13 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             descr='Ports',
             name='ports',
             get=get_ports,
-            set=set_ports,
             usersetable=False,
             list=True,
             type=ValueType.SET,
             usage=_('''\
             Array of strings used for defining network ports forwarding.
             Each of values should be formatted like:
-            <container_port_number>:<freenas_port_number>/<tcp/udp>
+            <container_port_number>/<tcp/udp>=<freenas_port_number>
             Ports are always being forwarded to a default FreeNAS box's
             network interface.''')
         )
@@ -323,13 +300,12 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             descr='Volumes',
             name='volumes',
             get=get_volumes,
-            set=set_volumes,
             usersetable=False,
             list=True,
             type=ValueType.SET,
             usage=_('''\
             List of strings formatted like:
-            container_path:freenas_path
+            <container_path>=<freenas_path>
             Defines which of FreeNAS paths should be exposed to a container.''')
         )
 
@@ -658,7 +634,32 @@ class DockerImageDeleteCommand(Command):
 
 class DockerContainerCreateCommand(Command):
     """
-    Usage: ...
+    Usage: create <name> image=<image> command=<command> hostname=<hostname>
+                  host=<host> expose_ports=<expose_ports>
+                  autostart=<autostart> interactive=<interactive>
+                  ...
+                  <ENVIRONMENT_NAME>=<VALUE>
+                  port:<CONTAINER_PORT>/<PROTOCOL>=<HOST_PORT>
+                  volume:<CONTAINER_PATH>=<HOST_PATH>
+
+    Examples: create my_ubuntu_container image=ubuntu:latest interactive=yes
+              create my_ubuntu_container image=ubuntu:latest interactive=yes
+                     VAR1=VALUE1 VAR2=2
+              create my_container image=dockerhub_image_name
+                     host=docker_host_vm_name hostname=container_hostname
+              create my_container image=dockerhub_image_name autostart=yes
+              create my_container image=dockerhub_image_name
+                     port:8443/TCP=8443 port:1234/UDP=12356
+                     expose_ports=yes
+              create my_container image=dockerhub_image_name
+                     volume:/container/directory=/mnt/my_pool/container_data
+
+    Environment variables are provided as any number of uppercase KEY=VALUE
+    elements.
+    The same applies to sequences of port:<CONTAINER_PORT>/<PROTOCOL>=<HOST_PORT>
+    and volume:<CONTAINER_PATH>=<HOST_PATH> elements.
+
+    Creates a Docker container. For a list of properties, see 'help properties'.
     """
     def __init__(self, parent):
         self.parent = parent

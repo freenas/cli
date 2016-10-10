@@ -755,11 +755,15 @@ class DockerContainerCreateCommand(Command):
                 props += [NullComplete('volume:{container_path}='.format(**v)) for v in presets['volumes']]
                 props += [NullComplete('port:{container_port}/{protocol}='.format(**v)) for v in presets['ports']]
 
+        available_images = q.query(DockerImageNamespace.freenas_images, select='name')
+        available_images += context.entity_subscribers['docker.image'].query(select='names.0')
+        available_images = list(set(available_images))
+
         return props + [
             NullComplete('name='),
             NullComplete('command='),
             NullComplete('hostname='),
-            EntitySubscriberComplete('image=', 'docker.image', lambda i: q.get(i, 'names.0')),
+            EnumComplete('image=', available_images),
             EntitySubscriberComplete('host=', 'docker.host', lambda i: q.get(i, 'name')),
             EnumComplete('interactive=', ['yes', 'no']),
             EnumComplete('autostart=', ['yes', 'no']),

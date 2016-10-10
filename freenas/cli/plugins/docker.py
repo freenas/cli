@@ -763,6 +763,8 @@ class DockerContainerCreateCommand(Command):
             NullComplete('name='),
             NullComplete('command='),
             NullComplete('hostname='),
+            NullComplete('volume:'),
+            NullComplete('port:'),
             EnumComplete('image=', available_images),
             EntitySubscriberComplete('host=', 'docker.host', lambda i: q.get(i, 'name')),
             EnumComplete('interactive=', ['yes', 'no']),

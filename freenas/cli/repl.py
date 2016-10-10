@@ -1644,15 +1644,19 @@ class MainLoop(object):
                 output_msg(e.stacktrace)
         except RpcException as e:
             self.context.logger.error(str(e))
+            rollbar.report_exc_info()
             output_msg(_('RpcException Error: {0}'.format(str(e))))
+
         except SystemExit as e:
             sys.exit(e)
         except Exception as e:
+            rollbar.report_exc_info()
             output_msg(_('Unexpected Error: {0}'.format(str(e))))
             error_trace = traceback.format_exc()
             self.context.logger.error(error_trace)
             if self.context.variables.get('debug'):
                 output_msg(error_trace)
+
 
     def get_relative_object(self, ns, tokens):
         path = self.path[:]

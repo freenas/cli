@@ -220,6 +220,7 @@ class FreeNASPeerNamespaceMixin(BaseVariantMixin):
             set='0.password',
             create_arg=True,
             list=False,
+            type=ValueType.PASSWORD,
             condition=lambda o: o['type'] == 'freenas'
         )
 
@@ -273,6 +274,7 @@ class SSHPeerNamespaceMixin(BaseVariantMixin):
             get='credentials.password',
             list=False,
             usage=_('Password used to connect to a SSH peer.'),
+            type=ValueType.PASSWORD,
             condition=lambda o: o['type'] == 'ssh'
         )
 
@@ -385,6 +387,7 @@ class VMwareNamespaceMixin(BaseVariantMixin):
             get='credentials.password',
             list=False,
             usage=_('Password'),
+            type=ValueType.PASSWORD,
             condition=lambda o: o['type'] == 'vmware'
         )
 

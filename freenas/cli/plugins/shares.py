@@ -1,4 +1,4 @@
-#+
+#
 # Copyright 2014 iXsystems, Inc.
 # All rights reserved
 #
@@ -371,13 +371,13 @@ class NFSSharesNamespace(BaseSharesNamespace):
         super(NFSSharesNamespace, self).__init__(name, 'nfs', context)
         self.localdoc['CreateEntityCommand'] = ("""\
             Usage: create <name> parent=<volume> <property>=<value> ...
-                   create <name> target=<volume>/<dataset> <property>=<value> ...
+                   create <name> dataset=<volume>/<dataset> <property>=<value> ...
                    create <name> path="/path/to/directory/" <property>=<value> ...
 
             Examples:
                 create myshare parent=mypool
                 create myshare parent=mypool read_only=true
-                create myshare target=mypool/somedataset
+                create myshare dataset=mypool/somedataset
                 create myshare path="/mnt/mypool/some/directory/"
 
             Creates an NFS share. For a list of properties, see 'help
@@ -490,13 +490,13 @@ class AFPSharesNamespace(BaseSharesNamespace):
         super(AFPSharesNamespace, self).__init__(name, 'afp', context)
         self.localdoc['CreateEntityCommand'] = ("""\
             Usage: create <name> parent=<volume> <property>=<value> ...
-                   create <name> target=<volume>/<dataset> <property>=<value> ...
+                   create <name> dataset=<volume>/<dataset> <property>=<value> ...
                    create <name> path="/path/to/directory/" <property>=<value> ...
 
             Examples:
                 create myshare parent=mypool
                 create myshare parent=mypool read_only=true
-                create myshare target=mypool/somedataset
+                create myshare dataset=mypool/somedataset
                 create myshare path="/mnt/mypool/some/directory/"
 
             Creates an AFP share. For a list of properties, see 'help
@@ -643,13 +643,13 @@ class SMBSharesNamespace(BaseSharesNamespace):
         super(SMBSharesNamespace, self).__init__(name, 'smb', context)
         self.localdoc['CreateEntityCommand'] = ("""\
             Usage: create <name> parent=<volume> <property>=<value> ...
-                   create <name> target=<volume>/<dataset> <property>=<value> ...
+                   create <name> dataset=<volume>/<dataset> <property>=<value> ...
                    create <name> path="/path/to/directory/" <property>=<value> ...
 
             Examples:
                 create myshare parent=mypool
                 create myshare parent=mypool read_only=true
-                create myshare target=mypool/somedataset
+                create myshare dataset=mypool/somedataset
                 create myshare path="/mnt/mypool/some/directory/"
 
             Creates a SMB share. For a list of properties, see 'help
@@ -754,13 +754,13 @@ class WebDAVSharesNamespace(BaseSharesNamespace):
         super(WebDAVSharesNamespace, self).__init__(name, 'webdav', context)
         self.localdoc['CreateEntityCommand'] = ("""\
             Usage: create <name> parent=<volume> <property>=<value> ...
-                   create <name> target=<volume>/<dataset> <property>=<value> ...
+                   create <name> dataset=<volume>/<dataset> <property>=<value> ...
                    create <name> path="/path/to/directory/" <property>=<value> ...
 
             Examples:
                 create myshare parent=mypool
                 create myshare parent=mypool read_only=true
-                create myshare target=mypool/somedataset
+                create myshare dataset=mypool/somedataset
                 create myshare path="/mnt/mypool/some/directory/"
 
             Creates WebDAV share. For a list of properties, see 'help
@@ -1122,13 +1122,13 @@ class ISCSISharesNamespace(BaseSharesNamespace):
         self.required_props.append('size')
         self.localdoc['CreateEntityCommand'] = ("""\
             Usage: create <name> parent=<volume> size=<size> <property>=<value> ...
-                   create <name> target=<volume>/<dataset> size=<size> <property>=<value> ...
+                   create <name> dataset=<volume>/<dataset> size=<size> <property>=<value> ...
                    create <name> path="/path/to/directory/" size=<size> <property>=<value> ...
 
 
             Examples:
                 create myiscsi parent=mypool size=3G
-                create myiscsi target=mypool/somedataset size=3G
+                create myiscsi dataset=mypool/somedataset size=3G
                 create myiscsi path="/mnt/mypool/some/directory/" size=3G
 
             Creates an iSCSI share. For a list of properties, see

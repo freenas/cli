@@ -188,7 +188,8 @@ class DirectoriesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, E
             PROVIDERS = {
                 'winbind': ActiveDirectoryPropertiesNamespace,
                 'freeipa': FreeIPAPropertiesNamespace,
-                'ldap': LDAPPropertiesNamespace
+                'ldap': LDAPPropertiesNamespace,
+                'nis': NISPropertiesNamespace
             }
 
             this.load()
@@ -334,6 +335,23 @@ class LDAPPropertiesNamespace(BaseDirectoryPropertiesNamespace):
             name='verify_certificate',
             get='verify_certificate',
             type=ValueType.BOOLEAN
+        )
+
+
+class NISPropertiesNamespace(BaseDirectoryPropertiesNamespace):
+    def __init__(self, name, context, parent):
+        super(NISPropertiesNamespace, self).__init__(name, context, parent)
+
+        self.add_property(
+            descr='Domain',
+            name='domain',
+            get='domain'
+        )
+
+        self.add_property(
+            descr='Server',
+            name='server',
+            get='server'
         )
 
 

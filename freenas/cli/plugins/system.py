@@ -727,6 +727,17 @@ class AdvancedNamespace(ConfigNamespace):
             type=ValueType.SET
         )
 
+        self.add_property(
+            descr='FreeNAS peer token lifetime',
+            name='freenas_token_lifetime',
+            get='freenas_token_lifetime',
+            type=ValueType.NUMBER,
+            usage=_("""\
+            Period of validity of one time authentication tokens
+            used by peers of a type 'freenas'.
+            This value is expressed in seconds."""),
+        )
+
 
 @description("Configuration database operations")
 class ConfigDbNamespace(Namespace):

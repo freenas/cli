@@ -7,6 +7,7 @@ idna==2.1
 jsonschema==2.5.1
 natural==0.2.0
 paramiko==2.0.2
+rollbar==0.13.6
 ply==3.8
 pyasn1==0.1.9
 pycparser==2.14

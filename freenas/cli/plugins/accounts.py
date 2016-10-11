@@ -69,7 +69,7 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
         self.update_task = 'user.update'
         self.delete_task = 'user.delete'
         self.save_key_name = 'id'
-        self.required_props = ['username', ['password', 'password_disabled']]
+        self.required_props = ['name', ['password', 'password_disabled']]
         self.extra_query_params = [['or', [('builtin', '=', False), ('username', '=', 'root')]]]
 
         if not UsersNamespace.shells:

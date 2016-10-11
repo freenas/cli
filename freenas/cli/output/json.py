@@ -55,6 +55,9 @@ class JsonOutputFormatter(object):
         if vt == ValueType.ARRAY:
             return list(value)
 
+        if vt == ValueType.PASSWORD:
+            return "*****"
+
         return json.dumps(value)
 
     @staticmethod

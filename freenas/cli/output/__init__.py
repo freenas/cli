@@ -61,6 +61,7 @@ class ValueType(enum.Enum):
     DICT = 10
     PERMISSIONS = 11
     ARRAY = 12
+    PASSWORD = 13
 
 
 class Object(list):
@@ -339,6 +340,9 @@ def read_value(value, tv=ValueType.STRING):
         if isinstance(value, str):
             value = string_to_int(value)
         return get_unix_permissions(value)
+
+    if tv == ValueType.PASSWORD:
+        return str(value)
 
     raise ValueError(_("Invalid value '{0}', expected {1} value".format(value, str(tv).split('ValueType.')[-1].lower())))
 

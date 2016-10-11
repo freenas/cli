@@ -38,6 +38,9 @@ class PythonOutputFormatter(object):
         if vt == ValueType.BOOLEAN:
             value = bool(value)
 
+        if vt == ValueType.PASSWORD:
+            return "*****"
+
         return value
 
     @staticmethod

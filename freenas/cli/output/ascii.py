@@ -142,6 +142,9 @@ class AsciiOutputFormatter(object):
 
             return time.strftime(fmt, time.localtime(value))
 
+        if vt == ValueType.PASSWORD:
+            return "*****"
+
     @staticmethod
     def columnize(data):
         columnizer = Columnizer()

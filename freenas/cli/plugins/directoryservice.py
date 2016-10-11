@@ -316,6 +316,26 @@ class LDAPPropertiesNamespace(BaseDirectoryPropertiesNamespace):
             get='group_suffix',
         )
 
+        self.add_property(
+            descr='Encryption',
+            name='encryption',
+            get='encryption',
+            enum=['OFF', 'SSL', 'TLS']
+        )
+
+        self.add_property(
+            descr='CA/Certificate',
+            name='certificate',
+            get='certificate'
+        )
+
+        self.add_property(
+            descr='Verify certificate',
+            name='verify_certificate',
+            get='verify_certificate',
+            type=ValueType.BOOLEAN
+        )
+
 
 class KerberosNamespace(Namespace):
     def __init__(self, name, context):

@@ -36,6 +36,7 @@ from freenas.cli.complete import NullComplete, EnumComplete, EntitySubscriberCom
 from freenas.cli.output import Table, ValueType, output_tree, format_value, read_value, Sequence
 from freenas.cli.utils import TaskPromise, EntityPromise, post_save, iterate_vdevs, vdev_by_path, mirror_by_path
 from freenas.cli.utils import to_list, correct_disk_path, get_related, set_related
+from freenas.utils import query as q
 
 t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
@@ -1158,7 +1159,7 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
         }
 
         if this.entity:
-            if this.entity['properties']['readonly']['parsed']:
+            if q.get(this.entity, 'properties.readonly.parsed'):
                 if this.entity['mounted']:
                     commands['unpeek'] = UnpeekCommand(this)
                 else:

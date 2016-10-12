@@ -641,7 +641,7 @@ class ItemNamespace(Namespace):
         raise NotImplementedError()
 
     def wait(self):
-        raise NotImplementedError()
+        pass
 
     def save(self):
         raise NotImplementedError()

@@ -967,6 +967,7 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
             name='type',
             get='type',
             list=True,
+            enum=['FILESYSTEM', 'VOLUME'],
             usage=_("The type of dataset (can be either FILESYSTEM which is a basic ZFS dataset or a VOLUME which is a ZVOL")
         )
 

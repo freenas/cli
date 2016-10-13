@@ -26,9 +26,7 @@
 #####################################################################
 
 import gettext
-import json
-from pathlib import Path, PurePath
-from bson import json_util
+from pathlib import Path
 from freenas.cli.namespace import (
     Namespace, ConfigNamespace, Command, CommandException, description,
     RpcBasedLoadMixin, EntityNamespace, TaskBasedSaveMixin

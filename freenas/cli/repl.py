@@ -270,6 +270,7 @@ class VariableStore(object):
             'abort_on_errors': self.Variable(False, ValueType.BOOLEAN),
             'output': self.Variable(None, ValueType.STRING),
             'verbosity': self.Variable(1, ValueType.NUMBER),
+            'rollbar_enabled': self.Variable(True, ValueType.BOOLEAN),
             'vm.console_interrupt': self.Variable(r'\035', ValueType.STRING),
             'cli_src_path': self.Variable(
                 os.path.dirname(os.path.realpath(__file__)), ValueType.STRING, None, True
@@ -287,6 +288,7 @@ class VariableStore(object):
             'abort_on_errors': _('Can be set to yes or no. When set to yes, command execution will abort on command errors.'),
             'output': _('Either send all output to specified file or set to \'none\' to display output on the console.'),
             'verbosity': _('Increasing verbosity of event messages. Can be set from 1 to 5.'),
+            'rollbar_enabled': _('Toggle rollbar error reporting. Can be set to yes or no.'),
             'vm.console_interrupt': _(r'Set the console interrupt key sequence for virtual machines with support for octal characters of the form \nnn. Default is ^] or octal 035.'),
             'cli_src_path': _('The absolute path of the cli source code on this machine')
         }
@@ -576,7 +578,8 @@ class Context(object):
                 plugin._init(self)
                 self.plugins[path] = plugin
         except Exception:
-            rollbar.report_exc_info()
+            if self.variables.get('rollbar_enabled'):
+                rollbar.report_exc_info()
             raise
 
     def __try_reconnect(self):
@@ -1643,13 +1646,15 @@ class MainLoop(object):
             if self.context.variables.get('debug'):
                 output_msg(e.stacktrace)
         except RpcException as e:
+            if self.context.variables.get('rollbar_enabled'):
+                rollbar.report_exc_info()
             self.context.logger.error(str(e))
-            rollbar.report_exc_info()
             output_msg(_('RpcException Error: {0}'.format(str(e))))
         except SystemExit as e:
             sys.exit(e)
         except Exception as e:
-            rollbar.report_exc_info()
+            if self.context.variables.get('rollbar_enabled'):
+                rollbar.report_exc_info()
             output_msg(_('Unexpected Error: {0}'.format(str(e))))
             error_trace = traceback.format_exc()
             self.context.logger.error(error_trace)

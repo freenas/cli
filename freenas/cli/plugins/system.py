@@ -25,6 +25,10 @@
 #
 #####################################################################
 
+import gettext
+import json
+from pathlib import Path, PurePath
+from bson import json_util
 from freenas.cli.namespace import (
     Namespace, ConfigNamespace, Command, CommandException, description,
     RpcBasedLoadMixin, EntityNamespace, TaskBasedSaveMixin
@@ -32,7 +36,8 @@ from freenas.cli.namespace import (
 from freenas.cli.output import Object, Sequence, ValueType, format_value
 from freenas.cli.descriptions import events
 from freenas.cli.utils import EntityPromise, post_save, parse_timedelta
-import gettext
+from freenas.cli.complete import NullComplete
+from freenas.dispatcher.fd import FileDescriptor
 
 t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
@@ -234,6 +239,60 @@ class FactoryRestoreCommand(Command):
 
     def run(self, context, args, kwargs, opargs):
         context.call_task_sync('database.factory_restore')
+
+
+@description("Stores FreeNAS config to a file")
+class DownloadConfigCommand(Command):
+    """
+    Usage: download path=/abs/path/to/target/file
+
+    Examples: / system config download path=/mnt/mypool/mydir/myconfig.db
+
+    Stores FreeNAS configuration database to the selected file.
+    """
+
+    def run(self, context, args, kwargs, opargs):
+        if not kwargs:
+            raise CommandException(_("Download requires more arguments. For help see 'help download'"))
+        if 'path' not in kwargs:
+            raise CommandException(_("Please specify path to the target config file."
+                                     "For help see 'help download'"))
+
+        p = Path(kwargs['path'])
+        with p.open('w') as fd:
+            context.call_task_sync('database.dump', FileDescriptor(fd.fileno()))
+
+    def complete(self, context, **kwargs):
+        return [
+            NullComplete('path='),
+        ]
+
+
+@description("Restores FreeNAS config from a file")
+class UploadConfigCommand(Command):
+    """
+    Usage: upload path=/abs/path/to/source/file
+
+    Examples: / system config upload path=/mnt/mypool/mydir/myconfig.db
+
+    Restores FreeNAS configuration database from the selected file.
+    """
+
+    def run(self, context, args, kwargs, opargs):
+        if not kwargs:
+            raise CommandException(_("Upload requires more arguments. For help see 'help upload'"))
+        if 'path' not in kwargs:
+            raise CommandException(_("Please specify path to the source config file."
+                                     "For help see 'help upload'"))
+
+        p = Path(kwargs['path'])
+        with p.open('r') as fd:
+            context.call_task_sync('database.restore', FileDescriptor(fd.fileno()))
+
+    def complete(self, context, **kwargs):
+        return [
+            NullComplete('path='),
+        ]
 
 
 class SystemDatasetImportCommand(Command):
@@ -744,6 +803,8 @@ class ConfigDbNamespace(Namespace):
     def commands(self):
         return {
             'factory_restore': FactoryRestoreCommand(),
+            #'download': DownloadConfigCommand(),
+            #'upload': UploadConfigCommand(),
         }
 
 

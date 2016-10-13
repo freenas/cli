@@ -275,16 +275,21 @@ class BootPoolShowCommand(Command):
     Examples: show
     """
     def run(self, context, args, kwargs, opargs):
-        volume = context.call_sync('boot.pool.get_config')['properties']
+        volume = context.call_sync('boot.pool.get_config')
         result = [
-            {'free': volume['free']['value'],
-             'occupied': volume['allocated']['value'],
-             'total': volume['size']['value']}
+            {'free': volume['properties']['free']['value'],
+             'occupied': volume['properties']['allocated']['value'],
+             'total': volume['properties']['size']['value'],
+             'last_scrub_time': volume['scan']['end_time'],
+             'last_scrub_errors': volume['scan']['errors']}
         ]
         return Table(result, [
             Table.Column('Total size', 'total', ValueType.STRING),
             Table.Column('Occupied space', 'occupied', ValueType.STRING),
             Table.Column('Free space', 'free', ValueType.STRING),
+            Table.Column('Last scrub time', 'last_scrub_time', ValueType.STRING),
+            Table.Column('Last scrub errors', 'last_scrub_errors', ValueType.STRING),
+
         ])
 
 

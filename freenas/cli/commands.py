@@ -1018,9 +1018,7 @@ class WaitCommand(Command):
             except KeyError:
                 pass
         if tid is None:
-            raise CommandException(_(
-                'No recently submitted tasks (which are still active) found'
-            ))
+            return 'No recently submitted tasks (which are still active) found'
 
         return context.wait_for_task_with_progress(tid)
 

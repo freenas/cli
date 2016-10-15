@@ -132,7 +132,7 @@ class CalendarTasksNamespaceBaseClass(EntitySubscriberBasedLoadMixin, TaskBasedS
         self.required_props = ['name']
         self.task_args_helper = []
         self.skeleton_entity = {
-            'enabled': False,
+            'enabled': True,
             'args': [],
         }
         self.primary_key_name = 'name'

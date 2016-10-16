@@ -31,7 +31,6 @@ import sys
 import signal
 import select
 import readline
-import six
 import gettext
 import platform
 import textwrap

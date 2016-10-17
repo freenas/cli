@@ -146,16 +146,6 @@ class FreeNASPeerListTokensCommand(Command):
         )
 
 
-class BasePeerNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):
-    def __init__(self, name, type_name, context):
-        super(BasePeerNamespace, self).__init__(name, context)
-
-        self.context = context
-        self.type_name = type_name
-        self.entity_subscriber_name = 'peer'
-        self.extra_query_params = [('type', '=', type_name)]
-
-
 @description(_("Manage FreeNAS peers"))
 class FreeNASPeerNamespaceMixin(BaseVariantMixin):
     def add_properties(self):

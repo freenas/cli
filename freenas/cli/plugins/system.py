@@ -257,8 +257,8 @@ class DownloadConfigCommand(Command):
                                      "For help see 'help download'"))
 
         p = Path(kwargs['path'])
-        with p.open('w') as fd:
-            context.call_task_sync('database.dump', FileDescriptor(fd.fileno()))
+        with p.open('w') as fo:
+            context.call_task_sync('database.dump', FileDescriptor(fd=fo.fileno(), close=False))
 
     def complete(self, context, **kwargs):
         return [
@@ -284,8 +284,8 @@ class UploadConfigCommand(Command):
                                      "For help see 'help upload'"))
 
         p = Path(kwargs['path'])
-        with p.open('r') as fd:
-            context.call_task_sync('database.restore', FileDescriptor(fd.fileno()))
+        with p.open('r') as fo:
+            context.call_task_sync('database.restore', FileDescriptor(fd=fo.fileno(), close=False))
 
     def complete(self, context, **kwargs):
         return [

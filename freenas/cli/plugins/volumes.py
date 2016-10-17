@@ -745,7 +745,11 @@ class ReplicateCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
+        if 'peer' not in kwargs:
+            raise CommandException(_('You have to specify a target FreeNAS peer'))
         peer = kwargs.pop('peer')
+        if 'remote_dataset' not in kwargs:
+            raise CommandException(_('You have to specify a target dataset'))
         remote_dataset = kwargs.pop('remote_dataset')
         dry_run = read_value(kwargs.pop('dry_run', 'no'), ValueType.BOOLEAN)
         recursive = read_value(kwargs.pop('recursive', 'no'), ValueType.BOOLEAN)

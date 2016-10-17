@@ -29,7 +29,7 @@ import gettext
 from freenas.cli.output import Sequence
 from freenas.cli.namespace import (
     EntityNamespace, Command, NestedObjectLoadMixin, NestedObjectSaveMixin, EntitySubscriberBasedLoadMixin,
-    RpcBasedLoadMixin, TaskBasedSaveMixin, description, CommandException, ConfigNamespace
+    RpcBasedLoadMixin, TaskBasedSaveMixin, description, CommandException, ConfigNamespace, BaseVariantMixin
 )
 from freenas.cli.output import ValueType, get_humanized_size
 from freenas.cli.utils import TaskPromise, post_save, EntityPromise
@@ -171,7 +171,7 @@ class ImportVMCommand(Command):
         if not volume:
             raise CommandException(_("Please specify which volume is containing a VM being imported."))
 
-        tid = context.submit_task('vm.import', name, volume, callback=lambda s, t: post_save(self.parent, s, t))
+        tid = context.submit_task('vm.import', name, volume, callback=lambda s, t: post_save(self.parent, t))
         return EntityPromise(context, tid, self.parent)
 
 
@@ -464,132 +464,14 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
         return commands
 
 
-class VMDeviceNamespace(NestedObjectLoadMixin, EntityNamespace):
-    """
-    VM Device namespace contains sub-namespaces for each of available VM Device types
-    """
-    def __init__(self, name, context, parent):
-        def get_humanized_summary(o):
-            return self.humanized_summaries[o['type']](o)
-
-        super(VMDeviceNamespace, self).__init__(name, context)
-        self.parent = parent
-        self.parent_path = 'devices'
-        self.allow_create = False
-        self.extra_query_params = [('type', 'in', ('GRAPHICS', 'CDROM', 'NIC', 'USB', 'DISK'))]
-        self.has_entities_in_subnamespaces_only = True
-
-        self.humanized_summaries = {
-            'DISK': VMDeviceDiskNamespace.get_humanized_summary,
-            'CDROM': VMDeviceCdromNamespace.get_humanized_summary,
-            'NIC': VMDeviceNicNamespace.get_humanized_summary,
-            'USB': VMDeviceUsbNamespace.get_humanized_summary,
-            'GRAPHICS': VMDeviceGraphicsNamespace.get_humanized_summary
-        }
-
-        self.localdoc['ListCommand'] = ("""\
-            Usage: show
-
-            Lists all VM devices of all types. Optionally, filter or sort by property.
-
-            Examples:
-                show
-                show | search name == foo""")
-
-        self.add_property(
-            descr='Device type',
-            name='type',
-            get=lambda obj: obj['type'].lower(),
-            set=None,
-            usage=_("Type of VM device (i.e. DISK, CDROM, USB, etc.)")
-        )
-
-        self.add_property(
-            descr='Device name',
-            name='name',
-            get='name',
-            set=None,
-            usage=_("Name of the device")
-        )
-
-        self.add_property(
-            descr="Device summary",
-            name='device_summary',
-            get=get_humanized_summary,
-            set=None,
-            usage=_("Brief Summary of the VM device")
-        )
-
-    def load(self):
-        pass
-
-    def namespaces(self):
-        return [
-            VMDeviceGraphicsNamespace('graphics', self.context, self.parent),
-            VMDeviceUsbNamespace('usb', self.context, self.parent),
-            VMDeviceNicNamespace('nic', self.context, self.parent),
-            VMDeviceDiskNamespace('disk', self.context, self.parent),
-            VMDeviceCdromNamespace('cdrom', self.context, self.parent)
-        ]
-
-
-class VMDeviceNamespaceBaseClass(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNamespace):
-    def __init__(self, name, context, parent):
-        super(VMDeviceNamespaceBaseClass, self).__init__(name, context)
-        self.parent = parent
-        self.primary_key_name = 'name'
-        self.parent_path = 'devices'
-        self.required_props = ['name']
-        self.skeleton_entity = {
-            'properties': {}
-        }
-
-        self.entity_localdoc['DeleteEntityCommand'] = ("""\
-                    Usage: delete
-
-                    Deletes the specified device.""")
-
-        self.localdoc['ListCommand'] = ("""\
-            Usage: show
-
-            Lists all VM devices of given type. Optionally, filter or sort by property.
-            Use 'help properties' to list available properties.
-
-            Examples:
-                show
-                show | search name == foo""")
-
-        self.add_property(
-            descr='Device name',
-            name='name',
-            get='name',
-            set='name',
-            usage=_("Name of the device")
-        )
-
-        self.primary_key = self.get_mapping('name')
-
-    def save(self, this, new=False):
-        types = {
-            'DISK': 'vm-device-disk',
-            'CDROM': 'vm-device-cdrom',
-            'NIC': 'vm-device-nic',
-            'USB': 'vm-device-usb',
-            'GRAPHICS': 'vm-device-graphics'
-        }
-
-        if new:
-            this.entity['properties']['%type'] = types[this.entity['type']]
-
-        super(VMDeviceNamespaceBaseClass, self).save(this, new)
-
-
-class VMDeviceGraphicsNamespace(VMDeviceNamespaceBaseClass):
+class VMDeviceGraphicsPropertiesMixin(BaseVariantMixin):
     """
     The VM Device Graphics namespace provides commands for managing graphics resources
     available on selected virtual machine
     """
-    def __init__(self, name, context, parent):
+    def add_properties(self):
+        super(VMDeviceGraphicsPropertiesMixin, self).add_properties()
+
         def set_resolution(o, v):
             if 'properties' in o:
                 o['properties'].update({'resolution': '{0}x{1}'.format(v[0], v[1])})
@@ -604,26 +486,12 @@ class VMDeviceGraphicsNamespace(VMDeviceNamespaceBaseClass):
             else:
                 obj.update({'properties': {'vnc_port': '{0}'.format(val)}})
 
-        super(VMDeviceGraphicsNamespace, self).__init__(name, context, parent)
-        self.extra_query_params = [('type', 'in', 'GRAPHICS')]
-        self.required_props.extend(['resolution'])
-        self.skeleton_entity['type'] = 'GRAPHICS'
-
-        self.localdoc['CreateEntityCommand'] = ("""\
-                   Usage: create name=<device-name> property=<value>
-
-                   Examples:
-                       create name=framebuffer resolution=1280x1024
-
-                   Creates device with selected properties.
-                   For full list of propertise type 'help properties'""")
-
         self.add_property(
             descr='Framebuffer resolution',
-            name='resolution',
+            name='graphics_resolution',
             get=lambda o: list(o['properties']['resolution'].split('x')),
             set=set_resolution,
-            list=True,
+            list=False,
             type=ValueType.ARRAY,
             enum=[
                 [1920, 1200],
@@ -636,26 +504,31 @@ class VMDeviceGraphicsNamespace(VMDeviceNamespaceBaseClass):
                 [800, 600],
                 [640, 480]
             ],
-            usage=_("Resolution of the graphics device attached to the VM (example: 1024x768)")
+            usage=_("Resolution of the graphics device attached to the VM (example: 1024x768)"),
+            condition=lambda o: o['type'] == 'GRAPHICS',
         )
 
         self.add_property(
             descr='VNC server enabled',
-            name='vnc_enabled',
+            name='graphics_vnc_enabled',
             get='properties.vnc_enabled',
-            list=True,
+            list=False,
             type=ValueType.BOOLEAN,
-            usage=_("Flag controlling wether the VNC server to VM's framebuffer is enabled or not")
+            usage=_("Flag controlling wether the VNC server to VM's framebuffer is enabled or not"),
+            condition=lambda o: o['type'] == 'GRAPHICS',
         )
 
         self.add_property(
             descr='VNC server port',
-            name='vnc_port',
+            name='graphics_vnc_port',
             get='properties.vnc_port',
-            list=True,
+            list=False,
             set=set_vnc_port,
             type=ValueType.NUMBER,
-            usage=_("Port to be used for the VNC server (if enabled) of VM. Please ensure a uniqure port number (one that is not already in use)")
+            usage=_(
+                "Port to be used for the VNC server (if enabled) of VM. "
+                "Please ensure a uniqure port number (one that is not already in use)"),
+            condition=lambda o: o['type'] == 'GRAPHICS',
         )
 
     @staticmethod
@@ -663,33 +536,22 @@ class VMDeviceGraphicsNamespace(VMDeviceNamespaceBaseClass):
         return "VGA device with resolution {0}".format(get(o, 'properties.resolution'))
 
 
-class VMDeviceUsbNamespace(VMDeviceNamespaceBaseClass):
+class VMDeviceUsbPropertiesMixin(BaseVariantMixin):
     """
     The VM Device Usb namespace provides commands for managing USB resources
     available on selected virtual machine
     """
-    def __init__(self, name, context, parent):
-        super(VMDeviceUsbNamespace, self).__init__(name, context, parent)
-        self.extra_query_params = [('type', 'in', 'USB')]
-        self.required_props.extend(['device_type'])
-        self.skeleton_entity['type'] = 'USB'
-
-        self.localdoc['CreateEntityCommand'] = ("""\
-                   Usage: create name=<device-name> property=<value>
-
-                   Examples:
-                       create name=mytablet device_type=tablet
-
-                   Creates device with selected properties.
-                   For full list of propertise type 'help properties'""")
+    def add_properties(self):
+        super(VMDeviceUsbPropertiesMixin, self).add_properties()
 
         self.add_property(
             descr='Emulated device type',
-            name='device_type',
+            name='usb_device_type',
             get='properties.device',
             enum=['tablet'],
-            list=True,
-            usage=_("Type of emulated usb device (currently only 'tablet' is supported)")
+            list=False,
+            usage=_("Type of emulated usb device (currently only 'tablet' is supported)"),
+            condition=lambda o: o['type'] == 'USB',
         )
 
     @staticmethod
@@ -697,49 +559,39 @@ class VMDeviceUsbNamespace(VMDeviceNamespaceBaseClass):
         return "USB {0} device".format(get(o, 'properties.device'))
 
 
-class VMDeviceNicNamespace(VMDeviceNamespaceBaseClass):
+class VMDeviceNicPropertiesMixin(BaseVariantMixin):
     """
     The VM Device Nic namespace provides commands for managing NIC resources
     available on selected virtual machine
     """
-    def __init__(self, name, context, parent):
-        super(VMDeviceNicNamespace, self).__init__(name, context, parent)
-        self.extra_query_params = [('type', 'in', 'NIC')]
-        self.required_props.extend(['mode', 'device_type'])
-        self.skeleton_entity['type'] = 'NIC'
-
-        self.localdoc['CreateEntityCommand'] = ("""\
-                   Usage: create name=<device-name> property=<value>
-
-                   Examples:
-                       create name=mynic mode=NAT device_type=E1000
-
-                   Creates device with selected properties.
-                   For full list of propertise type 'help properties'""")
+    def add_properties(self):
+        super(VMDeviceNicPropertiesMixin, self).add_properties()
 
         self.add_property(
             descr='NIC mode',
-            name='mode',
+            name='nic_mode',
             get='properties.mode',
             enum=['NAT', 'BRIDGED', 'MANAGEMENT'],
-            list=True,
-            usage=_("Mode of NIC device [NAT|BRIDGED|MANAGEMENT]")
+            list=False,
+            usage=_("Mode of NIC device [NAT|BRIDGED|MANAGEMENT]"),
+            condition=lambda o: o['type'] == 'NIC',
         )
 
         self.add_property(
             descr='Emulated device type',
-            name='device_type',
+            name='nic_device_type',
             get='properties.device',
             enum=['VIRTIO', 'E1000', 'NE2K'],
-            list=True,
-            usage=_("The type of virtual NIC emulation [VIRTIO|E1000|NE2K]")
+            list=False,
+            usage=_("The type of virtual NIC emulation [VIRTIO|E1000|NE2K]"),
+            condition=lambda o: o['type'] == 'NIC',
         )
 
         self.add_property(
             descr='Bridge with',
-            name='bridge',
+            name='nic_bridge',
             get='properties.bridge',
-            list=True,
+            list=False,
             complete=MultipleSourceComplete(
                 'bridge=', (
                     EntitySubscriberComplete('bridge=', 'network.interface', lambda i: i['id']),
@@ -747,15 +599,17 @@ class VMDeviceNicNamespace(VMDeviceNamespaceBaseClass):
                 ),
                 extra=['default']
             ),
-            usage=_("The interface to bridge NIC device with (if this NIC device is in BRIDGED mode)")
+            usage=_("The interface to bridge NIC device with (if this NIC device is in BRIDGED mode)"),
+            condition=lambda o: o['type'] == 'NIC',
         )
 
         self.add_property(
             descr='MAC address',
-            name='macaddr',
+            name='nic_macaddr',
             get='properties.link_address',
-            list=True,
-            usage=_("Mac address of NIC device")
+            list=False,
+            usage=_("Mac address of NIC device"),
+            condition=lambda o: o['type'] == 'NIC',
         )
 
     @staticmethod
@@ -766,42 +620,32 @@ class VMDeviceNicNamespace(VMDeviceNamespaceBaseClass):
         return "{0} NIC".format(get(o, 'properties.device'))
 
 
-class VMDeviceDiskNamespace(VMDeviceNamespaceBaseClass):
+class VMDeviceDiskPropertiesMixin(BaseVariantMixin):
     """
     The VM Device Disk namespace provides commands for managing disk resources
     available on selected virtual machine
     """
-    def __init__(self, name, context, parent):
-        super(VMDeviceDiskNamespace, self).__init__(name, context, parent)
-        self.extra_query_params = [('type', 'in', ('DISK'))]
-        self.required_props.extend(['mode', 'size'])
-        self.skeleton_entity['type'] = 'DISK'
-
-        self.localdoc['CreateEntityCommand'] = ("""\
-                   Usage: create name=<device-name> property=<value>
-
-                   Examples:
-                       create name=mydisk mode=AHCI size=1G
-
-                   Creates device with selected properties.
-                   For full list of propertise type 'help properties'""")
+    def add_properties(self):
+        super(VMDeviceDiskPropertiesMixin, self).add_properties()
 
         self.add_property(
             descr='Disk mode',
-            name='mode',
+            name='disk_mode',
             get='properties.mode',
             enum=['AHCI', 'VIRTIO'],
-            list=True,
-            usage=_("The virtual disk emulation mode [AHCI|VIRTIO]")
+            list=False,
+            usage=_("The virtual disk emulation mode [AHCI|VIRTIO]"),
+            condition=lambda o: o['type'] == 'DISK',
         )
 
         self.add_property(
             descr='Disk size',
-            name='size',
+            name='disk_size',
             get='properties.size',
             type=ValueType.SIZE,
-            list=True,
-            usage=_("States the size of the disk")
+            list=False,
+            usage=_("States the size of the disk"),
+            condition=lambda o: o['type'] == 'DISK',
         )
 
     @staticmethod
@@ -812,37 +656,127 @@ class VMDeviceDiskNamespace(VMDeviceNamespaceBaseClass):
         )
 
 
-class VMDeviceCdromNamespace(VMDeviceNamespaceBaseClass):
+class VMDeviceCdromPropertiesMixin(BaseVariantMixin):
     """
     The VM Device Cdrom namespace provides commands for managing cdrom device resources
     available on selected virtual machine
     """
-    def __init__(self, name, context, parent):
-        super(VMDeviceCdromNamespace, self).__init__(name, context, parent)
-        self.extra_query_params = [('type', 'in', ('CDROM'))]
-        self.required_props.extend(['image_path'])
-        self.skeleton_entity['type'] = 'CDROM'
-
-        self.localdoc['CreateEntityCommand'] = ("""\
-                   Usage: create name=<device-name> property=<value>
-
-                   Examples:
-                       create name=mycdrom image_path=/path/to/image
-
-                   Creates device with selected properties.
-                   For full list of propertise type 'help properties'""")
-
+    def add_properties(self):
         self.add_property(
             descr='Image path',
-            name='image_path',
+            name='cdrom_image_path',
             get='properties.path',
-            list=True,
-            usage=_("The path on the filesystem where the image file(iso, img, etc.) for this CDROM device lives")
+            list=False,
+            usage=_("The path on the filesystem where the image file(iso, img, etc.) for this CDROM device lives"),
+            condition=lambda o: o['type'] == 'CDROM',
         )
 
     @staticmethod
     def get_humanized_summary(o):
         return "CDROM with image: {0}".format(get(o, 'properties.path'))
+
+
+class VMDeviceNamespace(
+    NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNamespace,
+    VMDeviceGraphicsPropertiesMixin, VMDeviceDiskPropertiesMixin,
+    VMDeviceUsbPropertiesMixin, VMDeviceNicPropertiesMixin, VMDeviceCdromPropertiesMixin,
+    BaseVariantMixin
+):
+    """
+    VM Device namespace contains sub-namespaces for each of available VM Device types
+    """
+    def __init__(self, name, context, parent):
+        def get_humanized_summary(o):
+            return self.humanized_summaries[o['type']](o)
+
+        super(VMDeviceNamespace, self).__init__(name, context)
+        self.primary_key_name = 'name'
+        self.parent = parent
+        self.parent_path = 'devices'
+        self.required_props.append('name')
+        self.skeleton_entity = {
+            'name': None,
+            'type': None,
+            'properties': {},
+        }
+
+        self.humanized_summaries = {
+            'DISK': VMDeviceDiskPropertiesMixin.get_humanized_summary,
+            'CDROM': VMDeviceCdromPropertiesMixin.get_humanized_summary,
+            'NIC': VMDeviceNicPropertiesMixin.get_humanized_summary,
+            'USB': VMDeviceUsbPropertiesMixin.get_humanized_summary,
+            'GRAPHICS': VMDeviceGraphicsPropertiesMixin.get_humanized_summary
+        }
+
+        self.localdoc['CreateEntityCommand'] = ("""\
+                   Usage: create name=<device-name> property=<value>
+
+                   Examples:
+                       create name=framebuffer type=GRAPHICS graphics_resolution=1280,1024
+                       create name=mynic type=NIC nic_mode=NAT nic_device_type=E1000
+                       create name=mydisk type=DISK disk_mode=AHCI disk_size=1G
+                       create name=mycdrom type=CDROM cdrom_image_path=/path/to/image
+                       create name=mytablet type=USB usb_device_type=tablet
+
+                   Creates device with selected properties.
+                   For full list of propertise type 'help properties'""")
+
+        self.entity_localdoc['DeleteEntityCommand'] = ("""\
+                    Usage: delete
+
+                    Deletes the specified device.""")
+
+        self.localdoc['ListCommand'] = ("""\
+            Usage: show
+
+            Lists all VM devices. Optionally, filter or sort by property.
+
+            Examples:
+                show
+                show | search name == foo""")
+
+        self.add_property(
+            descr='Device name',
+            name='name',
+            get='name',
+            set='name',
+            list=True,
+            usage=_("The path on the filesystem where the image file(iso, img, etc.) for this CDROM device lives")
+        )
+
+        self.add_property(
+            descr='Device type',
+            name='type',
+            get='type',
+            set='type',
+            list=True,
+            enum=['GRAPHICS', 'NIC', 'DISK', 'CDROM', 'USB']
+        )
+
+        self.add_property(
+            descr="Device summary",
+            name='device_summary',
+            get=get_humanized_summary,
+            set=None,
+            list=True,
+        )
+
+        self.add_properties()
+        self.primary_key = self.get_mapping('name')
+
+    def save(self, this, new=False):
+        types = {
+            'DISK': 'vm-device-disk',
+            'CDROM': 'vm-device-cdrom',
+            'NIC': 'vm-device-nic',
+            'USB': 'vm-device-usb',
+            'GRAPHICS': 'vm-device-graphics'
+        }
+
+        if new:
+            this.entity['properties']['%type'] = types[this.entity['type']]
+
+        return super(VMDeviceNamespace, self).save(this, new)
 
 
 class VMVolumeNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNamespace):
@@ -1247,13 +1181,11 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
 
         self.primary_key = self.get_mapping('name')
         self.entity_commands = self.get_entity_commands
-        self.extra_commands = {
-            'flush_cache': FlushCacheCommand(self)
-        }
 
     def get_entity_commands(self, this):
         this.load() if hasattr(this, 'load') else None
         commands = {
+            'download': DownloadImagesCommand(this),
             'readme': ReadmeCommand(this, 'template')
         }
 
@@ -1262,10 +1194,8 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
             if template:
                 if template.get('cached', False):
                     commands['delete_cache'] = DeleteImagesCommand(this)
-                else:
-                    commands['download'] = DownloadImagesCommand(this)
 
-                if template.get('source') != 'github':
+                if template.get('driver') != 'git':
                     commands['delete'] = DeleteTemplateCommand(this)
 
         return commands
@@ -1284,11 +1214,7 @@ class DownloadImagesCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs, filtering=None):
-        tid = context.submit_task(
-            'vm.cache.update',
-            self.parent.entity['template']['name'],
-            callback=lambda s, t: post_save(self.parent, s, t)
-        )
+        tid = context.submit_task('vm.cache.update', self.parent.entity['template']['name'])
         return TaskPromise(context, tid)
 
 
@@ -1322,31 +1248,7 @@ class DeleteImagesCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs, filtering=None):
-        tid = context.submit_task(
-            'vm.cache.delete',
-            self.parent.entity['template']['name'],
-            callback=lambda s, t: post_save(self.parent, s, t)
-        )
-        return TaskPromise(context, tid)
-
-
-@description("Deletes all VM images from the local cache")
-class FlushCacheCommand(Command):
-    """
-    Usage: flush_cache
-
-    Examples: flush_cache
-
-    Deletes all VM template images from the local cache.
-    """
-    def __init__(self, parent):
-        self.parent = parent
-
-    def run(self, context, args, kwargs, opargs, filtering=None):
-        tid = context.submit_task(
-            'vm.cache.flush',
-            callback=lambda s, t: post_save(self.parent, s, t)
-        )
+        tid = context.submit_task('vm.cache.delete', self.parent.entity['template']['name'])
         return TaskPromise(context, tid)
 
 

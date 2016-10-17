@@ -328,6 +328,7 @@ class NTPServersNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
             Usage: create <name> address=<address> <property>=<value> ...
 
             Examples: create myntp address=utcnist.colorado.edu
+                      create myntppool address="0.freebsd.pool.ntp.org" pool=true
 
             Adds an NTP server for syncing with. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = _("""\
@@ -455,6 +456,16 @@ class NTPServersNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
                     An integer value that ranges between 17 and 1 plus the min poll value."""),
             list=True,
             type=ValueType.NUMBER
+        )
+
+        self.add_property(
+            descr='Pool',
+            name='pool',
+            get='pool',
+            set='pool',
+            usage=_("""Can be yes or no, determines whether or not the server is a member of an NTP pool."""),
+            list=True,
+            type=ValueType.BOOLEAN
         )
 
         self.primary_key = self.get_mapping('name')

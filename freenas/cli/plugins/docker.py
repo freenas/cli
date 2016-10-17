@@ -502,7 +502,7 @@ class DockerImagePullCommand(Command):
 
     def complete(self, context, **kwargs):
         return [
-            NullComplete('name='),
+            EnumComplete('name=', q.query(DockerImageNamespace.freenas_images, select='name')),
             EntitySubscriberComplete('host=', 'docker.host', lambda d: d['name'])
         ]
 

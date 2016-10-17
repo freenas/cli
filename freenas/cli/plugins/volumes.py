@@ -730,13 +730,13 @@ class ScrubCommand(Command):
 @description("Replicates dataset to another system")
 class ReplicateCommand(Command):
     """
-    Usage: replicate remote=<remote> remote_dataset=<remote_dataset>
+    Usage: replicate peer=<peer> remote_dataset=<remote_dataset>
            dry_run=<yes/no> recursive=<yes/no> follow_delete=<yes/no>
            encrypt=<encrypt> compress=<fast/default/best> throttle=<throttle>
 
-    Example: replicate remote=10.20.0.2 remote_dataset=mypool
-             replicate remote=10.20.0.2 remote_dataset=mypool encrypt=AES128
-             replicate remote=10.20.0.2 remote_dataset=mypool throttle=10MiB
+    Example: replicate peer=10.20.0.2 remote_dataset=mypool
+             replicate peer=freenas-2.local remote_dataset=mypool encrypt=AES128
+             replicate peer=10.20.0.2 remote_dataset=mypool throttle=10MiB
 
     Replicate a dataset to a remote dataset.
     Currently available encryption methods are AES128, AES192 and AES256.
@@ -745,7 +745,11 @@ class ReplicateCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
+        if 'peer' not in kwargs:
+            raise CommandException(_('You have to specify a target FreeNAS peer'))
         peer = kwargs.pop('peer')
+        if 'remote_dataset' not in kwargs:
+            raise CommandException(_('You have to specify a target dataset'))
         remote_dataset = kwargs.pop('remote_dataset')
         dry_run = read_value(kwargs.pop('dry_run', 'no'), ValueType.BOOLEAN)
         recursive = read_value(kwargs.pop('recursive', 'no'), ValueType.BOOLEAN)
@@ -830,6 +834,18 @@ class ReplicateCommand(Command):
         else:
             tid = context.submit_task(*args)
             return TaskPromise(context, tid)
+
+    def complete(self, context, **kwargs):
+        return [
+            EntitySubscriberComplete('peer=', 'peer', lambda o: o['name'] if o['type'] == 'freenas' else None),
+            NullComplete('remote_dataset='),
+            EnumComplete('dry_run=', ['yes', 'no']),
+            EnumComplete('recursive=', ['yes', 'no']),
+            EnumComplete('follow_delete=', ['yes', 'no']),
+            EnumComplete('encrypt=', ['AES128', 'AES192', 'AES256']),
+            EnumComplete('compress=', ['fast', 'default', 'best']),
+            NullComplete('throttle=')
+        ]
 
 
 class OpenFilesCommand(Command):

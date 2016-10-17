@@ -730,13 +730,13 @@ class ScrubCommand(Command):
 @description("Replicates dataset to another system")
 class ReplicateCommand(Command):
     """
-    Usage: replicate remote=<remote> remote_dataset=<remote_dataset>
+    Usage: replicate peer=<peer> remote_dataset=<remote_dataset>
            dry_run=<yes/no> recursive=<yes/no> follow_delete=<yes/no>
            encrypt=<encrypt> compress=<fast/default/best> throttle=<throttle>
 
-    Example: replicate remote=10.20.0.2 remote_dataset=mypool
-             replicate remote=10.20.0.2 remote_dataset=mypool encrypt=AES128
-             replicate remote=10.20.0.2 remote_dataset=mypool throttle=10MiB
+    Example: replicate peer=10.20.0.2 remote_dataset=mypool
+             replicate peer=freenas-2.local remote_dataset=mypool encrypt=AES128
+             replicate peer=10.20.0.2 remote_dataset=mypool throttle=10MiB
 
     Replicate a dataset to a remote dataset.
     Currently available encryption methods are AES128, AES192 and AES256.

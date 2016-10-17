@@ -474,7 +474,8 @@ class TimeNamespace(ConfigNamespace):
             descr='System time',
             name='system_time',
             get='system_time',
-            list=True
+            list=True,
+            type=ValueType.DATE
         )
 
         self.add_property(
@@ -482,7 +483,8 @@ class TimeNamespace(ConfigNamespace):
             name='boot_time',
             get='boot_time',
             set=None,
-            list=True
+            list=True,
+            type=ValueType.TIME
         )
 
 

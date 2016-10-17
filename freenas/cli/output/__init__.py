@@ -62,6 +62,7 @@ class ValueType(enum.Enum):
     PERMISSIONS = 11
     ARRAY = 12
     PASSWORD = 13
+    DATE = 14
 
 
 class Object(list):

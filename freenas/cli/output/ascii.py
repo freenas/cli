@@ -142,6 +142,9 @@ class AsciiOutputFormatter(object):
 
             return time.strftime(fmt, time.localtime(value))
 
+        if vt == ValueType.DATE:
+            return '{:%Y-%m-%d %H:%M:%S}'.format(value)
+
         if vt == ValueType.PASSWORD:
             return "*****"
 

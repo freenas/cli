@@ -31,7 +31,7 @@ from freenas.cli.namespace import (
     Namespace, ConfigNamespace, Command, CommandException, description,
     RpcBasedLoadMixin, EntityNamespace, TaskBasedSaveMixin
 )
-from freenas.cli.output import Object, Sequence, ValueType, format_value
+from freenas.cli.output import Object, Sequence, ValueType, format_value, output_msg
 from freenas.cli.descriptions import events
 from freenas.cli.utils import EntityPromise, post_save, parse_timedelta
 from freenas.cli.complete import NullComplete
@@ -285,6 +285,7 @@ class UploadConfigCommand(Command):
 
         p = Path(kwargs['path'])
         with p.open('r') as fo:
+            output_msg(_('Restoring the Database. Reboot will occur immediately after the restore operation.'))
             context.call_task_sync('database.restore', FileDescriptor(fd=fo.fileno(), close=False))
 
     def complete(self, context, **kwargs):

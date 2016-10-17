@@ -803,8 +803,8 @@ class ConfigDbNamespace(Namespace):
     def commands(self):
         return {
             'factory_restore': FactoryRestoreCommand(),
-            #'download': DownloadConfigCommand(),
-            #'upload': UploadConfigCommand(),
+            'download': DownloadConfigCommand(),
+            'upload': UploadConfigCommand(),
         }
 
 

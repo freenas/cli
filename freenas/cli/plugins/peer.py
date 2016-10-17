@@ -400,7 +400,6 @@ class PeerNamespace(
         self.create_task = 'peer.create'
         self.update_task = 'peer.update'
         self.delete_task = 'peer.delete'
-        self.primary_key_name = 'name'
 
         self.localdoc['CreateEntityCommand'] = ("""\
             Usage: create name=<name> type=<type> [more properties...]

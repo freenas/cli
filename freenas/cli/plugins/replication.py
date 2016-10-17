@@ -430,7 +430,7 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             name='compression',
             get=get_compress,
             set=set_compress,
-            enum=['fast', 'default', 'best'],
+            enum=['no', 'fast', 'default', 'best'],
             list=False,
             usage=_('''\
             Compression algorithm used during replication stream send operation.

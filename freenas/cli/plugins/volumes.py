@@ -835,6 +835,18 @@ class ReplicateCommand(Command):
             tid = context.submit_task(*args)
             return TaskPromise(context, tid)
 
+    def complete(self, context, **kwargs):
+        return [
+            EntitySubscriberComplete('peer=', 'peer', lambda o: o['name'] if o['type'] == 'freenas' else None),
+            NullComplete('remote_dataset='),
+            EnumComplete('dry_run=', ['yes', 'no']),
+            EnumComplete('recursive=', ['yes', 'no']),
+            EnumComplete('follow_delete=', ['yes', 'no']),
+            EnumComplete('encrypt=', ['AES128', 'AES192', 'AES256']),
+            EnumComplete('compress=', ['fast', 'default', 'best']),
+            NullComplete('throttle=')
+        ]
+
 
 class OpenFilesCommand(Command):
     """

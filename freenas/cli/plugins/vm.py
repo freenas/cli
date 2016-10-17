@@ -693,7 +693,7 @@ class VMDeviceNamespace(
         self.primary_key_name = 'name'
         self.parent = parent
         self.parent_path = 'devices'
-        self.required_props.append('name')
+        self.required_props = ['name']
         self.skeleton_entity = {
             'name': None,
             'type': None,

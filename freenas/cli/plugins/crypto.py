@@ -60,7 +60,7 @@ class ImportCertificateCommand(Command):
         import type=CA_EXISTING name=importedFromFiles
         certificate_path=/abs/path/cert.crt privatekey_path=/abs/path/cert.key
     Import by creating empty certificate entry and editing the 'certificate' and 'privatekey' fields:
-        import type=CERT_EXISTING name=importedByCpyPaste certificate_path="" privatekey_path=""
+        import type=CERT_EXISTING name=importedByCpyPaste
         importedByCpyPaste edit certificate
         importedByCpyPaste edit privatekey
     """
@@ -75,12 +75,6 @@ class ImportCertificateCommand(Command):
             raise CommandException(_("Please specify type of the imported Certificate. For help see 'help import'"))
         if 'name' not in kwargs:
             raise CommandException(_("Please specify name of the imported Certificate. For help see 'help import'"))
-        if 'certificate_path' not in kwargs:
-            raise CommandException(_("The 'certificate_path' argument must either be absolute path to certificate file "
-                                     "or an empty string. For help see 'help import'"))
-        if 'privatekey_path' not in kwargs:
-            raise CommandException(_("The 'privatekey_path' argument must either be absolute path to privatekey file "
-                                     "or an empty string. For help see 'help import'"))
 
         context.submit_task(self.parent.import_task, kwargs)
 

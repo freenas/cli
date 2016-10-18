@@ -753,7 +753,7 @@ class ReplicateCommand(Command):
         remote_dataset = kwargs.pop('remote_dataset')
         dry_run = read_value(kwargs.pop('dry_run', 'no'), ValueType.BOOLEAN)
         recursive = read_value(kwargs.pop('recursive', 'no'), ValueType.BOOLEAN)
-        follow_delete = kwargs.pop('follow_delete', False)
+        follow_delete = read_value(kwargs.pop('follow_delete', 'no'), ValueType.BOOLEAN)
         compress = kwargs.pop('compress', None)
         encrypt = kwargs.pop('encrypt', None)
         throttle = kwargs.pop('throttle', None)

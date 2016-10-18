@@ -47,7 +47,9 @@ class CreateSupportTicketCommand(Command):
 
     def run(self, context, args, kwargs, opargs):
         if not kwargs.get('username') or not kwargs.get('password'):
-            raise CommandException('You have to provide a bug tracer password and username in order to submit a ticket')
+            raise CommandException(
+                'You have to provide a bug tracking system password and username in order to submit a ticket'
+            )
 
         if not kwargs.get('subject'):
             raise CommandException(_('You have to provide a subject for a ticket'))
@@ -107,7 +109,7 @@ class SupportNamespace(Namespace):
     If it has, add a comment to the existing issue instead of creating a new one.
     For enterprise-grade storage solutions and support, please visit http://www.ixsystems.com/storage/.
 
-    Please type the bugtracker login and password first.
+    Please type the bug tracking system login and password first.
     """
 
     def __init__(self, name, context):

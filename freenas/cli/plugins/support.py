@@ -66,12 +66,16 @@ class CreateSupportTicketCommand(Command):
         else:
             kwargs['debug'] = True if kwargs.pop('attach_debug_data') == 'yes' else False
 
+        if kwargs.get('attachments') and isinstance(kwargs['attachments'], str):
+            kwargs['attachments'] = [kwargs['attachments']]
+
         kwargs['category'] = self.ticket_categories[kwargs['category']]
 
-        result = context.call_task_sync('support.submit', kwargs)
-
-        if result['result'][0] is not None:
-            return Sequence('Submitted ticket number:{0}. {1}'.format(result['result'][0], result['result'][1]))
+        ticket_result = context.call_task_sync('support.submit', kwargs)
+        if ticket_result.get('result') and ticket_result['result'][0] is not None:
+            return Sequence(
+                'Submitted ticket number:{0}. {1}'.format(ticket_result['result'][0], ticket_result['result'][1])
+            )
 
     def complete(self, context, **kwargs):
         props = []

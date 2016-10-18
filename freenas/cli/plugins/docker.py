@@ -591,16 +591,10 @@ class DockerImageDeleteCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        host = kwargs.get('host')
+        host = kwargs.get('host', None)
         name = q.get(self.parent.entity, 'names.0')
 
-        if not host:
-            tid = context.submit_task(
-                'docker.container.recursive_delete',
-                name,
-                callback=lambda s, t: post_save(self.parent, s, t)
-            )
-        else:
+        if host:
             host = context.call_sync('docker.host.query', [('name', '=', host)], {'single': True, 'select': 'id'})
             if not host:
                 raise CommandException(_('Docker host {0} not found'.format(kwargs.get('host'))))
@@ -611,12 +605,12 @@ class DockerImageDeleteCommand(Command):
                     kwargs.get('host')
                 )))
 
-            tid = context.submit_task(
-                'docker.image.delete',
-                name,
-                host,
-                callback=lambda s, t: post_save(self.parent, s, t)
-            )
+        tid = context.submit_task(
+            'docker.image.delete',
+            name,
+            host,
+            callback=lambda s, t: post_save(self.parent, s, t)
+        )
 
         return TaskPromise(context, tid)
 

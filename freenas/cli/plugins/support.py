@@ -81,17 +81,17 @@ class CreateSupportTicketCommand(Command):
         props = []
         username = q.get(kwargs, 'kwargs.username')
         password = q.get(kwargs, 'kwargs.password')
-
         if username and password:
             if not self.ticket_categories:
                 self.ticket_categories.update(context.call_sync('support.categories', str(username), str(password)))
 
-        props += [EnumComplete('category=', list(self.ticket_categories.keys()))]
-        props += [NullComplete('subject=')]
-        props += [NullComplete('description=')]
-        props += [EnumComplete('type=', ['bug', 'feature'])]
-        props += [EnumComplete('attach_debug_data=', ['yes', 'no'])]
-        props += [NullComplete('attachments=')]
+        if self.ticket_categories:
+            props += [EnumComplete('category=', list(self.ticket_categories.keys()))]
+            props += [NullComplete('subject=')]
+            props += [NullComplete('description=')]
+            props += [EnumComplete('type=', ['bug', 'feature'])]
+            props += [EnumComplete('attach_debug_data=', ['yes', 'no'])]
+            props += [NullComplete('attachments=')]
 
         return props + [
             NullComplete('username='),

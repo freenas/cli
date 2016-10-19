@@ -675,7 +675,7 @@ class DockerContainerCreateCommand(Command):
         env = ['{0}={1}'.format(k, v) for k, v in kwargs.items() if k.isupper()]
         presets = image.get('presets') or {} if image else {}
         ports = presets.get('ports', [])
-        volumes = []
+        volumes = presets.get('static_volumes', [])
 
         for k, v in kwargs.items():
             if k.startswith('volume:'):

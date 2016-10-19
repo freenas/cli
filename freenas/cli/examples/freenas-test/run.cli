@@ -8,10 +8,17 @@ TEST_SET=[ "disk", "volume", "network", "service", "system", "account", "share",
 # Future use - someday this will cause the tests to exit upon any error.
 _exit_on_err=false
 
-# Some constants which will be shared across tests.
-_TEST_VOL=_test_tank
+# Some constants which will be shared across tests, hence "global" - they do not have underscores prepended to their names to
+# designate them as such.
+TEST_VOL=_test_tank
+TEST_USER=_mytestuser
+TEST_GROUP=_mytestgroup
 
 source "common_funcs.cli"
+
+# Set some sensible default options before beginning the test run
+setopt tasks_blocking=yes
+setopt rollbar_enabled=no
 
 # First run all of the create functions.
 for (test in TEST_SET) {

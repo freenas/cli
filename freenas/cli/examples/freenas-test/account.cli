@@ -3,10 +3,20 @@
 
 function account_create() {
 	 print(">>> Starting account tests")
+	 volume ${TEST_VOL} dataset create name=${TEST_VOL + "/home"}
+	 maybe_barf(_success, "account#1", "Unable to create home dataset on volume " + TEST_VOL)
+	 account user create name=${TEST_USER} fullname="My Test User" home=${TEST_VOL + "/home"} password_disabled=yes
+	 maybe_barf(_success, "account#2", "Unable to create user " + TEST_USER)
+	 account group create name=${TEST_GROUP}
+	 maybe_barf(_success, "account#4", "Unable to create group " + TEST_GROUP)
 }
 
 function account_destroy() {
 	 print(">>> Finishing account tests")
+	 account user ${TEST_USER} delete
+	 maybe_barf(_success, "account#5", "Unable to delete user " + TEST_USER)
+	 account group ${TEST_GROUP} delete
+	 maybe_barf(_success, "account#6", "Unable to delete group " + TEST_GROUP)
 }
 
 

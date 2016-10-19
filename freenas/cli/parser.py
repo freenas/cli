@@ -447,11 +447,8 @@ def t_ANY_eof(t):
     if lexer.parens > 0 or lexer.breaknl:
         more = config.instance.ml.input('... ' * (1 if lexer.breaknl else lexer.parens))
         lexer.breaknl = False
-        if more:
-            t.lexer.input(more + '\n')
-            return t.lexer.token()
-
-        return None
+        t.lexer.input(more + '\n')
+        return t.lexer.token()
 
 
 def p_stmt_list(p):

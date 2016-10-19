@@ -8,11 +8,28 @@ TEST_SET=[ "disk", "volume", "network", "service", "system", "account", "share",
 # Future use - someday this will cause the tests to exit upon any error.
 _exit_on_err=false
 
+# Some constants which will be shared across tests.
+_TEST_VOL=_test_tank
+
 source "common_funcs.cli"
 
+# First run all of the create functions.
 for (test in TEST_SET) {
 	source ${test+".cli"}
 	if (_success != true) {
 		print(${test+".cli test script not found"})
+		remove(TEST_SET, test)
+	} else {
+		eval(test + "_create()")
+	}
+}
+
+# Now run all of the destroy (cleanup) functions.
+for (test in TEST_SET) {
+	source ${test+".cli"}
+	if (_success != true) {
+		print(${test+".cli could not be sourced again; something is terribly wrong!"})
+	} else {
+		eval(test + "_destroy()")
 	}
 }

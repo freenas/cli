@@ -1,6 +1,38 @@
 # disk namespace tests
 
-print("Running disk tests.")
-_x=$(disk show)
-maybe_barf(_success, "disk#1", "Unable to find any disks")
+# State variables shared between create and destroy functions.
+_disk_to_fondle=""
+_old_standby=0
 
+function disk_create() {
+	print(">>> Starting disk tests")
+
+	_x=$(disk show)
+	maybe_barf(_success, "disk#1", "Unable to find any disks")
+
+	_disk_to_fondle=$(disk show | find path~="/dev/a?da0")
+	maybe_barf(_success, "disk#2", "Unable to find any boot disks")
+	if (_disk_to_fondle != "da0" and _disk_to_fondle != "ada0") {
+		maybe_barf(true, "disk#3", "No disk was ada0 or da0")
+		return
+	}
+
+	_old_standby = $(disk ${_disk_to_fondle} get standby_mode)
+	maybe_barf(_success, "disk#4", "Unable to get standby mode on disk " + _disk_to_fondle)
+	disk ${_disk_to_fondle} set standby_mode=4
+	maybe_barf(_success, "disk#5", "Unable to set standby mode on disk " + _disk_to_fondle + " to 4")
+	_y = $(disk ${_disk_to_fondle} get standby_mode)
+	maybe_barf(_success, "disk#6", "Unable to re-get standby mode on disk " + _disk_to_fondle)
+	if (_y != 4) {
+		maybe_barf(true, "disk#7", "Standby mode was not really set on disk " + _disk_to_fondle)
+		_disk_to_fondle=""
+	}
+}
+
+function disk_destroy() {
+	print(">>> Finishing disk tests")
+	if (_disk_to_fondle != "") {
+		disk ${_disk_to_fondle} set standby_mode=${_old_standby}
+		maybe_barf(_success, "disk#7", "Unable to restore old standby_mode to disk " + _disk_to_fondle)
+	}
+}

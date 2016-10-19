@@ -10,9 +10,9 @@ _exit_on_err=false
 
 # Some constants which will be shared across tests, hence "global" - they do not have underscores prepended to their names to
 # designate them as such.
-TEST_VOL="_test_tank"
-TEST_USER="_mytestuser"
-TEST_GROUP="_mytestgroup"
+TEST_VOL="test_tank"
+TEST_USER="mytestuser"
+TEST_GROUP="mytestgroup"
 
 source "common_funcs.cli"
 

@@ -462,6 +462,7 @@ def p_stmt_list(p):
     stmt_list : stmt_redirect newline stmt_list
     """
     if len(p) == 1:
+        p[0] = []
         return
     
     if len(p) in (2, 3):

@@ -693,6 +693,7 @@ class VMDeviceNamespace(
         self.primary_key_name = 'name'
         self.parent = parent
         self.parent_path = 'devices'
+        self.extra_query_params = [('type', 'in', ('GRAPHICS', 'CDROM', 'NIC', 'USB', 'DISK'))]
         self.required_props = ['name']
         self.skeleton_entity = {
             'name': None,

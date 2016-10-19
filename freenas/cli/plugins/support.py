@@ -71,6 +71,11 @@ class CreateSupportTicketCommand(Command):
         if kwargs.get('attachments') and isinstance(kwargs['attachments'], str):
             kwargs['attachments'] = [kwargs['attachments']]
 
+        if not self.ticket_categories:
+            self.ticket_categories.update(
+                context.call_sync('support.categories', kwargs['username'], kwargs['password'])
+            )
+
         kwargs['category'] = self.ticket_categories[kwargs['category']]
 
         ticket_result = context.call_task_sync('support.submit', kwargs)

@@ -747,6 +747,17 @@ class SMBSharesNamespace(BaseSharesNamespace):
             type=ValueType.BOOLEAN
         )
 
+        self.add_property(
+            descr='Enable previous versions',
+            name='previous_versions',
+            usage=_("""\
+            Can be set to yes or no. When set to yes, Windows clients will be able to see previous versions
+            of the share if there are any snapshots covering share target directory or dataset"""),
+            get='properties.previous_versions',
+            list=False,
+            type=ValueType.BOOLEAN
+        )
+
 
 @description("WebDAV shares")
 class WebDAVSharesNamespace(BaseSharesNamespace):

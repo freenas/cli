@@ -38,7 +38,7 @@ from threading import Timer
 from builtins import input
 from freenas.cli.namespace import Command
 from freenas.cli.output import format_output, output_msg, Table, Sequence
-from freenas.cli.parser import parse, unparse, read_ast as parser_read_ast, FunctionDefinition
+from freenas.cli.parser import Quote, parse, unparse, read_ast as parser_read_ast, FunctionDefinition
 from freenas.cli import config
 from freenas.utils import decode_escapes
 

@@ -322,13 +322,13 @@ class NTPServersNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
         self.create_task = 'ntp_server.create'
         self.update_task = 'ntp_server.update'
         self.delete_task = 'ntp_server.delete'
-        self.required_props = ['name', 'address']
-        self.primary_key_name = 'id'
+        self.primary_key_name = 'address'
+        self.required_props = ['address']
         self.localdoc['CreateEntityCommand'] = _("""\
-            Usage: create <name> address=<address> <property>=<value> ...
+            Usage: create <address> <property>=<value> ...
 
-            Examples: create myntp address=utcnist.colorado.edu
-                      create myntppool address="0.freebsd.pool.ntp.org" pool=true
+            Examples: create utcnist.colorado.edu
+                      create "3.freebsd.pool.ntp.org" pool=true
 
             Adds an NTP server for syncing with. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = _("""\
@@ -350,7 +350,7 @@ class NTPServersNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
         self.entity_localdoc['EditEntityCommand'] = ("""\
             Usage: edit <field>
 
-            Examples: edit name
+            Examples: edit address
 
             Opens the default editor for the specified property. The default editor
             is inherited from the shell's $EDITOR which can be set from the shell.
@@ -365,7 +365,6 @@ class NTPServersNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
             Usage: get <field>
 
             Examples:
-                get name
                 get address
 
             Display value of specified field.""")
@@ -378,16 +377,6 @@ class NTPServersNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
             Examples:
                 show
                 show | search address ~= utcnist """)
-
-        self.add_property(
-            descr='Name',
-            name='name',
-            get='id',
-            set='id',
-            list=True,
-            usage=_("The id of the NTP server, accepts strings"),
-            type=ValueType.STRING
-        )
 
         self.add_property(
             descr='Address',
@@ -468,7 +457,7 @@ class NTPServersNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
             type=ValueType.BOOLEAN
         )
 
-        self.primary_key = self.get_mapping('name')
+        self.primary_key = self.get_mapping('address')
 
 
 @description("Time namespace")

@@ -306,7 +306,7 @@ def t_script_ATOM(t):
 
 
 def t_INITIAL_ATOM(t):
-    r'[0-9a-zA-Z_\-\+\*\:#\/][0-9a-zA-Z_\.\/#@\:\-\+\*\/]*'
+    r'[\w_\-\+\*\:#\/][\w_\.\/#@\:\-\+\*\/]*'
     return common_atom_routine(t)
 
 
@@ -456,10 +456,14 @@ def t_ANY_eof(t):
 
 def p_stmt_list(p):
     """
+    stmt_list :
     stmt_list : stmt_redirect
     stmt_list : stmt_redirect newline
     stmt_list : stmt_redirect newline stmt_list
     """
+    if len(p) == 1:
+        return
+    
     if len(p) in (2, 3):
         p[0] = [p[1]]
         return
@@ -1076,7 +1080,7 @@ def p_error(p):
         raise SyntaxError("Invalid token '{0}' at line {1}, column {2}".format(p.value, p.lineno, column))
 
 
-lexer = lex.lex()
+lexer = lex.lex(reflags=re.UNICODE)
 parser = yacc.yacc(debug=False, optimize=True)
 
 

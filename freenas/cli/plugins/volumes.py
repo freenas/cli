@@ -932,6 +932,7 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
         self.create_task = 'volume.dataset.create'
         self.update_task = 'volume.dataset.update'
         self.required_props = ['name']
+        self.conditional_required_props = self.get_conditional_required_props
 
         if self.parent and self.parent.entity:
             self.extra_query_params = [
@@ -1152,6 +1153,12 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
         self.entity_namespaces = lambda this: [
             VMwareDatasetsNamespace('vmware_snapshots', self.context, this)
         ]
+
+    def get_conditional_required_props(self, obj):
+        ret = []
+        if obj.get('type') == 'VOLUME':
+            ret = ['volsize']
+        return ret
 
     def delete(self, this, kwargs):
         return self.context.submit_task(

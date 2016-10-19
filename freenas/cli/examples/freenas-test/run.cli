@@ -1,0 +1,18 @@
+#
+# Top-level test runner.  Source this file to run all of the tests, behavior
+# which can be optionally overridden by setting TEST_SET below to your own
+# value.
+
+TEST_SET=[ "disk", "volume", "network", "service", "system", "account", "share", "boot", "session", "task", "alert", "calendar", "tunable", "vm", "docker" ]
+
+# Future use - someday this will cause the tests to exit upon any error.
+_exit_on_err=false
+
+source "common_funcs.cli"
+
+for (test in TEST_SET) {
+	source ${test+".cli"}
+	if (_success != true) {
+		print(${test+".cli test script not found"})
+	}
+}

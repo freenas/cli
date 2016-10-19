@@ -1,0 +1,6 @@
+# disk namespace tests
+
+print("Running disk tests.")
+_x=$(disk show)
+maybe_barf(_success, "disk#1", "Unable to find any disks")
+

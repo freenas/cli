@@ -1,4 +1,12 @@
-# Test runner for  docker  category
+# Test runner for docker  category
 #
-print("Running docker tests.")
+
+function docker_create() {
+	 print(">>> Starting docker tests")
+}
+
+function docker_destroy() {
+	 print(">>> Finishing docker tests")
+}
+
 

@@ -1,4 +1,12 @@
-# Test runner for  session  category
+# Test runner for session  category
 #
-print("Running session tests.")
+
+function session_create() {
+	 print(">>> Starting session tests")
+}
+
+function session_destroy() {
+	 print(">>> Finishing session tests")
+}
+
 

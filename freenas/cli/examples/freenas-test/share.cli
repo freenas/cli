@@ -1,4 +1,12 @@
-# Test runner for  share  category
+# Test runner for share  category
 #
-print("Running share tests.")
+
+function share_create() {
+	 print(">>> Starting share tests")
+}
+
+function share_destroy() {
+	 print(">>> Finishing share tests")
+}
+
 

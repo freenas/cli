@@ -1,4 +1,12 @@
-# Test runner for  vm  category
+# Test runner for vm  category
 #
-print("Running vm tests.")
+
+function vm_create() {
+	 print(">>> Starting vm tests")
+}
+
+function vm_destroy() {
+	 print(">>> Finishing vm tests")
+}
+
 

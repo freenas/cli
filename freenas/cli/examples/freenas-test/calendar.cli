@@ -1,4 +1,12 @@
-# Test runner for  calendar  category
+# Test runner for calendar  category
 #
-print("Running calendar tests.")
+
+function calendar_create() {
+	 print(">>> Starting calendar tests")
+}
+
+function calendar_destroy() {
+	 print(">>> Finishing calendar tests")
+}
+
 

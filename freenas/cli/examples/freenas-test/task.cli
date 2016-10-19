@@ -1,4 +1,12 @@
-# Test runner for  task  category
+# Test runner for task  category
 #
-print("Running task tests.")
+
+function task_create() {
+	 print(">>> Starting task tests")
+}
+
+function task_destroy() {
+	 print(">>> Finishing task tests")
+}
+
 

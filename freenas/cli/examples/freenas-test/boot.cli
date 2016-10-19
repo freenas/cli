@@ -1,4 +1,12 @@
-# Test runner for  boot  category
+# Test runner for boot  category
 #
-print("Running boot tests.")
+
+function boot_create() {
+	 print(">>> Starting boot tests")
+}
+
+function boot_destroy() {
+	 print(">>> Finishing boot tests")
+}
+
 

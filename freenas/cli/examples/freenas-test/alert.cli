@@ -1,4 +1,12 @@
-# Test runner for  alert  category
+# Test runner for alert  category
 #
-print("Running alert tests.")
+
+function alert_create() {
+	 print(">>> Starting alert tests")
+}
+
+function alert_destroy() {
+	 print(">>> Finishing alert tests")
+}
+
 

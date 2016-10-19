@@ -1,4 +1,12 @@
-# Test runner for  system  category
+# Test runner for system  category
 #
-print("Running system tests.")
+
+function system_create() {
+	 print(">>> Starting system tests")
+}
+
+function system_destroy() {
+	 print(">>> Finishing system tests")
+}
+
 

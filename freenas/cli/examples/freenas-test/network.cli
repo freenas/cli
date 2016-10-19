@@ -1,4 +1,12 @@
-# Test runner for  network  category
+# Test runner for network  category
 #
-print("Running network tests.")
+
+function network_create() {
+	 print(">>> Starting network tests")
+}
+
+function network_destroy() {
+	 print(">>> Finishing network tests")
+}
+
 

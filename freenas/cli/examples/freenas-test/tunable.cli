@@ -1,4 +1,12 @@
-# Test runner for  tunable  category
+# Test runner for tunable  category
 #
-print("Running tunable tests.")
+
+function tunable_create() {
+	 print(">>> Starting tunable tests")
+}
+
+function tunable_destroy() {
+	 print(">>> Finishing tunable tests")
+}
+
 

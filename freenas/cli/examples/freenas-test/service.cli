@@ -1,4 +1,12 @@
-# Test runner for  service  category
+# Test runner for service  category
 #
-print("Running service tests.")
+
+function service_create() {
+	 print(">>> Starting service tests")
+}
+
+function service_destroy() {
+	 print(">>> Finishing service tests")
+}
+
 

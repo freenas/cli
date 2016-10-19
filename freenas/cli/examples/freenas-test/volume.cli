@@ -1,4 +1,12 @@
-# Test runner for  volume  category
+# Test runner for volume  category
 #
-print("Running volume tests.")
+
+function volume_create() {
+	 print(">>> Starting volume tests")
+}
+
+function volume_destroy() {
+	 print(">>> Finishing volume tests")
+}
+
 

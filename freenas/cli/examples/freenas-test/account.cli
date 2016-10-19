@@ -1,4 +1,12 @@
-# Test runner for  account  category
+# Test runner for account  category
 #
-print("Running account tests.")
+
+function account_create() {
+	 print(">>> Starting account tests")
+}
+
+function account_destroy() {
+	 print(">>> Finishing account tests")
+}
+
 

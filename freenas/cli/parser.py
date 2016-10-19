@@ -301,7 +301,7 @@ def common_atom_routine(t):
 
 
 def t_script_ATOM(t):
-    r'[\w_][0-9\w_\.\/#@]*'
+    r'[a-zA-Z_][0-9a-zA-Z_\.\/#@]*'
     return common_atom_routine(t)
 
 

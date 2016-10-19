@@ -1134,7 +1134,7 @@ class SearchPipeCommand(PipeCommand):
     """
     Usage: <command> | search <key> <op> <value> ...
 
-    Example: account user show | search username==root
+    Example: account user show | search name==root
 
     Return an element in a list that matches the given key value.
     """
@@ -1227,7 +1227,7 @@ class ExcludePipeCommand(PipeCommand):
     """
     Usage: <command> | exclude <key> <op> <value> ...
 
-    Example: account user show | exclude username==root
+    Example: account user show | exclude name==root
 
     Return all the elements of a list that do not match the given key
     value.
@@ -1261,7 +1261,7 @@ class SortPipeCommand(PipeCommand):
     """
     Usage: <command> | sort <field> [<-field> ...]
 
-    Example: account user show | sort username
+    Example: account user show | sort name
 
     Sort the elements of a list by the given key.
     """
@@ -1301,7 +1301,7 @@ class SelectPipeCommand(PipeCommand):
     """
     Usage: <command> | select <field>
 
-    Example: account user show | select username
+    Example: account user show | select name
 
     Return only the output of the specified field. Use 'help properties' to
     determine the valid field (Property) names for a namespace.

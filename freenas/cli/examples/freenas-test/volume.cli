@@ -8,29 +8,29 @@ function volume_create() {
 	 print(">>> Starting volume tests")
 
 	 volume create name=${TEST_VOL} disks=auto layout=auto
-	 maybe_barf(_success, "volume#1", "Unable to create volume " + TEST_VOL)
+	 maybe_barf(_success, "+volume#1", "Unable to create volume " + TEST_VOL)
 	 volume ${TEST_VOL} scrub
-	 maybe_barf(_success, "volume#2", "Scrub of volume " + TEST_VOL + " failed")
+	 maybe_barf(_success, "+volume#2", "Scrub of volume " + TEST_VOL + " failed")
 	 volume ${TEST_VOL} upgrade
-	 maybe_barf(_success, "volume#3", "Upgrade of volume " + TEST_VOL + " failed")
+	 maybe_barf(_success, "+volume#3", "Upgrade of volume " + TEST_VOL + " failed")
 	 _x=$(volume ${TEST_VOL} get size)
-	 maybe_barf(_success, "volume#4", "Unable to get size for volume " + TEST_VOL)
+	 maybe_barf(_success, "+volume#4", "Unable to get size for volume " + TEST_VOL)
 	 if (_x <= 0) {
-	    maybe_barf(true, "volume#5", "Insane size reported for " + TEST_VOL)
+	    maybe_barf(true, "+volume#5", "Insane size reported for " + TEST_VOL)
 	 }
 	 volume ${TEST_VOL} snapshot create dataset=${TEST_VOL} recursive=yes name=${TEST_VOL+"@"+_SNAP_NAME}
-	 maybe_barf(_success, "volume#6", "Unable to create snapshot for volume " + TEST_VOL + " named " + _SNAP_NAME)
+	 maybe_barf(_success, "+volume#6", "Unable to create snapshot for volume " + TEST_VOL + " named " + _SNAP_NAME)
 	 _x = $(volume ${TEST_VOL} snapshot show | find name==${TEST_VOL+"@"+_SNAP_NAME})
-	 maybe_barf(_success, "volume#7", "Unable to find created snapshot for volume " + TEST_VOL + " named " + _SNAP_NAME)
+	 maybe_barf(_success, "+volume#7", "Unable to find created snapshot for volume " + TEST_VOL + " named " + _SNAP_NAME)
 	 # Put some volume detach / find / import tests here later
 }
 
 function volume_destroy() {
 	 print(">>> Finishing volume tests")
 	 volume snapshot ${TEST_VOL+"@"+_SNAP_NAME} delete
-	 maybe_barf(_success, "volume#8", "Unable to delete snapshot " + _SNAP_NAME + " from volume " + TEST_VOL)
+	 maybe_barf(_success, "-volume#1", "Unable to delete snapshot " + _SNAP_NAME + " from volume " + TEST_VOL)
 	 volume ${TEST_VOL} delete
-	 maybe_barf(_success, "volume#8", "Unable to delete volume " + TEST_VOL)
+	 maybe_barf(_success, "-volume#2", "Unable to delete volume " + TEST_VOL)
 }
 
 

@@ -415,7 +415,6 @@ class GroupsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
             name='gid',
             get='gid',
             set='gid',
-            usersetable=False,
             type=ValueType.NUMBER,
             usage=_("""\
             Group ID. Read-only value assigned by operating

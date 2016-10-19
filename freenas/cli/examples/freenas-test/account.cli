@@ -6,7 +6,7 @@ function account_create() {
 	volume ${TEST_VOL} dataset create name=${TEST_VOL + "/home"}
 	maybe_barf(_success, "+account#1", "Unable to create home dataset on volume " + TEST_VOL)
 
-	account user create name=${TEST_USER} fullname="My Test User" home=${TEST_VOL + "/home"} password_disabled=yes
+	account user create name=${TEST_USER} fullname="My Test User" home=${"/mnt/" + TEST_VOL + "/home"} password_disabled=yes
 	maybe_barf(_success, "+account#2", "Unable to create user " + TEST_USER)
 	_olduid=$(account user ${TEST_USER} get uid)
 	maybe_barf(_success, "+account#3", "Cannot get uid value for user " + TEST_USER)

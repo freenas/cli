@@ -407,7 +407,6 @@ class ImportVolumeCommand(Command):
             raise CommandException('Not enough arguments passed')
 
         id = args[0]
-        oldname = args[0]
 
         if 'key' in kwargs or 'password' in kwargs:
             if 'disks' not in kwargs:
@@ -428,7 +427,7 @@ class ImportVolumeCommand(Command):
             encryption = {}
             password = None
 
-        tid = context.submit_task('volume.import', id, kwargs.get('newname', oldname), {}, encryption, password)
+        tid = context.submit_task('volume.import', id, kwargs.get('newname', None), {}, encryption, password)
         return EntityPromise(context, tid, self.parent)
 
 

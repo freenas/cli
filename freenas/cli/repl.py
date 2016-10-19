@@ -1169,6 +1169,8 @@ class MainLoop(object):
         for stmt in block:
             try:
                 ret = self.eval(stmt, env=env, first=True)
+            except SystemExit:
+                raise
             except BaseException as e:
                 if self.context.variables.get('abort_on_errors'):
                     raise e
@@ -1207,6 +1209,9 @@ class MainLoop(object):
         env = kwargs.pop('env', self.context.global_env)
         variables = kwargs.pop('variables', self.context.variables)
         cwd = self.get_cwd(path)
+
+        if not token:
+            return []
 
         if first:
             self.reset_on_first_run()

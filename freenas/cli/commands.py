@@ -520,7 +520,6 @@ class LoginCommand(Command):
 
 @description("Exit the CLI")
 class ExitCommand(Command):
-
     """
     Usage: exit
 

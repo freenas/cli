@@ -18,7 +18,7 @@ function volume_create() {
 	 if (_x <= 0) {
 	    maybe_barf(true, "volume#5", "Insane size reported for " + TEST_VOL)
 	 }
-	 volume ${TEST_VOL} snapshot create dataset=${TEST_VOL} recursive=yes name=${TEST_VOL}@${_SNAP_NAME}
+	 volume ${TEST_VOL} snapshot create dataset=${TEST_VOL} recursive=yes name=${TEST_VOL+"@"+_SNAP_NAME}
 	 maybe_barf(_success, "volume#6", "Unable to create snapshot for volume " + TEST_VOL + " named " + _SNAP_NAME)
 	 _x = $(volume ${TEST_VOL} snapshot show | find name==${TEST_VOL+"@"+_SNAP_NAME})
 	 maybe_barf(_success, "volume#7", "Unable to find created snapshot for volume " + TEST_VOL + " named " + _SNAP_NAME)

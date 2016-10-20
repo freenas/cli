@@ -10,7 +10,7 @@ function disk_create() {
 	_x=$(disk show)
 	maybe_barf(_success, "+disk#1", "Unable to find any disks")
 
-	@$(_disk_to_fondle=$(disk show | find path~="/dev/a?da0"))
+	_disk_to_fondle=$(disk show | find path~="/dev/a?da0")
 	maybe_barf(_success, "+disk#2", "Unable to find any boot disks")
 	if (_disk_to_fondle != "da0" and _disk_to_fondle != "ada0") {
 		maybe_barf(true, "+disk#3", "No disk was ada0 or da0")

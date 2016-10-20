@@ -38,7 +38,7 @@ run:
 	$(VENV_PIP) install -U cython six ply columnize natural termcolor texttable pyte future rollbar gnureadline
 	$(VENV_PIP) install -U $(BE_ROOT)/py-freenas.utils
 	$(VENV_PIP) install -U $(BE_ROOT)/dispatcher-client/python
-	$(VENV_PYTHON) -m freenas.cli.repl
+	$(VENV_PYTHON) -m freenas.cli.repl $(ARGS)
 
 
 macosx:	bin

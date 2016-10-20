@@ -9,7 +9,7 @@ function docker_create() {
 	print(">>> Starting docker tests")
 	_alpine_container = @$(docker container create image="freenas/alpine" name=${_container_name} command="/bin/sh" interactive=yes)
 	maybe_barf(_success, "+docker#1", "Unable to create docker container " + _container_name)
-	_x = @$(_alpine_container get name)
+	_x = $(_alpine_container get name)
 	if (_x != _container_name) {
 	   maybe_barf(_success, "+docker#2", "docker container name is not " + _container_name)
 	}

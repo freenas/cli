@@ -19,7 +19,7 @@ function volume_create() {
 
 	SNAP_OBJECT=@$(VOL_OBJECT snapshot create dataset=${VOL_NAME} recursive=yes name=${VOL_NAME+"@"+_SNAP_NAME})
 	maybe_barf(_success, "+volume#6", "Unable to create snapshot for volume " + VOL_NAME + " named " + _SNAP_NAME)
-	_x = @$(VOL_OBJECT snapshot show | find name==${VOL_NAME+"@"+_SNAP_NAME})
+	_x = $(VOL_OBJECT snapshot show | find name==${VOL_NAME+"@"+_SNAP_NAME})
 	maybe_barf(_success, "+volume#7", "Unable to find created snapshot for volume " + VOL_NAME + " named " + _SNAP_NAME)
 	maybe_barf(_x == $(SNAP_OBJECT get name), "+volume8", "Snapshot names do not agree: " + _x + " and " + $(SNAP_OBJECT get name))
 	# Maybe try some volume attach/detach stuff here, just for extra credit.

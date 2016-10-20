@@ -25,5 +25,3 @@ function calendar_destroy() {
 	_cal_scrub delete
 	maybe_barf(_success, "-calendar#2", "unable to delete calendar scrub task")
 }
-
-

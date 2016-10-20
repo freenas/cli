@@ -17,7 +17,7 @@ function system_create() {
 	 maybe_barf(_success, "+system#6", "Unable to set system freenas_token_lifetime")
 	 @$(system advanced set freenas_token_lifetime=${_token})
 	 maybe_barf(_success, "+system#7", "Unable to restore system freenas_token_lifetime")
-	 _http = @$(system ui get http_port)
+	 _http = $(system ui get http_port)
 	 maybe_barf(_success, "+system#7", "Unable to get system http_port")
 	 # XXX Expect default configuration for a test machine.
 	 maybe_barf(_http == 80, "+system#8", "System http port is not set to 80")

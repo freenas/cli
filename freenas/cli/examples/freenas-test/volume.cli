@@ -3,34 +3,37 @@
 
 # State variables shared between create and destroy functions.
 _SNAP_NAME=_snappysnap
-_SNAP=""
-_VOL=""
 
 function volume_create() {
-	 print(">>> Starting volume tests")
+	print(">>> Starting volume tests")
 
-	 _VOL = @$(volume create name=${TEST_VOL} disks=auto layout=auto)
-	 maybe_barf(_success, "+volume#1", "Unable to create volume " + TEST_VOL)
-	 _VOL scrub
-	 maybe_barf(_success, "+volume#2", "Scrub of volume " + TEST_VOL + " failed")
-	 _VOL upgrade
-	 maybe_barf(_success, "+volume#3", "Upgrade of volume " + TEST_VOL + " failed")
-	 _x=$(_VOL get size)
-	 maybe_barf(_success, "+volume#4", "Unable to get size for volume " + TEST_VOL)
-	 if (_x <= 0) {
-	    maybe_barf(true, "+volume#5", "Insane size reported for " + TEST_VOL)
+	VOL_OBJECT = @$(volume create name=${TEST_VOL_NAME} disks=auto layout=auto)
+	maybe_barf(_success, "+volume#1", "Unable to create volume " + TEST_VOL_NAME)
+	VOL_OBJECT scrub
+	maybe_barf(_success, "+volume#2", "Scrub of volume " + TEST_VOL_NAME + " failed")
+	VOL_OBJECT upgrade
+	maybe_barf(_success, "+volume#3", "Upgrade of volume " + TEST_VOL_NAME + " failed")
+	_x=$(VOL_OBJECT get size)
+	maybe_barf(_success, "+volume#4", "Unable to get size for volume " + TEST_VOL_NAME)
+	if (_x <= 0) {
+	   maybe_barf(true, "+volume#5", "Insane size reported for " + TEST_VOL_NAME)
+	}
+	SNAP_OBJECT=@$(VOL_OBJECT snapshot create dataset=${TEST_VOL_NAME} recursive=yes name=${TEST_VOL_NAME+"@"+_SNAP_NAME})
+	maybe_barf(_success, "+volume#6", "Unable to create snapshot for volume " + TEST_VOL_NAME + " named " + _SNAP_NAME)
+	_x = @$(VOL_OBJECT snapshot show | find name==${TEST_VOL_NAME+"@"+_SNAP_NAME})
+	 maybe_barf(_success, "+volume#7", "Unable to find created snapshot for volume " + TEST_VOL_NAME + " named " + _SNAP_NAME)
+	 if (_x != $(SNAP_OBJECT get name)) {
+	    maybe_barf(true, "+volume8", "Snapshot names do not agree: " + _x + " and " + $(SNAP_OBJECT get name))
 	 }
-	 _SNAP=@$(_VOL snapshot create dataset=${TEST_VOL} recursive=yes name=${TEST_VOL+"@"+_SNAP_NAME})
-	 maybe_barf(_success, "+volume#6", "Unable to create snapshot for volume " + TEST_VOL + " named " + _SNAP_NAME)
-	 _x = @$(_VOL snapshot show | find name==${TEST_VOL+"@"+_SNAP_NAME})
-	 maybe_barf(_success, "+volume#7", "Unable to find created snapshot for volume " + TEST_VOL + " named " + _SNAP_NAME)
-	 # Put some volume detach / find / import tests here later
+	 # Maybe try some volume attach/detach stuff here, just for extra credit.
+	 #VOL_OBJECT detach
+	 maybe_barf(_success, "+volume9", "Unable to detach volume " + TEST_VOL_NAME)
 }
 
 function volume_destroy() {
-	 print(">>> Finishing volume tests")
-	 @$(_SNAP delete)
-	 maybe_barf(_success, "-volume#1", "Unable to delete snapshot " + _SNAP_NAME + " from volume " + TEST_VOL)
-	 @$(_VOL delete)
-	 maybe_barf(_success, "-volume#2", "Unable to delete volume " + TEST_VOL)
+	print(">>> Finishing volume tests")
+	@$(SNAP_OBJECT delete)
+	maybe_barf(_success, "-volume#1", "Unable to delete snapshot " + _SNAP_NAME + " from volume " + TEST_VOL_NAME)
+	@$(VOL_OBJECT delete)
+	maybe_barf(_success, "-volume#2", "Unable to delete volume " + TEST_VOL_NAME)
 }

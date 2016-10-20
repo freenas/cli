@@ -1,37 +1,41 @@
 # Test runner for account  category
 #
 
+# State variables shared between create and destroy functions.
+_user_obj=null
+_group_obj=null
+
 function account_create() {
 	print(">>> Starting account tests")
-	volume ${TEST_VOL} dataset create name=${TEST_VOL + "/home"}
+	@$(VOL_OBJECT dataset create name=${TEST_VOL + "/home"})
 	maybe_barf(_success, "+account#1", "Unable to create home dataset on volume " + TEST_VOL)
 
-	account user create name=${TEST_USER} fullname="My Test User" home=${"/mnt/" + TEST_VOL + "/home"} password_disabled=yes
+	_user_obj = @$(account user create name=${TEST_USER} fullname="My Test User" home=${"/mnt/" + TEST_VOL + "/home"} password_disabled=yes)
 	maybe_barf(_success, "+account#2", "Unable to create user " + TEST_USER)
-	_olduid=$(account user ${TEST_USER} get uid)
+	_olduid=$(_user_obj get uid)
 	maybe_barf(_success, "+account#3", "Cannot get uid value for user " + TEST_USER)
 	if (_olduid <= 0) {
 		maybe_barf(true, "+account#4", "Invalid uid value for user " + TEST_USER);
 	} else {
-		account user ${TEST_USER} set uid=100000
+		@$(_user_obj set uid=100000)
 		maybe_barf(_success, "+account#5", "Cannot set uid to new value for user " + TEST_USER)
 		if (_success == true) {
-			account user ${TEST_USER} set uid=${_olduid}
+			@$(_user_obj set uid=${_olduid})
 			maybe_barf(_success, "+account#6", "Cannot restore uid value for user " + TEST_USER)
 		}
 	}
 
-	account group create name=${TEST_GROUP}
+	_group_obj = @$(account group create name=${TEST_GROUP})
 	maybe_barf(_success, "+account#7", "Unable to create group " + TEST_GROUP)
-	_oldgid=$(account group ${TEST_GROUP} get gid)
+	_oldgid=$(_group_obj get gid)
 	maybe_barf(_success, "+account#8", "Cannot get gid value for group " + TEST_GROUP)
 	if (_oldgid <= 0) {
 		maybe_barf(true, "+account#9", "Invalid gid value for group " + TEST_GROUP);
 	} else {
-		account group ${TEST_GROUP} set gid=100000
+		@$(_group_obj set gid=100000)
 		maybe_barf(_success, "+account#10", "Cannot set gid to new value for group " + TEST_GROUP)
 		if (_success == true) {
-			account group ${TEST_GROUP} set gid=${_oldgid}
+			@$(_group_obj set gid=${_oldgid})
 			maybe_barf(_success, "+account#11", "Cannot restore gid value for group " + TEST_GROUP)
 		}
 	}
@@ -39,12 +43,12 @@ function account_create() {
 
 function account_destroy() {
 	print(">>> Finishing account tests")
-	volume ${TEST_VOL} dataset home delete
+	@$(VOL_OBJECT dataset home delete)
 	maybe_barf(_success, "-account#1", "Unable to delete temporary home dataset on " + TEST_VOL)
-	account user ${TEST_USER} delete
+	@$(_user_obj delete)
 	maybe_barf(_success, "-account#2", "Unable to delete user " + TEST_USER)
-	account group ${TEST_USER} delete
+	@$(account group ${TEST_USER} delete)
 	maybe_barf(_success, "-account#3", "Unable to delete private group for user " + TEST_USER)
-	account group ${TEST_GROUP} delete
+	@$(_group_obj delete)
 	maybe_barf(_success, "-account#4", "Unable to delete group " + TEST_GROUP)
 }

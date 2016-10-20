@@ -1308,7 +1308,7 @@ class SelectPipeCommand(PipeCommand):
 
     def run(self, context, args, kwargs, opargs, input=None):
         ns = context.pipe_cwd
-        available_props = [x.name for x in ns.property_mappings if x.list]
+        available_props = [x.name for x in ns.property_mappings]
         if len(args) == 0:
             raise CommandException(_(
                 "Please specify a property field. Available properties are: {0}".format(

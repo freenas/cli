@@ -789,7 +789,7 @@ class ReplicateCommand(Command):
         throttle = kwargs.pop('throttle', None)
         transport_plugins = []
 
-        if 'remote_dataset' not in kwargs:
+        if not remote_dataset:
             raise CommandException(_('Remote dataset must be specified'))
 
         peer = context.entity_subscribers['peer'].query(('name', '=', peer), single=True)

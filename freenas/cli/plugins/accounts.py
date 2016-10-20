@@ -294,6 +294,15 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             list=False
         )
 
+        self.add_property(
+            descr='Directory',
+            name='directory',
+            get='origin.directory',
+            set=None,
+            type=ValueType.STRING,
+            list=True
+        )
+
         self.primary_key = self.get_mapping('name')
         self.extra_commands = {
             'shells': ShellsCommand()
@@ -408,7 +417,8 @@ class GroupsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
             usage=_("""\
             Group name. Editable, unless the group was
             installed by the operating system."""),
-            list=True)
+            list=True
+        )
 
         self.add_property(
             descr='Group ID',
@@ -419,7 +429,8 @@ class GroupsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
             usage=_("""\
             Group ID. Read-only value assigned by operating
             system."""),
-            list=True)
+            list=True
+        )
 
         self.add_property(
             descr='Builtin group',
@@ -430,7 +441,17 @@ class GroupsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
             usage=_("""\
             Read-only value that indicates whether or not
             the group was created by the operating system."""),
-            type=ValueType.BOOLEAN)
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
+            descr='Directory',
+            name='directory',
+            get='origin.directory',
+            set=None,
+            type=ValueType.STRING,
+            list=True
+        )
 
         self.primary_key = self.get_mapping('name')
 

@@ -1701,7 +1701,7 @@ class MainLoop(object):
                     return cmds[name]
 
                 if name in self.builtin_commands:
-                    return self.builtin_commands[name]
+                    return self.builtin_commands[name]()
 
         return ptr
 

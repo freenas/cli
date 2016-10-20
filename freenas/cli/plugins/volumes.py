@@ -432,7 +432,16 @@ class ImportVolumeCommand(Command):
         ns.entity = copy.deepcopy(self.parent.skeleton_entity)
         ns.entity['id'] = id
 
-        tid = context.submit_task('volume.import', id, kwargs.get('newname', None), {}, encryption, password)
+        tid = context.submit_task(
+            'volume.import',
+            id,
+            kwargs.get('newname', None),
+            {},
+            encryption,
+            password,
+            callback=lambda s, t: post_save(ns, s, t)
+        )
+
         return EntityPromise(context, tid, ns)
 
 
@@ -1254,7 +1263,8 @@ class CloneCommand(Command):
         tid = context.submit_task(
             'volume.snapshot.clone',
             self.parent.entity['id'],
-            new_name
+            new_name,
+            callback=lambda s, t: post_save(ns, s, t)
         )
 
         return EntityPromise(context, tid, ns)
@@ -1589,7 +1599,8 @@ class CreateVolumeCommand(Command):
                 log_disks,
                 key_encryption,
                 password,
-                auto_unlock
+                auto_unlock,
+                callback=lambda s, t: post_save(ns, s, t)
             )
 
             return EntityPromise(context, tid, ns)
@@ -1642,7 +1653,8 @@ class CreateVolumeCommand(Command):
             self.parent.create_task,
             ns.entity,
             password,
-            callback=lambda s, t: post_save(ns, s, t))
+            callback=lambda s, t: post_save(ns, s, t)
+        )
 
         return EntityPromise(context, tid, ns)
 

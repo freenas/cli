@@ -2,16 +2,16 @@
 #
 
 # State variables shared between create and destroy functions.
-_SNAP_NAME=_snappysnap
+_SNAP_NAME="_snappysnap"
 
 function volume_create() {
 	print(">>> Starting volume tests")
 
 	VOL_OBJECT = @$(volume create name=${VOL_NAME} disks=auto layout=auto)
 	maybe_barf(_success, "+volume#1", "Unable to create volume " + VOL_NAME)
-	VOL_OBJECT scrub
+	@$(VOL_OBJECT scrub)
 	maybe_barf(_success, "+volume#2", "Scrub of volume " + VOL_NAME + " failed")
-	VOL_OBJECT upgrade
+	@$(VOL_OBJECT upgrade)
 	maybe_barf(_success, "+volume#3", "Upgrade of volume " + VOL_NAME + " failed")
 	_x=$(VOL_OBJECT get size)
 	maybe_barf(_success, "+volume#4", "Unable to get size for volume " + VOL_NAME)

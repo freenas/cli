@@ -3,6 +3,24 @@
 
 function system_create() {
 	 print(">>> Starting system tests")
+	 _tz = $(system get timezone)
+	 maybe_barf(_success, "+system#1", "Unable to get system timezone")
+	 @$(system set timezone="UTC")
+	 maybe_barf(_success, "+system#2", "Unable to set system timezone")
+	 @$(system set timezone=${_tz})
+	 maybe_barf(_success, "+system#3", "Unable to restore system timezone")
+	 @$(system advanced set console_screensaver=yes)
+	 maybe_barf(_success, "+system#4", "Unable to set console screensaver")
+	 _token = $(system advanced get freenas_token_lifetime)
+	 maybe_barf(_success, "+system#5", "Unable to get system freenas_token_lifetime")
+	 @$(system advanced set freenas_token_lifetime=3000)
+	 maybe_barf(_success, "+system#6", "Unable to set system freenas_token_lifetime")
+	 @$(system advanced set freenas_token_lifetime=${_token})
+	 maybe_barf(_success, "+system#7", "Unable to restore system freenas_token_lifetime")
+	 _http = @$(system ui get http_port)
+	 maybe_barf(_success, "+system#7", "Unable to get system http_port")
+	 # XXX Expect default configuration for a test machine.
+	 maybe_barf(_http == 80, "+system#8", "System http port is not set to 80")
 }
 
 function system_destroy() {

@@ -22,9 +22,14 @@ function volume_create() {
 	_x = $(VOL_OBJECT snapshot show | find name==${VOL_NAME+"@"+_snap_name})
 	maybe_barf(_success, "+volume#7", "Unable to find created snapshot for volume " + VOL_NAME + " named " + _snap_name)
 	maybe_barf(_x == $(SNAP_OBJECT get name), "+volume8", "Snapshot names do not agree: " + _x + " and " + $(SNAP_OBJECT get name))
-	# Maybe try some volume attach/detach stuff here, just for extra credit.
-	#VOL_OBJECT detach
-	#maybe_barf(_success, "+volume9", "Unable to detach volume " + VOL_NAME)
+
+	_x = $(VOL_OBJECT get guid)
+	maybe_barf(_success, "+volume9", "Unable to get guid for volume " + VOL_NAME)
+	@$(VOL_OBJECT detach)
+	maybe_barf(_success, "+volume10", "Unable to detach volume " + VOL_NAME)
+
+	@$(volume import ${_x})
+	maybe_barf(_success, "+volume11", "Unable to re-import volume " + VOL_NAME)
 }
 
 function volume_destroy() {

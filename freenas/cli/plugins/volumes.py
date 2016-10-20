@@ -1546,6 +1546,7 @@ class CreateVolumeCommand(Command):
         ns = SingleItemNamespace(None, self.parent, context)
         ns.orig_entity = copy.deepcopy(self.parent.skeleton_entity)
         ns.entity = copy.deepcopy(self.parent.skeleton_entity)
+        ns.entity['id'] = name
 
         disks, cache_disks, log_disks = check_disks(context, disks, cache_disks, log_disks)
 
@@ -1581,15 +1582,13 @@ class CreateVolumeCommand(Command):
                 auto_unlock
             )
 
-            return EntityPromise(context, tid, self.parent)
+            return EntityPromise(context, tid, ns)
         elif volume_type == 'custom':
             if not isinstance(kwargs.get('topology'), dict):
                 raise CommandException(_("Volume topology needs to be passed as 'topology' parameter"))
 
-            ns.entity['id'] = name
             ns.entity['topology'] = kwargs['topology']
         else:
-            ns.entity['id'] = name
             ns.entity['topology'] = {}
             ns.entity['topology']['data'] = []
             if volume_type == 'disk':

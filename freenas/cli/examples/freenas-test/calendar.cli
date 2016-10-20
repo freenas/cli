@@ -12,7 +12,7 @@ function calendar_create() {
 	maybe_barf(_x[0]["result"] == "nightly_update_check", "+calendar#2", "nightly update check calendar entry naming syntax")
 	_cal_command = @$(calendar command create command="echo testing" name="test-command" username=root)
 	maybe_barf(_success, "+calendar#3", "unable to create calendar command task")
-	_cal_scrub = @$(calendar scrub create name="test-scrub" volume=${TEST_VOL_NAME} enabled=yes)
+	_cal_scrub = @$(calendar scrub create name="test-scrub" volume=${VOL_NAME} enabled=yes)
 	maybe_barf(_success, "+calendar#4", "unable to create calendar scrub task")
 	_cal_scrub run
 	maybe_barf(_success, "+calendar#5", "unable to run calendar scrub task")

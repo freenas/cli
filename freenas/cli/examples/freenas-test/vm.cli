@@ -1,12 +1,20 @@
-# Test runner for vm  category
+# Test runner for vm category
 #
+
+# State variables shared between create and destroy functions.
+_vm_name="vm_test_image"
+_vm_object=none
 
 function vm_create() {
 	 print(">>> Starting vm tests")
+	 _vm_object = @$(vm create name=${_vm_name} template=boot2docker volume=${VOL_NAME))
+	 maybe_barf(_success, "+vm#1", "Unable to create VM " + _vm_name)
 }
 
 function vm_destroy() {
 	 print(">>> Finishing vm tests")
+	 _vm_object delete
+	 maybe_barf(_success, "-vm#1", "Unable to delete VM " + _vm_name)
 }
 
 

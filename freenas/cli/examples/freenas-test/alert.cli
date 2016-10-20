@@ -2,11 +2,29 @@
 #
 
 function alert_create() {
-	 print(">>> Starting alert tests")
+	print(">>> Starting alert tests")
+	@$(alert send "Informational message from test" priority=INFO)
+	@$(alert send "Warning message from test" priority=WARNING)
+	@$(alert send "Critical message from test" priority=CRITICAL)
+	_x = $(alert show)
+	if (length(_x) < 3) {
+		maybe_barf(true, "+alert#1", "Number of alerts doesn't match expected values.")
+	}
+	_x = $(alert show | find description~="Warning message from test")
+	if (_x == none) {
+		maybe_barf(true, "+alert#2", "Unable to find warning message posted by test")
+	}
 }
 
 function alert_destroy() {
-	 print(">>> Finishing alert tests")
+	print(">>> Finishing alert tests")
+	_x = $(alert show | search description ~= "message from test")
+	maybe_barf(_success, "-alert#1", "Unable to find posted alerts")
+	if (_success == true) {
+		for (_y in _x) {
+			@$(alert ${_y["id"]} dismiss)
+			maybe_barf(_success, "-alert#2", "Unable to dismiss alert " + str(y["id"]))
+		}
+	}
 }
-
 

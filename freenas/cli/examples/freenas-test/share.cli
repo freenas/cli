@@ -1,12 +1,80 @@
 # Test runner for share  category
 #
 
+# State variables shared between create and destroy functions.
+_afp_name="test_afp_share"
+_afp_service_status="no"
+_afp_object=none
+_smb_name="test_smb_share"
+_smb_service_status="no"
+_smb_object=none
+_nfs_name="test_nfs_share"
+_nfs_service_status="no"
+_nfs_object=none
+_iscsi_name="test_iscs_share"
+_iscsi_service_status="no"
+_iscsi_object=none
+
 function share_create() {
-	 print(">>> Starting share tests")
+	print(">>> Starting share tests")
+	_afp_object = @$(share afp create owner=${TEST_USER} name=${_afp_name} time_machine=yes parent=${VOL_NAME})
+	maybe_barf(_success, "+share#1", "Unable to create AFP share " + _afp_name)
+	_owner = $(_afp_object get owner)
+	maybe_barf(_owner == TEST_USER, "share#2", "Incorrect owner for " + _afp_name + ":" + _owner)
+	_afp_service_status = $(service afp config get enable)
+	maybe_barf(_success, "+share#3", "Unable to get AFP service status")
+	@$(service afp config set enable=yes)
+	maybe_barf(_success, "+share#4", "Unable to set AFP service enable to yes")
+
+	_smb_object = @$(share smb create owner=${TEST_USER} name=${_smb_name} guest_ok=yes parent=${VOL_NAME})
+	maybe_barf(_success, "+share#5", "Unable to create SMB share " + _smb_name)
+	_owner = $(_smb_object get owner)
+	maybe_barf(_owner == TEST_USER, "share#6", "Incorrect owner for " + _smb_name + ":" + _owner)
+	_smb_service_status = $(service smb config get enable)
+	maybe_barf(_success, "+share#7", "Unable to get SMB service status")
+	@$(service smb config set enable=yes)
+	maybe_barf(_success, "+share#8", "Unable to set SMB service enable to yes")
+
+	_nfs_object = @$(share nfs create owner=${TEST_USER} name=${_nfs_name} root_user=${TEST_USER} root_group=$(TEST_GROUP) parent=${VOL_NAME})
+	maybe_barf(_success, "+share#9", "Unable to create NFS share " + _nfs_name)
+	_owner = $(_nfs_object get owner)
+	maybe_barf(_owner == TEST_USER, "share#10", "Incorrect owner for " + _nfs_name + ":" + _owner)
+	_nfs_service_status = $(service nfs config get enable)
+	maybe_barf(_success, "+share#11", "Unable to get NFS service status")
+	@$(service nfs config set enable=yes)
+	maybe_barf(_success, "+share#12", "Unable to set NFS service enable to yes")
+
+	_iscsi_object = @$(share iscsi create name=${_iscsi_name} rpm=7200 size=10g parent=${VOL_NAME})
+	maybe_barf(_success, "+share#13", "Unable to create ISCSI share " + _iscsi_name)
+	_rpm = $(_iscsi_object get rpm)
+	maybe_barf(_rpm == 7200, "share#14", "Incorrect RPM value for " + _iscsi_name)
+	_iscsi_service_status = $(service iscsi config get enable)
+	maybe_barf(_success, "+share#15", "Unable to get ISCSI service status")
+	@$(service iscsi config set enable=yes)
+	maybe_barf(_success, "+share#16", "Unable to set ISCSI service enable to yes")
 }
 
 function share_destroy() {
-	 print(">>> Finishing share tests")
+	print(">>> Finishing share tests")
+	_afp_object delete
+	maybe_barf(_success, "-share#1", "unable to delete AFP share " + _afp_name)
+	@$(service afp config set enable=${_afp_service_status})
+	maybe_barf(_success, "-share#2", "Unable to restore AFP service status")
+
+	_smb_object delete
+	maybe_barf(_success, "-share#3", "unable to delete SMB share " + _smb_name)
+	@$(service smb config set enable=${_smb_service_status})
+	maybe_barf(_success, "-share#4", "Unable to restore SMB service status")
+
+	_nfs_object delete
+	maybe_barf(_success, "-share#5", "unable to delete NFS share " + _nfs_name)
+	@$(service nfs config set enable=${_nfs_service_status})
+	maybe_barf(_success, "-share#6", "Unable to restore NFS service status")
+
+	_iscsi_object delete
+	maybe_barf(_success, "-share#7", "unable to delete ISCSI share " + _iscsi_name)
+	@$(service iscsi config set enable=${_iscsi_service_status})
+	maybe_barf(_success, "-share#8", "Unable to restore ISCSI service status")
 }
 
 

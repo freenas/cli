@@ -17,11 +17,11 @@ function disk_create() {
 		return
 	}
 
-	_old_standby = $(disk ${_disk_to_fondle} get standby_mode)
+	_old_standby = @$(disk ${_disk_to_fondle} get standby_mode)
 	maybe_barf(_success, "+disk#4", "Unable to get standby mode on disk " + _disk_to_fondle)
 	@$(disk ${_disk_to_fondle} set standby_mode=4)
 	maybe_barf(_success, "+disk#5", "Unable to set standby mode on disk " + _disk_to_fondle + " to 4")
-	_y = $(disk ${_disk_to_fondle} get standby_mode)
+	_y = @$(disk ${_disk_to_fondle} get standby_mode)
 	maybe_barf(_success, "+disk#6", "Unable to re-get standby mode on disk " + _disk_to_fondle)
 	if (_y != 4) {
 		maybe_barf(true, "+disk#7", "Standby mode was not really set on disk " + _disk_to_fondle)

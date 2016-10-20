@@ -2,11 +2,26 @@
 #
 
 function service_create() {
-	 print(">>> Starting service tests")
+	print(">>> Starting service tests")
+	@$(service smartd stop)
+	maybe_barf(_success, "+service#1", "Unable to stop smartd service")
+	_pid = @$(service smartd get pid)
+	maybe_barf(_pid == none, "+service#2", "pid of smartd still set when stopped")
+	@$(service smartd start)
+	maybe_barf(_success, "+service#3", "Unable to start smartd service")
+	_pid = @$(service smartd get pid)
+	maybe_barf(_pid != none, "+service#4", "pid of smartd not set when started")
+
+	_level = @$(service sshd config get sftp_log_level)
+	maybe_barf(_success, "+service#5", "unable to get sftp_log_level property of sshd service")
+	@$(service sshd config set sftp_log_level=QUIET)
+	maybe_barf(_success, "+service#6", "unable to set sftp_log_level property of sshd service")
+	@$(service sshd config set sftp_log_level=${_level})
+	maybe_barf(_success, "+service#7", "unable to restore sftp_log_level property of sshd service")
 }
 
 function service_destroy() {
-	 print(">>> Finishing service tests")
+	print(">>> Finishing service tests")
 }
 
 

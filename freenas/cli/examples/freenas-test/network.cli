@@ -2,11 +2,11 @@
 #
 
 function network_create() {
-	 print(">>> Starting network tests")
+	print(">>> Starting network tests")
 }
 
 function network_destroy() {
-	 print(">>> Finishing network tests")
+	print(">>> Finishing network tests")
 }
 
 

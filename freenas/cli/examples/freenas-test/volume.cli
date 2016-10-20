@@ -15,19 +15,16 @@ function volume_create() {
 	maybe_barf(_success, "+volume#3", "Upgrade of volume " + TEST_VOL_NAME + " failed")
 	_x=$(VOL_OBJECT get size)
 	maybe_barf(_success, "+volume#4", "Unable to get size for volume " + TEST_VOL_NAME)
-	if (_x <= 0) {
-	   maybe_barf(true, "+volume#5", "Insane size reported for " + TEST_VOL_NAME)
-	}
+	maybe_barf(_x > 0, "+volume#5", "Insane size reported for " + TEST_VOL_NAME)
+
 	SNAP_OBJECT=@$(VOL_OBJECT snapshot create dataset=${TEST_VOL_NAME} recursive=yes name=${TEST_VOL_NAME+"@"+_SNAP_NAME})
 	maybe_barf(_success, "+volume#6", "Unable to create snapshot for volume " + TEST_VOL_NAME + " named " + _SNAP_NAME)
 	_x = @$(VOL_OBJECT snapshot show | find name==${TEST_VOL_NAME+"@"+_SNAP_NAME})
-	 maybe_barf(_success, "+volume#7", "Unable to find created snapshot for volume " + TEST_VOL_NAME + " named " + _SNAP_NAME)
-	 if (_x != $(SNAP_OBJECT get name)) {
-	    maybe_barf(true, "+volume8", "Snapshot names do not agree: " + _x + " and " + $(SNAP_OBJECT get name))
-	 }
-	 # Maybe try some volume attach/detach stuff here, just for extra credit.
-	 #VOL_OBJECT detach
-	 maybe_barf(_success, "+volume9", "Unable to detach volume " + TEST_VOL_NAME)
+	maybe_barf(_success, "+volume#7", "Unable to find created snapshot for volume " + TEST_VOL_NAME + " named " + _SNAP_NAME)
+	maybe_barf(_x == $(SNAP_OBJECT get name), "+volume8", "Snapshot names do not agree: " + _x + " and " + $(SNAP_OBJECT get name))
+	# Maybe try some volume attach/detach stuff here, just for extra credit.
+	#VOL_OBJECT detach
+	#maybe_barf(_success, "+volume9", "Unable to detach volume " + TEST_VOL_NAME)
 }
 
 function volume_destroy() {

@@ -1,12 +1,30 @@
 # Test runner for docker  category
 #
 
+# State variables shared between create and destroy functions.
+_alpine_container=none
+_container_name="docker_test_container"
+
 function docker_create() {
-	 print(">>> Starting docker tests")
+	print(">>> Starting docker tests")
+	_alpine_container = @$(docker container create image="freenas/alpine" name=${_container_name} command="/bin/sh" interactive=yes)
+	maybe_barf(_success, "+docker#1", "Unable to create docker container " + _container_name)
+	_x = @$(_alpine_container get name)
+	if (_x != _container_name) {
+	   maybe_barf(_success, "+docker#2", "docker container name is not " + _container_name)
+	}
+	_y = $(docker image show | find name ~= alpine)
+	maybe_barf(_y == "freenas/alpine:latest", "+docker#3", "docker image for alpine not found")
+	@$(_alpine_container start)
+	maybe_barf(_success, "+docker#3", "unable to start docker container " + _container_name)
+	@$(_alpine_container stop)
+	maybe_barf(_success, "+docker#3", "unable to stop docker container " + _container_name)
 }
 
 function docker_destroy() {
-	 print(">>> Finishing docker tests")
+	print(">>> Finishing docker tests")
+	@$(_alpine_container delete)
+	maybe_barf(_success, "-docker#1", "unable to delete docker container " + _container_name)
 }
 
 

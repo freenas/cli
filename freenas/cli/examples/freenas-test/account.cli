@@ -14,30 +14,24 @@ function account_create() {
 	maybe_barf(_success, "+account#2", "Unable to create user " + TEST_USER)
 	_olduid=$(_user_obj get uid)
 	maybe_barf(_success, "+account#3", "Cannot get uid value for user " + TEST_USER)
-	if (_olduid <= 0) {
-		maybe_barf(true, "+account#4", "Invalid uid value for user " + TEST_USER);
-	} else {
-		@$(_user_obj set uid=100000)
-		maybe_barf(_success, "+account#5", "Cannot set uid to new value for user " + TEST_USER)
-		if (_success == true) {
-			@$(_user_obj set uid=${_olduid})
-			maybe_barf(_success, "+account#6", "Cannot restore uid value for user " + TEST_USER)
-		}
+	maybe_barf(_olduid > 0, "+account#4", "Invalid uid value for user " + TEST_USER);
+	@$(_user_obj set uid=100000)
+	maybe_barf(_success, "+account#5", "Cannot set uid to new value for user " + TEST_USER)
+	if (_success == true) {
+		@$(_user_obj set uid=${_olduid})
+		maybe_barf(_success, "+account#6", "Cannot restore uid value for user " + TEST_USER)
 	}
 
 	_group_obj = @$(account group create name=${TEST_GROUP})
 	maybe_barf(_success, "+account#7", "Unable to create group " + TEST_GROUP)
 	_oldgid=$(_group_obj get gid)
 	maybe_barf(_success, "+account#8", "Cannot get gid value for group " + TEST_GROUP)
-	if (_oldgid <= 0) {
-		maybe_barf(true, "+account#9", "Invalid gid value for group " + TEST_GROUP);
-	} else {
-		@$(_group_obj set gid=100000)
-		maybe_barf(_success, "+account#10", "Cannot set gid to new value for group " + TEST_GROUP)
-		if (_success == true) {
-			@$(_group_obj set gid=${_oldgid})
-			maybe_barf(_success, "+account#11", "Cannot restore gid value for group " + TEST_GROUP)
-		}
+	maybe_barf(_oldgid > 0, "+account#9", "Invalid gid value for group " + TEST_GROUP);
+	@$(_group_obj set gid=100000)
+	maybe_barf(_success, "+account#10", "Cannot set gid to new value for group " + TEST_GROUP)
+	if (_success == true) {
+		@$(_group_obj set gid=${_oldgid})
+		maybe_barf(_success, "+account#11", "Cannot restore gid value for group " + TEST_GROUP)
 	}
 }
 

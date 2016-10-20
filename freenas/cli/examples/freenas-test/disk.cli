@@ -1,7 +1,7 @@
 # disk namespace tests
 
 # State variables shared between create and destroy functions.
-_disk_to_fondle=""
+_disk_to_fondle=none
 _old_standby=0
 
 function disk_create() {

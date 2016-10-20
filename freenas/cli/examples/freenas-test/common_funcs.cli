@@ -1,5 +1,4 @@
-# Possible future "header guard" - not sure if I can make these work yet.
-_COMMON_FUNCS=1
+# Common functions for all the tests
 
 function maybe_barf(flag, test, str) {
 	if (flag != true) {

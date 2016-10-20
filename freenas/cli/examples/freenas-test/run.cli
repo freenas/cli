@@ -19,7 +19,6 @@ SNAP_OBJECT=null
 source "common_funcs.cli"
 
 # Set some sensible default options before beginning the test run
-setopt tasks_blocking=yes
 setopt rollbar_enabled=no
 
 # First run all of the create functions.

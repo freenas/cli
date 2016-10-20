@@ -1701,7 +1701,10 @@ class MainLoop(object):
                     return cmds[name]
 
                 if name in self.builtin_commands:
-                    return self.builtin_commands[name]()
+                    cmd = self.builtin_commands[name]()
+                    cmd.variables = self.context.variables
+                    cmd.env = {}
+                    return cmd
 
         return ptr
 

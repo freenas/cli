@@ -740,6 +740,27 @@ class ScrubCommand(Command):
         return TaskPromise(context, tid)
 
 
+@description("Creates snapshot of a dataset")
+class SnapshotCommand(Command):
+    """
+    Usage: snapshot <snapshot name>
+    """
+
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        if len(args) < 1:
+            raise CommandException('Snapshot name must be provided')
+
+        name = str(args[0])
+        tid = context.submit_task('volume.snapshot.create', {
+            'id': '{0}@{1}'.format(self.parent.entity['id'], name)
+        })
+
+        return TaskPromise(context, tid)
+
+
 @description("Replicates dataset to another system")
 class ReplicateCommand(Command):
     """
@@ -758,11 +779,7 @@ class ReplicateCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        if 'peer' not in kwargs:
-            raise CommandException(_('You have to specify a target FreeNAS peer'))
         peer = kwargs.pop('peer')
-        if 'remote_dataset' not in kwargs:
-            raise CommandException(_('You have to specify a target dataset'))
         remote_dataset = kwargs.pop('remote_dataset')
         dry_run = read_value(kwargs.pop('dry_run', 'no'), ValueType.BOOLEAN)
         recursive = read_value(kwargs.pop('recursive', 'no'), ValueType.BOOLEAN)
@@ -771,6 +788,9 @@ class ReplicateCommand(Command):
         encrypt = kwargs.pop('encrypt', None)
         throttle = kwargs.pop('throttle', None)
         transport_plugins = []
+
+        if 'remote_dataset' not in kwargs:
+            raise CommandException(_('Remote dataset must be specified'))
 
         peer = context.entity_subscribers['peer'].query(('name', '=', peer), single=True)
         if not peer:
@@ -1190,6 +1210,7 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
     def get_entity_commands(self, this):
         this.load()
         commands = {
+            'snapshot': SnapshotCommand(this),
             'replicate': ReplicateCommand(this),
             'open_files': OpenFilesCommand(this)
         }

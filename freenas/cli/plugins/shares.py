@@ -1005,8 +1005,8 @@ class ISCSIUsersNamespace(EntityNamespace):
 
         return self.parent.save()
 
-    def delete(self, name, kwargs):
-        self.parent.entity['users'] = [a for a in self.parent.entity['users'] if a['name'] == name]
+    def delete(self, this, kwargs):
+        self.parent.entity['users'] = [a for a in self.parent.entity['users'] if a['name'] != this.entity['name']]
         return self.parent.save()
 
 
@@ -1073,7 +1073,7 @@ class ISCSITargetMapingNamespace(EntityNamespace):
     def __init__(self, name, context, parent):
         super(ISCSITargetMapingNamespace, self).__init__(name, context)
         self.parent = parent
-        self.required_props = ['number','name']
+        self.required_props = ['number', 'name']
         self.localdoc['CreateEntityCommand'] = ("""\
             Usage: create <number> <name>=<name>
 
@@ -1107,7 +1107,7 @@ class ISCSITargetMapingNamespace(EntityNamespace):
         self.primary_key = self.get_mapping('number')
 
     def get_one(self, name):
-        return first_or_default(lambda a: a['name'] == name, self.parent.entity['extents'])
+        return first_or_default(lambda a: a['number'] == name, self.parent.entity['extents'])
 
     def query(self, params, options):
         return self.parent.entity.get('extents', [])
@@ -1116,13 +1116,13 @@ class ISCSITargetMapingNamespace(EntityNamespace):
         if new:
             self.parent.entity['extents'].append(this.entity)
         else:
-            entity = first_or_default(lambda a: a['name'] == this.entity['name'], self.parent.entity['extents'])
+            entity = first_or_default(lambda a: a['number'] == this.entity['number'], self.parent.entity['extents'])
             entity.update(this.entity)
 
         return self.parent.save()
 
-    def delete(self, name, kwargs):
-        self.parent.entity['extents'] = [a for a in self.parent.entity['extents'] if a['name'] == name]
+    def delete(self, this, kwargs):
+        self.parent.entity['extents'] = [a for a in self.parent.entity['extents'] if a['number'] != this.entity['number']]
         return self.parent.save()
 
 

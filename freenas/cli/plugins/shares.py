@@ -1003,11 +1003,11 @@ class ISCSIUsersNamespace(EntityNamespace):
             entity = first_or_default(lambda a: a['name'] == this.entity['name'], self.parent.entity['users'])
             entity.update(this.entity)
 
-        self.parent.save()
+        return self.parent.save()
 
     def delete(self, name, kwargs):
         self.parent.entity['users'] = [a for a in self.parent.entity['users'] if a['name'] == name]
-        self.parent.save()
+        return self.parent.save()
 
 
 @description("iSCSI targets")
@@ -1119,11 +1119,11 @@ class ISCSITargetMapingNamespace(EntityNamespace):
             entity = first_or_default(lambda a: a['name'] == this.entity['name'], self.parent.entity['extents'])
             entity.update(this.entity)
 
-        self.parent.save()
+        return self.parent.save()
 
     def delete(self, name, kwargs):
         self.parent.entity['extents'] = [a for a in self.parent.entity['extents'] if a['name'] == name]
-        self.parent.save()
+        return self.parent.save()
 
 
 @description("iSCSI shares")

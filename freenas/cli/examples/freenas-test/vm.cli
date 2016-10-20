@@ -11,7 +11,7 @@ function vm_create() {
 	 maybe_barf(_success, "+vm#1", "Unable to create VM " + _vm_name)
 	 maybe_barf($(_vm_object get cores) == 1, "+vm#2", "Wrong number of cores returned for VM " + _vm_name)
 	 @$(_vm_object set description="Test Description")
-	 maybe_barf($(_vm_object get description == "Test Description", "+vm#3", "Could not set description for " + _vm_name)
+	 maybe_barf($(_vm_object get description) == "Test Description", "+vm#3", "Could not set description for " + _vm_name)
 	 @$(_vm_object start)
 	 maybe_barf(_success, "+vm#4", "Unable to start VM " + _vm_name)
 	 @$(_vm_object stop)

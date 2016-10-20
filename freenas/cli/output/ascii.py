@@ -460,6 +460,8 @@ class Columnizer(object):
         self.saved_end_tty_esc_codes_helper = []
 
     def columnize(self, data):
+        if not data:
+            return ""
         data = self._strip_and_save_tty_esc_codes(data)
 
         for ncols in range(1, len(data) + 1):

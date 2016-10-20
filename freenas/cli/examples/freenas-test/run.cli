@@ -23,6 +23,7 @@ source ${TOP_DIR + "common_funcs.cli"}
 
 # Set some sensible default options before beginning the test run
 setopt rollbar_enabled=no
+setopt abort_on_errors=yes
 
 # First run all of the create functions.
 for (test in TEST_SET) {

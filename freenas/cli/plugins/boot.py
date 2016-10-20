@@ -134,7 +134,7 @@ class BootEnvironmentNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             usage=_("""\
             Read-only name issued when boot environment
             is created."""),
-            list=True,
+            list=False,
             set=None,
         )
 
@@ -172,6 +172,14 @@ class BootEnvironmentNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             environment was created."""),
             list=True,
             set=None,
+        )
+
+        self.add_property(
+            descr='Keep',
+            name='keep',
+            get='keep',
+            list=True,
+            type=ValueType.BOOLEAN
         )
 
         self.primary_key = self.get_mapping('name')

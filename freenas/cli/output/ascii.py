@@ -164,7 +164,9 @@ class AsciiOutputFormatter(object):
 
     @staticmethod
     def output_dict(data, key_label, value_label, value_vt=ValueType.STRING):
-        sys.stdout.write(AsciiOutputFormatter.columnize(['{0}={1}'.format(row[0], AsciiOutputFormatter.format_value(row[1], value_vt)) for row in list(data.items())]))
+        sys.stdout.write(AsciiOutputFormatter.columnize(
+            ['{0}={1}'.format(row[0], AsciiOutputFormatter.format_value(row[1], value_vt)) for row in list(data.items())]
+        ))
         sys.stdout.flush()
 
     @staticmethod

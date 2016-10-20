@@ -64,7 +64,7 @@ class CreateSupportTicketCommand(Command):
             raise CommandException(_('You have to provide a category for the ticket'))
 
         if not kwargs.get('attach_debug_data'):
-            kwargs['debug'] = False
+            kwargs['debug'] = True
         else:
             kwargs['debug'] = True if kwargs.pop('attach_debug_data') == 'yes' else False
 

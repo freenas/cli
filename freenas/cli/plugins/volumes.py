@@ -427,8 +427,13 @@ class ImportVolumeCommand(Command):
             encryption = {}
             password = None
 
+        ns = SingleItemNamespace(None, self.parent, context)
+        ns.orig_entity = copy.deepcopy(self.parent.skeleton_entity)
+        ns.entity = copy.deepcopy(self.parent.skeleton_entity)
+        ns.entity['id'] = id
+
         tid = context.submit_task('volume.import', id, kwargs.get('newname', None), {}, encryption, password)
-        return EntityPromise(context, tid, self.parent)
+        return EntityPromise(context, tid, ns)
 
 
 @description("Imports items from a given volume")
@@ -1241,13 +1246,18 @@ class CloneCommand(Command):
         if not new_name:
             raise CommandException('Name of clone have to be specified')
 
+        ns = SingleItemNamespace(None, self.parent, context)
+        ns.orig_entity = copy.deepcopy(self.parent.skeleton_entity)
+        ns.entity = copy.deepcopy(self.parent.skeleton_entity)
+        ns.entity['id'] = new_name
+
         tid = context.submit_task(
             'volume.snapshot.clone',
             self.parent.entity['id'],
             new_name
         )
 
-        return EntityPromise(context, tid, self.parent)
+        return EntityPromise(context, tid, ns)
 
     def complete(self, context, **kwargs):
         return [

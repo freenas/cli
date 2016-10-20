@@ -1,12 +1,37 @@
 # Test runner for calendar  category
 #
 
+# State variables shared between create and destroy functions.
+_cal_command = none
+_cal_scrub = none
+
 function calendar_create() {
-	 print(">>> Starting calendar tests")
+	print(">>> Starting calendar tests")
+	_x = $(calendar check_update show|select name)
+	maybe_barf(_success, "+calendar#1", "Unable to find check_update calendar entry")
+	if (_x[0]["result"] != "nightly_update_check") {
+	    maybe_barf(true, "+calendar#2", "nightly update check calendar entry naming syntax")
+	}
+	_cal_command = @$(calendar command create command="echo testing" name="test-command" username=root)
+	maybe_barf(_success, "+calendar#3", "unable to create calendar command task")
+	_cal_scrub = @$(calendar scrub create name="test-scrub" volume=${TEST_VOL_NAME} enabled=yes)
+	maybe_barf(_success, "+calendar#4", "unable to create calendar scrub task")
+	if (_success == true) {
+	   _cal_scrub run
+	   maybe_barf(_success, "+calendar#5", "unable to run calendar scrub task")
+	}
 }
 
 function calendar_destroy() {
-	 print(">>> Finishing calendar tests")
+	print(">>> Finishing calendar tests")
+	if (_cal_command != none) {
+	   _cal_command delete
+	   maybe_barf(_success, "-calendar#1", "unable to delete calendar command task")
+	}
+	if (_cal_scrub != none) {
+	   _cal_scrub delete
+	   maybe_barf(_success, "-calendar#2", "unable to delete calendar scrub task")
+	}
 }
 
 

@@ -2,11 +2,17 @@
 #
 
 function boot_create() {
-	 print(">>> Starting boot tests")
+	print(">>> Starting boot tests")
+	@$(boot pool scrub)
+	maybe_barf(_success, "+boot#1", "Unable to scrub boot pool")
+	_x = $(boot pool show_disks)
+	if (length(_x) < 1) {
+	   maybe_barf(true, "+boot#2", "Boot pool has an invalid number of disks")
+	}
 }
 
 function boot_destroy() {
-	 print(">>> Finishing boot tests")
+	print(">>> Finishing boot tests")
 }
 
 

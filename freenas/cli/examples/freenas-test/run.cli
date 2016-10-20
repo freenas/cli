@@ -8,6 +8,9 @@ TEST_SET=[ "disk", "volume", "network", "service", "system", "account", "share",
 # Future use - someday this will cause the tests to exit upon any error.
 _exit_on_err=false
 
+# Where to run all of these scripts from.
+TOP_DIR=${cli_src_path+"/examples/freenas-test/"}
+
 # Some constants which will be shared across tests, hence "global" - they do not have underscores prepended to their names to
 # designate them as such.
 TEST_USER="mytestuser"
@@ -16,16 +19,17 @@ VOL_NAME="test_tank"
 VOL_OBJECT=null
 SNAP_OBJECT=null
 
-source "common_funcs.cli"
+source ${TOP_DIR + "common_funcs.cli"}
 
 # Set some sensible default options before beginning the test run
 setopt rollbar_enabled=no
 
 # First run all of the create functions.
 for (test in TEST_SET) {
-	source ${test+".cli"}
+	_path=${TOP_DIR + test + ".cli"}
+	source ${_path}
 	if (_success != true) {
-		print(${test+".cli test script not found"})
+		print(_path + " test script not found")
 		remove(TEST_SET, test)
 	} else {
 		eval(test + "_create()")
@@ -34,9 +38,10 @@ for (test in TEST_SET) {
 
 # Now run all of the destroy (cleanup) functions.
 for (test in TEST_SET) {
-	source ${test+".cli"}
+	_path=${TOP_DIR + test + ".cli"}
+	source ${_path}
 	if (_success != true) {
-		print(${test+".cli could not be sourced again; something is terribly wrong!"})
+		print(_path + " could not be sourced again; something is terribly wrong!")
 	} else {
 		eval(test + "_destroy()")
 	}

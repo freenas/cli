@@ -91,7 +91,7 @@ class AsciiOutputFormatter(object):
         if vt == ValueType.SET:
             value = set(value)
             if len(value) == 0:
-                return _("empty")
+                return _("<empty>")
 
             return ','.join(value)
 

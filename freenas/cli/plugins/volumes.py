@@ -1698,6 +1698,15 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
         )
 
         self.add_property(
+            descr='Volume GUID',
+            name='guid',
+            get='guid',
+            list=False,
+            usage=_("The GUID of the volume.")
+        )
+
+
+        self.add_property(
             descr='Encrypted by key',
             name='key_encrypted',
             get='key_encrypted',

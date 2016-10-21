@@ -26,10 +26,10 @@ source ${TOP_DIR + "common_funcs.cli"}
 
 # Set some sensible default options before beginning the test run
 setopt rollbar_enabled=no
-setopt abort_on_errors=yes
 
 # Run all of the create functions.
 function create_all() {
+	setopt abort_on_errors=yes
 	for (test in TEST_SET) {
 		_path=${TOP_DIR + test + ".cli"}
 		source ${_path}
@@ -44,6 +44,7 @@ function create_all() {
 
 # Run all of the destroy (cleanup) functions.
 function destroy_all() {
+	setopt abort_on_errors=no
 	for (test in TEST_SET) {
 		eval(test + "_destroy()")
 	}

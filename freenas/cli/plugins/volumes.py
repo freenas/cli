@@ -996,7 +996,7 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
 
         self.skeleton_entity = {
             'type': 'FILESYSTEM',
-            'volume': self.parent.entity['id'] if self.parent.entity else None,
+            'volume': self.parent.entity.get('id') if self.parent.entity else None,
             'temp_mountpoint': None,
             'properties': {}
         }

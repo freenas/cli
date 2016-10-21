@@ -134,6 +134,7 @@ ForStatement = ASTObject('ForStatement', 'stmt1', 'expr', 'stmt2', 'body')
 ForInStatement = ASTObject('ForInStatement', 'var', 'expr', 'body')
 WhileStatement = ASTObject('WhileStatement', 'expr', 'body')
 UndefStatement = ASTObject('UndefStatement', 'name')
+AssertStatement = ASTObject('AssertStatement', 'expr', 'msg')
 ReturnStatement = ASTObject('ReturnStatement', 'expr')
 BreakStatement = ASTObject('BreakStatement')
 FunctionDefinition = ASTObject('FunctionDefinition', 'name', 'args', 'body')
@@ -157,6 +158,7 @@ reserved = {
     'not': 'NOT',
     'undef': 'UNDEF',
     'const': 'CONST',
+    'assert': 'ASSERT',
     'true': 'TRUE',
     'false': 'FALSE',
     'none': 'NULL',
@@ -453,7 +455,6 @@ def t_ANY_eof(t):
 
 def p_stmt_list(p):
     """
-    stmt_list :
     stmt_list : stmt_redirect
     stmt_list : stmt_redirect newline
     stmt_list : stmt_redirect newline stmt_list
@@ -502,6 +503,7 @@ def p_stmt(p):
     stmt : return_stmt
     stmt : break_stmt
     stmt : undef_stmt
+    stmt : assert_stmt
     stmt : const_stmt
     stmt : command
     stmt : expr_expansion
@@ -666,6 +668,13 @@ def p_undef_stmt(p):
     undef_stmt : UNDEF ATOM
     """
     p[0] = UndefStatement(p[2], p=p)
+
+
+def p_assert_stmt(p):
+    """
+    assert_stmt : ASSERT expr COMMA expr
+    """
+    p[0] = AssertStatement(p[2], p[4], p=p)
 
 
 def p_expr_list(p):

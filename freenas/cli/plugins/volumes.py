@@ -406,7 +406,7 @@ class ImportVolumeCommand(Command):
         if len(args) < 1:
             raise CommandException('Not enough arguments passed')
 
-        id = args[0]
+        id = str(args[0])
 
         if 'key' in kwargs or 'password' in kwargs:
             if 'disks' not in kwargs:
@@ -420,9 +420,11 @@ class ImportVolumeCommand(Command):
             for dname in disks:
                 correct_disks.append(correct_disk_path(dname))
 
-            encryption = {'key': kwargs.get('key'),
-                          'disks': correct_disks}
             password = kwargs.get('password')
+            encryption = {
+                'key': kwargs.get('key'),
+                'disks': correct_disks
+            }
         else:
             encryption = {}
             password = None
@@ -430,7 +432,7 @@ class ImportVolumeCommand(Command):
         ns = SingleItemNamespace(None, self.parent, context)
         ns.orig_entity = copy.deepcopy(self.parent.skeleton_entity)
         ns.entity = copy.deepcopy(self.parent.skeleton_entity)
-        ns.entity['id'] = id
+        ns.entity['id'] = None
 
         tid = context.submit_task(
             'volume.import',

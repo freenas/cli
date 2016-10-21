@@ -7,22 +7,22 @@ _service="snmp"
 function service_create() {
 	print(">>> Starting service tests")
 	_pid = $(service ${_service} get pid)
-	maybe_barf(_pid == none, "The " + _service + " service is not running on this machine")
+	maybe_barf(_pid == none, "+service#1", "The " + _service + " service is not running on this machine")
 	@$(service ${_service} stop)
-	maybe_barf(_success, "+service#1", "Unable to stop " + _service + " service")
+	maybe_barf(_success, "+service#2", "Unable to stop " + _service + " service")
 	_pid = $(service ${_service} get pid)
-	maybe_barf(_pid == none, "+service#2", "pid of " + _service + " still set when stopped")
+	maybe_barf(_pid == none, "+service#3", "pid of " + _service + " still set when stopped")
 	@$(service ${_service} start)
-	maybe_barf(_success, "+service#3", "Unable to start " + _service + " service")
+	maybe_barf(_success, "+service#4", "Unable to start " + _service + " service")
 	_pid = $(service ${_service} get pid)
-	maybe_barf(_pid != none, "+service#4", "pid of " + _service + " not set when started")
+	maybe_barf(_pid != none, "+service#5", "pid of " + _service + " not set when started")
 
 	_level = $(service sshd config get sftp_log_level)
-	maybe_barf(_success, "+service#5", "unable to get sftp_log_level property of sshd service")
+	maybe_barf(_success, "+service#6", "unable to get sftp_log_level property of sshd service")
 	@$(service sshd config set sftp_log_level=QUIET)
-	maybe_barf(_success, "+service#6", "unable to set sftp_log_level property of sshd service")
+	maybe_barf(_success, "+service#7", "unable to set sftp_log_level property of sshd service")
 	@$(service sshd config set sftp_log_level=${_level})
-	maybe_barf(_success, "+service#7", "unable to restore sftp_log_level property of sshd service")
+	maybe_barf(_success, "+service#8", "unable to restore sftp_log_level property of sshd service")
 }
 
 function service_destroy() {

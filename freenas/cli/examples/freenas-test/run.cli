@@ -12,7 +12,7 @@ _exit_on_err=false
 TOP_DIR=${cli_src_path+"/examples/freenas-test/"}
 
 # Set this to yes if you want to run the more stressy-tests
-test_me_harder=no
+test_me_harder=false
 
 # Some constants which will be shared across tests, hence "global" - they do not have underscores prepended to their names to
 # designate them as such.

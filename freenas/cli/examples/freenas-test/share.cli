@@ -17,8 +17,8 @@ _iscsi_object=none
 
 function share_create() {
 	print(">>> Starting share tests")
-	print(">>> Starting afp share tests")
-	_afp_object = @$(share afp create owner=${TEST_USER} name=${_afp_name} time_machine=yes parent=${VOL_NAME})
+	print(">>> 	Starting afp share tests")
+	_afp_object = @$(share afp create owner=${TEST_USER} group=${TEST_GROUP} name=${_afp_name} time_machine=yes parent=${VOL_NAME})
 	maybe_barf(_success, "+share#1", "Unable to create AFP share " + _afp_name)
 	_owner = $(_afp_object get owner)
 	maybe_barf(_owner == TEST_USER, "share#2", "Incorrect owner for " + _afp_name + ":" + _owner)
@@ -27,8 +27,8 @@ function share_create() {
 	@$(service afp config set enable=yes)
 	maybe_barf(_success, "+share#4", "Unable to set AFP service enable to yes")
 
-	print(">>> Starting smb share tests")
-	_smb_object = @$(share smb create owner=${TEST_USER} name=${_smb_name} guest_ok=yes parent=${VOL_NAME})
+	print(">>> 	Starting smb share tests")
+	_smb_object = @$(share smb create owner=${TEST_USER} group=${TEST_GROUP} name=${_smb_name} guest_ok=yes parent=${VOL_NAME})
 	maybe_barf(_success, "+share#5", "Unable to create SMB share " + _smb_name)
 	_owner = $(_smb_object get owner)
 	maybe_barf(_owner == TEST_USER, "share#6", "Incorrect owner for " + _smb_name + ":" + _owner)
@@ -37,8 +37,8 @@ function share_create() {
 	@$(service smb config set enable=yes)
 	maybe_barf(_success, "+share#8", "Unable to set SMB service enable to yes")
 
-	print(">>> Starting nfs share tests")
-	_nfs_object = @$(share nfs create owner=${TEST_USER} name=${_nfs_name} root_user=${TEST_USER} root_group=${TEST_GROUP} parent=${VOL_NAME})
+	print(">>> 	Starting nfs share tests")
+	_nfs_object = @$(share nfs create owner=${TEST_USER} group=${TEST_GROUP} name=${_nfs_name} root_user=${TEST_USER} root_group=${TEST_GROUP} parent=${VOL_NAME})
 	maybe_barf(_success, "+share#9", "Unable to create NFS share " + _nfs_name)
 	_owner = $(_nfs_object get owner)
 	maybe_barf(_owner == TEST_USER, "share#10", "Incorrect owner for " + _nfs_name + ":" + _owner)
@@ -47,7 +47,7 @@ function share_create() {
 	@$(service nfs config set enable=yes)
 	maybe_barf(_success, "+share#12", "Unable to set NFS service enable to yes")
 
-	print(">>> Starting iscsi share tests")
+	print(">>> 	Starting iscsi share tests")
 	_iscsi_object = @$(share iscsi create name=${_iscsi_name} rpm=7200 size=10g parent=${VOL_NAME})
 	maybe_barf(_success, "+share#13", "Unable to create ISCSI share " + _iscsi_name)
 	_rpm = $(_iscsi_object get rpm)

@@ -242,6 +242,80 @@ class PrintoptCommand(Command):
         return [create_variable_completer(k, v) for k, v in self.variables.get_all()]
 
 
+@description("Print CLI builtin commands")
+class BuiltinCommand(Command):
+    """
+
+    Usage: builtin <command>
+
+    Example: builtin
+             builtin wait
+
+    Print a list of all builtin commands
+    or the help for the specified command.
+    """
+
+    def run(self, context, args, kwargs, opargs):
+        if len(kwargs) > 0:
+            raise CommandException(_("Invalid syntax {0}. type builtin or 'builtin <command>'".format(kwargs)))
+
+        if len(args) > 1:
+            raise CommandException(_("Invalid syntax {0}. type builtin or 'builtin <command>'".format(kwargs)))
+
+        if len(args) == 0:
+            builtin_cmd_dict_list = [
+                {"cmd": "/", "description": "Go to the root namespace"},
+                {"cmd": "..", "description": "Go up one namespace"},
+                {"cmd": "-", "description": "Go back to previous namespace"}
+            ]
+            filtering_cmd_dict_list = []
+            for key, value in context.ml.builtin_commands.items():
+                if hasattr(value, 'description') and value.description is not None:
+                    description = value.description
+                else:
+                     description = key
+                builtin_cmd_dict = {
+                    'cmd': key,
+                    'description': description,
+                }
+                if key in context.ml.pipe_commands:
+                    filtering_cmd_dict_list.append(builtin_cmd_dict)
+                else:
+                    builtin_cmd_dict_list.append(builtin_cmd_dict)
+
+            builtin_cmd_dict_list = sorted(builtin_cmd_dict_list, key=lambda k: k['cmd'])
+            filtering_cmd_dict_list = sorted(filtering_cmd_dict_list, key=lambda k: k['cmd'])
+
+            output_seq = Sequence()
+            output_seq.append(
+                Table(builtin_cmd_dict_list, [
+                    Table.Column('Global Command', 'cmd', ValueType.STRING),
+                    Table.Column('Description', 'description', ValueType.STRING)
+                ]))
+            output_seq.append(
+                Table(filtering_cmd_dict_list, [
+                    Table.Column('Filter Command', 'cmd', ValueType.STRING),
+                    Table.Column('Description', 'description', ValueType.STRING)
+                ]))
+            return output_seq
+
+        if len(args) == 1:
+            command_name = args[0]
+            default_cmd_help = {
+                "/": "Go to the root namespace",
+                "..": "Go up one namespace",
+                "-": "Go back to previous namespace"
+            }
+            if command_name in default_cmd_help.keys():
+                print(default_cmd_help[command_name])
+
+            elif command_name in context.ml.builtin_commands.keys():
+                return inspect.getdoc(context.ml.builtin_commands[command_name]) + '\n'
+
+            else:
+                raise CommandException(_("Invalid syntax: '{0}' is not a valid CLI builtin.".format(command_name)))
+
+
 @description("Save configuration variables to CLI configuration file")
 class SaveoptCommand(Command):
 

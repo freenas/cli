@@ -712,6 +712,9 @@ class ItemNamespace(Namespace):
         return base
 
     def namespaces(self):
+        if self.entity is None:
+            self.load()
+
         for i in self.nslist:
             yield i
 
@@ -807,9 +810,6 @@ class SingleItemNamespace(ItemNamespace):
 
         if parent.entity_commands:
             self.subcommands = parent.entity_commands(self)
-
-        if parent.entity_namespaces:
-            self.nslist = parent.entity_namespaces(self)
 
         if parent.leaf_entity_namespace:
             self.leaf_ns = parent.leaf_entity_namespace(self)
@@ -950,13 +950,18 @@ class SingleItemNamespace(ItemNamespace):
         return command_set
 
     def namespaces(self):
+        self.load()
+
         if not self.leaf_entity:
-            return super(SingleItemNamespace, self).namespaces()
+            yield from super(SingleItemNamespace, self).namespaces()
+            yield from iter(self.parent.entity_namespaces(self))
+            return
+
         if self.leaf_ns.primary_key is None:
             return
 
         # for some reason yield does not work below
-        nslst = []
+        nslst = self.parent.entity_namespaces(self)
         for i in self.leaf_ns.query([], {}):
             name = self.leaf_ns.primary_key.do_get(i)
             nslst.append(SingleItemNamespace(name, self.leaf_ns, self.context, leaf_entity=self.leaf_harborer))
@@ -1177,7 +1182,7 @@ class EntityNamespace(Namespace):
         self.context = context
         self.primary_key = None
         self.entity_commands = None
-        self.entity_namespaces = None
+        self.entity_namespaces = lambda _: []
         self.entity_serialize = None
         self.allow_edit = True
         self.allow_create = True

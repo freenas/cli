@@ -15,6 +15,37 @@ _iscsi_name="test_iscs_share"
 _iscsi_service_status="no"
 _iscsi_object=none
 
+function share_create() {
+	print(">>> Starting share tests")
+	share_afp_create()
+	share_smb_create()
+	share_nfs_create()
+	share_iscsi_create()
+}
+
+function share_destroy() {
+	print(">>> Finishing share tests")
+	_afp_object delete
+	maybe_barf(_success, "-share#1", "unable to delete AFP share " + _afp_name)
+	@$(service afp config set enable=${_afp_service_status})
+	maybe_barf(_success, "-share#2", "Unable to restore AFP service status")
+
+	_smb_object delete
+	maybe_barf(_success, "-share#3", "unable to delete SMB share " + _smb_name)
+	@$(service smb config set enable=${_smb_service_status})
+	maybe_barf(_success, "-share#4", "Unable to restore SMB service status")
+
+	_nfs_object delete
+	maybe_barf(_success, "-share#5", "unable to delete NFS share " + _nfs_name)
+	@$(service nfs config set enable=${_nfs_service_status})
+	maybe_barf(_success, "-share#6", "Unable to restore NFS service status")
+
+	_iscsi_object delete
+	maybe_barf(_success, "-share#7", "unable to delete ISCSI share " + _iscsi_name)
+	@$(service iscsi config set enable=${_iscsi_service_status})
+	maybe_barf(_success, "-share#8", "Unable to restore ISCSI service status")
+}
+
 function share_afp_create() {
 	print(">>> 	Starting afp share tests")
 	_afp_object = @$(share afp create owner=${TEST_USER} group=${TEST_GROUP} name=${_afp_name} time_machine=yes parent=${VOL_NAME})
@@ -65,35 +96,4 @@ function share_iscsi_create()
 	maybe_barf(_success, "+share-iscsi#3", "Unable to get ISCSI service status")
 	@$(service iscsi config set enable=yes)
 	maybe_barf(_success, "+share-iscsi#3", "Unable to set ISCSI service enable to yes")
-}
-
-function share_create() {
-	print(">>> Starting share tests")
-	share_afp_create()
-	share_smb_create()
-	share_nfs_create()
-	share_iscs_create()
-}
-
-function share_destroy() {
-	print(">>> Finishing share tests")
-	_afp_object delete
-	maybe_barf(_success, "-share#1", "unable to delete AFP share " + _afp_name)
-	@$(service afp config set enable=${_afp_service_status})
-	maybe_barf(_success, "-share#2", "Unable to restore AFP service status")
-
-	_smb_object delete
-	maybe_barf(_success, "-share#3", "unable to delete SMB share " + _smb_name)
-	@$(service smb config set enable=${_smb_service_status})
-	maybe_barf(_success, "-share#4", "Unable to restore SMB service status")
-
-	_nfs_object delete
-	maybe_barf(_success, "-share#5", "unable to delete NFS share " + _nfs_name)
-	@$(service nfs config set enable=${_nfs_service_status})
-	maybe_barf(_success, "-share#6", "Unable to restore NFS service status")
-
-	_iscsi_object delete
-	maybe_barf(_success, "-share#7", "unable to delete ISCSI share " + _iscsi_name)
-	@$(service iscsi config set enable=${_iscsi_service_status})
-	maybe_barf(_success, "-share#8", "Unable to restore ISCSI service status")
 }

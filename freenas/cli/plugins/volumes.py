@@ -1750,7 +1750,6 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
             usage=_("The GUID of the volume.")
         )
 
-
         self.add_property(
             descr='Encrypted by key',
             name='key_encrypted',

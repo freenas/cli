@@ -1278,7 +1278,7 @@ class CloneCommand(Command):
         if not new_name:
             raise CommandException('Name of clone have to be specified')
 
-        ns = SingleItemNamespace(None, self.parent, context)
+        ns = SingleItemNamespace(new_name, self.parent, context)
         ns.orig_entity = copy.deepcopy(self.parent.skeleton_entity)
         ns.entity = copy.deepcopy(self.parent.skeleton_entity)
         ns.entity['id'] = new_name
@@ -1586,7 +1586,7 @@ class CreateVolumeCommand(Command):
         if isinstance(log_disks, six.string_types):
             log_disks = [log_disks]
 
-        ns = SingleItemNamespace(None, self.parent, context)
+        ns = SingleItemNamespace(name, self.parent, context)
         ns.orig_entity = copy.deepcopy(self.parent.skeleton_entity)
         ns.entity = copy.deepcopy(self.parent.skeleton_entity)
         ns.entity['id'] = name

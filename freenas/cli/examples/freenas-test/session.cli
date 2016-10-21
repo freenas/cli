@@ -3,7 +3,7 @@
 
 function session_create() {
 	 print(">>> Starting session tests")
-	 @$(session wall "This is a test")
+	 session wall "This is a test"
 	 maybe_barf(_success, "+session#1", "Unable to send wall to all users")
 	 _x = $(session show)
 	 maybe_barf(length(_x) > 1, "+session#2", "Session show lists no sessions")

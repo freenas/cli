@@ -328,9 +328,9 @@ class AsciiStreamTablePrinter(object):
         default_col_width_percentage = int(100 / len(columns))
         self.borders_space = len(columns) + 1
         for col in columns:
-            if not col.display_width_percentage:
-                col.display_width_percentage = default_col_width_percentage
-        cols_widths_fracts_ints = [math.modf((self.display_size-self.borders_space)*(col.display_width_percentage/100))
+            if not col.width:
+                col.width = default_col_width_percentage
+        cols_widths_fracts_ints = [math.modf((self.display_size-self.borders_space)*(col.width/100))
                                   for col in columns]
         space_from_fracts = int(sum([col[0] for col in cols_widths_fracts_ints]))
         self.cols_widths = [int(col[1]) for col in cols_widths_fracts_ints]

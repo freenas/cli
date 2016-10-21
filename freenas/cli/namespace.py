@@ -257,7 +257,7 @@ class PropertyMapping(object):
         self.ns = kwargs.pop('ns', None)
         self.create_arg = kwargs.pop('create_arg', False)
         self.update_arg = kwargs.pop('update_arg', False)
-        self.display_width_percentage = kwargs.pop('display_width_percentage', None)
+        self.width = kwargs.pop('width', None)
         self.strict = kwargs.pop('strict', True)
 
     def can_set(self, obj):
@@ -1039,7 +1039,7 @@ class BaseListCommand(FilteringCommand):
             if not col.list:
                 continue
 
-            cols.append(Table.Column(col.descr, col.do_get, col.type, col.display_width_percentage))
+            cols.append(Table.Column(col.descr, col.do_get, col.type, col.width))
 
         return Table(self.parent.query(params, options), cols)
 

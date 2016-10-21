@@ -141,7 +141,7 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
         self.createable = lambda entity: not entity['builtin']
 
         self.add_property(
-            display_width_percentage=15,
+            width=5,
             descr='User ID',
             name='uid',
             get='uid',
@@ -151,7 +151,7 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
         )
 
         self.add_property(
-            display_width_percentage=25,
+            width=15,
             descr='User name',
             name='name',
             get='username',
@@ -165,7 +165,7 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
         )
 
         self.add_property(
-            display_width_percentage=25,
+            width=20,
             descr='Full name',
             name='fullname',
             get='full_name',
@@ -174,7 +174,7 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
         )
 
         self.add_property(
-            display_width_percentage=25,
+            width=20,
             descr='Primary group',
             name='group',
             get_name='group',
@@ -237,7 +237,7 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
         )
 
         self.add_property(
-            display_width_percentage=10,
+            width=20,
             descr='Password Disabled',
             name='password_disabled',
             get='password_disabled',
@@ -295,6 +295,7 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
         )
 
         self.add_property(
+            width=20,
             descr='Directory',
             name='directory',
             get='origin.directory',

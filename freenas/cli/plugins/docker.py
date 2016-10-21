@@ -525,7 +525,7 @@ class DockerImageSearchCommand(Command):
         name = kwargs.get('name') or args[0]
 
         return Table(context.call_sync('docker.image.search', name), [
-            Table.Column('Name', 'name', display_width_percentage=30),
+            Table.Column('Name', 'name', width=30),
             Table.Column('Description', 'description')
         ])
 
@@ -542,7 +542,7 @@ class DockerImageListCommand(Command):
     """
     def run(self, context, args, kwargs, opargs):
         return Table(DockerImageNamespace.freenas_images, [
-            Table.Column('Name', 'name', display_width_percentage=30),
+            Table.Column('Name', 'name', width=30),
             Table.Column('Description', 'description')
         ])
 

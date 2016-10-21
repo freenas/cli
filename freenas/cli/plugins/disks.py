@@ -354,8 +354,8 @@ class EnclosureDevicesCommand(Command):
     def run(self, context, args, kwargs, opargs):
         devices = sorted(self.parent.entity['devices'], key=lambda d: d['index'])
         return Table(devices, [
-            Table.Column('Index', 'index', display_width_percentage=10),
-            Table.Column('Disk name', 'disk_name', display_width_percentage=20),
+            Table.Column('Index', 'index', width=10),
+            Table.Column('Disk name', 'disk_name', width=20),
             Table.Column('Slot description', 'name'),
             Table.Column('Slot status', 'status')
         ])

@@ -115,17 +115,17 @@ class Object(list):
 
 class Table(object):
     class Column(object):
-        def __init__(self, label, accessor, vt=ValueType.STRING, display_width_percentage=None):
+        def __init__(self, label, accessor, vt=ValueType.STRING, width=None):
             self.label = label
             self.accessor = accessor
             self.vt = vt
-            self.display_width_percentage = display_width_percentage
+            self.width = width
 
         def __getstate__(self):
             return {
                 'label': self.label,
                 'vt': self.vt.name,
-                'display_width_percentage': self.display_width_percentage
+                'width': self.width
             }
 
     def __init__(self, data, columns):

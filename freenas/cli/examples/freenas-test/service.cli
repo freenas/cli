@@ -1,16 +1,21 @@
 # Test runner for service  category
 #
 
+# Service we try to fondle - if not running, we pick another.
+_service="snmp"
+
 function service_create() {
 	print(">>> Starting service tests")
-	@$(service smartd stop)
-	maybe_barf(_success, "+service#1", "Unable to stop smartd service")
-	_pid = $(service smartd get pid)
-	maybe_barf(_pid == none, "+service#2", "pid of smartd still set when stopped")
-	@$(service smartd start)
-	maybe_barf(_success, "+service#3", "Unable to start smartd service")
-	_pid = $(service smartd get pid)
-	maybe_barf(_pid != none, "+service#4", "pid of smartd not set when started")
+	_pid = $(service ${_service} get pid)
+	maybe_barf(_pid == none, "The " + _service + " service is not running on this machine")
+	@$(service ${_service} stop)
+	maybe_barf(_success, "+service#1", "Unable to stop " + _service + " service")
+	_pid = $(service ${_service} get pid)
+	maybe_barf(_pid == none, "+service#2", "pid of " + _service + " still set when stopped")
+	@$(service ${_service} start)
+	maybe_barf(_success, "+service#3", "Unable to start " + _service + " service")
+	_pid = $(service ${_service} get pid)
+	maybe_barf(_pid != none, "+service#4", "pid of " + _service + " not set when started")
 
 	_level = $(service sshd config get sftp_log_level)
 	maybe_barf(_success, "+service#5", "unable to get sftp_log_level property of sshd service")

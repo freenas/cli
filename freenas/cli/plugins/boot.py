@@ -312,7 +312,8 @@ class BootPoolScrubCommand(Command):
     """
 
     def run(self, context, args, kwargs, opargs):
-        context.submit_task('boot.pool.scrub')
+        tid = context.submit_task('boot.pool.scrub')
+        return TaskPromise(context, tid)
 
 
 @description("List the devices in the boot pool")

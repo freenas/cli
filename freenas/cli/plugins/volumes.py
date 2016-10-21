@@ -968,7 +968,7 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
 
         if self.parent and self.parent.entity:
             self.extra_query_params = [
-                ('volume', '=', self.parent.entity['id'])
+                ('volume', '=', self.parent.entity.get('id'))
             ]
 
         self.localdoc['CreateEntityCommand'] = ("""\
@@ -1308,9 +1308,9 @@ class SnapshotsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Ent
         self.required_props = ['name']
         self.large = True
 
-        if parent:
+        if parent and parent.entity:
             self.extra_query_params = [
-                ('volume', '=', self.parent.name)
+                ('volume', '=', self.parent.entity.get('id'))
             ]
 
         self.add_property(

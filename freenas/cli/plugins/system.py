@@ -33,7 +33,7 @@ from freenas.cli.namespace import (
 )
 from freenas.cli.output import Object, Sequence, ValueType, format_value, output_msg
 from freenas.cli.descriptions import events
-from freenas.cli.utils import EntityPromise, post_save, parse_timedelta
+from freenas.cli.utils import TaskPromise, post_save, parse_timedelta
 from freenas.cli.complete import NullComplete
 from freenas.dispatcher.fd import FileDescriptor
 
@@ -307,8 +307,8 @@ class SystemDatasetImportCommand(Command):
         if not vol:
             raise CommandException(_('Please specify a volume name'))
 
-        tid = context.submit_task('system_dataset.import', vol, callback=lambda s: post_save(self.parent, s))
-        return EntityPromise(context, tid, self.parent)
+        tid = context.submit_task('system_dataset.import', vol, callback=lambda s, t: post_save(self.parent, s, t))
+        return TaskPromise(context, tid)
 
 
 @description(_("Manage NTP servers"))

@@ -279,6 +279,15 @@ def quote(value):
     return value
 
 
+def get_item_stub(context, parent, name):
+    from freenas.cli.namespace import SingleItemNamespace
+    ns = SingleItemNamespace(name, parent, context)
+    ns.orig_entity = copy.deepcopy(parent.skeleton_entity)
+    ns.entity = copy.deepcopy(parent.skeleton_entity)
+    set(ns.entity, parent.primary_key_name, name)
+    return ns
+
+
 class PrintableNone(object):
     def __bool__(self):
         return False

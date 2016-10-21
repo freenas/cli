@@ -33,7 +33,7 @@ from freenas.cli.namespace import (
     CommandException, ListCommand
 )
 from freenas.cli.output import ValueType, Table
-from freenas.cli.utils import TaskPromise, EntityPromise, post_save
+from freenas.cli.utils import TaskPromise, EntityPromise, post_save, get_item_stub
 from freenas.utils import first_or_default
 from freenas.utils.query import get
 
@@ -84,15 +84,17 @@ class ImportShareCommand(Command):
         if not path:
             raise CommandException(_("Please specify a valid path to your share."))
 
+        ns = get_item_stub(context, self.parent, name)
+
         tid = context.submit_task(
             'share.import',
             path,
             name,
             self.parent.type_name.lower(),
-            callback=lambda s, t: post_save(self.parent, s, t)
+            callback=lambda s, t: post_save(ns, s, t)
         )
 
-        return EntityPromise(context, tid, self.parent)
+        return EntityPromise(context, tid, ns)
 
 
 @description("Configure and manage shares")

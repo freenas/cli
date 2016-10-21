@@ -32,7 +32,7 @@ from freenas.cli.namespace import (
     RpcBasedLoadMixin, TaskBasedSaveMixin, description, CommandException, ConfigNamespace, BaseVariantMixin
 )
 from freenas.cli.output import ValueType, get_humanized_size
-from freenas.cli.utils import TaskPromise, post_save, EntityPromise
+from freenas.cli.utils import TaskPromise, post_save, EntityPromise, get_item_stub
 from freenas.utils import first_or_default
 from freenas.utils.query import get, set
 from freenas.cli.complete import NullComplete, EntitySubscriberComplete, RpcComplete, MultipleSourceComplete
@@ -171,8 +171,10 @@ class ImportVMCommand(Command):
         if not volume:
             raise CommandException(_("Please specify which volume is containing a VM being imported."))
 
-        tid = context.submit_task('vm.import', name, volume, callback=lambda s, t: post_save(self.parent, t))
-        return EntityPromise(context, tid, self.parent)
+        ns = get_item_stub(context, self.parent, name)
+
+        tid = context.submit_task('vm.import', name, volume, callback=lambda s, t: post_save(ns, s, t))
+        return EntityPromise(context, tid, ns)
 
 
 @description("Configure system-wide virtualization behavior")
@@ -945,14 +947,18 @@ class CreateVMSnapshotCommand(Command):
             name = kwargs.pop('name')
 
         descr = kwargs.pop('description', '')
+
+        ns = get_item_stub(context, self.parent, name)
+
         tid = context.submit_task(
             self.parent.create_task,
             self.parent.parent.entity['id'],
             name,
-            descr
+            descr,
+            callback=lambda s, t: post_save(ns, s, t)
         )
 
-        return EntityPromise(context, tid, self.parent)
+        return EntityPromise(context, tid, ns)
 
     def complete(self, context, **kwargs):
         return [

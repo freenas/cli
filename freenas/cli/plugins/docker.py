@@ -31,7 +31,7 @@ from freenas.cli.namespace import (
     TaskBasedSaveMixin, CommandException, description, ConfigNamespace
 )
 from freenas.cli.output import ValueType, Table, Sequence, read_value
-from freenas.cli.utils import TaskPromise, post_save, EntityPromise
+from freenas.cli.utils import TaskPromise, post_save, EntityPromise, get_item_stub
 from freenas.utils import query as q
 from freenas.cli.complete import NullComplete, EntitySubscriberComplete, EnumComplete
 from freenas.cli.console import Console
@@ -497,8 +497,11 @@ class DockerImagePullCommand(Command):
         if host:
             hostid = context.entity_subscribers['docker.host'].query(('name', '=', host), single=True, select='id')
 
-        tid = context.submit_task('docker.image.pull', name, hostid)
-        return EntityPromise(context, tid, self.parent)
+        ns = get_item_stub(context, self.parent, name)
+
+        tid = context.submit_task('docker.image.pull', name, hostid, callback=lambda s, t: post_save(ns, s, t))
+
+        return EntityPromise(context, tid, ns)
 
     def complete(self, context, **kwargs):
         return [
@@ -733,8 +736,10 @@ class DockerContainerCreateCommand(Command):
             )
         }
 
-        tid = context.submit_task(self.parent.create_task, create_args)
-        return EntityPromise(context, tid, self.parent)
+        ns = get_item_stub(context, self.parent, name)
+
+        tid = context.submit_task(self.parent.create_task, create_args, callback=lambda s, t: post_save(ns, s, t))
+        return EntityPromise(context, tid, ns)
 
     def complete(self, context, **kwargs):
         props = []

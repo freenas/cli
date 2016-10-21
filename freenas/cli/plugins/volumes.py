@@ -35,7 +35,7 @@ from freenas.cli.namespace import (
 from freenas.cli.complete import NullComplete, EnumComplete, EntitySubscriberComplete
 from freenas.cli.output import Table, ValueType, output_tree, format_value, read_value, Sequence
 from freenas.cli.utils import TaskPromise, EntityPromise, post_save, iterate_vdevs, vdev_by_path, mirror_by_path
-from freenas.cli.utils import to_list, correct_disk_path, get_related, set_related
+from freenas.cli.utils import to_list, correct_disk_path, get_related, set_related, get_item_stub
 from freenas.utils import query as q
 
 t = gettext.translation('freenas-cli', fallback=True)
@@ -429,10 +429,7 @@ class ImportVolumeCommand(Command):
             encryption = {}
             password = None
 
-        ns = SingleItemNamespace(None, self.parent, context)
-        ns.orig_entity = copy.deepcopy(self.parent.skeleton_entity)
-        ns.entity = copy.deepcopy(self.parent.skeleton_entity)
-        ns.entity['id'] = None
+        ns = get_item_stub(context, self.parent, None)
 
         tid = context.submit_task(
             'volume.import',
@@ -1275,10 +1272,7 @@ class CloneCommand(Command):
         if not new_name:
             raise CommandException('Name of clone have to be specified')
 
-        ns = SingleItemNamespace(new_name, self.parent, context)
-        ns.orig_entity = copy.deepcopy(self.parent.skeleton_entity)
-        ns.entity = copy.deepcopy(self.parent.skeleton_entity)
-        ns.entity['id'] = new_name
+        ns = get_item_stub(context, self.parent.parent, new_name)
 
         tid = context.submit_task(
             'volume.snapshot.clone',

@@ -75,6 +75,7 @@ from freenas.dispatcher.client import Client, ClientError
 from freenas.dispatcher.entity import EntitySubscriber
 from freenas.dispatcher.rpc import RpcException
 from freenas.utils import first_or_default, include, best_match
+from freenas.utils.spawn_thread import spawn_thread
 from freenas.utils.query import get
 from freenas.cli.commands import (
     ExitCommand, PrintoptCommand, SetoptCommand, SetenvCommand, PrintenvCommand,
@@ -750,7 +751,7 @@ class Context(object):
 
     def handle_task_callback(self, data):
         if data['state'] in ('FINISHED', 'CANCELLED', 'ABORTED', 'FAILED'):
-            self.task_callbacks[data['id']](data['state'], data)
+            spawn_thread(self.task_callbacks[data['id']], data['state'], data, threadpool=True)
 
     def print_event(self, event, data):
         if self.event_divert:

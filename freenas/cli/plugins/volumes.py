@@ -1415,7 +1415,7 @@ class VMwareDatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin
 
         if self.parent and self.parent.entity:
             self.skeleton_entity = {
-                'dataset': self.parent.entity['id']
+                'dataset': self.parent.entity.get('id')
             }
 
         self.add_property(

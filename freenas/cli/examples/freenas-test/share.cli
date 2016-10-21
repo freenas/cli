@@ -35,7 +35,7 @@ function share_create() {
 	@$(service smb config set enable=yes)
 	maybe_barf(_success, "+share#8", "Unable to set SMB service enable to yes")
 
-	_nfs_object = @$(share nfs create owner=${TEST_USER} name=${_nfs_name} root_user=${TEST_USER} root_group=$(TEST_GROUP) parent=${VOL_NAME})
+	_nfs_object = @$(share nfs create owner=${TEST_USER} name=${_nfs_name} root_user=${TEST_USER} root_group=${TEST_GROUP} parent=${VOL_NAME})
 	maybe_barf(_success, "+share#9", "Unable to create NFS share " + _nfs_name)
 	_owner = $(_nfs_object get owner)
 	maybe_barf(_owner == TEST_USER, "share#10", "Incorrect owner for " + _nfs_name + ":" + _owner)

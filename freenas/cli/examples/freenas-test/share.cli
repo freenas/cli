@@ -15,8 +15,7 @@ _iscsi_name="test_iscs_share"
 _iscsi_service_status="no"
 _iscsi_object=none
 
-function share_create() {
-	print(">>> Starting share tests")
+function share_afp_create() {
 	print(">>> 	Starting afp share tests")
 	_afp_object = @$(share afp create owner=${TEST_USER} group=${TEST_GROUP} name=${_afp_name} time_machine=yes parent=${VOL_NAME})
 	maybe_barf(_success, "+share#1", "Unable to create AFP share " + _afp_name)
@@ -26,7 +25,9 @@ function share_create() {
 	maybe_barf(_success, "+share#3", "Unable to get AFP service status")
 	@$(service afp config set enable=yes)
 	maybe_barf(_success, "+share#4", "Unable to set AFP service enable to yes")
+}
 
+function share_smb_create() {
 	print(">>> 	Starting smb share tests")
 	_smb_object = @$(share smb create owner=${TEST_USER} group=${TEST_GROUP} name=${_smb_name} guest_ok=yes parent=${VOL_NAME})
 	maybe_barf(_success, "+share#5", "Unable to create SMB share " + _smb_name)
@@ -36,7 +37,9 @@ function share_create() {
 	maybe_barf(_success, "+share#7", "Unable to get SMB service status")
 	@$(service smb config set enable=yes)
 	maybe_barf(_success, "+share#8", "Unable to set SMB service enable to yes")
+}
 
+function share_nfs_create() {
 	print(">>> 	Starting nfs share tests")
 	_nfs_object = @$(share nfs create owner=${TEST_USER} group=${TEST_GROUP} name=${_nfs_name} root_user=${TEST_USER} root_group=${TEST_GROUP} parent=${VOL_NAME})
 	maybe_barf(_success, "+share#9", "Unable to create NFS share " + _nfs_name)
@@ -46,7 +49,10 @@ function share_create() {
 	maybe_barf(_success, "+share#11", "Unable to get NFS service status")
 	@$(service nfs config set enable=yes)
 	maybe_barf(_success, "+share#12", "Unable to set NFS service enable to yes")
+}
 
+function share_iscsi_create()
+{
 	print(">>> 	Starting iscsi share tests")
 	_iscsi_object = @$(share iscsi create name=${_iscsi_name} rpm=7200 size=10g parent=${VOL_NAME})
 	maybe_barf(_success, "+share#13", "Unable to create ISCSI share " + _iscsi_name)
@@ -56,6 +62,14 @@ function share_create() {
 	maybe_barf(_success, "+share#15", "Unable to get ISCSI service status")
 	@$(service iscsi config set enable=yes)
 	maybe_barf(_success, "+share#16", "Unable to set ISCSI service enable to yes")
+}
+
+function share_create() {
+	print(">>> Starting share tests")
+	share_afp_create()
+	share_smb_create()
+	share_nfs_create()
+	share_iscs_create()
 }
 
 function share_destroy() {

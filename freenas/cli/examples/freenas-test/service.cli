@@ -7,7 +7,7 @@ _service="snmp"
 function service_create() {
 	print(">>> Starting service tests")
 	_pid = $(service ${_service} get pid)
-	maybe_barf(_pid == none, "+service#1", "The " + _service + " service is not running on this machine")
+	maybe_barf(_pid != none, "+service#1", "The " + _service + " service is not running on this machine")
 	@$(service ${_service} stop)
 	maybe_barf(_success, "+service#2", "Unable to stop " + _service + " service")
 	_pid = $(service ${_service} get pid)

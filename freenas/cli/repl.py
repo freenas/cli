@@ -1417,6 +1417,7 @@ class MainLoop(object):
             if isinstance(token, CommandCall):
                 token = copy.deepcopy(token)
                 success = True
+                error = None
 
                 try:
                     if len(token.args) == 0:
@@ -1507,9 +1508,11 @@ class MainLoop(object):
 
                 except BaseException as err:
                     success = False
+                    error = str(err)
                     raise err
                 finally:
                     env['_success'] = Environment.Variable(success)
+                    env['_error'] = Environment.Variable(error)
 
                 env['_success'] = Environment.Variable(False)
                 raise SyntaxError("Command or namespace {0} not found".format(top.name))

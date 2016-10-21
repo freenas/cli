@@ -37,7 +37,7 @@ function account_create() {
 
 function account_destroy() {
 	print(">>> Finishing account tests")
-	@$(VOL_OBJECT dataset home delete)
+	@$(VOL_OBJECT dataset ${VOL_NAME + "/home"} delete)
 	maybe_barf(_success, "-account#1", "Unable to delete temporary home dataset on " + VOL_NAME)
 	@$(_user_obj delete)
 	maybe_barf(_success, "-account#2", "Unable to delete user " + TEST_USER)

@@ -487,11 +487,8 @@ class DetachVolumeCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        result = context.call_task_sync('volume.export', self.parent.entity['id'])
-        if result.get('result', None) is not None:
-            return Sequence("Detached volume {0} was encrypted!".format(args[0]),
-                            "You must save user key listed below to be able to import volume in the future",
-                            str(result['result']))
+        tid = context.submit_task('volume.export', self.parent.entity['id'])
+        return TaskPromise(context, tid)
 
 
 @description("Upgrades  given volume")

@@ -25,7 +25,7 @@ function volume_create() {
 
 	_x = $(VOL_OBJECT get guid)
 	maybe_barf(_success, "+volume9", "Unable to get guid for volume " + VOL_NAME)
-	@$(VOL_OBJECT detach)
+	$(VOL_OBJECT detach)
 	maybe_barf(_success, "+volume10", "Unable to detach volume " + VOL_NAME)
 
 	@$(volume import ${_x})

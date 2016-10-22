@@ -32,6 +32,7 @@ function load_all() {
 
 	 for (test in TEST_SET) {
 	 	_path=${TOP_DIR + test + ".cli"}
+		print(">> Loading " + _path)
 		source ${_path}
 		if (_success != true) {
 			print(_path + " test script not found")

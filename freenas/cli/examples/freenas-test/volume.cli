@@ -30,8 +30,16 @@ function volume_create() {
 
 function volume_destroy() {
 	print(">>> Finishing volume tests")
-	@$(SNAP_OBJECT delete)
+	if (SNAP_OBJECT != null) {
+		@$(SNAP_OBJECT delete)
+	} else {
+		@$(volume ${VOL_NAME} snapshot ${VOL_NAME + "@" + _snap_name} delete)
+	}	
 	maybe_barf(_success, "-volume#1", "Unable to delete snapshot " + _snap_name + " from volume " + VOL_NAME)
-	@$(VOL_OBJECT delete)
+	if (VOL_OBJECT != null) {
+		@$(VOL_OBJECT delete)
+	} else {
+		volume ${VOL_NAME} delete
+	}
 	maybe_barf(_success, "-volume#2", "Unable to delete volume " + VOL_NAME)
 }

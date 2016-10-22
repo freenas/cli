@@ -82,6 +82,7 @@ function account_test_hard()
 	for (i in mapf(range(0, _hard_count), TEST_USER + "%d")) {
 	    @$(account user ${i} delete)
 	    maybe_barf(_success, "+account-hard#3", "Unable to delete user " + i)
+	    # XXX delete this if delete private group support goes in.
 	    @$(account group ${i} delete)
 	    maybe_barf(_success, "+account-hard#4", "Unable to delete group " + i)
 	}

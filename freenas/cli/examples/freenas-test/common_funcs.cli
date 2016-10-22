@@ -2,18 +2,18 @@
 
 function maybe_barf(flag, test, str) {
 	if (flag != true) {
-		print("ERROR in " + test + " " + str)
+		printf("ERROR %s in %s\n", str, test)
 		if (_exit_on_err == true) {
 			exit
 		}
 	}
-	return flag
+	return not flag
 }	
 
 function maybe_die(flag, test, str) {
 	if (flag != true) {
-		print("FATAL: " + test + " " + str)
+		printf("FATAL error %s in %s\n", str, test)
 		exit
 	}
-	return flag
+	return not flag
 }	

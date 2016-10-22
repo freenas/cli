@@ -4,7 +4,6 @@
 # State variables shared between create and destroy functions.
 _user_obj=null
 _group_obj=null
-_hard_count=50
 
 function account_create() {
 	print(">>> Starting account tests")
@@ -67,6 +66,7 @@ function account_destroy() {
 
 function account_test_hard()
 {
+	_hard_count=50
 	printf(">>> Starting account stress tests: %d users and groups\n", _hard_count)
 
 	for (i in mapf(range(0, _hard_count), TEST_USER + "%d")) {

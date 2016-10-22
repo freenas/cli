@@ -522,13 +522,6 @@ def p_block(p):
     p[0] = p[2]
 
 
-def p_block_2(p):
-    """
-    block : LBRACE newline stmt_list RBRACE
-    """
-    p[0] = p[3]
-
-
 def p_block_3(p):
     """
     block : LBRACE newline RBRACE
@@ -1059,6 +1052,8 @@ def p_newline(p):
     """
     newline : NEWLINE
     newline : SEMICOLON
+    newline : NEWLINE newline
+    newline : SEMICOLON newline
     """
 
 

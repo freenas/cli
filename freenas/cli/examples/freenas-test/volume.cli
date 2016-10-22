@@ -39,7 +39,7 @@ function volume_destroy() {
 	if (VOL_OBJECT != null) {
 		@$(VOL_OBJECT delete)
 	} else {
-		volume ${VOL_NAME} delete
+		@$(volume ${VOL_NAME} delete)
 	}
 	maybe_barf(_success, "-volume#2", "Unable to delete volume " + VOL_NAME)
 }

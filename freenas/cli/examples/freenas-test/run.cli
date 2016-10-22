@@ -64,9 +64,7 @@ load_all()
 x = readline("All tests loaded. Ready to run them? ([y] / n) ")
 if (x == "yes" or x == "y" or x == "") {
 	x = readline("Also run stress tests? (y or [n]) ")
-	if (x == "yes" or x == "y") {
-		test_me_harder=true
-	}
+	test_me_harder = (x == "yes" or x == "y")
 	create_all()
 	destroy_all()
 } else {

@@ -3,7 +3,10 @@
 # which can be optionally overridden by setting TEST_SET below to your own
 # value.
 
-TEST_SET = ["disk", "volume", "network", "service", "system", "account", "share", "boot", "session", "task", "alert", "calendar", "tunable", "vm", "docker"]
+TEST_SET = [ \
+    "disk", "volume", "network", "service", "system", "account", "share", "boot", \
+    "session", "task", "alert", "calendar", "tunable", "vm", "docker" \
+]
 
 # Future use - someday this will cause the tests to exit upon any error.
 _exit_on_err=false

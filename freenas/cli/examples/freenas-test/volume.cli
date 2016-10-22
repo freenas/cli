@@ -4,7 +4,7 @@
 # State variables shared between create and destroy functions.
 _snap_name="_snappysnap"
 _dataset_name="_testdset"
-_hard_count = 50
+_hard_count=20
 
 function volume_create() {
 	print(">>> Starting volume tests")
@@ -33,7 +33,6 @@ function volume_create() {
 	if (test_me_harder) {
 		volume_test_hard()
 	}
-		
 }
 
 function volume_destroy() {
@@ -56,7 +55,7 @@ function volume_destroy() {
 
 function volume_test_hard()
 {
-	print(">>> Starting hard volume tests: " + str(_hard_count) + " datasets and snapshots")
+	print(">>> Starting volume stress tests: " + str(_hard_count) + " datasets and snapshots")
 	for (i = 0; i < _hard_count; i = i + 1) {
 	    @$(VOL_OBJECT dataset create name=${VOL_NAME + "/" + _dataset_name + str(i)})
 	    maybe_barf(_success, "+volume-hard#1", "Unable to create dataset #" + str(i))

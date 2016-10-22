@@ -67,7 +67,7 @@ function account_destroy() {
 
 function account_test_hard()
 {
-	print(">>> Starting hard account tests: " + str(_hard_count) + " users and groups")
+	print(">>> Starting account stress tests: " + str(_hard_count) + " users and groups")
 	for (i = 0; i < _hard_count; i = i + 1) {
 	    @$(account user create name=${TEST_USER + str(i)} fullname=${"My Test User " + str(i)} home=${"/mnt/" + VOL_NAME + "/home"} password_disabled=yes)
 	    maybe_barf(_success, "+account-hard#1", "Unable to create user #" + str(i))

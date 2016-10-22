@@ -72,11 +72,13 @@ function volume_test_hard()
 	    }
 	}
 	for (i in _dset_array) {
-	    @$(${i} delete)
-	    maybe_barf(_success, "+volume-hard#3", "Unable to delete dataset " + $(i name))
+	    _n = $(i get name)
+	    @$(i delete)
+	    maybe_barf(_success, "+volume-hard#3", "Unable to delete dataset " + _n)
 	}
 	for (i in _snap_array) {
-	    @$(${i} delete)
-	    maybe_barf(_success, "+account-hard#4", "Unable to delete snapshot #" + str(i))
+	    _n = $(i get name)
+	    @$(i delete)
+	    maybe_barf(_success, "+account-hard#4", "Unable to delete snapshot " + _n)
 	}
 }

@@ -2,6 +2,8 @@
 #
 
 # State variables shared between create and destroy functions.
+_cmd_name="test-command"
+_scrub_name="test-scrub"
 _cal_command = none
 _cal_scrub = none
 
@@ -10,9 +12,9 @@ function calendar_create() {
 	_x = $(calendar check_update show|select name)
 	maybe_barf(_success, "+calendar#1", "Unable to find check_update calendar entry")
 	maybe_barf(_x[0]["result"] == "nightly_update_check", "+calendar#2", "nightly update check calendar entry naming syntax")
-	_cal_command = @$(calendar command create command="echo testing" name="test-command" username=root)
+	_cal_command = @$(calendar command create command="echo testing" name=${_cmd_name} username=root)
 	maybe_barf(_success, "+calendar#3", "unable to create calendar command task")
-	_cal_scrub = @$(calendar scrub create name="test-scrub" volume=${VOL_NAME} enabled=yes)
+	_cal_scrub = @$(calendar scrub create name=${_scrub_name} volume=${VOL_NAME} enabled=yes)
 	maybe_barf(_success, "+calendar#4", "unable to create calendar scrub task")
 	_cal_scrub run
 	maybe_barf(_success, "+calendar#5", "unable to run calendar scrub task")
@@ -20,8 +22,16 @@ function calendar_create() {
 
 function calendar_destroy() {
 	print(">>> Finishing calendar tests")
-	_cal_command delete
+	if (_cal_command != null) {
+		_cal_command delete
+	} else {
+		@$(calendar command ${_cmd_name} delete)
+	}
 	maybe_barf(_success, "-calendar#1", "unable to delete calendar command task")
-	_cal_scrub delete
+	if (_cal_scrub != null) {
+		_cal_scrub delete
+	} else {
+		@$(calendar scrub ${_scrub_name} delete)
+	}
 	maybe_barf(_success, "-calendar#2", "unable to delete calendar scrub task")
 }

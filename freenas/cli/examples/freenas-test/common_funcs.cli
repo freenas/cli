@@ -7,4 +7,13 @@ function maybe_barf(flag, test, str) {
 			exit
 		}
 	}
+	return flag
+}	
+
+function maybe_die(flag, test, str) {
+	if (flag != true) {
+		print("FATAL: " + test + " " + str)
+		exit
+	}
+	return flag
 }	

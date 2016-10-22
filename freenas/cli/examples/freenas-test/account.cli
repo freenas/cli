@@ -4,6 +4,7 @@
 # State variables shared between create and destroy functions.
 _user_obj=null
 _group_obj=null
+_hard_count=50
 
 function account_create() {
 	print(">>> Starting account tests")
@@ -22,7 +23,7 @@ function account_create() {
 		@$(_user_obj set uid=${_olduid})
 		maybe_barf(_success, "+account#6", "Cannot restore uid value for user " + TEST_USER)
 	}
-
+	
 	_group_obj = @$(account group create name=${TEST_GROUP})
 	maybe_barf(_success, "+account#7", "Unable to create group " + TEST_GROUP)
 	_oldgid=$(_group_obj get gid)
@@ -34,6 +35,9 @@ function account_create() {
 	if (_success == true) {
 		@$(_group_obj set gid=${_oldgid})
 		maybe_barf(_success, "+account#12", "Cannot restore gid value for group " + TEST_GROUP)
+	}
+	if (test_me_harder) {
+		account_test_hard()
 	}
 }
 
@@ -59,4 +63,25 @@ function account_destroy() {
 		@$(account group ${TEST_GROUP} delete)
 	}
 	maybe_barf(_success, "-account#4", "Unable to delete group " + TEST_GROUP)
+}
+
+function account_test_hard()
+{
+	print(">>> Starting hard account tests: " + str(_hard_count) + " users and groups")
+	for (i = 0; i < _hard_count; i = i + 1) {
+	    @$(account user create name=${TEST_USER + str(i)} fullname=${"My Test User " + str(i)} home=${"/mnt/" + VOL_NAME + "/home"} password_disabled=yes)
+	    maybe_barf(_success, "+account-hard#1", "Unable to create user #" + str(i))
+	}
+	for (i = 0; i < _hard_count; i = i + 1) {
+	    @$(account group create name=${TEST_GROUP + str(i)})
+	    maybe_barf(_success, "+account-hard#2", "Unable to create group #" + str(i))
+	}
+	for (i = 0; i < _hard_count; i = i + 1) {
+	    @$(account user ${TEST_USER + str(i)} delete)
+	    maybe_barf(_success, "+account-hard#3", "Unable to delete user #" + str(i))
+	}
+	for (i = 0; i < _hard_count; i = i + 1) {
+	    @$(account group ${TEST_GROUP + str(i)} delete)
+	    maybe_barf(_success, "+account-hard#4", "Unable to delete group #" + str(i))
+	}
 }

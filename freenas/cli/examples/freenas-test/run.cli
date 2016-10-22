@@ -51,5 +51,11 @@ function destroy_all() {
 }
 
 # OK do it.
-create_all()
-destroy_all()
+x = readline("All tests loaded. Ready to run them? ([y] / n) ")
+if (x == "yes" or x == "y" or x == "") {
+	create_all()
+	destroy_all()
+} else {
+	print("You can run the tests yourself by calling create_all()")
+	print("(or create_testname()) then destroy_all() (or destroy_testname())")
+}	

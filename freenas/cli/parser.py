@@ -422,12 +422,14 @@ def t_ANY_QUOTE(t):
 def t_NEWLINE(t):
     r'[\n]+'
     t.lexer.lineno += len(t.value)
+    t.lexer.breaknl = False
     return t
 
 
 def t_SEMICOLON(t):
     r'[;]+[\n]?'
     t.lexer.lineno += t.value.count('\n')
+    t.lexer.breaknl = False
     return t
 
 

@@ -8,26 +8,25 @@ _vm_object=none
 _vm_description="This is a test"
 
 function vm_create() {
-	 print(">>> Starting vm tests")
-	 _vm_object = @$(vm create name=${_vm_name} template=${_vm_template} volume=${VOL_NAME})
-	 maybe_barf(_success, "+vm#1", "Unable to create VM " + _vm_name)
-	 maybe_barf($(_vm_object get cores) == 1, "+vm#2", "Wrong number of cores returned for VM " + _vm_name)
-	 @$(_vm_object set description=${_vm_description})
-	 _x = $(_vm_object get description)
-	 maybe_barf(_x == _vm_description, "+vm#3", "Description for " + _vm_name + " didn't match expected: " + _vm_description)
-	 @$(_vm_object start)
-	 maybe_barf(_success, "+vm#4", "Unable to start VM " + _vm_name)
-	 @$(_vm_object stop)
-	 maybe_barf(_success, "+vm#4", "Unable to stop VM " + _vm_name)
+	print(">>> Starting vm tests")
+	_vm_object = @$(vm create name=${_vm_name} template=${_vm_template} volume=${VOL_NAME})
+	maybe_barf(_success, "+vm#1", "Unable to create VM " + _vm_name)
+	maybe_barf($(_vm_object get cores) == 1, "+vm#2", "Wrong number of cores returned for VM " + _vm_name)
+	@$(_vm_object set description=${_vm_description})
+	_x = $(_vm_object get description)
+	maybe_barf(_x == _vm_description, "+vm#3", "Description for " + _vm_name + " didn't match expected: " + _vm_description)
+	@$(_vm_object start)
+	maybe_barf(_success, "+vm#4", "Unable to start VM " + _vm_name)
+	@$(_vm_object stop)
+	maybe_barf(_success, "+vm#4", "Unable to stop VM " + _vm_name)
 	if (test_me_harder) {
-		vm_test_hard()
+	   vm_test_hard()
 	}
-	 
 }
 
 function vm_destroy() {
 	 print(">>> Finishing vm tests")
-	 if (_vm_object != null) {
+	if (_vm_object != null) {
 		_vm_object delete
 	} else {
 		@$(vm ${_vm_name} delete)
@@ -42,9 +41,9 @@ function vm_test_hard()
 
 	for (i in mapf(range(0, _hard_count), _vm_name + "%d")) {
 	    _x = @$(vm create name=${i} template=${_vm_template} volume=${VOL_NAME})
-	     if (not (maybe_barf(_success, "+vm-hard#1", "Unable to create VM " + i))) {
-	     	append(_vm_array, _x)
-	     }
+	    if (not (maybe_barf(_success, "+vm-hard#1", "Unable to create VM " + i))) {
+	       append(_vm_array, _x)
+	    }
 	}
 
 	for (i in _vm_array) {

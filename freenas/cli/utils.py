@@ -81,6 +81,11 @@ def parse_query_args(args, kwargs):
     return filters, params
 
 
+def pass_env(fn):
+    fn.pass_env = True
+    return fn
+
+
 def list_split(lst, delimiter):
     """
     Simple helper function to split list by the specified delimiter (e.g: '\n')

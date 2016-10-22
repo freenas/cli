@@ -897,7 +897,7 @@ class Function(object):
         self.exp = exp
         self.env = env
 
-    def __call__(self, *args):
+    def __call__(self, env, *args):
         env = Environment(self.context, self.env, zip(self.param_names, args))
         try:
             self.context.eval_block(self.exp, env, False)
@@ -920,8 +920,11 @@ class BuiltinFunction(object):
         self.name = name
         self.f = f
 
-    def __call__(self, *args):
-        return self.f(*args)
+    def __call__(self, env, *args):
+        if getattr(self.f, 'pass_env', False):
+            return self.f(env, *args)
+        else:
+            return self.f(*args)
 
     def __str__(self):
         return "<built-in function '{0}'>".format(self.name)
@@ -1528,7 +1531,8 @@ class MainLoop(object):
                     self.context.call_stack.append(
                         CallStackEntry(func.name, args, token.file, token.line, token.column)
                     )
-                    result = func(*args)
+
+                    result = func(env, *args)
                     self.context.call_stack.pop()
                     return result
 

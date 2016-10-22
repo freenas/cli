@@ -39,6 +39,7 @@ from builtins import input
 from freenas.cli.namespace import Command
 from freenas.cli.output import format_output, output_msg, Table, Sequence
 from freenas.cli.parser import Quote, parse, unparse, read_ast as parser_read_ast, FunctionDefinition
+from freenas.cli.utils import pass_env
 from freenas.cli import config
 from freenas.utils import decode_escapes
 
@@ -258,6 +259,21 @@ def read_ast(value):
     return parser_read_ast(value)
 
 
+@pass_env
+def defined(env, name):
+    return name in env
+
+
+@pass_env
+def get_by_name(env, name):
+    return env.find(name)
+
+
+@pass_env
+def set_by_name(env, name, value):
+    env[name] = value
+
+
 functions = {
     'print': print_,
     'printf': printf,
@@ -302,5 +318,8 @@ functions = {
     're_search': re_search,
     'waitfor': waitfor,
     'dump_ast': dump_ast,
-    'read_ast': read_ast
+    'read_ast': read_ast,
+    'defined': defined,
+    'get_by_name': get_by_name,
+    'set_by_name': set_by_name
 }

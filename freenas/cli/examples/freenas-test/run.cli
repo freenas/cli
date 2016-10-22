@@ -27,18 +27,24 @@ source ${TOP_DIR + "common_funcs.cli"}
 # Set some sensible default options before beginning the test run
 setopt rollbar_enabled=no
 
-# Run all of the create functions.
-function create_all() {
-	setopt abort_on_errors=yes
-	for (test in TEST_SET) {
-		_path=${TOP_DIR + test + ".cli"}
+function load_all() {
+	 print(">> Loading these tests: " str(TEST_SET))
+
+	 for (test in TEST_SET) {
+	 	_path=${TOP_DIR + test + ".cli"}
 		source ${_path}
 		if (_success != true) {
 			print(_path + " test script not found")
 			remove(TEST_SET, test)
-		} else {
-			eval(test + "_create()")
 		}
+	}
+}
+
+# Run all of the create functions.
+function create_all() {
+	setopt abort_on_errors=yes
+	for (test in TEST_SET) {
+		eval(test + "_create()")
 	}
 }
 
@@ -51,11 +57,13 @@ function destroy_all() {
 }
 
 # OK do it.
+load_all()
+
 x = readline("All tests loaded. Ready to run them? ([y] / n) ")
 if (x == "yes" or x == "y" or x == "") {
 	create_all()
 	destroy_all()
 } else {
 	print("You can run the tests yourself by calling create_all()")
-	print("(or create_testname()) then destroy_all() (or destroy_testname())")
+	print("(or testname_create()) then destroy_all() (or testname_destroy())")
 }	

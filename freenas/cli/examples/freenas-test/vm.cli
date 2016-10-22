@@ -21,6 +21,10 @@ function vm_create() {
 
 function vm_destroy() {
 	 print(">>> Finishing vm tests")
-	 _vm_object delete
-	 maybe_barf(_success, "-vm#1", "Unable to delete VM " + _vm_name)
+	 if (_vm_object != null) {
+		_vm_object delete
+	} else {
+		@$(vm ${_vm_name} delete)
+	}
+	maybe_barf(_success, "-vm#1", "Unable to delete VM " + _vm_name)
 }

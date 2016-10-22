@@ -67,21 +67,27 @@ function account_destroy() {
 
 function account_test_hard()
 {
-	print(">>> Starting account stress tests: " + str(_hard_count) + " users and groups")
-	for (i = 0; i < _hard_count; i = i + 1) {
-	    @$(account user create name=${TEST_USER + str(i)} fullname=${"My Test User " + str(i)} home=${"/mnt/" + VOL_NAME + "/home"} password_disabled=yes)
-	    maybe_barf(_success, "+account-hard#1", "Unable to create user #" + str(i))
+	printf(">>> Starting account stress tests: %d users and groups\n", _hard_count)
+
+	for (i in mapf(range(0, _hard_count), TEST_USER + "%d")) {
+	    @$(account user create name=${i} fullname=${"My Test User " + i} home=${sprintf("/mnt/%s/home/%s", VOL_NAME, i)} password_disabled=yes)
+	    maybe_barf(_success, "+account-hard#1", "Unable to create user " + i)
 	}
-	for (i = 0; i < _hard_count; i = i + 1) {
-	    @$(account group create name=${TEST_GROUP + str(i)})
-	    maybe_barf(_success, "+account-hard#2", "Unable to create group #" + str(i))
+
+	for (i in mapf(range(0, _hard_count), TEST_GROUP + "%d")) {
+	    @$(account group create name=${i})
+	    maybe_barf(_success, "+account-hard#2", "Unable to create group " + i)
 	}
-	for (i = 0; i < _hard_count; i = i + 1) {
-	    @$(account user ${TEST_USER + str(i)} delete)
-	    maybe_barf(_success, "+account-hard#3", "Unable to delete user #" + str(i))
+
+	for (i in mapf(range(0, _hard_count), TEST_USER + "%d")) {
+	    @$(account user ${i} delete)
+	    maybe_barf(_success, "+account-hard#3", "Unable to delete user " + i)
+	    @$(account group ${i} delete)
+	    maybe_barf(_success, "+account-hard#4", "Unable to delete group " + i)
 	}
-	for (i = 0; i < _hard_count; i = i + 1) {
-	    @$(account group ${TEST_GROUP + str(i)} delete)
-	    maybe_barf(_success, "+account-hard#4", "Unable to delete group #" + str(i))
+
+	for (i in mapf(range(0, _hard_count), TEST_GROUP + "%d")) {
+	    @$(account group ${i} delete)
+	    maybe_barf(_success, "+account-hard#5", "Unable to delete group " + i)
 	}
 }

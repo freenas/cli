@@ -66,7 +66,7 @@ function account_destroy() {
 
 function account_test_hard()
 {
-	_hard_count=50
+	_hard_count=20
 	printf(">>> Starting account stress tests: %d users and groups\n", _hard_count)
 
 	for (i in mapf(range(0, _hard_count), TEST_USER + "%d")) {

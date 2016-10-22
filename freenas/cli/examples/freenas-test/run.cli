@@ -28,8 +28,6 @@ source ${TOP_DIR + "common_funcs.cli"}
 setopt rollbar_enabled=no
 
 function load_all() {
-	 print(">> Loading these tests: " + str(TEST_SET))
-
 	 for (test in TEST_SET) {
 	 	_path=${TOP_DIR + test + ".cli"}
 		print(">> Loading " + _path)

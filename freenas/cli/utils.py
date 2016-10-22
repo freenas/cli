@@ -318,7 +318,7 @@ class TaskPromise(object):
         return "<Task #{0}: {1}>".format(self.tid, task['state'])
 
     def wait(self):
-        self.task = self.context.entity_subscribers['task'].get(self.tid, timeout=5)
+        self.task = self.context.entity_subscribers['task'].get(self.tid)
         if self.task and self.task['state'] in ('FINISHED', 'FAILED', 'ABORTED'):
             ret = self.result
         else:

@@ -150,7 +150,7 @@ def post_save(this, status, task):
     if status in ('FINISHED', 'FAILED', 'ABORTED', 'CANCELLED'):
         from freenas.cli.namespace import EntitySubscriberBasedLoadMixin
         if task['result'] is not None and isinstance(this.parent, EntitySubscriberBasedLoadMixin):
-            entity = this.context.entity_subscribers[this.parent.entity_subscriber_name].get(task['result'])
+            entity = this.context.entity_subscribers[this.parent.entity_subscriber_name].get(task['result'], viewport=True)
             this.entity[this.parent.primary_key_name] = entity[this.parent.primary_key_name]
 
         if status == 'FINISHED':

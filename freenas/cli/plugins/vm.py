@@ -864,7 +864,7 @@ class VMSnapshotsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
     selected VM. It also provides commands to either publish a particular snapshot as well
     as rollback to a selected one.
     """
-    def __init__(self, name, context, parent):
+    def __init__(self, name, context, parent=None):
         super(VMSnapshotsNamespace, self).__init__(name, context)
         self.parent = parent
         self.entity_subscriber_name = 'vm.snapshot'
@@ -873,8 +873,8 @@ class VMSnapshotsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
         self.delete_task = 'vm.snapshot.delete'
         self.required_props = ['name']
         self.primary_key_name = 'name'
-        if self.parent.entity:
-            self.extra_query_params = [('parent.id', '=', self.parent.entity['id'])]
+        if self.parent and self.parent.entity:
+            self.extra_query_params = [('parent.id', '=', self.parent.entity.get('id'))]
 
         self.skeleton_entity = {
             'description': ''

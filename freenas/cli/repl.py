@@ -356,15 +356,6 @@ class VariableStore(object):
 
         self.variables[name].set(value)
 
-    def verify(self, name, value):
-        if name == 'verbosity':
-            try:
-                if not 1 <= int(value) <= 5:
-                    raise ValueError
-            except ValueError as e:
-                raise ValueError(_("Invalid value: {0}, "
-                                   "verbosity must be an integer value between 1 and 5.".format(value)))
-
 
 class Context(object):
     def __init__(self):

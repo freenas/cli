@@ -46,6 +46,7 @@ function vm_test_hard()
 	       append(_vm_array, _x)
 	    }
 	}
+	maybe_barf(length($(vm show | search name ~= ${_vm_name + "[0-9]*"})) == _hard_count, "+vm-hard#2", "number of VMs found does not = " + str(_hard_count))
 
 	for (i in _vm_array) {
 	    _n = $(i get name)

@@ -59,12 +59,12 @@ function volume_test_hard() {
 
 	print(">>> Starting volume stress tests: " + str(_hard_count) + " datasets and snapshots")
 	for (i = 0; i < _hard_count; i = i + 1) {
-	    _x = @$(VOL_OBJECT dataset create name=${VOL_NAME + "/" + _dataset_name + str(i)})
+	    _x = @$(VOL_OBJECT dataset create name=${VOL_NAME + "/" + _dataset_name + "-" + str(i)})
 	    if (not (maybe_barf(_success, "+volume-hard#1", "Unable to create dataset #" + str(i)))) {
 	    	append(_dset_array, _x)
 	    }
 	}
-	_arr = $(VOL_OBJECT dataset show | search name ~= ${_dataset_name + "[0-9]*"})
+	_arr = $(VOL_OBJECT dataset show | search name ~= ${_dataset_name + "-[0-9]*"})
 	maybe_barf(length(_arr) == _hard_count, "+volume-hard#2", "Dataset count of " + str(length(_arr)) + " does not match " + str(_hard_count))
 
 	for (i = 0; i < _hard_count; i = i + 1) {
@@ -73,7 +73,7 @@ function volume_test_hard() {
 	    	append(_snap_array, _x)
 	    }
 	}
-	_arr = $(VOL_OBJECT snapshot show | search name ~= ${VOL_NAME + "@" + _dataset_name + "[0-9]*"})
+	_arr = $(VOL_OBJECT snapshot show | search name ~= ${VOL_NAME + "@" + _snap_name + "[0-9]*"})
 	maybe_barf(length(_arr) == _hard_count, "+volume-hard#3", "Snapshot count of " + str(length(_arr)) + " does not match " + str(_hard_count))
 
 	for (i in _dset_array) {

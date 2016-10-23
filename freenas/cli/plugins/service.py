@@ -1415,7 +1415,7 @@ svc_cli_config = {
             'descr': 'Driver Port',
             'name': 'driver_port',
             'usage': _(""""""),
-            'get': 'Driver_port',
+            'get': 'driver_port',
             'type': ValueType.STRING,
         },
         {

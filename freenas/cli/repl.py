@@ -1287,7 +1287,7 @@ class MainLoop(object):
 
             if isinstance(token, AssignmentStatement):
                 expr = self.eval(token.expr, env=env, first=first)
-               
+
                 # Table data needs to be flattened upon assignment
                 if isinstance(expr, Table):
                     rows = list(expr.data)
@@ -1855,7 +1855,16 @@ def main(argv=None):
 
     if CLI_LOG_DIR:
         current_cli_logfile = os.path.join(CLI_LOG_DIR, 'freenascli.{0}.log'.format(os.getpid()))
-        logging.basicConfig(filename=current_cli_logfile, level=logging.DEBUG)
+        # For some reason there is already root handler extablished and setup before the
+        # call to basic config is made below because of which when we call logging.basicConfig
+        # our handler (the one with the file) does not get added due to logic seen in the logging
+        # module sources: https://hg.python.org/cpython/file/3.5/Lib/logging/__init__.py#l1731
+        # Thus I am removing any handlers (if they are present) at this point before setting up
+        # our root handler -- #18429 (https://bugs.freenas.org/issues/18429)
+        root_logger = logging.getLogger()
+        for log_handler in root_logger.handlers:
+            root_logger.removeHandler(log_handler)
+        logging.basicConfig(filename=current_cli_logfile, filemode='w', level=logging.DEBUG)
         # create symlink to latest created cli log
         # but first check if previous exists and nuke it
         try:

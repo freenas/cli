@@ -68,12 +68,12 @@ function volume_test_hard() {
 	maybe_barf(length(_arr) == _hard_count, "+volume-hard#2", "Dataset count of " + str(length(_arr)) + " does not match " + str(_hard_count))
 
 	for (i = 0; i < _hard_count; i = i + 1) {
-	    _x = @$(VOL_OBJECT snapshot create dataset=${VOL_NAME} recursive=yes name=${VOL_NAME + "@" + _snap_name + str(i)})
+	    _x = @$(VOL_OBJECT snapshot create dataset=${VOL_NAME} recursive=yes name=${VOL_NAME + "@" + _snap_name + "-" + str(i)})
 	    if (not (maybe_barf(_success, "+volume-hard#2", "Unable to create snapshot #" + str(i)))) {
 	    	append(_snap_array, _x)
 	    }
 	}
-	_arr = $(VOL_OBJECT snapshot show | search name ~= ${VOL_NAME + "@" + _snap_name + "[0-9]*"})
+	_arr = $(VOL_OBJECT snapshot show | search name ~= ${VOL_NAME + "@" + _snap_name + "-[0-9]*"})
 	maybe_barf(length(_arr) == _hard_count, "+volume-hard#3", "Snapshot count of " + str(length(_arr)) + " does not match " + str(_hard_count))
 
 	for (i in _dset_array) {

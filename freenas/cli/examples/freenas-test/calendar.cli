@@ -47,6 +47,7 @@ function calendar_test_hard() {
 	    _x = @$(calendar command create command="echo testing" name=${_cmd_name + str(i)} username=TEST_USER schedule={"minute" : ${"*/" + str(i)}})
 	    if (not (maybe_barf(_success, "+calendar-hard#1", "Unable to create user " + i))) {
 	       append(_cal_array, _x);
+            }
 	}
 
 	for (i in _cal_array) {
@@ -55,4 +56,3 @@ function calendar_test_hard() {
 	    maybe_barf(_success, "+calendar-hard#2", "Unable to delete calendar entry " + _n)
 	}
 }
-	    

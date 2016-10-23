@@ -52,8 +52,7 @@ function volume_destroy() {
 	maybe_barf(_success, "-volume#3", "Unable to delete volume " + VOL_NAME)
 }
 
-function volume_test_hard()
-{
+function volume_test_hard() {
 	_hard_count=20
 	_dset_array = []
 	_snap_array = []
@@ -65,7 +64,7 @@ function volume_test_hard()
 	    	append(_dset_array, _x)
 	    }
 	}
-	_arr = $(VOL_OBJECT dataset show | search ~= ${_dataset_name + "[0-9]*"})
+	_arr = $(VOL_OBJECT dataset show | search name ~= ${_dataset_name + "[0-9]*"})
 	maybe_barf(length(_arr) == _hard_count, "+volume-hard#2", "Dataset count of " + str(length(_arr)) + " does not match " + str(_hard_count))
 
 	for (i = 0; i < _hard_count; i = i + 1) {
@@ -74,7 +73,7 @@ function volume_test_hard()
 	    	append(_snap_array, _x)
 	    }
 	}
-	_arr = $(VOL_OBJECT snapshot show | search ~= ${VOL_NAME + "@" + _dataset_name + "[0-9]*"})
+	_arr = $(VOL_OBJECT snapshot show | search name ~= ${VOL_NAME + "@" + _dataset_name + "[0-9]*"})
 	maybe_barf(length(_arr) == _hard_count, "+volume-hard#3", "Snapshot count of " + str(length(_arr)) + " does not match " + str(_hard_count))
 
 	for (i in _dset_array) {

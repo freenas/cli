@@ -50,7 +50,7 @@ function calendar_test_hard() {
             }
 	}
 	_arr = $(calendar command show | search name ~= ${_cmd_name + "-[0-9]*"})
-	maybe_barf(length(_arr) == _hard_count, "+calendar-hard#2", "Calendar command count of " + str(length(_arr)) + " does not match " + str(_hard_count)
+	maybe_barf(length(_arr) == _hard_count, "+calendar-hard#2", "Calendar command count of " + str(length(_arr)) + " does not match " + str(_hard_count))
 	for (i in _cal_array) {
 	    _n = $(i get name)
 	    $(i delete)

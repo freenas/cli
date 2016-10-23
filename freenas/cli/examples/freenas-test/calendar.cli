@@ -44,7 +44,7 @@ function calendar_test_hard() {
 	_cal_array = []
 	
 	for (i = 0; i < _hard_count; i = i + 1) {
-	    _x = @$(calendar command create command="echo testing" name=${_cmd_name + str(i)} username=TEST_USER schedule={"minute" : ${"*/" + str(i)}})
+	    _x = @$(calendar command create command="echo testing" name=${_cmd_name + str(i)} username=TEST_USER schedule={"minute" : ${"*/" + str(i + 1)}})
 	    if (not (maybe_barf(_success, "+calendar-hard#1", "Unable to create user " + i))) {
 	       append(_cal_array, _x);
             }

@@ -44,15 +44,16 @@ function calendar_test_hard() {
 	_cal_array = []
 	
 	for (i = 0; i < _hard_count; i = i + 1) {
-	    _x = @$(calendar command create command="echo testing" name=${_cmd_name + str(i)} username=TEST_USER schedule={"minute" : ${"*/" + str(i + 1)}})
+	    _x = @$(calendar command create command="echo testing" name=${_cmd_name + "-" + str(i)} username=TEST_USER schedule={"minute" : ${"*/" + str(i + 1)}})
 	    if (not (maybe_barf(_success, "+calendar-hard#1", "Unable to create user " + i))) {
 	       append(_cal_array, _x);
             }
 	}
-
+	_arr = $(calendar command show | search name ~= ${_cmd_name + "-[0-9]*"})
+	maybe_barf(length(_arr) == _hard_count, "+calendar-hard#2", "Calendar command count of " + str(length(_arr)) + " does not match " + str(_hard_count)
 	for (i in _cal_array) {
 	    _n = $(i get name)
 	    $(i delete)
-	    maybe_barf(_success, "+calendar-hard#2", "Unable to delete calendar entry " + _n)
+	    maybe_barf(_success, "+calendar-hard#3", "Unable to delete calendar entry " + _n)
 	}
 }

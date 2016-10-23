@@ -73,13 +73,13 @@ function account_test_hard()
 	    @$(account user create name=${i} fullname=${"My Test User " + i} home=${sprintf("/mnt/%s/home/%s", VOL_NAME, i)} password_disabled=yes)
 	    maybe_barf(_success, "+account-hard#1", "Unable to create user " + i)
 	}
-	_arr = $(account user show | search name ~= TEST_USER)
+	_arr = $(account user show | search name ~= ${TEST_USER + "[0-9]*"})
 	maybe_barf(length(_arr) == _hard_count, "+account-hard#2", "User count of " + str(length(_arr)) + " does not match " + str(_hard_count))
 	for (i in mapf(range(0, _hard_count), TEST_GROUP + "%d")) {
 	    @$(account group create name=${i})
 	    maybe_barf(_success, "+account-hard#3", "Unable to create group " + i)
 	}
-	_arr = $(account group show | search name ~= TEST_GROUP)
+	_arr = $(account group show | search name ~= ${TEST_GROUP + "[0-9]*"})
 	maybe_barf(length(_arr) == _hard_count, "+account-hard#3", "Group count of " + str(length(_arr)) + " does not match " + str(_hard_count))
 
 	for (i in mapf(range(0, _hard_count), TEST_USER + "%d")) {

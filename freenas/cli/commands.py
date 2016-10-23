@@ -104,7 +104,6 @@ class SetoptCommand(Command):
             ))
 
         for k, v in list(kwargs.items()):
-            self.variables.verify(k, v)
             self.variables.set(k, v)
 
     def complete(self, context, **kwargs):

@@ -1387,6 +1387,13 @@ class SnapshotsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Ent
             'clone': CloneCommand(this)
         }
 
+    def delete(self, this, kwargs):
+        return self.context.submit_task(
+            self.delete_task,
+            this.entity[self.save_key_name],
+            read_value(kwargs.get('recursive', 'no'), ValueType.BOOLEAN)
+        )
+
 
 @description("Filesystem contents")
 class FilesystemNamespace(EntityNamespace):

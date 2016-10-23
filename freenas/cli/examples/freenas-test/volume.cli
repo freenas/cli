@@ -71,6 +71,7 @@ function volume_test_hard()
 	    	append(_snap_array, _x)
 	    }
 	}
+
 	for (i in _dset_array) {
 	    _n = $(i get name)
 	    @$(i delete)

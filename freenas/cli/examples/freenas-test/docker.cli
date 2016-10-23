@@ -37,7 +37,7 @@ function docker_destroy() {
 
 function container_test_hard()
 {
-	_hard_count=30
+	_hard_count=20
 	_container_array = []
 
 	printf(">>> Starting Docker stress tests: %d containers\n", _hard_count)

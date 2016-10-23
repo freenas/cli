@@ -18,6 +18,9 @@ function calendar_create() {
 	maybe_barf(_success, "+calendar#4", "unable to create calendar scrub task")
 	_cal_scrub run
 	maybe_barf(_success, "+calendar#5", "unable to run calendar scrub task")
+	if (test_me_harder) {
+	   calendar_test_hard()
+	}
 }
 
 function calendar_destroy() {
@@ -35,3 +38,21 @@ function calendar_destroy() {
 	}
 	maybe_barf(_success, "-calendar#2", "unable to delete calendar scrub task")
 }
+
+function calendar_test_hard() {
+	_hard_count = 50
+	_cal_array = []
+	
+	for (i = 0; i < _hard_count; i = i + 1) {
+	    _x = @$(calendar command create command="echo testing" name=${_cmd_name + str(i)} username=TEST_USER schedule={"minute" : ${"*/" + str(i)}})
+	    if (not (maybe_barf(_success, "+calendar-hard#1", "Unable to create user " + i))) {
+	       append(_cal_array, _x);
+	}
+
+	for (i in _cal_array) {
+	    _n = $(i get name)
+	    $(i delete)
+	    maybe_barf(_success, "+calendar-hard#2", "Unable to delete calendar entry " + _n)
+	}
+}
+	    

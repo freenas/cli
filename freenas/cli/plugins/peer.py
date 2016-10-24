@@ -442,6 +442,14 @@ class PeerNamespace(
             q.set(o, 'type', v)
             q.set(o, 'credentials.%type', '{0}-credentials'.format(v))
 
+        def get_rtt(o):
+            rtt = o['status'].get('rtt')
+            if rtt:
+                rtt *= 1000
+                rtt = "{0:.2f} ms".format(rtt)
+
+            return rtt
+
         self.add_property(
             descr='Peer Name',
             name='name',
@@ -465,7 +473,18 @@ class PeerNamespace(
             get='status.state',
             set=None,
             list=True,
+            usersetable=False,
             usage=_('Health status of a peer.')
+        )
+
+        self.add_property(
+            descr='Round trip time',
+            name='rtt',
+            get=get_rtt,
+            set=None,
+            list=True,
+            usersetable=False,
+            usage=_('Round trip time to a peer.')
         )
 
         super(PeerNamespace, self).add_properties()

@@ -31,7 +31,7 @@ from freenas.cli.namespace import (
     EntityNamespace, Command, NestedObjectLoadMixin, NestedObjectSaveMixin, EntitySubscriberBasedLoadMixin,
     RpcBasedLoadMixin, TaskBasedSaveMixin, description, CommandException, ConfigNamespace, BaseVariantMixin
 )
-from freenas.cli.output import ValueType, get_humanized_size
+from freenas.cli.output import Object, ValueType, get_humanized_size
 from freenas.cli.utils import TaskPromise, post_save, EntityPromise, get_item_stub
 from freenas.utils import first_or_default
 from freenas.utils.query import get, set
@@ -422,7 +422,18 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             set=None,
             list=False,
             condition=lambda o: get(o, 'status.state') != 'STOPPED' and get(o, 'status.nat_lease'),
-            usage=_("Displays the natted ip address of the VM")
+            usage=_("Displays the natted IP address of the VM (if any)")
+        )
+
+        self.add_property(
+            descr='VM tools available',
+            name='vm_tools_available',
+            get='status.vm_tools_available',
+            set=None,
+            list=False,
+            condition=lambda o: get(o, 'status.state') != 'STOPPED',
+            usage=_("Shows whether freenas-vm-tools are running on the VM"),
+            type=ValueType.BOOLEAN
         )
 
         self.primary_key = self.get_mapping('name')
@@ -440,7 +451,6 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             yield namespace
 
     def get_entity_namespaces(self, this):
-        this.load() if hasattr(this, 'load') else None
         return [
             VMDeviceNamespace('device', self.context, this),
             VMVolumeNamespace('volume', self.context, this),
@@ -448,15 +458,14 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
         ]
 
     def get_entity_commands(self, this):
-        this.load() if hasattr(this, 'load') else None
-
         commands = {
             'start': StartVMCommand(this),
             'stop': StopVMCommand(this),
             'kill': KillVMCommand(this),
             'reboot': RebootVMCommand(this),
             'console': ConsoleCommand(this),
-            'readme': ReadmeCommand(this, 'config')
+            'readme': ReadmeCommand(this, 'config'),
+            'guest_info': ShowGuestInfoCommand(this)
         }
 
         if hasattr(this, 'entity') and this.entity is not None:
@@ -1240,6 +1249,30 @@ class ReadmeCommand(Command):
 
     def run(self, context, args, kwargs, opargs, filtering=None):
         return Sequence(self.parent.entity[self.key].get('readme', 'Selected template does not have readme entry'))
+
+
+class ShowGuestInfoCommand(Command):
+    """
+    Usage: show_guest_info
+    """
+
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        guest_info = context.call_sync('vm.get_guest_info', self.parent.entity['id'])
+        addresses = []
+
+        for name, config in guest_info['interfaces'].items():
+            if name.startswith('lo'):
+                continue
+
+            addresses += [i['address'] for i in config['aliases'] if i['af'] != 'LINK']
+
+        return Object(
+            Object.Item('Load average', 'load_avg', guest_info['load_avg'], ValueType.ARRAY),
+            Object.Item('Network configuration', 'interfaces', addresses, ValueType.SET)
+        )
 
 
 @description("Deletes VM images from the local cache")

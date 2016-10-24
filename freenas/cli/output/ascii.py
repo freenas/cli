@@ -93,14 +93,14 @@ class AsciiOutputFormatter(object):
             if len(value) == 0:
                 return _("<empty>")
 
-            return ','.join(value)
+            return ','.join(format_literal(i) for i in value)
 
         if vt == ValueType.ARRAY:
             value = list(value)
             if len(value) == 0:
                 return _("empty")
 
-            return ','.join(value)
+            return ','.join(format_literal(i) for i in value)
 
         if vt == ValueType.DICT:
             if not bool(value):

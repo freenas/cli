@@ -362,45 +362,44 @@ def t_ESCAPE_COMMENTS(t):
 
 def t_ANY_EOPEN(t):
     r'\$\('
-    t.lexer.push_state('INITIAL')
     return t
 
 
 def t_ANY_EOPEN_SYNC(t):
     r'@\$\('
-    t.lexer.push_state('INITIAL')
     return t
 
 
 def t_ANY_LPAREN(t):
     r'\('
+    t.lexer.seen_lparen = True
     t.lexer.push_state('script')
     return t
 
 
 def t_ANY_RPAREN(t):
     r'\)'
-    t.lexer.pop_state()
+    if t.lexer.seen_lparen:
+        t.lexer.pop_state()
+        t.lexer.seen_lparen = False
+
     return t
 
 
 def t_ANY_COPEN(t):
     r'\${'
-    t.lexer.push_state('script')
     t.lexer.parens += 1
     return t
 
 
 def t_LBRACE(t):
     r'{'
-    t.lexer.push_state('INITIAL')
     t.lexer.parens += 1
     return t
 
 
 def t_ANY_RBRACE(t):
     r'}'
-    t.lexer.pop_state()
     t.lexer.parens -= 1
     return t
 
@@ -420,15 +419,14 @@ def t_ANY_QUOTE(t):
 
 
 def t_NEWLINE(t):
-    r'[\n]+'
-    t.lexer.lineno += len(t.value)
+    r'\n'
+    t.lexer.lineno += 1
     t.lexer.breaknl = False
     return t
 
 
 def t_SEMICOLON(t):
-    r'[;]+[\n]?'
-    t.lexer.lineno += t.value.count('\n')
+    r';'
     t.lexer.breaknl = False
     return t
 
@@ -524,7 +522,7 @@ def p_block(p):
     p[0] = p[2]
 
 
-def p_block_3(p):
+def p_block_2(p):
     """
     block : LBRACE newline RBRACE
     block : LBRACE RBRACE
@@ -570,8 +568,8 @@ def p_while_stmt(p):
 
 def p_assignment_stmt(p):
     """
-    assignment_stmt : ATOM ASSIGN push_script expr pop_script
-    assignment_stmt : subscript_left ASSIGN push_script expr pop_script
+    assignment_stmt : ATOM ASSIGN push_script expr pop_state
+    assignment_stmt : subscript_left ASSIGN push_script expr pop_state
     """
     p[0] = AssignmentStatement(p[1], p[4], p=p)
 
@@ -583,9 +581,16 @@ def p_push_script(p):
     p.lexer.push_state('script')
 
 
-def p_pop_script(p):
+def p_push_initial(p):
     """
-    pop_script :
+    push_initial :
+    """
+    p.lexer.push_state('INITIAL')
+
+
+def p_pop_state(p):
+    """
+    pop_state :
     """
     p.lexer.pop_state()
 
@@ -717,16 +722,16 @@ def p_expr_parens(p):
 
 def p_expr_expansion(p):
     """
-    expr_expansion : EOPEN command RPAREN
+    expr_expansion : EOPEN push_initial command pop_state RPAREN
     """
-    p[0] = CommandExpansion(p[2], p=p)
+    p[0] = CommandExpansion(p[3], p=p)
 
 
 def p_sync_expr_expansion(p):
     """
-    sync_expr_expansion : EOPEN_SYNC command RPAREN
+    sync_expr_expansion : EOPEN_SYNC push_initial command pop_state RPAREN
     """
-    p[0] = SyncCommandExpansion(p[2], p=p)
+    p[0] = SyncCommandExpansion(p[3], p=p)
 
 
 def p_array_literal(p):
@@ -750,7 +755,7 @@ def p_dict_literal_1(p):
 
 def p_dict_literal_2(p):
     """
-    dict_literal : LBRACE push_script dict_pair_list pop_script RBRACE
+    dict_literal : LBRACE push_script dict_pair_list pop_state RBRACE
     """
     p[0] = Literal(dict(p[3]), dict)
 
@@ -941,9 +946,9 @@ def p_command_item_2(p):
 
 def p_command_item_3(p):
     """
-    command_item : COPEN expr RBRACE
+    command_item : COPEN push_script expr pop_state RBRACE
     """
-    p[0] = ExpressionExpansion(p[2], p=p)
+    p[0] = ExpressionExpansion(p[3], p=p)
 
 
 def p_command_item_4(p):
@@ -1093,6 +1098,7 @@ def parse(s, filename, recover_errors=False):
     lexer.parens = 0
     lexer.breaknl = False
     lexer.seen_quote = False
+    lexer.seen_lparen = False
     parser.input = s
     parser.filename = filename
     parser.recover_errors = recover_errors

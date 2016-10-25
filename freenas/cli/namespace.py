@@ -504,7 +504,7 @@ class ItemNamespace(Namespace):
 
             self.parent.modified = True
             tid = self.parent.save()
-            return TaskPromise(context, tid)
+            return EntityPromise(context, tid, self.parent)
 
         def complete(self, context, **kwargs):
             if 'kwargs' in kwargs:

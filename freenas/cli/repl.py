@@ -1650,18 +1650,23 @@ class MainLoop(object):
                         format_output(ret)
         except SyntaxError as e:
             output_msg(_('Syntax error: {0}'.format(str(e))))
+            return 1
         except KeyboardInterrupt:
             output_msg(_('Interrupted'))
+            return 2
         except CommandException as e:
             output_msg(_('Error: {0}'.format(str(e))))
             self.context.logger.error(e.stacktrace)
             if self.context.variables.get('debug'):
                 output_msg(e.stacktrace)
+
+            return 1
         except RpcException as e:
             if self.context.variables.get('rollbar_enabled'):
                 rollbar.report_exc_info()
             self.context.logger.error(str(e))
             output_msg(_('RpcException Error: {0}'.format(str(e))))
+            return 1
         except SystemExit as e:
             sys.exit(e)
         except Exception as e:
@@ -1672,6 +1677,10 @@ class MainLoop(object):
             self.context.logger.error(error_trace)
             if self.context.variables.get('debug'):
                 output_msg(error_trace)
+
+            return 1
+
+        return 0
 
     def get_relative_object(self, ns, tokens):
         path = self.path[:]
@@ -1965,8 +1974,7 @@ def main(argv=None):
 
     if args.e:
         context.wait_entity_subscribers()
-        ml.process(args.e)
-        return
+        sys.exit(ml.process(args.e))
 
     if args.f:
         context.wait_entity_subscribers()

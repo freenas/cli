@@ -157,9 +157,6 @@ def post_save(this, status, task):
             entity = this.context.entity_subscribers[this.parent.entity_subscriber_name].get(task['result'], remote=True)
             this.entity[this.parent.primary_key_name] = entity[this.parent.primary_key_name]
 
-        if status == 'FINISHED':
-            this.wait()
-
         this.modified = False
         this.load()
         this.update_commands()
@@ -321,31 +318,22 @@ class TaskPromise(object):
         self.context = context
         self.tid = tid
         self.result = result
+        self.subscriber = self.context.entity_subscribers['task']
         self.task = None
 
     def __str__(self):
-        task = self.context.entity_subscribers['task'].get(self.tid, timeout=5)
+        task = self.subscriber.get(self.tid, timeout=5)
         if not task:
             return "<Unknown task #{0}>".format(self.tid)
 
         return "<Task #{0}: {1}>".format(self.tid, task['state'])
 
     def wait(self):
-        self.task = self.context.entity_subscribers['task'].get(self.tid)
-        if self.task and self.task['state'] in ('FINISHED', 'FAILED', 'ABORTED'):
-            ret = self.result
-        else:
-            generator = self.context.entity_subscribers['task'].listen(self.tid)
-            for op, old, new in generator:
-                if new['state'] in ('FINISHED', 'FAILED', 'ABORTED'):
-                    self.task = new
-                    ret = self.result
-                    break
-
+        self.task = self.subscriber.wait_for(self.tid, lambda o: o['state'] in ('FINISHED', 'FAILED', 'ABORTED'))
         if self.task['state'] != 'FINISHED':
             raise RuntimeError('Task {0} failed'.format(self.tid))
 
-        return ret or self.task['result']
+        return self.result or self.task['result']
 
 
 class EntityPromise(TaskPromise):

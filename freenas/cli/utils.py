@@ -300,6 +300,15 @@ class PrintableNone(object):
     def __str__(self):
         return "none"
 
+    def __eq__(self, other):
+        if other is None or other is PrintableNone:
+            return True
+
+        return False
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
     @staticmethod
     def coerce(value):
         if isinstance(value, PrintableNone):

@@ -1318,10 +1318,8 @@ class EntitySubscriberBasedLoadMixin(object):
         ))
 
     def wait_one(self, name):
-        self.context.entity_subscribers[self.entity_subscriber_name].query(
-            (self.primary_key_name, '=', name), *self.extra_query_params,
-            single=True,
-            timeout=None
+        self.context.entity_subscribers[self.entity_subscriber_name].enforce_update(
+            (self.primary_key_name, '=', name), *self.extra_query_params
         )
 
 

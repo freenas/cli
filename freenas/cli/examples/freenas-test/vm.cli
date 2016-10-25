@@ -36,7 +36,7 @@ function vm_destroy() {
 
 function vm_test_hard()
 {
-	_hard_count=20
+	_hard_count=10
 	_vm_array = []
 
 	printf(">>> Starting VM stress tests: %d virtual machines\n", _hard_count)

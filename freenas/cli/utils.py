@@ -29,7 +29,6 @@ import os
 import re
 import copy
 import tempfile
-import platform
 import ipaddress
 import gettext
 import signal
@@ -41,9 +40,9 @@ from datetime import timedelta, datetime
 t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
 
-if platform.system() == 'FreeBSD':
+try:
     from bsd import pty
-else:
+except ImportError:
     import pty
 
 

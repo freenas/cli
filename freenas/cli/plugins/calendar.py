@@ -233,7 +233,10 @@ class CalendarTasksScheduleNamespace(NestedEntityMixin, ItemNamespace):
     """
     The schedule namespaces provides commands for setting schedule of selected calendar task
 
-    If a schedule is not set, all time values will be set to `*` (run all the time).
+    If a schedule is not set, all time values will be set to `*` - which is treated as
+    empty schedule, and the task will be disabled.
+    A task which is enabled and has it's schedule edited to 'empty' will also be
+    silently disabled.
     The schedule property takes a key/value pair with keys of second, minute, hour,
     day_of_month, month, day_of_week, week, and year with values of `*`, `*/integer`, or
     integer.
@@ -410,7 +413,7 @@ class ScrubNamespace(CalendarTasksNamespaceBaseClass):
         create <name> volume=<volume> <property>=<value>
 
     Examples:
-        create myscrub volume=mypool
+        create myscrub volume=mypool schedule={"hour":2,"day_of_week":5}
     """
     def __init__(self, name, context):
         super(ScrubNamespace, self).__init__(name, context)

@@ -429,9 +429,6 @@ class Context(object):
             if task['state'] in ('FINISHED', 'FAILED', 'ABORTED'):
                 del self.pending_tasks[task['id']]
 
-            if task['id'] in self.task_callbacks:
-                self.handle_task_callback(task)
-
             if self.variables.get('verbosity') > 1 and task['state'] in ('CREATED', 'FINISHED'):
                 self.output_queue.put(_(
                     "Task #{0}: {1}: {2}".format(
@@ -463,6 +460,9 @@ class Context(object):
 
             if task['state'] == 'ABORTED':
                 self.output_queue.put(_("Task #{0} aborted".format(task['id'])))
+
+            if task['id'] in self.task_callbacks:
+                self.handle_task_callback(task)
 
             if old_task:
                 if len(task['warnings']) > len(old_task['warnings']):

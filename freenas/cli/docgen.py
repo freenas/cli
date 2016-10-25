@@ -31,6 +31,7 @@ import textwrap
 import inspect
 import copy
 import os
+from pathlib import Path
 from freenas.cli.namespace import SingleItemNamespace, EntityNamespace
 
 
@@ -102,6 +103,10 @@ class NamespacesDocGen(object):
         contents = self.generator.get_top_index_file()
         self.curr_output_filename = self.top_index_filename
         self._write_output_file(contents)
+        print("Generated following files:")
+        p = Path(self.output_file_path)
+        for f in p.iterdir():
+            print("File name: {0} | size: {1}".format(f.name, f.stat().st_size))
 
     def _recursive_get_namespace_file_contents(self, namespace, name_qualifiers=list()):
         ret = ""

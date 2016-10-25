@@ -17,7 +17,7 @@ install:
 
 run:
 	pyvenv-3.5 venv
-	${VENV_PIP} install -U cython==0.24.1 six ply columnize natural termcolor texttable pyte future rollbar gnureadline
+	${VENV_PIP} install -U cython==0.24.1 six ply columnize natural termcolor texttable pyte future rollbar
 	${VENV_PIP} install -U ${BE_ROOT}/py-freenas.utils
 	${VENV_PIP} install -U ${BE_ROOT}/dispatcher-client/python
 	${VENV_PYTHON} -m freenas.cli.repl ${ARGS}

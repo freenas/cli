@@ -472,7 +472,7 @@ class PeerNamespace(
         self.add_property(
             descr='RTT (ms)',
             name='rtt',
-            get=lambda o: q.get(o, 'status.rtt', 0) * 1000,
+            get=lambda o: (q.get(o, 'status.rtt') or 0) * 1000,
             set=None,
             list=True,
             usersetable=False,

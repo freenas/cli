@@ -726,6 +726,7 @@ class DockerContainerCreateCommand(Command):
             'environment': env,
             'volumes': volumes,
             'ports': ports,
+            'autostart': read_value(kwargs.get('autostart', 'no'), ValueType.BOOLEAN),
             'expose_ports': read_value(
                 kwargs.get('expose_ports', q.get(presets, 'expose_ports', False)),
                 ValueType.BOOLEAN

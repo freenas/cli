@@ -54,7 +54,7 @@ function calendar_test_hard() {
 
 	for (i in _cal_array) {
 	    _n = $(i get name)
-	    $(i delete)
+	    @$(i delete)
 	    maybe_barf(_success, "+calendar-hard#3", "Unable to delete calendar entry " + _n)
 	}
 }

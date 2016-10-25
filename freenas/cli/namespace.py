@@ -932,6 +932,7 @@ class SingleItemNamespace(ItemNamespace):
 
     def wait(self):
         self.parent.wait_one(self.get_name())
+        self.load()
 
     def save(self):
         return self.parent.save(self, not self.saved)
@@ -1367,6 +1368,9 @@ class NestedObjectLoadMixin(object):
             q.get(self.parent.entity, self.parent_path, [])
         )
 
+    def wait_one(self, name):
+        return self.parent.wait_one(name)
+
 
 class NestedObjectSaveMixin(object):
     def save(self, this, new=False):
@@ -1414,6 +1418,9 @@ class NestedEntityMixin(object):
 
     def save(self):
         return self.parent.save()
+
+    def wait(self):
+        return self.parent.wait()
 
 
 class BaseVariantMixin(object):

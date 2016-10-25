@@ -388,6 +388,7 @@ def t_ANY_RPAREN(t):
 
 def t_ANY_COPEN(t):
     r'\${'
+    t.lexer.push_state('script')
     t.lexer.parens += 1
     return t
 
@@ -946,9 +947,9 @@ def p_command_item_2(p):
 
 def p_command_item_3(p):
     """
-    command_item : COPEN push_script expr pop_state RBRACE
+    command_item : COPEN expr pop_state RBRACE
     """
-    p[0] = ExpressionExpansion(p[3], p=p)
+    p[0] = ExpressionExpansion(p[2], p=p)
 
 
 def p_command_item_4(p):

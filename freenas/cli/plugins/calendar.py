@@ -354,13 +354,6 @@ class CalendarTasksStatusNamespace(NestedEntityMixin, ItemNamespace):
         self.context = context
         self.parent = parent
         self.parent_entity_path = 'status'
-        #self.skeleton_entity = {
-        #    'status': {'next_run_time': "",
-        #               'last_run_time': "",
-        #               'last_run_status': "",
-        #               'current_run_status': None,
-        #               'current_run_progress': None}
-        #}
 
         self.add_property(
             descr='Next run time',

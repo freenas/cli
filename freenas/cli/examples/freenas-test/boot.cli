@@ -1,16 +1,28 @@
 # Test runner for boot  category
 #
 
+_test_bootenv="_test-boot-environment"
+_boot_env = none
+
 function boot_create() {
 	print(">>> Starting boot tests")
+	_boot_env = $(boot environment create name=${_test_bootenv} keep=no)
+	maybe_barf(_success, "+boot#2", "Unable to create boot environment " + _test_bootenv)
+	$(_boot_env set keep=yes)
+	maybe_barf(_success, "+boot#3", "Unable to set keep flag for " + _test_bootenv)
+	maybe_barf($(_boot_env get keep)==true, "+boot#4", "Keep flag for " + _test_bootenv + " is not set to true")
 	@$(boot pool scrub)
-	maybe_barf(_success, "+boot#1", "Unable to scrub boot pool")
+	maybe_barf(_success, "+boot#5", "Unable to scrub boot pool")
 	_x = $(boot pool show_disks)
-	maybe_barf(length(_x) > 0, "+boot#2", "Boot pool has an invalid number of disks")
+	maybe_barf(length(_x) > 0, "+boot#6", "Boot pool has an invalid number of disks")
 }
 
 function boot_destroy() {
 	print(">>> Finishing boot tests")
+	if (_boot_env != none) {
+		$(_boot_env delete)
+	} else {
+		@$(boot environment ${_test_bootenv} delete)
+	}
+	maybe_barf(_success, "-boot#1", "Unable to delete test boot environment")
 }
-
-

@@ -40,11 +40,11 @@ function calendar_destroy() {
 }
 
 function calendar_test_hard() {
-	_hard_count = 20
+	_hard_count = 10
 	_cal_array = []
 	
 	for (i = 0; i < _hard_count; i = i + 1) {
-	    _x = @$(calendar command create command="echo testing" name=${_cmd_name + "-" + str(i)} username=TEST_USER schedule={"minute" : ${"*/" + str(i + 10)}})
+	    _x = @$(calendar command create command="echo testing" name=${_cmd_name + "-" + str(i)} username=${TEST_USER} schedule={"minute" : ${"*/" + str(i + 10)}})
 	    if (not (maybe_barf(_success, "+calendar-hard#1", "Unable to create user " + str(i)))) {
 	       append(_cal_array, _x);
             }

@@ -741,7 +741,8 @@ class Context(object):
 
     def handle_task_callback(self, data):
         if data['state'] in ('FINISHED', 'CANCELLED', 'ABORTED', 'FAILED'):
-            self.task_callbacks[data['id']](data['state'], data)
+            cb = self.task_callbacks.pop(data['id'])
+            cb(data['state'], data)
 
     def print_event(self, event, data):
         if self.event_divert:

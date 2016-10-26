@@ -653,7 +653,7 @@ class HostsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityN
         self.add_property(
             descr='IP addresses',
             name='addresses',
-            get='addresses',
+            get='address',
             usage=_("""\
             The IP address to add to the hosts file."""),
             type=ValueType.SET,

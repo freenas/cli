@@ -337,34 +337,6 @@ class BaseSharesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, En
             'target_type': 'FILE' if type(self) is ISCSISharesNamespace else 'DIRECTORY'
         })
 
-    def save(self, this, new=False):
-        if new:
-            return self.context.submit_task(
-                self.create_task,
-                this.entity,
-                callback=lambda s, t: self.post_save(this, s, t, new))
-
-        return self.context.submit_task(
-            self.update_task,
-            this.orig_entity[self.save_key_name],
-            this.get_diff(),
-            callback=lambda s, t: self.post_save(this, s, t, new))
-
-    def post_save(self, this, status, task, new):
-        post_save(this, status, task)
-        if status == 'FINISHED' and this.entity:
-            service = self.context.call_sync('service.query', [('name', '=', self.type_name)], {'single': True})
-            if service['state'] != 'RUNNING':
-                action = 'created' if new else 'updated'
-                self.context.output_queue.put(_(
-                    "Share '{0}' has been {1} but the service '{2}' is not currently "
-                    "running, please enable the service with '/ service {2} config set enable=yes'".format(
-                        this.entity[self.primary_key_name],
-                        action,
-                        self.type_name
-                    )
-                ))
-
 
 @description("NFS shares")
 class NFSSharesNamespace(BaseSharesNamespace):

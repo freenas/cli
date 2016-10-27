@@ -5,7 +5,7 @@
 
 TEST_SET = [ \
     "disk", "volume", "network", "service", "system", "account", "share", "boot", \
-    "session", "task", "alert", "calendar", "tunable", "vm", "docker" \
+    "peering", "session", "task", "alert", "calendar", "tunable", "vm", "docker" \
 ]
 
 # Future use - someday this will cause the tests to exit upon any error.

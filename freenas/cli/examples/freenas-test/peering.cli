@@ -1,0 +1,12 @@
+# Test runner for peering category
+#
+
+function peering_create() {
+	print(">>> Starting peering tests")
+}
+
+function peering_destroy() {
+	print(">>> Finishing peering tests")
+}
+
+

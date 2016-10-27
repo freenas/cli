@@ -64,10 +64,10 @@ class SetRemoteLogpassCommand(Command):
         self.parent.remote_logpass['password'] = getpass.getpass(">enter freenas password :")
 
 
-@description("Opens file object")
+@description("Opens connection to file system")
 class OpenCommand(Command):
     """
-    Opens object pointed to by provided URI.
+    Opens connection to object pointed to by provided URI.
     URI can be qualiffied with the following schemes to access local or remote filesystem:
     1. 'file://'
     2. 'remote://'
@@ -87,7 +87,7 @@ class OpenCommand(Command):
             raise CommandException(_("Open requires 1 argument. For help see 'help open'"))
 
         self.parent.curr_obj = FileProvider.open(args[0], remote_logpass=self.parent.remote_logpass)
-        output_msg(_(">{0}".format(str(self.parent.curr_obj))))
+        output_msg(_("Connection opened: {0}".format(str(self.parent.curr_obj))))
         contents = [{'name': o.name, 'type': o.type.name} for o in self.parent.curr_obj.readdir()]
         return Table(contents, [
             Table.Column('Name', 'name'),
@@ -262,6 +262,8 @@ class FilebrowserNamespace(Namespace):
             'chdir': ChangeDirCommand(self),
             'mkdir': MakeDirCommand(self),
             'rmdir': RemoveDirCommand(self),
+            'listdir': ListDirCommand(self),
+            'close': CloseCommand(self),
         }
 
 

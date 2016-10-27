@@ -26,10 +26,11 @@
 #####################################################################
 
 import gettext
-from freenas.cli.output import Sequence
+from freenas.cli.output import Sequence, Table
 from freenas.cli.namespace import (
     EntityNamespace, Command, NestedObjectLoadMixin, NestedObjectSaveMixin, EntitySubscriberBasedLoadMixin,
-    RpcBasedLoadMixin, TaskBasedSaveMixin, description, CommandException, ConfigNamespace, BaseVariantMixin
+    RpcBasedLoadMixin, TaskBasedSaveMixin, description, CommandException, ConfigNamespace, BaseVariantMixin,
+    Namespace
 )
 from freenas.cli.output import Object, ValueType, get_humanized_size
 from freenas.cli.utils import TaskPromise, post_save, EntityPromise, get_item_stub
@@ -464,7 +465,8 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
         return [
             VMDeviceNamespace('device', self.context, this),
             VMVolumeNamespace('volume', self.context, this),
-            VMSnapshotsNamespace('snapshot', self.context, this)
+            VMSnapshotsNamespace('snapshot', self.context, this),
+            VMGuestNamespace('guest', self.context, this)
         ]
 
     def get_entity_commands(self, this):
@@ -483,6 +485,21 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
                 commands['console_vga'] = ConsoleVGACommand(this)
 
         return commands
+
+
+class VMGuestNamespace(Namespace):
+    def __init__(self, name, context, parent):
+        super(VMGuestNamespace, self).__init__(name)
+        self.context = context
+        self.parent = parent
+
+    def commands(self):
+        return {
+            'show': ShowGuestInfoCommand(self.parent),
+            'ls': GuestLsCommand(self.parent),
+            'cat': GuestCatCommand(self.parent),
+            'exec': GuestExecCommand(self.parent)
+        }
 
 
 class VMDeviceGraphicsPropertiesMixin(BaseVariantMixin):
@@ -1283,6 +1300,47 @@ class ShowGuestInfoCommand(Command):
             Object.Item('Load average', 'load_avg', guest_info['load_avg'], ValueType.ARRAY),
             Object.Item('Network configuration', 'interfaces', addresses, ValueType.SET)
         )
+
+
+class GuestLsCommand(Command):
+    """
+    Usage: ls <path>
+    """
+
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        result = context.call_sync('vm.guest_ls', self.parent.entity['id'], args[0])
+        return Table(result, [
+            Table.Column('Name', 'name'),
+            Table.Column('Type', 'type'),
+            Table.Column('Size', 'size', ValueType.SIZE)
+        ])
+
+
+class GuestCatCommand(Command):
+    """
+    Usage: ls <path>
+    """
+
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        return
+
+
+class GuestExecCommand(Command):
+    """
+    Usage: ls <path>
+    """
+
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        return context.call_sync('vm.guest_exec', self.parent.entity['id'], args[0], args[1:])
 
 
 @description("Deletes VM images from the local cache")

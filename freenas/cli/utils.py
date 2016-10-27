@@ -158,8 +158,6 @@ def post_save(this, status, task):
             this.entity[this.parent.primary_key_name] = entity[this.parent.primary_key_name]
 
         this.modified = False
-        this.load()
-        this.update_commands()
 
 
 def to_list(item):

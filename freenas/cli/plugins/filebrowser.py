@@ -132,6 +132,40 @@ class ChangeDirCommand(Command):
             ])
 
 
+@description("Lists directory contents")
+class ListDirCommand(Command):
+    """
+    Lists directory contents.
+    If no arguments are passed the current directory contents will be displayed,
+    otherwise command will display contents of the selected directory.
+
+    Usage:
+        listdir <dirname>
+
+    Examples:
+        listdir
+        listdir ..
+        listdir anotherdir
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        name = args[0] if args else None
+
+        contents = []
+        if not name or name == '.':
+            contents = [{'name': o.name, 'type': o.type.name} for o in self.parent.curr_obj.readdir()]
+        elif name == '..':
+            contents = [{'name': o.name, 'type': o.type.name} for o in self.parent.curr_obj.parent.readdir()]
+        elif name:
+            contents = [{'name': o.name, 'type': o.type.name} for o in self.parent.curr_obj.get_child(name).readdir()]
+        return Table(contents, [
+            Table.Column('Name', 'name'),
+            Table.Column('Type', 'type'),
+        ])
+
+
 @description("Creates directory")
 class MakeDirCommand(Command):
     """

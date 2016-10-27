@@ -18,6 +18,7 @@ VENV_SPHINXBUILD = $(VENV)/bin/sphinx-build
 FREENAS_PYBSD = $(VENV)/py-bsd
 FREENAS_UTILS = $(VENV)/py-freenas-utils
 FREENAS_CLIENT = $(VENV)/dispatcher-client
+FREENAS_PYFILEWRAP = $(VENV)/py-filewrap
 FREENAS_CLI = $(PWD)/..
 
 BUILD_SETUP = $(CONFIG)/build_env
@@ -34,7 +35,7 @@ O ?= $(PWD)/cli.docs
 all: env html clean
 
 .PHONY: env 
-env: $(VENV) install_pybsd install_utils install_dispatcher_client
+env: $(VENV) install_pybsd install_utils install_dispatcher_client install_pyfilewrap
 
 .PHONY: html
 html: meta
@@ -60,6 +61,9 @@ install_utils: $(FREENAS_UTILS)
 .PHONY: install_dispatcher_client
 install_dispatcher_client: $(FREENAS_CLIENT)
 
+.PHONY: install_pyfilewrap
+install_pyfilewrap: $(FREENAS_PYFILEWRAP)
+
 $(VENV):
 	@virtualenv $(VENV) --python=python3
 	@$(VENV_PIP) install -Ur $(VENV_REQS)
@@ -77,3 +81,7 @@ $(FREENAS_UTILS):
 $(FREENAS_CLIENT):
 	@git clone https://github.com/freenas/dispatcher-client $(FREENAS_CLIENT)
 	@cd $(FREENAS_CLIENT)/python && $(VENV_PYTHON) setup.py install
+
+$(FREENAS_PYFILEWRAP):
+	@git clone https://github.com/freenas/py-filewrap $(FREENAS_PYFILEWRAP)
+	@cd $(FREENAS_PYFILEWRAP) && $(VENV_PYTHON) setup.py install

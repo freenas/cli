@@ -436,6 +436,16 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             type=ValueType.BOOLEAN
         )
 
+        self.add_property(
+            descr='Guest health',
+            name='health',
+            get='status.health',
+            set=None,
+            list=False,
+            condition=lambda o: get(o, 'status.state') != 'STOPPED',
+            usage=_("Shows guest health status")
+        )
+
         self.primary_key = self.get_mapping('name')
         self.entity_namespaces = self.get_entity_namespaces
         self.entity_commands = self.get_entity_commands

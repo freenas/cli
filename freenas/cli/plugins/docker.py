@@ -310,17 +310,25 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
         )
 
         self.primary_key = self.get_mapping('name')
-        self.entity_commands = lambda this: {
-            'start': DockerContainerStartCommand(this),
-            'stop': DockerContainerStopCommand(this),
-            'console': DockerContainerConsoleCommand(this),
-            'exec': DockerContainerExecConsoleCommand(this)
-        }
+        self.entity_commands = self.get_entity_commands
 
     def commands(self):
         ret = super(DockerContainerNamespace, self).commands()
         ret['create'] = DockerContainerCreateCommand(self)
         return ret
+
+    def get_entity_commands(self, this):
+        this.load()
+        commands = {
+            'start': DockerContainerStartCommand(this),
+            'stop': DockerContainerStopCommand(this),
+            'console': DockerContainerConsoleCommand(this),
+            'exec': DockerContainerExecConsoleCommand(this)
+        }
+        if this.entity and not this.entity.get('interactive'):
+            commands['logs'] = DockerContainerLogsCommand(this)
+
+        return commands
 
 
 @description("Configure and manage Docker container images")
@@ -819,7 +827,30 @@ class DockerContainerConsoleCommand(Command):
 
     Examples: console
 
-    Connects to a container's serial console. ^] returns to CLI
+    Connects to a container's serial console.
+    For interactive containers it's a console of primary process,
+    for non-interactive ones, this command is executing /bin/sh.
+    ^] returns to CLI
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        exec_id = context.call_sync('docker.container.request_interactive_console', self.parent.entity['id'])
+
+        console = Console(context, exec_id)
+        console.start()
+
+
+@description("Show standard output of container's primary process.")
+class DockerContainerLogsCommand(Command):
+    """
+    Usage: logs
+
+    Examples: logs
+
+    Shows standard output of non-interactive container's primary process.
+    ^] returns to CLI
     """
     def __init__(self, parent):
         self.parent = parent

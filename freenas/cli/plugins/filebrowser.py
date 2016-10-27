@@ -225,6 +225,25 @@ class RemoveDirCommand(Command):
             ])
 
 
+@description("Closes the filesystem connection")
+class CloseCommand(Command):
+    """
+    Closes connect to the file system.
+
+    Usage:
+        close
+
+    Examples:
+        close
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        self.curr_obj = None
+        output_msg(_("Connection closed"))
+
+
 @description(_("Provides access to CLI filebrowser"))
 class FilebrowserNamespace(Namespace):
     """

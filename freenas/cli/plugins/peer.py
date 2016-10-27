@@ -460,6 +460,15 @@ class PeerNamespace(
         )
 
         self.add_property(
+            descr='Health check interval',
+            name='check_interval',
+            get='health_check_interval',
+            list=False,
+            type=ValueType.NUMBER,
+            usage=_('Refresh interval of peer\'s health status.')
+        )
+
+        self.add_property(
             descr='State',
             name='state',
             get='status.state',

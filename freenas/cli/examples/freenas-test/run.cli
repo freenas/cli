@@ -11,6 +11,9 @@ TEST_SET = [ \
 # Future use - someday this will cause the tests to exit upon any error.
 _exit_on_err=false
 
+# Set _batch=yes external to this script if you don't want it to ask any
+# questions and simply run all tests by default.
+
 # Where to run all of these scripts from.
 const TOP_DIR = ${cli_src_path+"/examples/freenas-test/"}
 
@@ -62,9 +65,17 @@ function destroy_all() {
 # OK do it.
 load_all()
 
-x = readline("All tests loaded. Ready to run them? ([y] / n) ")
+if (_batch == "yes") {
+	x="yes"
+else {
+	x = readline("All tests loaded. Ready to run them? ([y] / n) ")
+}
 if (x == "yes" or x == "y" or x == "") {
-	x = readline("Also run stress tests? (y or [n]) ")
+	if (_batch = "yes") {
+		x="yes"
+	else {
+		x = readline("Also run stress tests? (y or [n]) ")
+	}
 	test_me_harder = (x == "yes" or x == "y")
 	create_all()
 	destroy_all()

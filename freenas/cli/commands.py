@@ -604,7 +604,12 @@ class ExitCommand(Command):
     """
 
     def run(self, context, args, kwargs, opargs):
-        sys.exit(0)
+        try:
+            code = int(args[0]) if args else 0
+        except ValueError:
+            raise CommandException('Exit code must be an integer')
+
+        sys.exit(code)
 
 
 @description("Display the current CLI user")

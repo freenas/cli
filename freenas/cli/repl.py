@@ -1970,7 +1970,7 @@ def main(argv=None):
     if args.D:
         for i in args.D:
             name, value = i.split('=')
-            context.variables.set(name, value)
+            context.global_env[name] = value
 
     if args.e:
         context.wait_entity_subscribers()

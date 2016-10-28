@@ -6,7 +6,7 @@ _boot_env = none
 
 function boot_create() {
 	print(">>> Starting boot tests")
-	_boot_env = $(boot environment create name=${_test_bootenv} keep=no)
+	_boot_env = @$(boot environment create name=${_test_bootenv} keep=no)
 	maybe_barf(_success, "+boot#2", "Unable to create boot environment " + _test_bootenv)
 	$(_boot_env set keep=yes)
 	maybe_barf(_success, "+boot#3", "Unable to set keep flag for " + _test_bootenv)
@@ -20,7 +20,7 @@ function boot_create() {
 function boot_destroy() {
 	print(">>> Finishing boot tests")
 	if (_boot_env != none) {
-		$(_boot_env delete)
+		@$(_boot_env delete)
 	} else {
 		@$(boot environment ${_test_bootenv} delete)
 	}

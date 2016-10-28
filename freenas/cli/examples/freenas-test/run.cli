@@ -13,7 +13,7 @@ _exit_on_err=false
 
 # Set _batch=yes external to this script if you don't want it to ask any
 # questions and simply run all tests by default.
-_batch=no
+_batch="no"
 
 # Where to run all of these scripts from.
 const TOP_DIR = ${cli_src_path+"/examples/freenas-test/"}

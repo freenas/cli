@@ -296,9 +296,9 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
 
         self.add_property(
             width=20,
-            descr='Directory',
-            name='directory',
-            get='origin.directory',
+            descr='Domain',
+            name='domain',
+            get='origin.domain',
             set=None,
             type=ValueType.STRING,
             list=True
@@ -446,9 +446,9 @@ class GroupsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
         )
 
         self.add_property(
-            descr='Directory',
-            name='directory',
-            get='origin.directory',
+            descr='Domain',
+            name='domain',
+            get='origin.domain',
             set=None,
             type=ValueType.STRING,
             list=True

@@ -8,8 +8,10 @@ TEST_SET = [ \
     "peering", "session", "task", "alert", "calendar", "tunable", "vm", "docker" \
 ]
 
-# Future use - someday this will cause the tests to exit upon any error.
-_exit_on_err=false
+# Cause the tests to exit upon any error.
+if (not defined("_exit_on_error")) {
+	_exit_on_error="no"
+}
 
 # Set _batch=yes external to this script if you don't want it to ask any
 # questions and simply run all tests by default.

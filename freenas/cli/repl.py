@@ -1314,17 +1314,15 @@ class MainLoop(object):
             if isinstance(token, IfStatement):
                 expr = self.eval(token.expr, env=env)
                 body = token.body if expr else token.else_body
-                local_env = Environment(self.context, outer=env)
-                self.eval_block(body, local_env, False)
+                self.eval_block(body, env, False)
                 return
 
             if isinstance(token, ForStatement):
-                local_env = Environment(self.context, outer=env)
-                self.eval(token.stmt1, env=local_env)
+                self.eval(token.stmt1, env=env)
 
-                while self.eval(token.expr, env=local_env):
-                    self.eval_block(token.body, local_env, True)
-                    self.eval(token.stmt2, env=local_env)
+                while self.eval(token.expr, env=env):
+                    self.eval_block(token.body, env, True)
+                    self.eval(token.stmt2, env=env)
 
                 return
 
@@ -1360,14 +1358,13 @@ class MainLoop(object):
                 return
 
             if isinstance(token, WhileStatement):
-                local_env = Environment(self.context, outer=env)
                 while True:
                     expr = self.eval(token.expr, env=env)
                     if not expr:
                         return
 
                     try:
-                        self.eval_block(token.body, local_env, True)
+                        self.eval_block(token.body, env, True)
                     except FlowControlInstruction as f:
                         if f.type == FlowControlInstructionType.BREAK:
                             return

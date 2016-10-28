@@ -220,7 +220,7 @@ class PrintoptCommand(Command):
             for k, v in self.variables.get_all_printable():
                 var_dict = {
                     'varname': k,
-                    'vardescr': self.variables.variable_doc[k],
+                    'vardescr': self.variables.variable_doc.get(k, ''),
                     'varvalue': v,
                 }
                 var_dict_list.append(var_dict)

@@ -71,7 +71,7 @@ if (_batch == "yes") {
 	x = readline("All tests loaded. Ready to run them? ([y] / n) ")
 }
 if (x == "yes" or x == "y" or x == "") {
-	if (_batch = "yes") {
+	if (_batch == "yes") {
 		x="yes"
 	} else {
 		x = readline("Also run stress tests? (y or [n]) ")

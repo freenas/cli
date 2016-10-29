@@ -38,7 +38,7 @@ function boot_hard_create() {
 	    }
 	}
 	_arr = $(boot environment show | search name ~= ${_test_bootenv + "[0-9]+"})
-	maybe_barf(length(_arr) == _hard_count, "+boot-hard#2", "boot environment count of " + str(length(_arr)) + " does not match " + str(_hard_count))
+	maybe_barf(length(_arr) == _boot_hard_count, "+boot-hard#2", "boot environment count of " + str(length(_arr)) + " does not match " + str(_boot_hard_count))
 }
 
 function boot_hard_destroy() {

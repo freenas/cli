@@ -14,6 +14,8 @@ _nfs_object=none
 _iscsi_name="test_iscs_share"
 _iscsi_service_status="no"
 _iscsi_object=none
+_share_hard_count=20
+_share_hard_arr = []
 
 function share_create() {
 	print(">>> Starting share tests")
@@ -26,36 +28,36 @@ function share_create() {
 function share_destroy() {
 	print(">>> Finishing share tests")
 	if (_afp_object != null) {
-		_afp_object delete
+	    _afp_object delete
 	} else {
-		@$(share afp ${_afp_name} delete)
+	     @$(share afp ${_afp_name} delete)
 	}
 	maybe_barf(_success, "-share#1", "unable to delete AFP share " + _afp_name)
 	@$(service afp config set enable=${_afp_service_status})
 	maybe_barf(_success, "-share#2", "Unable to restore AFP service status")
 
 	if (_smb_object != null) {
-		_smb_object delete
+	    _smb_object delete
 	} else {
-		@$(share smb ${_smb_name} delete)
+	    @$(share smb ${_smb_name} delete)
 	}
 	maybe_barf(_success, "-share#3", "unable to delete SMB share " + _smb_name)
 	@$(service smb config set enable=${_smb_service_status})
 	maybe_barf(_success, "-share#4", "Unable to restore SMB service status")
 
 	if (_nfs_object != null) {
-		_nfs_object delete
+	    _nfs_object delete
 	} else {
-		@$(share nfs ${_nfs_name} delete)
+	    @$(share nfs ${_nfs_name} delete)
 	}
 	maybe_barf(_success, "-share#5", "unable to delete NFS share " + _nfs_name)
 	@$(service nfs config set enable=${_nfs_service_status})
 	maybe_barf(_success, "-share#6", "Unable to restore NFS service status")
 
 	if (_iscsi_object != null) {
-		_iscsi_object delete
+	    _iscsi_object delete
 	} else {
-		@$(share iscsi ${_iscsi_name} delete)
+	    @$(share iscsi ${_iscsi_name} delete)
 	}
 	maybe_barf(_success, "-share#7", "unable to delete ISCSI share " + _iscsi_name)
 	@$(service iscsi config set enable=${_iscsi_service_status})
@@ -114,9 +116,25 @@ function share_iscsi_create() {
 }
 
 function share_hard_create() {
-	print(">>> Starting share stress tests")
+	print(">>> Starting share stress tests: " + str(_share_hard_count) + " shares of each type")
+	for (j in [ "afp", "smb", "nfs", "iscsi" ]) {
+	    for (i in mapf(range(0, _share_hard_count), ${"test_" + j + "_share"} + "%d")) {
+	    	if (j == "iscsi") {
+	    	   _x = @$(share ${j} create name=${i} parent=${VOL_NAME} size=5g)
+		} else {
+	    	   _x = @$(share ${j} create name=${i} parent=${VOL_NAME})
+		}
+		if (not maybe_barf(_success, "+share-hard#1", "Unable to create share " + i + " of type " + j)) {
+		   append(_share_hard_arr, _x)
+		}
+	}
 }
 
 function share_hard_destroy() {
 	print(">>> Finishing share stress tests")
+	for (i in _share_hard_arr) {
+	    _n = $(i get name)
+	    @$(i delete)
+	    maybe_barf(_success, "-share-hard#1", "Unable to delete share " + _n)
+	}
 }

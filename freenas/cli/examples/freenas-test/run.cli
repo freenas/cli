@@ -25,6 +25,11 @@ const TOP_DIR = ${cli_src_path+"/examples/freenas-test/"}
 # Set this to yes if you want to run the more stressy-tests
 test_me_harder=false
 
+# Where to log test result output to
+output_file="output-log.txt"
+output_handle = fopen(output_file, "w");
+maybe_die(_success, "main#1", "Unable to open log file " + output_file + " for writing")
+
 # Some constants which will be shared across tests, hence "global" - they do not have underscores prepended to their names to
 # designate them as such.
 const TEST_USER = "mytestuser"
@@ -88,9 +93,12 @@ if (x == "yes" or x == "y" or x == "") {
 		x = readline("Also run stress tests? (y or [n]) ")
 	}
 	test_me_harder = (x == "yes" or x == "y")
+	printf(">>> Also logging results to " + output_file)
 	create_all()
 	destroy_all()
+	fclose(output_handle)
 } else {
 	print("You can run the tests yourself by calling create_all()")
 	print("(or testname_create()) then destroy_all() (or testname_destroy())")
-}	
+}
+

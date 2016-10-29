@@ -95,7 +95,7 @@ if (x == "yes" or x == "y" or x == "") {
 		x = readline("Also run stress tests? (y or [n]) ")
 	}
 	test_me_harder = (x == "yes" or x == "y")
-	printf(">>> Also logging results to " + output_file)
+	print(">>> Also logging results to " + output_file)
 	create_all()
 	destroy_all()
 	fclose(output_handle)

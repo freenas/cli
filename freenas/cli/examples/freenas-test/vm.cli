@@ -21,9 +21,6 @@ function vm_create() {
 	maybe_barf(_success, "+vm#4", "Unable to start VM " + _vm_name)
 	@$(_vm_object stop)
 	maybe_barf(_success, "+vm#4", "Unable to stop VM " + _vm_name)
-	if (test_me_harder) {
-	    vm_test_hard()
-	}
 }
 
 function vm_destroy() {

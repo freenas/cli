@@ -26,7 +26,9 @@ const TOP_DIR = ${cli_src_path+"/examples/freenas-test/"}
 test_me_harder=false
 
 # Where to log test result output to
-output_file="output-log.txt"
+if (not defined("output_file")) {
+   output_file="output-log.txt"
+}
 output_handle = fopen(output_file, "w");
 maybe_die(_success, "main#1", "Unable to open log file " + output_file + " for writing")
 

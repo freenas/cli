@@ -128,8 +128,8 @@ function share_hard_create() {
 		if (not maybe_barf(_success, "+share-hard#1", "Unable to create share " + i + " of type " + j)) {
 		   append(_share_hard_arr, _x)
 		}
+	    }
 	}
-    }
 }
 
 function share_hard_destroy() {

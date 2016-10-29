@@ -16,6 +16,7 @@ _iscsi_service_status="no"
 _iscsi_object=none
 _share_hard_count=20
 _share_hard_arr = []
+_share_types = [ "afp", "smb", "nfs", "iscsi" ]
 
 function share_create() {
 	print(">>> Starting share tests")
@@ -116,9 +117,9 @@ function share_iscsi_create() {
 }
 
 function share_hard_create() {
-	print(">>> Starting share stress tests: " + str(_share_hard_count) + " shares of each type")
-	for (j in [ "afp", "smb", "nfs", "iscsi" ]) {
-	    for (i in mapf(range(0, _share_hard_count), ${"test_" + j + "_share"} + "%d")) {
+	print(">>> Starting share stress tests: " + str(_share_hard_count) + " shares of " + str(_share_types))
+	for (j in _share_types) {
+	    for (i in mapf(range(0, _share_hard_count), "test_" + j + "_share" + "%d")) {
 	    	if (j == "iscsi") {
 	    	   _x = @$(share ${j} create name=${i} parent=${VOL_NAME} size=5g)
 		} else {
@@ -128,6 +129,7 @@ function share_hard_create() {
 		   append(_share_hard_arr, _x)
 		}
 	}
+    }
 }
 
 function share_hard_destroy() {

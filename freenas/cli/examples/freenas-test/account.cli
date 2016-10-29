@@ -4,6 +4,9 @@
 # State variables shared between create and destroy functions.
 _user_obj=null
 _group_obj=null
+_account_hard_count=20
+_account_hard_uarr = []
+_account_hard_garr = []
 
 function account_create() {
 	print(">>> Starting account tests")
@@ -19,8 +22,8 @@ function account_create() {
 	@$(_user_obj set uid=100000)
 	maybe_barf(_success, "+account#5", "Cannot set uid to new value for user " + TEST_USER)
 	if (_success == true) {
-		@$(_user_obj set uid=${_olduid})
-		maybe_barf(_success, "+account#6", "Cannot restore uid value for user " + TEST_USER)
+	    @$(_user_obj set uid=${_olduid})
+	    maybe_barf(_success, "+account#6", "Cannot restore uid value for user " + TEST_USER)
 	}
 	
 	_group_obj = @$(account group create name=${TEST_GROUP})
@@ -32,66 +35,71 @@ function account_create() {
 	@$(_group_obj set gid=100000)
 	maybe_barf(_success, "+account#11", "Cannot set gid to new value for group " + TEST_GROUP)
 	if (_success == true) {
-		@$(_group_obj set gid=${_oldgid})
-		maybe_barf(_success, "+account#12", "Cannot restore gid value for group " + TEST_GROUP)
-	}
-	if (test_me_harder) {
-		account_test_hard()
+	    @$(_group_obj set gid=${_oldgid})
+	    maybe_barf(_success, "+account#12", "Cannot restore gid value for group " + TEST_GROUP)
 	}
 }
 
 function account_destroy() {
 	print(">>> Finishing account tests")
 	if (VOL_OBJECT != null) {
-		@$(VOL_OBJECT dataset ${VOL_NAME + "/home"} delete)
+	    @$(VOL_OBJECT dataset ${VOL_NAME + "/home"} delete)
 	} else {
-		@$(volume ${VOL_NAME} dataset ${VOL_NAME + "/home"} delete)
+	    @$(volume ${VOL_NAME} dataset ${VOL_NAME + "/home"} delete)
 	}
 	maybe_barf(_success, "-account#1", "Unable to delete temporary home dataset on " + VOL_NAME)
 	if (_user_obj != null) {
-		@$(_user_obj delete)
+	    @$(_user_obj delete)
 	} else {
-		@$(account user ${TEST_USER} delete)
+	    @$(account user ${TEST_USER} delete)
 	}
 	maybe_barf(_success, "-account#2", "Unable to delete user " + TEST_USER)
 	@$(account group ${TEST_USER} delete)
 	maybe_barf(_success, "-account#3", "Unable to delete private group for user " + TEST_USER)
 	if (_group_obj != null) {
-		@$(_group_obj delete)
+	    @$(_group_obj delete)
 	} else {
-		@$(account group ${TEST_GROUP} delete)
+	    @$(account group ${TEST_GROUP} delete)
 	}
 	maybe_barf(_success, "-account#4", "Unable to delete group " + TEST_GROUP)
 }
 
-function account_test_hard()
-{
-	_hard_count=20
-	printf(">>> Starting account stress tests: %d users and groups\n", _hard_count)
+function account_hard_create() {
+	printf(">>> Starting account stress tests: %d users and groups\n", _account_hard_count)
 
-	for (i in mapf(range(0, _hard_count), TEST_USER + "-%d")) {
-	    @$(account user create name=${i} fullname=${"My Test User " + i} home=${sprintf("/mnt/%s/home/%s", VOL_NAME, i)} password_disabled=yes)
-	    maybe_barf(_success, "+account-hard#1", "Unable to create user " + i)
+	for (i in mapf(range(0, _account_hard_count), TEST_USER + "%d")) {
+	    _x = @$(account user create name=${i} fullname=${"My Test User " + i} home=${sprintf("/mnt/%s/home/%s", VOL_NAME, i)} password_disabled=yes)
+	    if (not maybe_barf(_success, "+account-hard#1", "Unable to create user " + i)) {
+	       append(_account_hard_uarr, _x)
+	    }
 	}
-	_arr = $(account user show | search name ~= ${TEST_USER + "-[0-9]*"})
-	maybe_barf(length(_arr) == _hard_count, "+account-hard#2", "User count of " + str(length(_arr)) + " does not match " + str(_hard_count))
-	for (i in mapf(range(0, _hard_count), TEST_GROUP + "-%d")) {
-	    @$(account group create name=${i})
-	    maybe_barf(_success, "+account-hard#3", "Unable to create group " + i)
+	_arr = $(account user show | search name ~= ${TEST_USER + "[0-9]+"})
+	maybe_barf(length(_arr) == _account_hard_count, "+account-hard#2", "User count of " + str(length(_arr)) + " does not match " + str(_account_hard_count))
+	for (i in mapf(range(0, _account_hard_count), TEST_GROUP + "%d")) {
+	    _x = @$(account group create name=${i})
+	    if (not maybe_barf(_success, "+account-hard#3", "Unable to create group " + i)) {
+	        append(_account_hard_garr, _x)
+	    }
 	}
-	_arr = $(account group show | search name ~= ${TEST_GROUP + "-[0-9]*"})
-	maybe_barf(length(_arr) == _hard_count, "+account-hard#3", "Group count of " + str(length(_arr)) + " does not match " + str(_hard_count))
+	_arr = $(account group show | search name ~= ${TEST_GROUP + "[0-9]+"})
+	maybe_barf(length(_arr) == _account_hard_count, "+account-hard#3", "Group count of " + str(length(_arr)) + " does not match " + str(_account_hard_count))
+}
 
-	for (i in mapf(range(0, _hard_count), TEST_USER + "-%d")) {
-	    @$(account user ${i} delete)
-	    maybe_barf(_success, "+account-hard#4", "Unable to delete user " + i)
+function account_hard_destroy() {
+	printf(">>> Finishing account stress tests: %d users and groups\n", _account_hard_count)
+
+	for (i in _account_hard_uarr) {
+	    _n = $(i get name)
+	    @$(i delete)
+	    maybe_barf(_success, "-account-hard#1", "Unable to delete user " + _n)
 	    # XXX delete this if delete private group support goes in.
-	    @$(account group ${i} delete)
-	    maybe_barf(_success, "+account-hard#5", "Unable to delete group " + i)
+	    @$(account group ${_n} delete)
+	    maybe_barf(_success, "-account-hard#2", "Unable to delete user group " + _n)
 	}
 
-	for (i in mapf(range(0, _hard_count), TEST_GROUP + "-%d")) {
-	    @$(account group ${i} delete)
-	    maybe_barf(_success, "+account-hard#6", "Unable to delete group " + i)
+	for (i in _account_hard_garr) {
+	    _n = $(i get name)
+	    @$(i delete)
+	    maybe_barf(_success, "-account-hard#3", "Unable to delete group " + _n)
 	}
 }

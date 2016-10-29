@@ -101,8 +101,7 @@ function share_nfs_create() {
 	maybe_barf(_success, "+share-nfs#5", "Unable to set NFS service enable to yes")
 }
 
-function share_iscsi_create()
-{
+function share_iscsi_create() {
 	print(">>> 	Starting iscsi share tests")
 	_iscsi_object = @$(share iscsi create name=${_iscsi_name} rpm=7200 size=10g parent=${VOL_NAME})
 	maybe_barf(_success, "+share-iscsi#1", "Unable to create ISCSI share " + _iscsi_name)
@@ -112,4 +111,12 @@ function share_iscsi_create()
 	maybe_barf(_success, "+share-iscsi#4", "Unable to get ISCSI service status")
 	@$(service iscsi config set enable=yes)
 	maybe_barf(_success, "+share-iscsi#5", "Unable to set ISCSI service enable to yes")
+}
+
+function share_hard_create() {
+	print(">>> Starting share stress tests")
+}
+
+function share_hard_destroy() {
+	print(">>> Finishing share stress tests")
 }

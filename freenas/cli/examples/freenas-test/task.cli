@@ -9,4 +9,12 @@ function task_destroy() {
 	 print(">>> Finishing task tests")
 }
 
+function task_hard_create() {
+	 print(">>> Starting task stress tests")
+}
+
+function task_hard_destroy() {
+	 print(">>> Finishing task stress tests")
+}
+
 

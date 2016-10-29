@@ -14,3 +14,10 @@ function session_destroy() {
 }
 
 
+function session_hard_create() {
+	 print(">>> Starting session stress tests")
+}
+
+function session_hard_destroy() {
+	 print(">>> Finishing session stress tests")
+}

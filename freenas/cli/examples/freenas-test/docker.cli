@@ -5,6 +5,8 @@
 _alpine_container=null
 _container_name="docker_test_container"
 _image_name="freenas/alpine"
+_container_hard_count=20
+_container_arr = []
 
 function docker_create() {
 	print(">>> Starting docker tests")
@@ -12,17 +14,14 @@ function docker_create() {
 	maybe_barf(_success, "+docker#1", "Unable to create docker container " + _container_name)
 	_x = $(_alpine_container get name)
 	if (_x != _container_name) {
-	   maybe_barf(_success, "+docker#2", "docker container name is not " + _container_name)
+	    maybe_barf(_success, "+docker#2", "docker container name is not " + _container_name)
 	}
 	_y = $(docker image show | find name ~= alpine)
 	maybe_barf(_y == "freenas/alpine:latest", "+docker#3", "docker image for alpine not found")
 	@$(_alpine_container start)
 	maybe_barf(_success, "+docker#3", "unable to start docker container " + _container_name)
 	@$(_alpine_container stop)
-	maybe_barf(_success, "+docker#3", "unable to stop docker container " + _container_name)
-	if (test_me_harder) {
-	   container_test_hard()
-	}
+	maybe_barf(_success, "+docker#4", "unable to stop docker container " + _container_name)
 }
 
 function docker_destroy() {
@@ -35,24 +34,23 @@ function docker_destroy() {
 	maybe_barf(_success, "-docker#1", "unable to delete docker container " + _container_name)
 }
 
-function container_test_hard()
-{
-	_hard_count=20
-	_container_array = []
-
-	printf(">>> Starting Docker stress tests: %d containers\n", _hard_count)
-	for (i in mapf(range(0, _hard_count), _container_name + "-%d")) {
+function container_hard_create() {
+	printf(">>> Starting Docker stress tests: %d containers\n", _container_hard_count)
+	for (i in mapf(range(0, _container_hard_count), _container_name + "%d")) {
 	    _x = @$(docker container create image=${_image_name} name=${i} command="/bin/sh" interactive=yes)
-	    if (not (maybe_barf(_success, "+docker-hard#1", "Unable to create container " + i))) {
-	     	append(_container_array, _x)
+	    if (not maybe_barf(_success, "+docker-hard#1", "Unable to create container " + i)) {
+	        append(_container_arr, _x)
 	    }
 	}
-	maybe_barf(length($(docker container show | search name ~= ${_container_name + "-[0-9]*"})) == _hard_count, "+docker-hard#2", "number of Containers found does not = " + str(_hard_count))
+	maybe_barf(length($(docker container show | search name ~= ${_container_name + "[0-9]+"})) == _container_hard_count, "+docker-hard#2", "number of Containers found does not = " + str(_container_hard_count))
+}
 
-	for (i in _container_array) {
+function container_hard_destroy() {
+	print(">>> Finishing docker stress tests")
+	for (i in _container_arr) {
 	    _n = $(i get name)
 	    @$(i delete)
-	    maybe_barf(_success, "+docker-hard#3", "Unable to delete container " + _n)
+	    maybe_barf(_success, "-docker-hard#1", "Unable to delete container " + _n)
 	}
 }
 

@@ -6,6 +6,8 @@ _vm_name="vm_test_image"
 _vm_template="freebsd-10.3-zfs"
 _vm_object=none
 _vm_description="This is a test"
+_vm_hard_count = 10
+_vm_hard_arr = []
 
 function vm_create() {
 	print(">>> Starting vm tests")
@@ -20,37 +22,36 @@ function vm_create() {
 	@$(_vm_object stop)
 	maybe_barf(_success, "+vm#4", "Unable to stop VM " + _vm_name)
 	if (test_me_harder) {
-	   vm_test_hard()
+	    vm_test_hard()
 	}
 }
 
 function vm_destroy() {
 	 print(">>> Finishing vm tests")
 	if (_vm_object != null) {
-		_vm_object delete
+	    _vm_object delete
 	} else {
-		@$(vm ${_vm_name} delete)
+	    @$(vm ${_vm_name} delete)
 	}
 	maybe_barf(_success, "-vm#1", "Unable to delete VM " + _vm_name)
 }
 
-function vm_test_hard()
-{
-	_hard_count=10
-	_vm_array = []
-
-	printf(">>> Starting VM stress tests: %d virtual machines\n", _hard_count)
-	for (i in mapf(range(0, _hard_count), _vm_name + "-%d")) {
+function vm_hard_create() {
+	printf(">>> Starting VM stress tests: %d virtual machines\n", _vm_hard_count)
+	for (i in mapf(range(0, _vm_hard_count), _vm_name + "%d")) {
 	    _x = @$(vm create name=${i} template=${_vm_template} volume=${VOL_NAME})
 	    if (not (maybe_barf(_success, "+vm-hard#1", "Unable to create VM " + i))) {
-	       append(_vm_array, _x)
+	       append(_vm_hard_arr, _x)
 	    }
 	}
-	maybe_barf(length($(vm show | search name ~= ${_vm_name + "-[0-9]*"})) == _hard_count, "+vm-hard#2", "number of VMs found does not = " + str(_hard_count))
+	maybe_barf(length($(vm show | search name ~= ${_vm_name + "[0-9]+"})) == _vm_hard_count, "+vm-hard#2", "number of VMs found does not = " + str(_vm_hard_count))
+}
 
-	for (i in _vm_array) {
+function vm_hard_destroy() {
+	print(">>> Finishing VM stress tests")
+	for (i in _vm_hard_arr) {
 	    _n = $(i get name)
 	    @$(i delete)
-	    maybe_barf(_success, "+vm-hard#2", "Unable to delete VM " + _n)
+	    maybe_barf(_success, "-vm-hard#1", "Unable to delete VM " + _n)
 	}
 }

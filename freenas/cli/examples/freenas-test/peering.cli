@@ -9,4 +9,12 @@ function peering_destroy() {
 	print(">>> Finishing peering tests")
 }
 
+function peering_hard_create() {
+	print(">>> Starting peering stress tests")
+}
+
+function peering_hard_destroy() {
+	print(">>> Finishing peering stress tests")
+}
+
 

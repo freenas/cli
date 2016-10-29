@@ -3,6 +3,8 @@
 
 _test_bootenv="_test-boot-environment"
 _boot_env = none
+_boot_hard_count = 10
+_boot_hard_arr = []
 
 function boot_create() {
 	print(">>> Starting boot tests")
@@ -20,9 +22,30 @@ function boot_create() {
 function boot_destroy() {
 	print(">>> Finishing boot tests")
 	if (_boot_env != none) {
-		@$(_boot_env delete)
+	    @$(_boot_env delete)
 	} else {
-		@$(boot environment ${_test_bootenv} delete)
+	    @$(boot environment ${_test_bootenv} delete)
 	}
 	maybe_barf(_success, "-boot#1", "Unable to delete test boot environment")
+}
+
+function boot_hard_create() {
+	print(">>> Starting boot stress tests")
+	for (i in mapf(range(0, _boot_hard_count), _test_bootenv + "%d")) {
+	    _x = @$(boot environment create name=${i} keep=no)
+	    if (not maybe_barf(_success, "+boot-hard#1", "Unable to create boot environment " + i)) {
+	       append(_boot_hard_arr, _x)
+	    }
+	}
+	_arr = $(boot environment show | search name ~= ${_test_bootenv + "[0-9]+"})
+	maybe_barf(length(_arr) == _hard_count, "+boot-hard#2", "boot environment count of " + str(length(_arr)) + " does not match " + str(_hard_count))
+}
+
+function boot_hard_destroy() {
+	print(">>> Finishing boot stress tests")
+	for (i in _boot_hard_arr) {
+	    _n = $(i get name)
+	    @$(i delete)
+	    maybe_barf(_success, "-boot-hard#1", "Unable to delete boot environment " + _n)
+	}
 }

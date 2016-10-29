@@ -28,3 +28,11 @@ function service_create() {
 function service_destroy() {
 	print(">>> Finishing service tests")
 }
+
+function service_hard_create() {
+	print(">>> Starting service stress tests")
+}
+
+function service_hard_destroy() {
+	print(">>> Finishing service stress tests")
+}

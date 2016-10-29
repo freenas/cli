@@ -6,6 +6,8 @@ _cmd_name="test-command"
 _scrub_name="test-scrub"
 _cal_command = none
 _cal_scrub = none
+_cal_hard_count = 10
+_cal_hard_arr = []
 
 function calendar_create() {
 	print(">>> Starting calendar tests")
@@ -18,43 +20,41 @@ function calendar_create() {
 	maybe_barf(_success, "+calendar#4", "unable to create calendar scrub task")
 	_cal_scrub run
 	maybe_barf(_success, "+calendar#5", "unable to run calendar scrub task")
-	if (test_me_harder) {
-	   calendar_test_hard()
-	}
 }
 
 function calendar_destroy() {
 	print(">>> Finishing calendar tests")
 	if (_cal_command != null) {
-		_cal_command delete
+	    _cal_command delete
 	} else {
-		@$(calendar command ${_cmd_name} delete)
+	    @$(calendar command ${_cmd_name} delete)
 	}
 	maybe_barf(_success, "-calendar#1", "unable to delete calendar command task")
 	if (_cal_scrub != null) {
-		_cal_scrub delete
+	    _cal_scrub delete
 	} else {
-		@$(calendar scrub ${_scrub_name} delete)
+	    @$(calendar scrub ${_scrub_name} delete)
 	}
 	maybe_barf(_success, "-calendar#2", "unable to delete calendar scrub task")
 }
 
-function calendar_test_hard() {
-	_hard_count = 10
-	_cal_array = []
-	
-	for (i = 0; i < _hard_count; i = i + 1) {
-	    _x = @$(calendar command create command="echo testing" name=${_cmd_name + "-" + str(i)} username=${TEST_USER} schedule={"minute" : ${"*/" + str(i + 10)}})
-	    if (not (maybe_barf(_success, "+calendar-hard#1", "Unable to create user " + str(i)))) {
-	       append(_cal_array, _x);
+function calendar_hard_create() {
+	print(">>> Starting calendar stress tests")
+	for (i = 0; i < _cal_hard_count; i = i + 1) {
+	    _x = @$(calendar command create command="echo testing" name=${_cmd_name + str(i)} username=${TEST_USER} schedule={"minute" : ${"*/" + str(i + 10)}})
+	    if (not maybe_barf(_success, "+calendar-hard#1", "Unable to create calendar " + str(i))) {
+	       append(_cal_hard_arr, _x);
             }
 	}
-	_arr = $(calendar command show | search name ~= ${_cmd_name + "-[0-9]*"})
-	maybe_barf(length(_arr) == _hard_count, "+calendar-hard#2", "Calendar command count of " + str(length(_arr)) + " does not match " + str(_hard_count))
+	_arr = $(calendar command show | search name ~= ${_cmd_name + "[0-9]+"})
+	maybe_barf(length(_arr) == _cal_hard_count, "+calendar-hard#2", "Calendar command count of " + str(length(_arr)) + " does not match " + str(_cal_hard_count))
+}
 
-	for (i in _cal_array) {
+function calendar_hard_destroy() {
+	print(">>> Finishing calendar stress tests")
+	for (i in _cal_hard_arr) {
 	    _n = $(i get name)
 	    @$(i delete)
-	    maybe_barf(_success, "+calendar-hard#3", "Unable to delete calendar entry " + _n)
+	    maybe_barf(_success, "-calendar-hard#1", "Unable to delete calendar entry " + _n)
 	}
 }

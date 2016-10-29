@@ -9,4 +9,12 @@ function tunable_destroy() {
 	 print(">>> Finishing tunable tests")
 }
 
+function tunable_hard_create() {
+	 print(">>> Starting tunable stress tests")
+}
+
+function tunable_hard_destroy() {
+	 print(">>> Finishing tunable stress tests")
+}
+
 

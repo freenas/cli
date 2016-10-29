@@ -27,4 +27,10 @@ function system_destroy() {
 	 print(">>> Finishing system tests")
 }
 
+function system_hard_create() {
+	 print(">>> Starting system stress tests")
+}
 
+function system_hard_destroy() {
+	 print(">>> Finishing system stress tests")
+}

@@ -9,4 +9,12 @@ function network_destroy() {
 	print(">>> Finishing network tests")
 }
 
+function network_hard_create() {
+	print(">>> Starting network stress tests")
+}
+
+function network_hard_destroy() {
+	print(">>> Finishing network stress tests")
+}
+
 

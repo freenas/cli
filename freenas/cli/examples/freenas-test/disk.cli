@@ -28,3 +28,11 @@ function disk_destroy() {
 	@$(disk ${_disk_to_fondle} set standby_mode=${_old_standby})
 	maybe_barf(_success, "-disk#1", "Unable to restore old standby_mode to disk " + _disk_to_fondle)
 }
+
+function disk_hard_create() {
+	print(">>> Starting disk stress tests")
+}
+
+function disk_hard_destroy() {
+	print(">>> Finishing disk stress tests")
+}

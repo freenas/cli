@@ -56,6 +56,9 @@ function create_all() {
 	setopt abort_on_errors=yes
 	for (test in TEST_SET) {
 		eval(test + "_create()")
+		if (test_me_harder == true) {
+		   eval(test + "_hard_create()")
+		}
 	}
 }
 
@@ -64,6 +67,9 @@ function destroy_all() {
 	setopt abort_on_errors=no
 	for (test in TEST_SET) {
 		eval(test + "_destroy()")
+		if (test_me_harder == true) {
+		   eval(test + "_hard_destroy()")
+		}
 	}
 }
 

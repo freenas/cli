@@ -1045,7 +1045,7 @@ class BaseListCommand(FilteringCommand):
             if not col.list:
                 continue
 
-            cols.append(Table.Column(col.descr, col.do_get, col.type, col.width))
+            cols.append(Table.Column(col.descr, col.do_get, col.type, col.width, col.name))
 
         return Table(self.parent.query(params, options), cols)
 

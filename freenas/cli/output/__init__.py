@@ -115,11 +115,18 @@ class Object(list):
 
 class Table(object):
     class Column(object):
-        def __init__(self, label, accessor, vt=ValueType.STRING, width=None):
+        def __init__(self, label, accessor, vt=ValueType.STRING, width=None, name=None):
+            self.name = name
             self.label = label
             self.accessor = accessor
             self.vt = vt
             self.width = width
+
+            if not self.name and isinstance(accessor, str):
+                self.name = accessor
+
+            if not self.name:
+                self.name = label
 
         def __getstate__(self):
             return {
@@ -136,7 +143,7 @@ class Table(object):
         return len(self.data)
 
     def __getitem__(self, item):
-        return self.data[item]
+        return {c.name: resolve_cell(self.data[item], c.accessor) for c in self.columns}
 
     def __getstate__(self):
         return {

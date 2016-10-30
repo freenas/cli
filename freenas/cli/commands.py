@@ -614,7 +614,6 @@ class ExitCommand(Command):
 
 @description("Display the current CLI user")
 class WhoamiCommand(Command):
-
     """
     Usage: whoami
 

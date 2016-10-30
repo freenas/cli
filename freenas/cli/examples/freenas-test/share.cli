@@ -122,12 +122,12 @@ function share_hard_create() {
 	    for (i in mapf(range(0, _share_hard_count), "test_" + j + "_share" + "%d")) {
 	    	if (j == "iscsi") {
 	    	   _x = @$(share ${j} create name=${i} parent=${VOL_NAME} size=5g)
-		} else {
-	    	   _x = @$(share ${j} create name=${i} parent=${VOL_NAME})
-		}
-		if (not maybe_barf(_success, "+share-hard#1", "Unable to create share " + i + " of type " + j)) {
-		   append(_share_hard_arr, _x)
-		}
+            } else {
+                   _x = @$(share ${j} create name=${i} parent=${VOL_NAME})
+            }
+            if (not maybe_barf(_success, "+share-hard#1", "Unable to create share " + i + " of type " + j)) {
+               append(_share_hard_arr, _x)
+            }
 	    }
 	}
 }

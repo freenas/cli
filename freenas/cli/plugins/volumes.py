@@ -1178,6 +1178,23 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
             usage=_("Shows the mountpoint if a volume is currently mounted to one")
         )
 
+        self.add_property(
+            descr='Last replicated by',
+            name='last_replicated_by',
+            get='last_replicated_by',
+            set=None,
+            list=False
+        )
+
+        self.add_property(
+            descr='Last replicated at',
+            name='last_replicated_at',
+            get='last_replicated_at',
+            set=None,
+            list=False,
+            type=ValueType.TIME
+        )
+
         self.primary_key = self.get_mapping('name')
         self.entity_commands = self.get_entity_commands
         self.entity_namespaces = lambda this: [

@@ -912,10 +912,14 @@ class BuiltinFunction(object):
         self.f = f
 
     def __call__(self, env, *args):
-        if getattr(self.f, 'pass_env', False):
-            return self.f(env, *args)
-        else:
-            return self.f(*args)
+        try:
+            if getattr(self.f, 'pass_env', False):
+                return self.f(env, *args)
+            else:
+                return self.f(*args)
+        except BaseException as err:
+            self.context.global_env['_error'] = Environment.Variable(str(err))
+            return None
 
     def __str__(self):
         return "<built-in function '{0}'>".format(self.name)

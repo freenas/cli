@@ -138,5 +138,6 @@ function share_hard_destroy() {
 	    _n = $(i get name)
 	    @$(i delete)
 	    maybe_barf(_success, "-share-hard#1", "Unable to delete share " + _n)
+	    remove(_share_hard_arr, i)
 	}
 }

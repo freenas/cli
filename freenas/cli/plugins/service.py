@@ -1286,9 +1286,9 @@ svc_cli_config = {
             'name': 'password',
             'usage': _("""
             Set a secure password to be used by the webdav user."""),
-            'get': None,
+            'get': 'password',
             'set': 'password',
-            'type': ValueType.STRING
+            'type': ValueType.PASSWORD
         },
         {
             'descr': 'Authentication mode',

@@ -337,7 +337,7 @@ class DockerImageNamespace(EntitySubscriberBasedLoadMixin, DockerUtilsMixin, Ent
     The docker image namespace provides commands for listing,
     creating, and managing Docker container images.
     """
-    freenas_images = []
+    default_images = []
 
     def __init__(self, name, context):
         super(DockerImageNamespace, self).__init__(name, context)
@@ -359,12 +359,8 @@ class DockerImageNamespace(EntitySubscriberBasedLoadMixin, DockerUtilsMixin, Ent
                 show
                 show | search name == foo""")
 
-        if not DockerImageNamespace.freenas_images:
-            context.call_async(
-                'docker.image.get_collection_images',
-                lambda r: DockerImageNamespace.freenas_images.extend(list(r)),
-                'freenas'
-            )
+        if not DockerImageNamespace.default_images:
+            DockerImageNamespace.load_collection_images(context)
 
         self.add_property(
             descr='Name',
@@ -420,6 +416,20 @@ class DockerImageNamespace(EntitySubscriberBasedLoadMixin, DockerUtilsMixin, Ent
             'delete': DockerImageDeleteCommand(this)
         }
 
+    @staticmethod
+    def load_collection_images(context):
+        def fetch(collection):
+            context.call_async(
+                'docker.image.get_collection_images',
+                lambda r: DockerImageNamespace.default_images.extend(list(r)),
+                collection
+            )
+
+        context.call_async(
+            'docker.config.get_config',
+            lambda r: fetch(r.get('default_collection', 'freenas'))
+        )
+
 
 @description("Configure Docker general settings")
 class DockerConfigNamespace(DockerUtilsMixin, ConfigNamespace):
@@ -467,6 +477,22 @@ class DockerConfigNamespace(DockerUtilsMixin, ConfigNamespace):
             to FreeNAS's default network interface.''')
         )
 
+        self.add_property(
+            descr='Default DockerHub collection',
+            name='default_collection',
+            get='default_collection',
+            set='default_collection',
+            usage=_('''\
+            Used for setting a default DockerHub container images collection,
+            which later is being used in tab completion in other 'docker' namespaces.
+            Collection equals to DockerHub username''')
+        )
+
+    def load(self):
+        if self.saved:
+            DockerImageNamespace.load_collection_images(self.context)
+        super(DockerConfigNamespace, self).load()
+
 
 @description("Pull container image from Docker Hub to Docker host")
 class DockerImagePullCommand(Command):
@@ -513,7 +539,7 @@ class DockerImagePullCommand(Command):
 
     def complete(self, context, **kwargs):
         return [
-            EnumComplete('name=', q.query(DockerImageNamespace.freenas_images, select='name')),
+            EnumComplete('name=', q.query(DockerImageNamespace.default_images, select='name')),
             EntitySubscriberComplete('host=', 'docker.host', lambda d: d['name'])
         ]
 
@@ -552,7 +578,7 @@ class DockerImageListCommand(Command):
     Usage: canned
     """
     def run(self, context, args, kwargs, opargs):
-        return Table(DockerImageNamespace.freenas_images, [
+        return Table(DockerImageNamespace.default_images, [
             Table.Column('Name', 'name', width=30),
             Table.Column('Description', 'description')
         ])
@@ -679,7 +705,7 @@ class DockerContainerCreateCommand(Command):
         name = kwargs.get('name') or args[0]
         image = context.entity_subscribers['docker.image'].query(('names', 'in', kwargs['image']), single=True)
         if not image:
-            image = q.query(DockerImageNamespace.freenas_images, ('name', '=', kwargs['image']), single=True)
+            image = q.query(DockerImageNamespace.default_images, ('name', '=', kwargs['image']), single=True)
 
         command = kwargs.get('command', [])
         command = command if isinstance(command, (list, tuple)) else [command]
@@ -756,7 +782,7 @@ class DockerContainerCreateCommand(Command):
         if name:
             image = context.entity_subscribers['docker.image'].query(('names', 'in', name), single=True)
             if not image:
-                image = q.query(DockerImageNamespace.freenas_images, ('name', '=', name), single=True)
+                image = q.query(DockerImageNamespace.default_images, ('name', '=', name), single=True)
 
             if image and image['presets']:
                 presets = image['presets']
@@ -764,7 +790,7 @@ class DockerContainerCreateCommand(Command):
                 props += [NullComplete('volume:{container_path}='.format(**v)) for v in presets['volumes']]
                 props += [NullComplete('port:{container_port}/{protocol}='.format(**v)) for v in presets['ports']]
 
-        available_images = q.query(DockerImageNamespace.freenas_images, select='name')
+        available_images = q.query(DockerImageNamespace.default_images, select='name')
         available_images += context.entity_subscribers['docker.image'].query(select='names.0')
         available_images = list(set(available_images))
 

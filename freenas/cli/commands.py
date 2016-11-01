@@ -1384,27 +1384,10 @@ class SelectPipeCommand(PipeCommand):
     """
 
     def run(self, context, args, kwargs, opargs, input=None):
-        ns = context.pipe_cwd
-        available_props = [x.name for x in ns.property_mappings]
-        if len(args) == 0:
-            raise CommandException(_(
-                "Please specify a property field. Available properties are: {0}".format(
-                    ','.join(available_props)
-                )
-            ))
-
-        field = args[0]
-        if ns.has_property(field):
-            mapping = ns.get_mapping(field)
-        else:
-            raise CommandException(_(
-                "Please specify a property field. Available properties are: {0}".format(
-                    ','.join(available_props)
-                )
-            ))
+        if len(args) != 1:
+            raise CommandException('Please specify exactly one field name')
 
         if isinstance(input, Table):
-            input.data = ({'result': mapping.do_get(x)} for x in input.data)
+            input.data = ({'result': x.get(args[0])} for x in input.data)
             input.columns = [Table.Column('Result', 'result')]
-
             return input

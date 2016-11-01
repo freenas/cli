@@ -10,17 +10,25 @@ function disk_create() {
 	_x=$(disk show)
 	maybe_barf(_success, "+disk#1", "Unable to find any disks")
 
+	_unalloc = 0
+	for (i in $(disk show)) {
+	    if (i["allocation"] == "unallocated") {
+	       _unalloc = unalloc + 1
+	    }
+	}
+	maybe_barf(_unalloc > 0, "disk#2", "Unable to find any unallocated disks; subsequent volume tests will fail.")
+
 	_disk_to_fondle=$(disk show | find path ~= "/dev/a?da0")
-	maybe_barf(_success, "+disk#2", "Unable to find any boot disks")
-	maybe_barf(_disk_to_fondle == "da0" or _disk_to_fondle == "ada0", "+disk#3", "No disk was ada0 or da0")
+	maybe_barf(_success, "+disk#3", "Unable to find any boot disks")
+	maybe_barf(_disk_to_fondle == "da0" or _disk_to_fondle == "ada0", "+disk#4", "No disk was ada0 or da0")
 
 	_old_standby = $(disk ${_disk_to_fondle} get standby_mode)
-	maybe_barf(_success, "+disk#4", "Unable to get standby mode on disk " + _disk_to_fondle)
+	maybe_barf(_success, "+disk#5", "Unable to get standby mode on disk " + _disk_to_fondle)
 	@$(disk ${_disk_to_fondle} set standby_mode=4)
-	maybe_barf(_success, "+disk#5", "Unable to set standby mode on disk " + _disk_to_fondle + " to 4")
+	maybe_barf(_success, "+disk#6", "Unable to set standby mode on disk " + _disk_to_fondle + " to 4")
 	_y = $(disk ${_disk_to_fondle} get standby_mode)
-	maybe_barf(_success, "+disk#6", "Unable to re-get standby mode on disk " + _disk_to_fondle)
-	maybe_barf(_y == 4, "+disk#7", "Standby mode was not really set on disk " + _disk_to_fondle)
+	maybe_barf(_success, "+disk#7", "Unable to re-get standby mode on disk " + _disk_to_fondle)
+	maybe_barf(_y == 4, "+disk#8", "Standby mode was not really set on disk " + _disk_to_fondle)
 }
 
 function disk_destroy() {

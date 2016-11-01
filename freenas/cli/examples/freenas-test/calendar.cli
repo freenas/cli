@@ -2,8 +2,8 @@
 #
 
 # State variables shared between create and destroy functions.
-_cmd_name="test-command"
-_scrub_name="test-scrub"
+_cmd_name="test_command"
+_scrub_name="test_scrub"
 _cal_command = none
 _cal_scrub = none
 _cal_hard_count = 10
@@ -25,13 +25,13 @@ function calendar_create() {
 function calendar_destroy() {
 	print(">>> Finishing calendar tests")
 	if (_cal_command != null) {
-	    _cal_command delete
+	    @$(_cal_command delete)
 	} else {
 	    @$(calendar command ${_cmd_name} delete)
 	}
 	maybe_barf(_success, "-calendar#1", "unable to delete calendar command task")
 	if (_cal_scrub != null) {
-	    _cal_scrub delete
+	    @$(_cal_scrub delete)
 	} else {
 	    @$(calendar scrub ${_scrub_name} delete)
 	}

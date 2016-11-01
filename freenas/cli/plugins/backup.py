@@ -29,7 +29,7 @@ import gettext
 from freenas.cli.output import Sequence, Object, ValueType, Table, format_value, read_value
 from freenas.cli.namespace import (
     EntityNamespace, Command, CommandException, EntitySubscriberBasedLoadMixin,
-    TaskBasedSaveMixin, description
+    TaskBasedSaveMixin, BaseVariantMixin, description
 )
 from freenas.cli.complete import EnumComplete
 from freenas.cli.utils import TaskPromise, get_related, set_related
@@ -40,66 +40,71 @@ t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
 
 
-class BackupSSHPropertiesMixin(object):
-    def __init__(self, name, context):
-        super(BackupSSHPropertiesMixin, self).__init__(name, context)
+class BackupSSHPropertiesMixin(BaseVariantMixin):
+    def add_properties(self):
+        super(BackupSSHPropertiesMixin, self).add_properties()
 
         self.add_property(
             descr='Peer',
-            name='peer',
+            name='ssh_peer',
             usage=_("Peer name. Must match a peer of type ssh"),
             get=lambda o: get_related(self.context, 'peer', o, 'properties.peer'),
             set=lambda o, v: set_related(self.context, 'peer', o, 'properties.peer', v),
-            condition=lambda o: o['provider'] == 'ssh'
+            list=False,
+            condition=lambda o: o['provider'] == 'ssh',
         )
 
         self.add_property(
             descr='Directory',
-            name='directory',
+            name='ssh_directory',
             usage=_("""\
             Name of existing directory to save the backups to."""),
             get='properties.directory',
+            list=False,
             condition=lambda o: o['provider'] == 'ssh'
         )
 
 
-class BackupS3PropertiesMixin(object):
-    def __init__(self, name, context):
-        super(BackupS3PropertiesMixin, self).__init__(name, context)
+class BackupS3PropertiesMixin(BaseVariantMixin):
+    def add_properties(self):
+        super(BackupS3PropertiesMixin, self).add_properties()
 
         self.add_property(
             descr='Peer',
-            name='peer',
+            name='s3_peer',
             usage=_("Peer name. Must match a peer of type s3"),
             get=lambda o: get_related(self.context, 'peer', o, 'properties.peer'),
             set=lambda o, v: set_related(self.context, 'peer', o, 'properties.peer', v),
+            list=False,
             condition=lambda o: o['provider'] == 's3'
         )
 
         self.add_property(
             descr='Bucket',
-            name='bucket',
+            name='s3_bucket',
             usage=_("""\
             Enclose the valid hostname label between double quotes.
             This assumes you have already created a bucket."""),
             get='properties.bucket',
+            list=False,
             condition=lambda o: o['provider'] == 's3'
         )
 
         self.add_property(
             descr='Folder',
-            name='folder',
+            name='s3_folder',
             usage=_("""\
             The name of the folder within the bucket to backup to."""),
             get='properties.folder',
+            list=False,
             condition=lambda o: o['provider'] == 's3'
         )
 
 
 @description("Backup Snapshots")
 class BackupNamespace(
-    TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, BackupSSHPropertiesMixin,
-    BackupS3PropertiesMixin, EntityNamespace
+    TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin,
+    BackupSSHPropertiesMixin, BackupS3PropertiesMixin, EntityNamespace
 ):
     """
     The backup namespace provides commands for configuring backups to an SSH
@@ -167,6 +172,7 @@ class BackupNamespace(
             enum=['NONE', 'GZIP']
         )
 
+        self.add_properties()
         self.primary_key = self.get_mapping('name')
         self.entity_commands = lambda this: {
             'sync': BackupSyncCommand(this),

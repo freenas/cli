@@ -72,10 +72,10 @@ function create_all() {
 # Run all of the destroy (cleanup) functions.
 function destroy_all() {
 	setopt abort_on_errors=no
-	for (test in TEST_SET) {
-		eval(test + "_destroy()")
+	for (i = length(TEST_SET) - 1; i >= 0; i = i - 1) {
+		eval(TEST_SET[i] + "_destroy()")
 		if (test_me_harder == true) {
-		   eval(test + "_hard_destroy()")
+		   eval(TEST_SET[i] + "_hard_destroy()")
 		}
 	}
 }

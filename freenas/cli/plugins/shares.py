@@ -180,8 +180,7 @@ class SharesNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             NFSSharesNamespace('nfs', self.context),
             AFPSharesNamespace('afp', self.context),
             SMBSharesNamespace('smb', self.context),
-            # Commenting out webdav shares for now, will restore when unbroken
-            # WebDAVSharesNamespace('webdav', self.context),
+            WebDAVSharesNamespace('webdav', self.context),
             ISCSISharesNamespace('iscsi', self.context)
         ]
 

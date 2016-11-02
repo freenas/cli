@@ -1388,6 +1388,6 @@ class SelectPipeCommand(PipeCommand):
             raise CommandException('Please specify exactly one field name')
 
         if isinstance(input, Table):
-            input.data = ({'result': x.get(args[0])} for x in input.data)
-            input.columns = [Table.Column('Result', 'result')]
-            return input
+            result = Table(None, [Table.Column('Result', 'result')])
+            result.data = ({'result': x.get(args[0])} for x in input)
+            return result

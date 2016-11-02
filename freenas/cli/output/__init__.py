@@ -142,6 +142,10 @@ class Table(object):
     def __len__(self):
         return len(self.data)
 
+    def __iter__(self):
+        for i in self.data:
+            yield {c.name: resolve_cell(i, c.accessor) for c in self.columns}
+
     def __getitem__(self, item):
         return {c.name: resolve_cell(self.data[item], c.accessor) for c in self.columns}
 

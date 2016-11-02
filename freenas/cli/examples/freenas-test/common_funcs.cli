@@ -43,7 +43,7 @@ function action_by_name(action, where, name) {
 
 # Just try to clean up everything a failed test (and failed destroy)
 # might have left behind, as a last resort.
-function nuke-from-orbit() {
+function nuke_from_orbit() {
 	# This should take care of snapshots / datasets / VMs / containers too
 	volume ${VOL_NAME} delete
 

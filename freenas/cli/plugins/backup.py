@@ -31,7 +31,7 @@ from freenas.cli.namespace import (
     EntityNamespace, Command, CommandException, EntitySubscriberBasedLoadMixin,
     TaskBasedSaveMixin, BaseVariantMixin, description
 )
-from freenas.cli.complete import EnumComplete
+from freenas.cli.complete import EnumComplete, EntitySubscriberComplete, NullComplete
 from freenas.cli.utils import TaskPromise, get_related, set_related
 from freenas.utils import query as q
 
@@ -266,6 +266,12 @@ class BackupRestoreCommand(Command):
 
         tid = context.submit_task('backup.restore', self.parent.entity['id'], dataset, snapshot)
         return TaskPromise(context, tid)
+
+    def complete(self, context, **kwargs):
+        return [
+            EntitySubscriberComplete('dataset=', 'volume.dataset'),
+            NullComplete('snapshot=')
+        ]
 
 
 def _init(context):

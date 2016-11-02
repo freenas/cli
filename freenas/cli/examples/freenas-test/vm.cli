@@ -34,7 +34,7 @@ function vm_destroy() {
 }
 
 function vm_hard_create() {
-	printf(">>> Starting VM stress tests: %d virtual machines\n", _vm_hard_count)
+	printf(">>> Starting vm stress tests: %d virtual machines\n", _vm_hard_count)
 	for (i in mapf(range(0, _vm_hard_count), _vm_name + "%d")) {
 	    _x = @$(vm create name=${i} template=${_vm_template} volume=${VOL_NAME})
 	    if (not (maybe_barf(_success, "+vm-hard#1", "Unable to create VM " + i))) {
@@ -50,7 +50,7 @@ function vm_hard_create() {
 }
 
 function vm_hard_destroy() {
-	print(">>> Finishing VM stress tests")
+	print(">>> Finishing vm stress tests")
 	for (i in _vm_hard_arr) {
 	    _n = $(i get name)
 	    @$(i delete)

@@ -337,6 +337,12 @@ class LDAPPropertiesNamespace(BaseDirectoryPropertiesNamespace):
             type=ValueType.BOOLEAN
         )
 
+        self.add_property(
+            descr='Kerberos principal',
+            name='krb_principal',
+            get='krb_principal'
+        )
+
 
 class NISPropertiesNamespace(BaseDirectoryPropertiesNamespace):
     def __init__(self, name, context, parent):

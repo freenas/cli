@@ -160,6 +160,7 @@ ENTITY_SUBSCRIBERS = [
     'docker.host',
     'docker.container',
     'docker.image',
+    'docker.collection',
     'vmware.dataset'
 ]
 

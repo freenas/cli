@@ -758,6 +758,17 @@ class WebDAVSharesNamespace(BaseSharesNamespace):
             'help properties'.""")
 
         self.add_property(
+            descr='Show hidden files',
+            name='show_hidden_files',
+            usage=_("""\
+            Can be set to yes or no. When set to yes, filenames that
+            begin with a dot will be listed."""),
+            get='properties.show_hidden_files',
+            list=False,
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
             descr='Read only',
             name='read_only',
             usage=_("""\

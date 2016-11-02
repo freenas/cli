@@ -348,7 +348,7 @@ class AmazonS3NamespaceMixin(BaseVariantMixin):
         )
 
 
-@description(_("Manage Amazon S3 peers"))
+@description(_("Manage VMWare peers"))
 class VMwareNamespaceMixin(BaseVariantMixin):
     def add_properties(self):
         super(VMwareNamespaceMixin, self).add_properties()

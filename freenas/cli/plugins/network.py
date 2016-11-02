@@ -545,6 +545,19 @@ class AliasesNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNames
             Examples: show
 
             Display the property values for the current alias.""")
+        self.entity_localdoc['SetEntityCommand'] = ("""\
+            Usage: set <property>=<value> ...
+
+            Examples: set address=192.168.1.1
+                      set netmask=24
+
+            Sets an alias property. For a list of properties, see 'help properties'.""")
+        self.entity_localdoc['ShowEntityCommand'] = ("""\
+            Usage: show
+
+            Examples: show
+
+            Display the property values for the current alias.""")
 
         self.add_property(
             descr='Address family',

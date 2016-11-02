@@ -40,3 +40,21 @@ function action_by_name(action, where, name) {
 	    }
 	 }
 }
+
+# Just try to clean up everything a failed test (and failed destroy)
+# might have left behind, as a last resort.
+function nuke-from-orbit() {
+	# This should take care of snapshots / datasets / VMs / containers too
+	volume ${VOL_NAME} delete
+
+	for (i in $(account user show | search name ~= ${TEST_USER + ".*"})) { account user ${i["name"]} delete }
+
+	for (i in $(account group show | search name~= ${TEST_USER + ".*"})) { account group ${i["name"]} delete }
+	for (i in $(account group show | search name~= ${TEST_GROUP + ".*"})) { account group ${i["name"]} delete }
+
+	for (i in $(calendar command show | search name~= ${_cmd_name + ".*"})) {calendar command ${i["name"]} delete}
+	for (i in $(calendar scrub show | search name~= ${_scrub_name + ".*"})) {calendar scrub ${i["name"]} delete}
+
+	for (i in $(boot environment show | search name~= ${_test_bootenv + ".*"})) {boot environment ${i["name"]} delete}`
+}
+

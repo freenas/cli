@@ -40,6 +40,10 @@ function container_hard_create() {
 	    _x = @$(docker container create image=${_image_name} name=${i} command="/bin/sh" interactive=yes)
 	    if (not maybe_barf(_success, "+docker-hard#1", "Unable to create container " + i)) {
 	        append(_container_arr, _x)
+		@$(_x start)
+		maybe_barf(_success, "+docker-hard#2", "Unable to start container " + i)
+		@$(_x stop)
+		maybe_barf(_success, "+docker-hard#3", "Unable to stop container " + i)
 	    }
 	}
 	maybe_barf(length($(docker container show | search name ~= ${_container_name + "[0-9]+"})) == _container_hard_count, "+docker-hard#2", "number of Containers found does not = " + str(_container_hard_count))

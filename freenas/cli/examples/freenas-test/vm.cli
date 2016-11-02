@@ -39,7 +39,12 @@ function vm_hard_create() {
 	    _x = @$(vm create name=${i} template=${_vm_template} volume=${VOL_NAME})
 	    if (not (maybe_barf(_success, "+vm-hard#1", "Unable to create VM " + i))) {
 	       append(_vm_hard_arr, _x)
+	       @$(_x start)
+	       maybe_barf(_success, "+vm-hard#2", "Unable to start VM " + i)
+	       @$(_x stop)
+	       maybe_barf(_success, "+vm-hard#3", "Unable to stop VM " + i)
 	    }
+	    
 	}
 	maybe_barf(length($(vm show | search name ~= ${_vm_name + "[0-9]+"})) == _vm_hard_count, "+vm-hard#2", "number of VMs found does not = " + str(_vm_hard_count))
 }

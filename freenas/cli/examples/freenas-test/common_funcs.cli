@@ -55,6 +55,6 @@ function nuke_from_orbit() {
 	for (i in $(calendar command show | search name~= ${_cmd_name + ".*"})) {calendar command ${i["name"]} delete}
 	for (i in $(calendar scrub show | search name~= ${_scrub_name + ".*"})) {calendar scrub ${i["name"]} delete}
 
-	for (i in $(boot environment show | search name~= ${_test_bootenv + ".*"})) {boot environment ${i["name"]} delete}`
+	for (i in $(boot environment show | search name~= ${_test_bootenv + ".*"})) {boot environment ${i["name"]} delete}
 }
 

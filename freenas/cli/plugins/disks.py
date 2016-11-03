@@ -248,6 +248,10 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityN
             'erase': EraseDiskCommand(this)
         }
 
+        self.extra_commands = {
+            'find_media': FindMediaCommand(),
+        }
+
     def query(self, params, options):
         ret = super(DisksNamespace, self).query(params, options)
         disks = [d['path'] for d in ret]
@@ -395,6 +399,27 @@ class EraseDiskCommand(Command):
         erase_data = str.upper(kwargs.pop('wipe', 'quick'))
         tid = context.submit_task('disk.erase', self.parent.entity['id'], erase_data)
         return TaskPromise(context, tid)
+
+
+@description("Finds connected media that can be used to import data from")
+class FindMediaCommand(Command):
+    """
+    Usage: find_media
+
+    Examples:
+            find_media
+
+    Finds media on non-zfs formatted disks that can be used to import data from.
+    """
+
+    def run(self, context, args, kwargs, opargs):
+        media = context.call_sync('volume.find_media')
+        return Table(media, [
+            Table.Column('Path', 'path'),
+            Table.Column('Label', 'label'),
+            Table.Column('Size', 'size'),
+            Table.Column('Filesystem type', 'fstype')
+        ])
 
 
 def _init(context):

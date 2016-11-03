@@ -369,26 +369,6 @@ class FindVolumesCommand(Command):
         ])
 
 
-@description("Finds connected media that can be used to import data from")
-class FindMediaCommand(Command):
-    """
-    Usage: find_media
-
-    Examples:
-            find_media
-
-    Finds media that can be used to import data from.
-    """
-    def run(self, context, args, kwargs, opargs):
-        media = context.call_sync('volume.find_media')
-        return Table(media, [
-            Table.Column('Path', 'path'),
-            Table.Column('Label', 'label'),
-            Table.Column('Size', 'size'),
-            Table.Column('Filesystem type', 'fstype')
-        ])
-
-
 @description("Imports given volume")
 class ImportVolumeCommand(Command):
     """
@@ -1930,8 +1910,7 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
         self.primary_key = self.get_mapping('name')
         self.extra_commands = {
             'find': FindVolumesCommand(),
-            'find_media': FindMediaCommand(),
-            'import': ImportVolumeCommand(self),
+            'import': ImportVolumeCommand(self)
         }
 
         self.entity_commands = self.get_entity_commands

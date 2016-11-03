@@ -28,7 +28,8 @@
 import gettext
 import os
 from freenas.cli.namespace import (
-    EntityNamespace, Command, EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, description
+    EntityNamespace, Command, EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, description,
+    CommandException
 )
 from freenas.cli.output import ValueType, Table
 from freenas.cli.utils import TaskPromise
@@ -250,6 +251,7 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityN
 
         self.extra_commands = {
             'find_media': FindMediaCommand(),
+            'import_media': ImportMediaCommand()
         }
 
     def query(self, params, options):
@@ -420,6 +422,36 @@ class FindMediaCommand(Command):
             Table.Column('Size', 'size'),
             Table.Column('Filesystem type', 'fstype')
         ])
+
+
+@description("Imports the media content from non-ZFS disks existing volume")
+class ImportMediaCommand(Command):
+    """
+    Usage:
+        import_media src=<path-to-disk-partition> path=<path-to-existing-volume-directory>
+        [fstype=<filesystem-type>]
+
+    Example:
+        import_media src=da2 path=/mnt/tank/movies
+        import_media src=da6s2 path=/mnt/tank/books fstype=ntfs
+    """
+
+    def run(self, context, args, kwargs, opargs):
+        if len(args) != 0:
+            raise CommandException(_(
+                "Incorrect syntax {0}. For help see 'help import_media'".format(args)
+            ))
+        src = kwargs.pop('src', None)
+        path = kwargs.pop('path', None)
+        fstype = kwargs.pop('fstype', None)
+
+        if src is None or path is None:
+            raise CommandException(_(
+                "Both 'src and 'path' are mandatory arguments. For help see 'help import_media'"
+            ))
+
+        tid = context.submit_task('volume.import_disk', src, path, fstype)
+        return TaskPromise(context, tid)
 
 
 def _init(context):

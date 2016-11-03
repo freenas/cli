@@ -1105,6 +1105,13 @@ svc_cli_config = {
             'type': ValueType.STRING
         },
         {
+            'descr': 'Community',
+            'name': 'community',
+            'usage': _("""Value of a community string"""),
+            'get': 'community',
+            'type': ValueType.STRING
+        },
+        {
             'descr': 'Enable SNMPv3',
             'name': 'v3',
             'usage': _("""

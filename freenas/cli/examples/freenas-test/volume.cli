@@ -11,7 +11,7 @@ _volume_hard_snap_arr = []
 function volume_create() {
 	print(">>> Starting volume tests")
 
-	VOL_OBJECT = @$(volume create name=${VOL_NAME} disks=auto layout=auto)
+	VOL_OBJECT = @$(volume create name=${VOL_NAME} disks=auto layout=stripe)
 	maybe_barf(_success, "+volume#1", "Unable to create volume " + VOL_NAME)
 	@$(VOL_OBJECT scrub)
 	maybe_barf(_success, "+volume#2", "Scrub of volume " + VOL_NAME + " failed")

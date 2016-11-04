@@ -39,6 +39,7 @@ const TEST_GROUP = "mytestgroup"
 const VOL_NAME = "test_tank"
 VOL_OBJECT = null
 SNAP_OBJECT = null
+SYS_DATASET_VOL = null
 
 source ${TOP_DIR + "common_funcs.cli"}
 

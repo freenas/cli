@@ -21,17 +21,22 @@ function volume_create() {
 	maybe_barf(_success, "+volume#4", "Unable to get size for volume " + VOL_NAME)
 	maybe_barf(_x > 0, "+volume#5", "Insane size reported for " + VOL_NAME)
 
+	SYS_DATASET_VOL = $(system system_dataset get volume)
+	maybe_barf(_success, "+volume#6", "Unable to get current system dataset volume")
+	@$(system system_dataset set volume=${VOL_NAME})
+	maybe_barf(_success, "+volume#7", "Unable to set system dataset volume")
+
 	@$(VOL_OBJECT dataset create name=${VOL_NAME + "/" + _dataset_name})
-	maybe_barf(_success, "+volume#6", "Unable to create dataset " + _dataset_name)
+	maybe_barf(_success, "+volume#8", "Unable to create dataset " + _dataset_name)
 
 	SNAP_OBJECT=@$(VOL_OBJECT snapshot create dataset=${VOL_NAME} name=${VOL_NAME + "@" + _snap_name})
-	maybe_barf(_success, "+volume#7", "Unable to create snapshot for volume " + VOL_NAME + " named " + _snap_name)
+	maybe_barf(_success, "+volume#9", "Unable to create snapshot for volume " + VOL_NAME + " named " + _snap_name)
 	_x = $(VOL_OBJECT snapshot show | find name==${VOL_NAME + "@" + _snap_name})
-	maybe_barf(_success, "+volume#8", "Unable to find created snapshot for volume " + VOL_NAME + " named " + _snap_name)
-	maybe_barf(_x == $(SNAP_OBJECT get name), "+volume9", "Snapshot names do not agree: " + _x + " and " + $(SNAP_OBJECT get name))
+	maybe_barf(_success, "+volume#10", "Unable to find created snapshot for volume " + VOL_NAME + " named " + _snap_name)
+	maybe_barf(_x == $(SNAP_OBJECT get name), "+volume11", "Snapshot names do not agree: " + _x + " and " + $(SNAP_OBJECT get name))
 
 	_x = $(VOL_OBJECT get guid)
-	maybe_barf(_success, "+volume10", "Unable to get guid for volume " + VOL_NAME)
+	maybe_barf(_success, "+volume12", "Unable to get guid for volume " + VOL_NAME)
 }
 
 function volume_destroy() {
@@ -44,6 +49,9 @@ function volume_destroy() {
 	maybe_barf(_success, "-volume#1", "Unable to delete snapshot " + _snap_name + " from volume " + VOL_NAME)
 	@$(volume ${VOL_NAME} dataset ${VOL_NAME + "/" + _dataset_name} delete)
 	maybe_barf(_success, "-volume#2", "Unable to delete dataset " + _dataset_name)
+	@$(system system_dataset set volume=${SYS_DATASET_VOL})
+	maybe_barf(_success, "-volume#3", "Unable to restore system dataset setting")
+
 	if (VOL_OBJECT != null) {
 	    @$(VOL_OBJECT delete)
 	} else {

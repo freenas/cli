@@ -134,7 +134,7 @@ function share_hard_create() {
 
 function share_hard_destroy() {
 	print(">>> Finishing share stress tests")
-	for (i in _share_hard_arr) {
+	for (i in copy(_share_hard_arr)) {
 	    _n = $(i get name)
 	    @$(i delete)
 	    maybe_barf(_success, "-share-hard#1", "Unable to delete share " + _n)

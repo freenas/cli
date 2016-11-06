@@ -29,16 +29,16 @@ function share_create() {
 function share_destroy() {
 	print(">>> Finishing share tests")
 	if (_afp_object != null) {
-	    _afp_object delete
+	    @$(_afp_object delete)
 	} else {
-	     @$(share afp ${_afp_name} delete)
+	    @$(share afp ${_afp_name} delete)
 	}
 	maybe_barf(_success, "-share#1", "unable to delete AFP share " + _afp_name)
 	@$(service afp config set enable=${_afp_service_status})
 	maybe_barf(_success, "-share#2", "Unable to restore AFP service status")
 
 	if (_smb_object != null) {
-	    _smb_object delete
+	    @$(_smb_object delete)
 	} else {
 	    @$(share smb ${_smb_name} delete)
 	}
@@ -47,7 +47,7 @@ function share_destroy() {
 	maybe_barf(_success, "-share#4", "Unable to restore SMB service status")
 
 	if (_nfs_object != null) {
-	    _nfs_object delete
+	    @$(_nfs_object delete)
 	} else {
 	    @$(share nfs ${_nfs_name} delete)
 	}
@@ -56,7 +56,7 @@ function share_destroy() {
 	maybe_barf(_success, "-share#6", "Unable to restore NFS service status")
 
 	if (_iscsi_object != null) {
-	    _iscsi_object delete
+	    @$(_iscsi_object delete)
 	} else {
 	    @$(share iscsi ${_iscsi_name} delete)
 	}

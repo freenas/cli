@@ -1252,9 +1252,14 @@ class RpcBasedLoadMixin(object):
         super(RpcBasedLoadMixin, self).__init__(*args, **kwargs)
         self.primary_key_name = 'id'
         self.extra_query_params = []
+        self.extra_query_options = {}
 
     def query(self, params, options):
-        return self.context.call_sync(self.query_call, self.extra_query_params + params, options)
+        return self.context.call_sync(
+            self.query_call,
+            self.extra_query_params + params,
+            self.extra_query_options.update(options)
+        )
 
     def get_one(self, name):
         return self.context.call_sync(

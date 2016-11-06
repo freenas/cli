@@ -84,24 +84,27 @@ function destroy_all() {
 # OK do it.
 load_all()
 
-if (_batch == "yes") {
-	x="yes"
-} else {
-	x = readline("All tests loaded. Ready to run them? ([y] / n) ")
-}
-if (x == "yes" or x == "y" or x == "") {
+function run_all() {
 	if (_batch == "yes") {
 		x="yes"
 	} else {
-		x = readline("Also run stress tests? (y or [n]) ")
+		x = readline("All tests loaded. Ready to run them? ([y] / n) ")
 	}
-	test_me_harder = (x == "yes" or x == "y")
-	print(">>> Also logging results to " + output_file)
-	create_all()
-	destroy_all()
-	fclose(output_handle)
-} else {
-	print("You can run the tests yourself by calling create_all()")
-	print("(or testname_create()) then destroy_all() (or testname_destroy())")
+	if (x == "yes" or x == "y" or x == "") {
+		if (_batch == "yes") {
+			x="yes"
+		} else {
+			x = readline("Also run stress tests? (y or [n]) ")
+		}
+		test_me_harder = (x == "yes" or x == "y")
+		print(">>> Also logging results to " + output_file)
+		create_all()
+		destroy_all()
+		fclose(output_handle)
+	} else {
+		print("You can run the tests yourself by calling create_all()")
+		print("(or testname_create()) then destroy_all() (or testname_destroy())")
+	}
 }
 
+run_all()

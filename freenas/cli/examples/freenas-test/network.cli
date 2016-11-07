@@ -1,20 +1,39 @@
 # Test runner for network  category
 #
 
+_test_host="test-host"
+_test_network="10.99.100"
+_network_hard_count=50
+_network_hard_narr = []
+
 function network_create() {
 	print(">>> Starting network tests")
+	@$(network host create name=${_test_host} addresses=${_test_network + ".1"})
+	maybe_barf(_success, "network#1", "Unable to create host entry " + _test_host)
 }
 
 function network_destroy() {
 	print(">>> Finishing network tests")
+	@$(network host ${_test_host} delete)
 }
 
 function network_hard_create() {
 	print(">>> Starting network stress tests")
+	for (i in mapf(range(2, _network_hard_count + 2), "%d")) {
+		_x = @$(network host create name=${_test_host + i} addresses=${_test_network + "." + i})
+		if (not maybe_barf(_success, "network-hard#1", "Unable to create host entry " + ${_test_host + i})) {
+		    append(_network_hard_narr, _x)
+		}
+	}
+       _arr = $(network host show | search name ~= ${_test_host + ".[0-9]+"})
+        maybe_barf(length(_arr) == _network_hard_count, "+network-hard#2", "Host entry count of " + str(length(_arr)) + " does not match " + str(_network_hard_count))
 }
 
 function network_hard_destroy() {
 	print(">>> Finishing network stress tests")
+        for (i in _network_hard_narr) {
+            _n = $(i get name)
+            @$(i delete)
+            maybe_barf(_success, "-network-hard#1", "Unable to delete host entry " + _n)
+	}
 }
-
-

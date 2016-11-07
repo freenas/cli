@@ -643,6 +643,9 @@ class CollectionImagesNamespace(RpcBasedLoadMixin, EntityNamespace):
         )
 
         self.primary_key = self.get_mapping('name')
+        self.entity_commands = lambda this: {
+            'pull': CollectionImagePullCommand(this)
+        }
 
     def query(self, params, options):
         result = super(CollectionImagesNamespace, self).query([], {})
@@ -702,6 +705,37 @@ class DockerImagePullCommand(Command):
     def complete(self, context, **kwargs):
         return [
             EnumComplete('name=', q.query(DockerImageNamespace.default_images, select='name')),
+            EntitySubscriberComplete('host=', 'docker.host', lambda d: d['name'])
+        ]
+
+
+@description("Pull collection container image from Docker Hub to Docker host")
+class CollectionImagePullCommand(Command):
+    """
+    Usage: pull host=<host>
+
+    Example: pull
+             pull host=my_docker_host
+
+    Pulls container image from Docker Hub to selected Docker host.
+    If no host is specified, then default Docker host is selected.
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        host = kwargs.get('host')
+        hostid = None
+        name = self.parent.entity['name']
+        if host:
+            hostid = context.entity_subscribers['docker.host'].query(('name', '=', host), single=True, select='id')
+
+        tid = context.submit_task('docker.image.pull', name, hostid)
+
+        return TaskPromise(context, tid)
+
+    def complete(self, context, **kwargs):
+        return [
             EntitySubscriberComplete('host=', 'docker.host', lambda d: d['name'])
         ]
 

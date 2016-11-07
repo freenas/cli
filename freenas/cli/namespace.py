@@ -1253,12 +1253,14 @@ class RpcBasedLoadMixin(object):
         self.primary_key_name = 'id'
         self.extra_query_params = []
         self.extra_query_options = {}
+        self.call_timeout = 30
 
     def query(self, params, options):
         return self.context.call_sync(
             self.query_call,
             self.extra_query_params + params,
             extend(self.extra_query_options, options),
+            timeout=self.call_timeout
         )
 
     def get_one(self, name):
@@ -1266,6 +1268,7 @@ class RpcBasedLoadMixin(object):
             self.query_call,
             self.extra_query_params + [(self.primary_key_name, '=', name)],
             extend(self.extra_query_options, {'single': True}),
+            timeout=self.call_timeout
         )
 
 

@@ -507,7 +507,6 @@ class DockerCollectionNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMix
         self.update_task = 'docker.collection.update'
         self.delete_task = 'docker.collection.delete'
         self.primary_key_name = 'name'
-        self.save_key_name = 'name'
         self.required_props = ['name', 'collection']
         self.skeleton_entity = {
             'match_expr': ''

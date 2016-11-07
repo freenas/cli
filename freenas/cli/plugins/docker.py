@@ -28,7 +28,7 @@
 import gettext
 from freenas.cli.namespace import (
     Namespace, EntityNamespace, Command, EntitySubscriberBasedLoadMixin,
-    TaskBasedSaveMixin, CommandException, description, ConfigNamespace
+    TaskBasedSaveMixin, CommandException, description, ConfigNamespace, RpcBasedLoadMixin
 )
 from freenas.cli.output import ValueType, Table, Sequence, read_value
 from freenas.cli.utils import TaskPromise, post_save, EntityPromise, get_item_stub
@@ -494,6 +494,169 @@ class DockerConfigNamespace(DockerUtilsMixin, ConfigNamespace):
         super(DockerConfigNamespace, self).load()
 
 
+@description("Configure and manage Docker container collections")
+class DockerCollectionNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, DockerUtilsMixin, EntityNamespace):
+    """
+    The docker collection namespace provides commands for listing,
+    creating, and managing Docker container collections.
+    """
+    def __init__(self, name, context):
+        super(DockerCollectionNamespace, self).__init__(name, context)
+        self.entity_subscriber_name = 'docker.collection'
+        self.create_task = 'docker.collection.create'
+        self.update_task = 'docker.collection.update'
+        self.delete_task = 'docker.collection.delete'
+        self.primary_key_name = 'name'
+        self.save_key_name = 'name'
+        self.required_props = ['name', 'collection']
+        self.skeleton_entity = {
+            'match_expr': ''
+        }
+
+        self.localdoc['CreateEntityCommand'] = ("""\
+            Usage: create <name> collection=<collection> <refine>=<refine>
+
+            Examples: create my_collection collection=freenas
+                      create my_collection collection=freenas refine=plex
+
+            Creates a known Docker container collection to simplify DockerHub browsing.
+
+            Collection is going to contain DockerHub images of 'collection='
+            DockerHub user which names do contain 'refine=' parameter value in their name.
+
+            For a list of properties, see 'help properties'.""")
+        self.entity_localdoc['SetEntityCommand'] = ("""\
+            Usage: set <property>=<value> ...
+
+            Examples: set name=new_collection_name
+                      set collection=linuxserver
+                      set refine=s3
+
+            Sets a Docker collection property. For a list of properties, see 'help properties'.""")
+        self.entity_localdoc['DeleteEntityCommand'] = ("""\
+            Usage: delete
+
+            Deletes the specified Docker collection.""")
+        self.localdoc['ListCommand'] = ("""\
+            Usage: show
+
+            Lists all Docker collections. Optionally, filter or sort by property.
+            Use 'help properties' to list available properties.
+
+            Examples:
+                show
+                show | search name == foo""")
+
+        self.add_property(
+            descr='Name',
+            name='name',
+            get='name',
+            list=True,
+            usage=_("The name of the collection.")
+        )
+
+        self.add_property(
+            descr='DockerHub collection name',
+            name='collection',
+            get='collection',
+            list=True,
+            usage=_("The name of theDockerHub collection.")
+        )
+
+        self.add_property(
+            descr='Search refinement string',
+            name='refine',
+            get='match_expr',
+            list=False,
+            usage=_("""
+            Collection contains images from a selected DockerHub collection
+            which do contain 'refine' parameter value in their name.""")
+        )
+
+        self.primary_key = self.get_mapping('name')
+
+        self.entity_namespaces = lambda this: [
+            CollectionImagesNamespace('image', self.context, this)
+        ]
+
+
+@description("Container collection images operations")
+class CollectionImagesNamespace(RpcBasedLoadMixin, EntityNamespace):
+    """
+    The docker collection image namespace provides commands for listing,
+    creating, and managing images which belong to a specific
+    Docker container collection.
+    """
+    def __init__(self, name, context, parent):
+        super(CollectionImagesNamespace, self).__init__(name, context)
+        self.query_call = 'docker.collection.full_query'
+        self.primary_key_name = 'name'
+        self.allow_create = False
+        self.allow_edit = False
+        self.call_timeout = 300
+        self.parent = parent
+
+        if self.parent and self.parent.entity:
+            self.extra_query_params = [
+                ('id', '=', self.parent.entity.get('id'))
+            ]
+            self.extra_query_options = {
+                'select': 'images',
+                'single': True
+            }
+
+        self.add_property(
+            descr='Name',
+            name='name',
+            get='name',
+            usersetable=False,
+            list=True,
+            usage=_("Name of the image")
+        )
+
+        self.add_property(
+            descr='Description',
+            name='description',
+            get='description',
+            usersetable=False,
+            list=True,
+            usage=_("Description of the image")
+        )
+
+        self.add_property(
+            descr='Pull count',
+            name='pull_count',
+            get='pull_count',
+            usersetable=False,
+            list=True,
+            type=ValueType.NUMBER,
+            usage=_("Pull count of the image")
+        )
+
+        self.add_property(
+            descr='Star count',
+            name='star_count',
+            get='star_count',
+            usersetable=False,
+            list=True,
+            type=ValueType.NUMBER,
+            usage=_("Star count of the image")
+        )
+
+        self.primary_key = self.get_mapping('name')
+
+    def query(self, params, options):
+        result = super(CollectionImagesNamespace, self).query([], {})
+
+        return q.query(result, *params, **options)
+
+    def get_one(self, name):
+        return self.query(
+            [(self.primary_key_name, '=', name)],
+            {'single': True}
+        )
+
+
 @description("Pull container image from Docker Hub to Docker host")
 class DockerImagePullCommand(Command):
     """
@@ -923,7 +1086,8 @@ class DockerNamespace(Namespace):
             DockerHostNamespace('host', self.context),
             DockerContainerNamespace('container', self.context),
             DockerImageNamespace('image', self.context),
-            DockerConfigNamespace('config', self.context)
+            DockerConfigNamespace('config', self.context),
+            DockerCollectionNamespace('collection', self.context)
         ]
 
 
@@ -933,4 +1097,5 @@ def _init(context):
     context.map_tasks('docker.container.*', DockerContainerNamespace)
     context.map_tasks('docker.host.*', DockerHostNamespace)
     context.map_tasks('docker.image.*', DockerImageNamespace)
+    context.map_tasks('docker.collection.*', DockerCollectionNamespace)
 

@@ -36,7 +36,7 @@ import collections
 import six
 import inspect
 import contextlib
-from freenas.utils import first_or_default, query as q
+from freenas.utils import first_or_default, query as q, extend
 from freenas.cli.parser import CommandCall, Literal, Symbol, BinaryParameter, Comment
 from freenas.cli.complete import NullComplete, EnumComplete
 from freenas.cli.utils import post_save, edit_in_editor, PrintableNone, TaskPromise, EntityPromise
@@ -1258,14 +1258,14 @@ class RpcBasedLoadMixin(object):
         return self.context.call_sync(
             self.query_call,
             self.extra_query_params + params,
-            self.extra_query_options.update(options)
+            extend(self.extra_query_options, options),
         )
 
     def get_one(self, name):
         return self.context.call_sync(
             self.query_call,
             self.extra_query_params + [(self.primary_key_name, '=', name)],
-            {'single': True}
+            extend(self.extra_query_options, {'single': True}),
         )
 
 

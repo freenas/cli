@@ -764,7 +764,7 @@ class WebDAVSharesNamespace(BaseSharesNamespace):
             Can be set to yes or no. When set to yes, filenames that
             begin with a dot will be listed."""),
             get='properties.show_hidden_files',
-            list=False,
+            list=True,
             type=ValueType.BOOLEAN
         )
 
@@ -786,7 +786,7 @@ class WebDAVSharesNamespace(BaseSharesNamespace):
             Can be set to yes or no. When set to yes, it automatically sets
             the share's permissions to the webdav user and group."""),
             get='properties.permission',
-            list=True,
+            list=False,
             type=ValueType.BOOLEAN
         )
 

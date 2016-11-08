@@ -440,10 +440,14 @@ class DockerImageNamespace(EntitySubscriberBasedLoadMixin, DockerUtilsMixin, Ent
 
     @staticmethod
     def load_collection_images(context):
+        def refresh_images(i):
+            DockerImageNamespace.default_images.clear()
+            DockerImageNamespace.default_images.extend(list(i))
+
         def fetch(collection):
             context.call_async(
                 'docker.collection.get_entries',
-                lambda r: DockerImageNamespace.default_images.extend(list(r)),
+                lambda r: refresh_images(r),
                 collection
             )
 

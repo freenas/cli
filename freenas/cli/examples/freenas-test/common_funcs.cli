@@ -1,5 +1,7 @@
 # Common functions for all the tests
 
+_sentinel_tag="_running_tests"
+
 function maybe_barf(flag, test, str) {
 	if (flag != true) {
 	    printf("ERROR %s in %s\n", str, test)
@@ -43,13 +45,26 @@ function action_by_name(action, where, name) {
 
 # Functions to detect if tests are already running on a machine.
 function test_sentinel() {
+	# return contains($(system get tags, _sentinel_tag))
 	return false
 }
 
 function set_sentinel() {
+	if (test_sentinel()) {
+	   print("Warning: Sentinel tag " + _sentinel_tag + " was already set.")
+	} else {
+	   @$(system set tags += _sentinel_tag)
+	   maybe_barf(_success, "set_sentinel", "Unable to set tag " + _sentinel_tag)
+	}
 }
 
 function clear_sentinel() {
+	if (not test_sentinel()) {
+	   print("Warning: Sentinel tag " + _sentinel_tag + " not set.")
+	} else {
+	   @$(system set tags -= _sentinel_tag)
+	   maybe_barf(_success, "clear_sentinel", "Unable to clear tag " + _sentinel_tag)
+	}
 }
 
 # Just try to clean up everything a failed test (and failed destroy)

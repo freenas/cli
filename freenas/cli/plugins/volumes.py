@@ -1135,6 +1135,7 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
             name='blocksize',
             get='properties.volblocksize.parsed',
             list=False,
+            type=ValueType.NUMBER,
             condition=lambda o: o['type'] == 'VOLUME',
             usage=_("Blocksize for the volume.")
         )

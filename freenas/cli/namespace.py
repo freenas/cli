@@ -318,7 +318,7 @@ class PropertyMapping(object):
         value = read_value(value, self.type)
         oldvalues = q.get(obj, self.set)
         if oldvalues is not None:
-            newvalues = oldvalues + value
+            newvalues = oldvalues + list(value)
         else:
             newvalues = value
 

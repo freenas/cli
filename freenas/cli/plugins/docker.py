@@ -309,6 +309,17 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             Defines which of FreeNAS paths should be exposed to a container.''')
         )
 
+        self.add_property(
+            descr='Version',
+            name='version',
+            get='version',
+            usersetable=False,
+            list=True,
+            type=ValueType.NUMBER,
+            usage=_('''\
+            Version of container image read from FreeNAS metadata''')
+        )
+
         self.primary_key = self.get_mapping('name')
         self.entity_commands = self.get_entity_commands
 
@@ -402,6 +413,17 @@ class DockerImageNamespace(EntitySubscriberBasedLoadMixin, DockerUtilsMixin, Ent
             list=False,
             type=ValueType.SET,
             usage=_('Names of a Docker hosts storing this container image.')
+        )
+
+        self.add_property(
+            descr='Version',
+            name='version',
+            get='presets.version',
+            usersetable=False,
+            list=True,
+            type=ValueType.NUMBER,
+            usage=_('''\
+            Version of container image read from FreeNAS metadata''')
         )
 
         self.primary_key = self.get_mapping('name')
@@ -649,6 +671,17 @@ class CollectionImagesNamespace(RpcBasedLoadMixin, EntityNamespace):
             list=True,
             type=ValueType.NUMBER,
             usage=_("Star count of the image")
+        )
+
+        self.add_property(
+            descr='Version',
+            name='version',
+            get='presets.version',
+            usersetable=False,
+            list=True,
+            type=ValueType.NUMBER,
+            usage=_('''\
+            Version of container image read from FreeNAS metadata''')
         )
 
         self.primary_key = self.get_mapping('name')

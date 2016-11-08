@@ -53,7 +53,7 @@ function set_sentinel() {
 	if (test_sentinel()) {
 	   print("Warning: Sentinel tag " + _sentinel_tag + " was already set.")
 	} else {
-	   @$(system set tags += _sentinel_tag)
+	   @$(system set tags =+ _sentinel_tag)
 	   maybe_barf(_success, "set_sentinel", "Unable to set tag " + _sentinel_tag)
 	}
 }
@@ -62,7 +62,7 @@ function clear_sentinel() {
 	if (not test_sentinel()) {
 	   print("Warning: Sentinel tag " + _sentinel_tag + " not set.")
 	} else {
-	   @$(system set tags -= _sentinel_tag)
+	   @$(system set tags =- _sentinel_tag)
 	   maybe_barf(_success, "clear_sentinel", "Unable to clear tag " + _sentinel_tag)
 	}
 }

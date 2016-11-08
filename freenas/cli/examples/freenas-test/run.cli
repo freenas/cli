@@ -85,6 +85,13 @@ function destroy_all() {
 load_all()
 
 function run_all() {
+	if (test_sentinel()) {
+		print("These tests are already running; please only run one copy")
+		print("at a time.  If this is in error, run the clear_sentinel()")
+		print("function by hand to clear this condition.")
+		exit 1
+	}
+
 	if (_batch == "yes") {
 		x="yes"
 	} else {

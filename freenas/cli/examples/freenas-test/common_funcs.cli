@@ -41,6 +41,17 @@ function action_by_name(action, where, name) {
 	 }
 }
 
+# Functions to detect if tests are already running on a machine.
+function test_sentinel() {
+	return false
+}
+
+function set_sentinel() {
+}
+
+function clear_sentinel() {
+}
+
 # Just try to clean up everything a failed test (and failed destroy)
 # might have left behind, as a last resort.
 function nuke_from_orbit() {

@@ -211,8 +211,8 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityN
         )
 
         self.add_property(
-            descr='SMART',
-            name='smart',
+            descr='SMART Enabled',
+            name='smart_enabled',
             get='smart',
             usage=_("""\
             Values are yes or no. Can only be set to yes if
@@ -223,8 +223,11 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityN
 
         self.add_property(
             descr='SMART status',
-            name='status.smart_status',
-            get='status.smart_status',
+            name='smart_status',
+            get='status.smart_info.smart_status',
+            usage=_("""\
+            The current S.M.A.R.T status of the disk"""),
+            set=None,
             list=True
         )
 
@@ -239,6 +242,88 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityN
             separate multiple options. Can only set options
             if the disk is S.M.A.R.T. capable."""),
             type=ValueType.STRING,
+            list=False
+        )
+
+        self.add_property(
+            descr='SMART Capable',
+            name='smart_capable',
+            get='status.smart_info.smart_capable',
+            set=None,
+            type=ValueType.BOOLEAN,
+            list=False,
+            usage=_("""\
+            Boolean flag that states whether this disk supports S.M.A.R.T operations""")
+        )
+
+        self.add_property(
+            descr='ACTUAL SMART ENABLED',
+            name='actual_smart_enabled',
+            get='status.smart_info.smart_enabled',
+            set=None,
+            type=ValueType.BOOLEAN,
+            list=False,
+            usage=_("""\
+            Actual on disk information regarding whether S.M.A.R.T is enabled or not.""")
+        )
+
+        self.add_property(
+            descr='Disk Interface',
+            name='interface',
+            get='status.smart_info.interface',
+            set=None,
+            list=False,
+            usage=_("""\
+            States the interface of the Disk (i.e. SCSI/ATA/etc)
+            """)
+        )
+
+        self.add_property(
+            descr='Disk Model',
+            name='model',
+            get='status.smart_info.model',
+            set=None,
+            list=False,
+            usage=_("""\
+            Displays the 'Model' of the Disk (if available)""")
+        )
+
+        self.add_property(
+            descr='Disk Firmware',
+            name='firmware',
+            get='status.smart_info.firmware',
+            set=None,
+            list=False,
+            usage=_("""\
+            Displays the 'Firmware' of the Disk (if available)""")
+        )
+
+        self.add_property(
+            descr='SMART Messages',
+            name='smart_messages',
+            get='status.smart_info.messages',
+            set=None,
+            list=False,
+            usage=_("""\
+            List of reported S.M.A.R.T error/warning messages""")
+        )
+
+        self.add_property(
+            descr='SMART Test Capabilities',
+            name='smart_test_capabilities',
+            get='status.smart_info.test_capabilities',
+            set=None,
+            list=False,
+            type=ValueType.DICT,
+            usage=_("""\
+            Lists the Various S.M.A.R.T tests supported by this disk""")
+        )
+
+        self.add_property(
+            descr='Disk Temperature',
+            name='temperature',
+            get='status.smart_info.temperature',
+            set=None,
             list=False
         )
 

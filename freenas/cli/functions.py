@@ -282,6 +282,7 @@ functions = {
     'apply': apply,
     'sum': sum_,
     'avg': avg_,
+    'contains': operator.contains,
     'readkey': readkey,
     'readline': readline,
     'unparse': unparse_,

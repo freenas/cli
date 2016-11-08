@@ -33,7 +33,7 @@ from freenas.cli.namespace import (
 from freenas.cli.output import ValueType, Table, Sequence, read_value
 from freenas.cli.utils import TaskPromise, post_save, EntityPromise, get_item_stub
 from freenas.utils import query as q
-from freenas.cli.complete import NullComplete, EntitySubscriberComplete, EnumComplete
+from freenas.cli.complete import NullComplete, EntitySubscriberComplete, EnumComplete, RpcComplete
 from freenas.cli.console import Console
 from freenas.utils import first_or_default
 
@@ -420,14 +420,14 @@ class DockerImageNamespace(EntitySubscriberBasedLoadMixin, DockerUtilsMixin, Ent
     def load_collection_images(context):
         def fetch(collection):
             context.call_async(
-                'docker.image.get_collection_images',
+                'docker.collection.get_entries',
                 lambda r: DockerImageNamespace.default_images.extend(list(r)),
                 collection
             )
 
         context.call_async(
             'docker.config.get_config',
-            lambda r: fetch(r.get('default_collection', 'freenas'))
+            lambda r: fetch(r.get('default_collection'))
         )
 
 
@@ -480,8 +480,17 @@ class DockerConfigNamespace(DockerUtilsMixin, ConfigNamespace):
         self.add_property(
             descr='Default DockerHub collection',
             name='default_collection',
-            get='default_collection',
-            set='default_collection',
+            get=lambda o: context.call_sync(
+                'docker.collection.query',
+                [('id', '=', o['default_collection'])],
+                {'single': True, 'select': 'name'}
+            ),
+            set=lambda o, v: q.set(o, 'default_collection', context.call_sync(
+                'docker.collection.query',
+                [('name', '=', v)],
+                {'single': True, 'select': 'id'}
+            )),
+            complete=RpcComplete('default_collection=', 'docker.collection.query', lambda o: o['name']),
             usage=_('''\
             Used for setting a default DockerHub container images collection,
             which later is being used in tab completion in other 'docker' namespaces.

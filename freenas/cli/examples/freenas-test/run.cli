@@ -47,6 +47,17 @@ source ${TOP_DIR + "common_funcs.cli"}
 setopt rollbar_enabled=no
 #setopt verbosity=0
 
+function test_and_set_sentinel() {
+	if (test_sentinel()) {
+		print("These tests are already running; please only run one copy")
+		print("at a time.  If this is in error, run the clear_sentinel()")
+		print("function by hand to clear this condition.")
+		exit 1
+	} else {
+		set_sentinel()
+	}
+}
+
 function load_all() {
 	 for (test in TEST_SET) {
 	 	_path=${TOP_DIR + test + ".cli"}
@@ -62,7 +73,7 @@ function load_all() {
 # Run all of the create functions.
 function create_all() {
 	setopt abort_on_errors=yes
-	set_sentinel()
+	test_and_set_sentinel()
 	for (test in TEST_SET) {
 		eval(test + "_create()")
 		if (test_me_harder == true) {
@@ -75,7 +86,7 @@ function create_all() {
 # Run all of the destroy (cleanup) functions.
 function destroy_all() {
 	setopt abort_on_errors=no
-	set_sentinel()
+	test_and_set_sentinel()
 	for (i = length(TEST_SET) - 1; i >= 0; i = i - 1) {
 		eval(TEST_SET[i] + "_destroy()")
 		if (test_me_harder == true) {
@@ -89,13 +100,6 @@ function destroy_all() {
 load_all()
 
 function run_all() {
-	if (test_sentinel()) {
-		print("These tests are already running; please only run one copy")
-		print("at a time.  If this is in error, run the clear_sentinel()")
-		print("function by hand to clear this condition.")
-		exit 1
-	}
-
 	if (_batch == "yes") {
 		x="yes"
 	} else {

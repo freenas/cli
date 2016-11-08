@@ -211,7 +211,7 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityN
         )
 
         self.add_property(
-            descr='SMART Enabled',
+            descr='SMART enabled',
             name='smart_enabled',
             get='smart',
             usage=_("""\
@@ -246,7 +246,7 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityN
         )
 
         self.add_property(
-            descr='SMART Capable',
+            descr='SMART capable',
             name='smart_capable',
             get='status.smart_info.smart_capable',
             set=None,
@@ -257,7 +257,7 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityN
         )
 
         self.add_property(
-            descr='ACTUAL SMART ENABLED',
+            descr='Actual SMART enabled',
             name='actual_smart_enabled',
             get='status.smart_info.smart_enabled',
             set=None,
@@ -268,7 +268,7 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityN
         )
 
         self.add_property(
-            descr='Disk Interface',
+            descr='Disk interface',
             name='interface',
             get='status.smart_info.interface',
             set=None,
@@ -279,7 +279,7 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityN
         )
 
         self.add_property(
-            descr='Disk Model',
+            descr='Disk model',
             name='model',
             get='status.smart_info.model',
             set=None,
@@ -289,7 +289,7 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityN
         )
 
         self.add_property(
-            descr='Disk Firmware',
+            descr='Disk firmware',
             name='firmware',
             get='status.smart_info.firmware',
             set=None,
@@ -299,7 +299,7 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityN
         )
 
         self.add_property(
-            descr='SMART Messages',
+            descr='SMART messages',
             name='smart_messages',
             get='status.smart_info.messages',
             set=None,
@@ -309,7 +309,7 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityN
         )
 
         self.add_property(
-            descr='SMART Test Capabilities',
+            descr='SMART test capabilities',
             name='smart_test_capabilities',
             get='status.smart_info.test_capabilities',
             set=None,
@@ -320,7 +320,7 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityN
         )
 
         self.add_property(
-            descr='Disk Temperature',
+            descr='Disk temperature',
             name='temperature',
             get='status.smart_info.temperature',
             set=None,

@@ -19,13 +19,13 @@ function network_destroy() {
 
 function network_hard_create() {
 	print(">>> Starting network stress tests")
-	for (i in mapf(range(2, _network_hard_count + 2), "%d")) {
-		_x = @$(network host create name=${_test_host + i} addresses=${_test_network + "." + i})
+	for (i = 0; i < _network_hard_count; i = i + 1) {
+		_x = @$(network host create name=${_test_host + sprintf("%c", i + 65)} addresses=${_test_network + "." + str(i)})
 		if (not maybe_barf(_success, "network-hard#1", "Unable to create host entry " + ${_test_host + i})) {
 		    append(_network_hard_narr, _x)
 		}
 	}
-       _arr = $(network host show | search name ~= ${_test_host + ".[0-9]+"})
+       _arr = $(network host show | search name ~= ${_test_host + "[A-Z]+"})
         maybe_barf(length(_arr) == _network_hard_count, "+network-hard#2", "Host entry count of " + str(length(_arr)) + " does not match " + str(_network_hard_count))
 }
 

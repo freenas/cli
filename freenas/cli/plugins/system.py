@@ -157,7 +157,8 @@ class InfoCommand(Command):
             Object.Item("CPU Clockrate", 'cpu_clockrate', hw_info_dict['cpu_clockrate']),
             Object.Item("CPU Model", 'cpu_model', hw_info_dict['cpu_model']),
             Object.Item("CPU Cores", 'cpu_cores', hw_info_dict['cpu_cores']),
-            Object.Item("Memory size", 'memory_size', hw_info_dict['memory_size'], vt=ValueType.SIZE)
+            Object.Item("Memory size", 'memory_size', hw_info_dict['memory_size'], vt=ValueType.SIZE),
+            Object.Item("VM Guest", 'vm_guest', hw_info_dict['vm_guest'])
         )
 
         ver_info = context.call_sync('system.info.version')

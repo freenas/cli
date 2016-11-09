@@ -6,4 +6,4 @@ function fibonacci_seq(n) { fib=[]; for (i in range(0,n,1)) { fib = fib + [fibon
 
 function dict2args(dict) { return join(map(dict, function(pair_dict) { return pair_dict["key"]+"="+pair_dict["value"] })) };
 
-function delete_all_bootenvs() { for (i in $(boot environment show | exclude active==yes )) {boot environment ${i["id"]} delete;}}
+function delete_all_bootenvs() { for (i in $(boot environment show | exclude active==yes )) {boot environment ${i["name"]} delete;}}

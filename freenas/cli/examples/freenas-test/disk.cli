@@ -8,7 +8,7 @@ function disk_create() {
 	print(">>> Starting disk tests")
 
 	_x=$(disk show)
-	maybe_barf(_success, "+disk#1", "Unable to find any disks")
+	maybe_die(_success, "+disk#1", "Unable to find any disks")
 
 	_unalloc = 0
 	for (i in $(disk show)) {
@@ -16,7 +16,7 @@ function disk_create() {
 	       _unalloc = _unalloc + 1
 	    }
 	}
-	maybe_barf(_unalloc > 0, "disk#2", "Unable to find any unallocated disks; subsequent volume tests will fail.")
+	maybe_die(_unalloc > 0, "disk#2", "Unable to find any unallocated disks; subsequent volume tests will fail.")
 
 	_disk_to_fondle=$(disk show | find path ~= "/dev/a?da0")
 	maybe_barf(_success, "+disk#3", "Unable to find any boot disks")

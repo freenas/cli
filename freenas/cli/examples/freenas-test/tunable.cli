@@ -23,11 +23,11 @@ function tunable_create() {
 
 function tunable_destroy() {
 	print(">>> Finishing tunable tests")
-	@$(tunable ${_tunable_val_loader} delete)
+	@$(tunable ${_tunable_var_loader} delete)
 	maybe_barf(_success, "-tunable#1", "Unable to delete loader variable " + _tunable_var_loader)
-	@$(tunable ${_tunable_val_rc} delete)
+	@$(tunable ${_tunable_var_rc} delete)
 	maybe_barf(_success, "-tunable#2", "Unable to delete rc variable " + _tunable_var_rc)
-	@$(tunable ${_tunable_val_sysctl} delete)
+	@$(tunable ${_tunable_var_sysctl} delete)
 	maybe_barf(_success, "-tunable#3", "Unable to delete sysctl variable " + _tunable_var_sysctl)
 }
 

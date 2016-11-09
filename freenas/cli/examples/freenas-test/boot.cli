@@ -48,6 +48,6 @@ function boot_hard_destroy() {
 	    @$(i delete)
 	    maybe_barf(_success, "-boot-hard#1", "Unable to delete boot environment " + _n)
 	}
-	_l = count_by_name("boot environment", _test_bootenv + "[0-9]+")
+	_l = count_by_name($(boot environment), _test_bootenv + "[0-9]+")
 	maybe_barf(_l == 0, "-boot-hard#2", "Unable to delete all boot environments - " + str(_l) + " still remaining.")
 }

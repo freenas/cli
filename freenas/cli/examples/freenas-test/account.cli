@@ -96,7 +96,7 @@ function account_hard_destroy() {
 	    @$(account group ${_n} delete)
 	    maybe_barf(_success, "-account-hard#2", "Unable to delete user group " + _n)
 	}
-	_l = count_by_name("account user", TEST_USER + "[0-9]+")
+	_l = count_by_name($(account user), TEST_USER + "[0-9]+")
 	maybe_barf(_l == 0, "-account-hard#3", "Unable to delete all test users: " + str(_l) + " remaining.")
 
 	for (i in _account_hard_garr) {
@@ -104,6 +104,6 @@ function account_hard_destroy() {
 	    @$(i delete)
 	    maybe_barf(_success, "-account-hard#4", "Unable to delete group " + _n)
 	}
-	_l = count_by_name("account group", TEST_GROUP + "[0-9]+")
+	_l = count_by_name($(account group), TEST_GROUP + "[0-9]+")
 	maybe_barf(_l == 0, "-account-hard#4", "Unable to delete all test groups: " + str(_l) + " remaining.")
 }

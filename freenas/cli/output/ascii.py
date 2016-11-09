@@ -45,6 +45,10 @@ t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
 
 
+def _is_ascii(s):
+    return all(ord(char) < 128 for char in s)
+
+
 def format_literal(value, **kwargs):
     if isinstance(value, six.string_types):
         if kwargs.get('quoted'):
@@ -196,7 +200,11 @@ class AsciiOutputFormatter(object):
             cols.append(Table.Column("Editable", 'editable'))
 
         table = AsciiOutputFormatter.format_table(Table(values, cols))
-        six.print_(table.draw(), file=file, end=('\n' if kwargs.get('newline', True) else ' '))
+        try:
+            six.print_(table.draw(), file=file, end=('\n' if kwargs.get('newline', True) else ' '))
+        except UnicodeEncodeError:
+            table = AsciiOutputFormatter.format_table(Table(values, cols), conv2ascii=True)
+            six.print_(table.draw(), file=file, end=('\n' if kwargs.get('newline', True) else ' '))
 
     @staticmethod
     def output_tree(tree, children, label, label_vt=ValueType.STRING, file=sys.stdout):
@@ -231,7 +239,10 @@ class AsciiOutputFormatter(object):
         _print_header(tab.columns, file, end, printer=printer)
         _print_rows(tab.data, tab.columns, file, end, printer=printer)
 
-    def format_table(tab):
+    def format_table(tab, conv2ascii=False):
+        def _try_conv2ascii(s):
+            return ascii(s) if not _is_ascii(s) and isinstance(s, str) else s
+
         max_width = get_terminal_size()[1]
         table = Texttable(max_width=max_width)
         table.set_deco(0)
@@ -277,7 +288,12 @@ class AsciiOutputFormatter(object):
         table.set_cols_width(widths)
 
         table.set_cols_dtype(['t'] * len(tab.columns))
-        table.add_rows([[AsciiOutputFormatter.format_value(resolve_cell(row, i.accessor), i.vt) for i in tab.columns] for row in tab.data], False)
+        if conv2ascii:
+            table.add_rows([[AsciiOutputFormatter.format_value(
+                _try_conv2ascii(resolve_cell(row, i.accessor)), i.vt) for i in tab.columns] for row in tab.data], False)
+        else:
+            table.add_rows([[AsciiOutputFormatter.format_value(
+                resolve_cell(row, i.accessor), i.vt) for i in tab.columns] for row in tab.data], False)
         return table
 
 
@@ -315,7 +331,14 @@ class AsciiStreamTablePrinter(object):
         self._load_row_elements(row)
         self._trim_elements()
         self._render_lines()
-        self._print_lines(file, end)
+        try:
+            self._print_lines(file, end)
+        except UnicodeEncodeError:
+            self._cleanup_lines()
+            self._load_row_elements(row, conv2ascii=True)
+            self._trim_elements()
+            self._render_lines()
+            self._print_lines(file, end)
 
     def _compute_cols_widths(self, columns):
         def extend_cols_widths(additional_space):
@@ -347,7 +370,8 @@ class AsciiStreamTablePrinter(object):
         self.ordered_line_elements = [col.label for col in columns]
         self.ordered_lines_elements = [self.ordered_line_elements]
 
-    def _load_row_elements(self, row):
+    def _load_row_elements(self, row, conv2ascii=False):
+
         def convert_nested_dict_to_string(dict):
             return ", ".join([":".join([k, v]) for k, v in dict.items()])
 
@@ -359,6 +383,10 @@ class AsciiStreamTablePrinter(object):
 
             if isinstance(elem, dict):
                 elem = convert_nested_dict_to_string(elem)
+
+            if conv2ascii and isinstance(elem, str):
+                elem = ascii(elem) if not _is_ascii(elem) else elem
+
             self.ordered_line_elements.append(AsciiOutputFormatter.format_value(elem, self.value_types[i]))
 
         self.ordered_lines_elements = [self.ordered_line_elements]

@@ -1016,14 +1016,6 @@ svc_cli_config = {
             'type': ValueType.NUMBER
         },
     ],
-    "glusterd": [
-        {
-            'descr': 'Working directory',
-            'name': 'working_directory',
-            'get': 'working_directory',
-            'type': ValueType.STRING
-        },
-    ],
     "iscsi": [
         {
             'descr': 'Base name',

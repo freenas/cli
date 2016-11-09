@@ -261,7 +261,13 @@ class BackupRestoreCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
+        if not kwargs:
+            raise CommandException(_("Restore requires more arguments. For help see 'help restore'"))
+
         dataset = kwargs.pop('dataset', None)
+        if not dataset:
+            raise CommandException(_("Please specify the target dataset. For help see 'help restore'"))
+
         snapshot = kwargs.pop('snapshot', None)
 
         tid = context.submit_task('backup.restore', self.parent.entity['id'], dataset, snapshot)

@@ -7,7 +7,7 @@ _service="snmp"
 function service_create() {
 	print(">>> Starting service tests")
 	# make sure it's running first.
-	@${service ${_service} start}
+	@$(service ${_service} start)
 	_pid = $(service ${_service} get pid)
 	maybe_barf(_pid != none, "+service#1", "The " + _service + " service is not running on this machine")
 	@$(service ${_service} config set enable=no)

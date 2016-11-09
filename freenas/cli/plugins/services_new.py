@@ -449,6 +449,13 @@ class UPSNamespace(ServiceManageMixIn, ConfigNamespace):
         self.name = name
 
         self.add_property(
+            descr='Enabled',
+            name='enable',
+            get='enable',
+            list=True,
+            type=ValueType.BOOLEAN
+        )
+        self.add_property(
             descr='Mode',
             name='mode',
             usage= _("""
@@ -676,6 +683,13 @@ class TFTPDNamespace(ServiceManageMixIn, ConfigNamespace):
         self.name = name
 
         self.add_property(
+            descr='Enabled',
+            name='enable',
+            get='enable',
+            list=True,
+            type=ValueType.BOOLEAN
+        )
+        self.add_property(
             descr='Port',
             name='port',
             usage= _("""Number representing the port for tftpd to
@@ -720,6 +734,814 @@ class TFTPDNamespace(ServiceManageMixIn, ConfigNamespace):
             type=ValueType.STRING
         )
 
+
+@description("Configure and manage sshd service")
+class SSHDNamespace(ServiceManageMixIn, ConfigNamespace):
+    """
+    The sshd service namespace allows to configure and manage sshd service.
+    """
+    def __init__(self, name, context):
+        super(SSHDNamespace, self).__init__(name, context)
+        self.config_call = "service.sshd.get_config"
+        self.update_task = 'service.sshd.update'
+        self.name = name
+
+        self.add_property(
+            descr='Enabled',
+            name='enable',
+            get='enable',
+            list=True,
+            type=ValueType.BOOLEAN
+        )
+        self.add_property(
+            descr='sftp log facility',
+            name='sftp_log_facility',
+            get='sftp_log_facility',
+            type=ValueType.STRING
+        )
+        self.add_property(
+            descr='Allow public key authentication',
+            name='allow_pubkey_auth',
+            usage= _("""
+            Can be set to yes. If set to yes, properly
+            configured key-based authentication for all users
+            is possible."""),
+            get='allow_pubkey_auth',
+            type=ValueType.BOOLEAN
+        )
+        self.add_property(
+            descr='Allow GSSAPI authentication',
+            name='allow_gssapi_auth',
+            usage= _(""""""),
+            get='allow_gssapi_auth',
+            type=ValueType.BOOLEAN
+        )
+        self.add_property(
+            descr='Enable compression',
+            name='compression',
+            usage= _("""
+            Can be set to yes or no. When set to yes,
+            compression may reduce latency over slow networks."""),
+            get='compression',
+            type=ValueType.BOOLEAN
+        )
+        self.add_property(
+            descr='Allow password authentication',
+            name='allow_password_auth',
+            usage= _("""
+            Can be set to yes or no. If set to yes,
+            passoword logins are allowed."""),
+            get='allow_password_auth',
+            type=ValueType.BOOLEAN
+        )
+        self.add_property(
+            descr='Allow port forwarding',
+            name='allow_port_forwarding',
+            usage= _("""
+            Can be set to yes or no. If set to yes, users can
+            bypass firewall restrictions using SSH's port forwarding
+            feature."""),
+            get='allow_port_forwarding',
+            type=ValueType.BOOLEAN
+        )
+        self.add_property(
+            descr='Permit root login',
+            name='permit_root_login',
+            usage= _("""
+            Can be set to yes or no. Setting to yes is discouraged
+            for security reasons."""),
+            get='permit_root_login',
+            type=ValueType.BOOLEAN
+        )
+        self.add_property(
+            descr='sftp log level',
+            name='sftp_log_level',
+            get='sftp_log_level',
+            type=ValueType.STRING
+        )
+        self.add_property(
+            descr='Port',
+            name='port',
+            usage= _("""
+            Numeric port to open for SSH connection requests."""),
+            get='port',
+            type=ValueType.NUMBER
+        )
+
+@description("Configure and manage ftp service")
+class FTPNamespace(ServiceManageMixIn, ConfigNamespace):
+    """
+    The ftp service namespace allows to configure and manage ftp service.
+    """
+    def __init__(self, name, context):
+        super(FTPNamespace, self).__init__(name, context)
+        self.config_call = "service.ftp.get_config"
+        self.update_task = 'service.ftp.update'
+        self.name = name
+
+        self.add_property(
+            descr='Enabled',
+            name='enable',
+            get='enable',
+            list=True,
+            type=ValueType.BOOLEAN
+        )
+        self.add_property(
+            descr='Idle timeout',
+            name='timeout',
+            usage= _("""
+            Number representing the maximum client idle time, in
+            seconds, before client is disconnected."""),
+            get='timeout',
+            type=ValueType.NUMBER
+        )
+        self.add_property(
+            descr='root login',
+            name='root_login',
+            usage= _("""
+            Can be set to yes or no and indicates whether or not
+            root logins are allowed."""),
+            get='root_login',
+            type=ValueType.BOOLEAN
+        )
+        self.add_property(
+            descr='Path for anonymous login',
+            name='anonymous_path',
+            usage= _("""
+            Full path to the root directory for anonymous FTP
+            connections."""),
+            get='anonymous_path',
+            type=ValueType.STRING
+        )
+        self.add_property(
+            descr='Only allow anonymous login',
+            name='only_anonymous',
+            usage= _("""
+            Can be set to yes or no and indicates whether or not
+            only anonymous logins are allowed."""),
+            get='only_anonymous',
+            type=ValueType.BOOLEAN
+        )
+        self.add_property(
+            descr='Only allow local user login',
+            name='only_local',
+            usage= _("""
+            Can be set to yes or no. When set to yes,
+            anonymous logins are not allowed."""),
+            get='only_local',
+            type=ValueType.BOOLEAN
+        )
+        self.add_property(
+            descr='Login message',
+            name='display_login',
+            usage= _("""
+            Message displayed to local login users after authentication.
+            It is not displayed to anonymous login users. Enclose the
+            message between double quotes."""),
+            get='display_login',
+            type=ValueType.STRING
+        )
+        self.add_property(
+            descr='File creation mask',
+            name='filemask',
+            get='filemask',
+            type=ValueType.PERMISSIONS
+        )
+        self.add_property(
+            descr='Directory creation mask',
+            name='dirmask',
+            get='dirmask',
+            type=ValueType.PERMISSIONS
+        )
+        self.add_property(
+            descr='Enable FXP protocol',
+            name='fxp',
+            get='fxp',
+            usage= _("""
+            Can be set to yes or no. When set to yes,
+            it enables the File eXchange Protocol which is
+            discouraged as it makes the server vulnerable to
+            FTP bounce attacks."""),
+            type=ValueType.BOOLEAN
+        )
+        self.add_property(
+            descr='Automatic transfer resumption',
+            name='resume',
+            usage= _("""
+            Can be set to yes or no. When set to yes,
+            FTP clients can resume interrupted transfers."""),
+            get='resume',
+            type=ValueType.BOOLEAN
+        )
+        self.add_property(
+            descr='Chroot local users',
+            name='chroot',
+            usage= _("""
+            Can be set to yes or no. When set to yes,
+            local users are restricted to their own home
+            directory except for users which are members of
+            the wheel group."""),
+            get='chroot',
+            type=ValueType.BOOLEAN
+        )
+        self.add_property(
+            descr='Require identd authentication',
+            name='ident',
+            usage= _("""
+            Can be set to yes or no. When set to yes,
+            timeouts will occur if the identd service is not
+            running on the client."""),
+            get='ident',
+            type=ValueType.BOOLEAN
+        )
+        self.add_property(
+            descr='Perform reverse DNS lookups',
+            name='reverse_dns',
+            usage= _("""
+            Can be set to yes or no. When set to yes,
+            the system will perform reverse DNS lookups on client
+            IPs. This can cause long delays if reverse DNS is not
+            configured."""),
+            get='reverse_dns',
+            type=ValueType.BOOLEAN
+        )
+        self.add_property(
+            descr='Masquerade address',
+            name='masquerade_address',
+            usage= _("""
+            System's public IP address or hosname=Set this
+            property if FTP clients can not connect through a
+            NAT device."""),
+            get='masquerade_address',
+            type=ValueType.STRING
+        )
+        self.add_property(
+            descr='Minimum passive ports',
+            name='passive_ports_min',
+            usage= _("""
+            Numeric port number indicating the lowest port number
+            available to FTP clients in PASV mode. Default of 0
+            means any port above 1023."""),
+            get='passive_ports_min',
+            type=ValueType.NUMBER
+        )
+        self.add_property(
+            descr='Maximum passive ports',
+            name='passive_ports_max',
+            usage= _("""
+            Numeric port number indicating the highest port number
+            available to FTP clients in PASV mode. Default of 0
+            means any port above 1023."""),
+            get='passive_ports_max',
+            type=ValueType.NUMBER
+        )
+        self.add_property(
+            descr='Local user upload bandwidth',
+            name='local_up_bandwidth',
+            usage= _("""
+            Number representing the maximum upload bandwidth per local
+            user in KB/s. Default of 0 means unlimited."""),
+            get='local_up_bandwidth',
+            type=ValueType.NUMBER
+        )
+        self.add_property(
+            descr='Local user download bandwidth',
+            name='local_down_bandwidth',
+            usage= _("""
+            Number representing the maximum download bandwidth per
+            local user in KB/s. Default of 0 means unlimited."""),
+            get='local_down_bandwidth',
+            type=ValueType.NUMBER
+        )
+        self.add_property(
+            descr='Anonymous upload bandwidth',
+            name='anon_up_bandwidth',
+            usage= _("""
+            Number representing the maximum upload bandwidth per
+            anonymous user in KB/s. Default of 0 means unlimited."""),
+            get='anon_up_bandwidth',
+            type=ValueType.NUMBER
+        )
+        self.add_property(
+            descr='Anonymous download bandwidth',
+            name='anon_down_bandwidth',
+            usage= _("""
+            Number representing the maximum download bandwidth per
+            anonymous user in KB/s. Default of 0 means unlimited."""),
+            get='anon_down_bandwidth',
+            type=ValueType.NUMBER
+        )
+        self.add_property(
+            descr='Enable TLS',
+            name='tls',
+            usage= _("""
+            Can be set to yes or no. When set to yes, it
+            enables encrypted connections and requires a certificate to
+            be created or imported."""),
+            get='tls',
+            type=ValueType.BOOLEAN
+        )
+        self.add_property(
+            descr='TLS Policy',
+            name='tls_policy',
+            usage= _("""
+            The specified policy defines whether the control
+            channel, data channel, both channels, or neither
+            channel of an FTP session must occur over SSL/TLS.
+            Valid values are ON, OFF, DATA, !DATA, AUTH, CTRL,
+            CTRL+DATA, CTRL+!DATA, AUTH+DATA, or AUTH+!DATA."""),
+            get='tls_policy',
+            enum=[
+                'ON',
+                'OFF',
+                'DATA',
+                '!DATA',
+                'AUTH',
+                'CTRL',
+                'CTRL+DATA',
+                'CTRL+!DATA',
+                'AUTH+DATA',
+                'AUTH+!DATA',
+            ],
+            type=ValueType.STRING
+        )
+        self.add_property(
+            descr='TLS Options',
+            name='tls_options',
+            usage= _("""
+            The following options can be set:
+            ALLOW_CLIENT_RENEGOTIATIONS, ALLOW_DOT_LOGIN,
+            ALLOW_PER_USER, COMMONname=EQUIRED,
+            ENABLE_DIAGNOSTICS, EXPORT_CERTIFICATE_DATA,
+            NO_CERTIFICATE_REQUEST, NO_EMPTY_FRAGMENTS,
+            NO_SESSION_REUSE_REQUIRED, STANDARD_ENV_VARS,
+            DNSname=EQUIRED, IP_ADDRESS_REQUIRED. Separate
+            mutiple options with a space and enclose between
+            double quotes."""),
+            get='tls_options',
+            enum=[
+                    'ALLOW_CLIENT_RENEGOTIATIONS',
+                    'ALLOW_DOT_LOGIN',
+                    'ALLOW_PER_USER',
+                    'COMMONname=EQUIRED',
+                    'ENABLE_DIAGNOSTICS',
+                    'EXPORT_CERTIFICATE_DATA',
+                    'NO_CERTIFICATE_REQUEST',
+                    'NO_EMPTY_FRAGMENTS',
+                    'NO_SESSION_REUSE_REQUIRED',
+                    'STANDARD_ENV_VARS',
+                    'DNSname=EQUIRED',
+                    'IP_ADDRESS_REQUIRED',
+            ],
+            type=ValueType.SET
+        )
+        self.add_property(
+            descr='TLS SSL Certificate',
+            name='tls_ssl_certificate',
+            usage= _("""
+            The SSL certificate to be used for TLS FTP
+            connections. Enclose the certificate between double
+            quotes"""),
+            get='tls_ssl_certificate',
+            type=ValueType.STRING
+        )
+        self.add_property(
+            descr='Auxiliary parameters',
+            name='auxiliary',
+            usage= _("""
+            Optional, additional proftpd(8) parameters not provided
+            by other properties. Space delimited list of parameters
+            enclosed between double quotes."""),
+            get='auxiliary',
+            type=ValueType.STRING
+        )
+
+@description("Configure and manage afp service")
+class AFPNamespace(ServiceManageMixIn, ConfigNamespace):
+    """
+    The afp service namespace allows to configure and manage afp service.
+    """
+    def __init__(self, name, context):
+        super(AFPNamespace, self).__init__(name, context)
+        self.config_call = "service.afp.get_config"
+        self.update_task = 'service.afp.update'
+        self.name = name
+
+        self.add_property(
+            descr='Enabled',
+            name='enable',
+            get='enable',
+            list=True,
+            type=ValueType.BOOLEAN
+        )
+        self.add_property(
+            descr='Share Home Directory',
+            name='homedir_enable',
+            get='homedir_enable',
+            usage= _("""
+            Can be set to yes or no. When set to 'yes', user home
+            directories located under 'homedir_path' will be available
+            over AFP shares."""),
+            type=ValueType.BOOLEAN
+        )
+        self.add_property(
+            descr='Home Directory Path',
+            name='homedir_path',
+            get='homedir_path',
+            usage= _("""
+            Enclose the path to the volume or dataset which contains the
+            home directories between double quotes."""),
+            type=ValueType.STRING
+        )
+        self.add_property(
+            descr='Home Directory Name',
+            name='homedir_name',
+            get='homedir_name',
+            usage= _("""
+            Optional setting which overrides default home folder name
+            with the specified value."""),
+            type=ValueType.STRING
+        )
+        self.add_property(
+            descr='Auxiliary Parameters',
+            name='auxiliary',
+            get='auxiliary',
+            usage= _("""
+            Optional, additional afp.conf(5) parameters not provided
+            by other properties. Space delimited list of parameters
+            enclosed between double quotes."""),
+            type=ValueType.STRING
+        )
+        self.add_property(
+            descr='Connections limit',
+            name='connections_limit',
+            get='connections_limit',
+            usage= _("""
+            Maximum number of simultaneous connections."""),
+            type=ValueType.NUMBER
+        )
+        self.add_property(
+            descr='Guest user',
+            name='guest_user',
+            get='guest_user',
+            usage= _("""
+            The specified user account must exist and have permissions to the
+            volume or dataset being shared."""),
+            type=ValueType.STRING
+        )
+        self.add_property(
+            descr='Enable guest user',
+            name='guest_enable',
+            get='guest_enable',
+            usage= _("""
+            Can be set to yes or no. When set to yes, clients will not be
+            prompted to authenticate before accessing AFP shares."""),
+            type=ValueType.BOOLEAN
+        )
+        self.add_property(
+            descr='Bind Addresses',
+            name='bind_addresses',
+            get='bind_addresses',
+            usage= _("""
+            IP address(es) to listen for FTP connections. Separate multiple
+            IP addresses with a space and enclose between double quotes."""),
+            list=True,
+            type=ValueType.SET
+        )
+        self.add_property(
+            descr='Database Path',
+            name='dbpath',
+            get='dbpath',
+            usage= _("""
+            Optional. Specify the path to store the CNID databases used by AFP,
+            where the default is the root of the volume. The path must be
+            writable and enclosed between double quotes."""),
+            type=ValueType.STRING
+        )
+
+@description("Configure and manage smb service")
+class SMBNamespace(ServiceManageMixIn, ConfigNamespace):
+    """
+    The smb service namespace allows to configure and manage smb service.
+    """
+    def __init__(self, name, context):
+        super(SMBNamespace, self).__init__(name, context)
+        self.config_call = "service.smb.get_config"
+        self.update_task = 'service.smb.update'
+        self.name = name
+
+        self.add_property(
+            descr='Enabled',
+            name='enable',
+            get='enable',
+            list=True,
+            type=ValueType.BOOLEAN
+        )
+        self.add_property(
+            descr='NetBIOS name',
+            name='netbiosname',
+            usage= _("""
+            Must be different from the 'Workgroup'."""),
+            get='netbiosname',
+            type=ValueType.SET
+        )
+        self.add_property(
+            descr='Workgroup',
+            name='workgroup',
+            usage= _("""
+            Must match the Windows workgroupname=This setting is
+            ignored if the Active Directory or LDAP service is
+            running."""),
+            get='workgroup'
+        )
+        self.add_property(
+            descr='description',
+            name='description',
+            usage= _("""
+            Optional. Enclose between double quotes if it contains
+            a space."""),
+            get='description',
+        )
+        self.add_property(
+            descr='DOS Character Set',
+            name='dos_charset',
+            usage= _("""
+            Must be different from the 'Workgroup'."""),
+            enum=['CP437', 'CP850', 'CP852', 'CP866', 'CP932', 'CP949',
+                     'CP950', 'CP1029', 'CP1251', 'ASCII'],
+            get='dos_charset'
+        )
+        self.add_property(
+            descr='UNIX Character Set',
+            name='unix_charset',
+            enum=['UTF-8', 'iso-8859-1', 'iso-8859-15', 'gb2312', 'EUC-JP', 'ASCII'],
+            get='unix_charset'
+        )
+        self.add_property(
+            descr='Log level',
+            name='log_level',
+            usage= _("""
+            Can be set to NONE, MINIMUM, NORMAL, FULL, or DEBUG."""),
+            get='log_level',
+            enum=[ 'NONE', 'MINIMUM', 'NORMAL', 'FULL', 'DEBUG' ]
+        )
+        self.add_property(
+            descr='Log in syslog',
+            name='syslog',
+            usage= _("""
+            Can be set to yes or no. When set to yes,
+            authentication failures are logged to /var/log/messages
+            instead of the default of /var/log/samba4/log.smbd."""),
+            get='syslog',
+            type=ValueType.BOOLEAN
+        )
+        self.add_property(
+            descr='Local master',
+            name='local_master',
+            usage= _("""
+            Can be set to yes or no. When set to yes, the system
+            will participate in a browser election. Should be set
+            to no when network contains an AD or LDAP server. Does
+            not need to be set if Vista or Windows 7 machines are
+            present."""),
+            get='local_master',
+            type=ValueType.BOOLEAN
+        )
+        self.add_property(
+            descr='Domain logons',
+            name='domain_logons',
+            usage= _("""
+            Can be set to yes or no. Only set to yes when
+            if need to provide the netlogin service for older
+            Windows clients."""),
+            get='domain_logons',
+            type=ValueType.BOOLEAN
+        )
+        self.add_property(
+            descr='Time server',
+            name='time_server',
+            usage= _("""
+            Can be set to yes or no and determines whether or not the
+            system advertises itself as a time server to Windows
+            clients. Do not set to yes if the network contains an AD
+            or LDAP server."""),
+            get='time_server',
+            type=ValueType.BOOLEAN
+        )
+        self.add_property(
+            descr='Guest User',
+            name='guest_user',
+            usage= _("""
+            The specified user account must exist and have permissions to the
+            volume or dataset being shared."""),
+            get='guest_user'
+        )
+        self.add_property(
+            descr='File mask',
+            name='filemask',
+            get='filemask',
+            type=ValueType.PERMISSIONS
+        )
+        self.add_property(
+            descr='Directory mask',
+            name='dirmask',
+            get='dirmask',
+            type=ValueType.PERMISSIONS
+        )
+        self.add_property(
+            descr='Empty password logons',
+            name='empty_password',
+            usage= _("""
+            Can be set to yes or no. If set to yes,
+            users can just press Enter when prompted for a
+            password. Requires that the usename=assword be the
+            same as the Windows user account."""),
+            get='empty_password',
+            type=ValueType.BOOLEAN
+        )
+        self.add_property(
+            descr='UNIX Extensions',
+            name='unixext',
+            usage= _("""
+            Can be set to yes or no. If set to yes,
+            non-Windows clients can access symbolic links
+            and hard links. This property has no effect on Windows
+            clients."""),
+            get='unixext',
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
+            descr='Zero Configuration',
+            name='zeroconf',
+            usage= _("""
+            Can be set to yes or no. Set to yes if MAC
+            clients will be connecting to the smb share."""),
+            get='zeroconf',
+            type=ValueType.BOOLEAN
+        )
+        self.add_property(
+            descr='Host lookup',
+            name='hostlookup',
+            usage= _("""
+            Can be set to yes or no. If set to yes, you can
+            specify hosname=rather than IP addresses in the
+            hosts_allow or hosts_deny properties of a smb share.
+            Set to no if you only use IP addresses as it saves
+            the time of a host lookup."""),
+            get='hostlookup',
+            type=ValueType.BOOLEAN
+        )
+        self.add_property(
+            descr='Minimum Protocol',
+            name='min_protocol',
+            usage= _("""
+            The minimum protocol version the server will support.
+            Valid values, in order, are: CORE, COREPLUS, LANMAN1,
+            LANMAN2, NT1, SMB2, SMB2_02, SMB2_10, SMB2_22,
+            SMB2_24, SMB3,, or SMB3_00. The set value must be lower
+            than the max_protocol."""),
+            get='min_protocol',
+        )
+        self.add_property(
+            descr='Maximum Protocol',
+            name='max_protocol',
+            usage= _("""
+            The maximum protocol version the server will support.
+            Valid values, in order, are: CORE, COREPLUS, LANMAN1,
+            LANMAN2, NT1, SMB2, SMB2_02, SMB2_10, SMB2_22,
+            SMB2_24, SMB3,, or SMB3_00. The set value must be higher
+            than the min_protocol."""),
+            get='max_protocol',
+        )
+        self.add_property(
+            descr='Always Execute',
+            name='execute_always',
+            usage= _("""
+            Can be set to yes or no. If set to yes, any user can
+            execute a file, even if that user's permissions are
+            not set to execute."""),
+            get='execute_always',
+            type=ValueType.BOOLEAN
+        )
+        self.add_property(
+            descr='Obey PAM Restrictions',
+            name='obey_pam_restrictions',
+            usage= _("""
+            Can be set to yes or no. If set to no, cross-domain
+            authentication is allowed so that users and groups can
+            be managed on another forest, and permissions can be
+            delegated from AD users and groups to domain admins on
+            another forest."""),
+            get='obey_pam_restrictions',
+            type=ValueType.BOOLEAN
+        )
+        self.add_property(
+            descr='Bind addresses',
+            name='bind_addresses',
+            usage= _("""
+            Space delimited list of IP address(es) that the smb service
+            should listen on. Enclose the list between double quotes.
+            If not set, the service will listen on all available
+            addresses."""),
+            get='bind_addresses',
+            list=True,
+            type=ValueType.SET
+        )
+        self.add_property(
+            descr='Auxiliary',
+            name='auxiliary',
+            usage= _("""
+            Optional, additional smb.conf parameters. Separate multiple
+            parameters by a space and enclose them between double quotes."""),
+            get='auxiliary'
+        )
+
+@description("Configure and manage dyndns service")
+class DynDnsNamespace(ServiceManageMixIn, ConfigNamespace):
+    """
+    The dyndns service namespace allows to configure and manage dyndns service.
+    """
+    def __init__(self, name, context):
+        super(DynDnsNamespace, self).__init__(name, context)
+        self.config_call = "service.dyndns.get_config"
+        self.update_task = 'service.dyndns.update'
+        self.name = name
+
+        self.add_property(
+            descr='Enabled',
+            name='enable',
+            get='enable',
+            list=True,
+            type=ValueType.BOOLEAN
+        )
+        self.add_property(
+            descr='DynDNS Provider',
+            name='provider',
+            usage= _("""
+            Name of the DDNS provider."""),
+            get='provider'
+        )
+        self.add_property(
+            descr='IP Server',
+            name='ipserver',
+            usage= _("""
+            Can be used to specify the hosname=nd port of the IP
+            check server."""),
+            get='ipserver'
+        )
+        self.add_property(
+            descr='Domains',
+            name='domains',
+            get='domains',
+            usage= _("""
+            Your system's fully qualified domainname in the format
+            "youname=yndns.org"."""),
+            type=ValueType.SET
+        )
+        self.add_property(
+            descr='Usename',
+            name='usename',
+            usage= _("""
+            Usename=sed to logon to the provider and update the
+            record."""),
+            get='usename',        
+            )
+        self.add_property(
+            descr='Password',
+            name='password',
+            usage= _("""
+            Password used to logon to the provider and update the
+            record."""),
+            get=None,
+            set='password'
+        )
+        self.add_property(
+            descr='Update period',
+            name='update_period',
+            usage= _("""
+            Number representing how often the IP is checked in seconds."""),
+            get='update_period',
+            type=ValueType.NUMBER
+        )
+        self.add_property(
+            descr='Force update period',
+            name='force_update_period',
+            usage= _("""
+            Number representing how often the IP should be updated, even it
+            has not changed, in seconds."""),
+            get='force_update_period',
+            type=ValueType.NUMBER
+        )
+        self.add_property(
+            descr='Auxiliary',
+            name='auxiliary',
+            usage= _("""
+            Optional, additional parameters passed to the provider during
+            record update. Separate multiple parameters by a space and
+            enclose them between double quotes."""),
+            get='auxiliary'
+        )
 
 @description("Start/stop/restart/reload a service")
 class ServiceManageCommand(Command):
@@ -811,6 +1633,12 @@ class ServicesNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             UPSNamespace('ups', self.context),
             ConsulNamespace('consul', self.context),
             TFTPDNamespace('tftpd', self.context),
+            SSHDNamespace('sshd', self.context),
+            FTPNamespace('ftp', self.context),
+            AFPNamespace('afp', self.context),
+            SMBNamespace('smb', self.context),
+            DynDnsNamespace('dyndns', self.context),
+
 
         ]
 

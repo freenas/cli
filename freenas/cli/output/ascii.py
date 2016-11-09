@@ -163,7 +163,7 @@ class AsciiOutputFormatter(object):
         for d in data:
             if isinstance(d, Table):
                 ret = [str(type(dd)) for dd in data]
-        sys.stdout.write(AsciiOutputFormatter.columnize(ret))
+        sys.stdout.write(AsciiOutputFormatter.columnize([str(r) for r in ret]))
         sys.stdout.flush()
 
     @staticmethod

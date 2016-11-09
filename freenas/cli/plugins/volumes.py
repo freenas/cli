@@ -157,7 +157,7 @@ class AddVdevCommand(Command):
             if len(disks) != 1:
                 raise CommandException(_("Log or spare vdevs cannot be mirrored"))
 
-            if 'log' not in entity:
+            if typ not in entity:
                 entity['topology'][typ] = []
 
             entity['topology'][typ].append({

@@ -45,7 +45,7 @@ function action_by_name(action, where, name) {
 
 # Functions to detect if tests are already running on a machine.
 function test_sentinel() {
-	return contains($(system get tags, _sentinel_tag))
+	return contains($(system get tags), _sentinel_tag)
 }
 
 function set_sentinel() {

@@ -22,23 +22,20 @@ function maybe_die(flag, test, str) {
 	return not flag
 }	
 
-# XXX Neither of these work yet; they require changes to the CLI
-
 function find_by_name(where, name) {
-	return $(${where} show | search name ~= ${name})
+	return $(where show | search name ~= ${name})
 }
 
 function count_by_name(where, name) {
 	 _x = find_by_name(where, name)
-	 # return length(_x)
-	 return 0
+	 return length(_x)
 }
 
-function action_by_name(action, where, name) {
+function action_by_name(where, name, action) {
 	 x = find_by_name(name, where)
 	 if (x != null) {
 	    for (i in x) {
-	    	@$(${i["name"]} ${action})
+	    	@$(i["name"] action)
 	    }
 	 }
 }

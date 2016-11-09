@@ -176,7 +176,7 @@ class AddVdevCommand(Command):
 
     def complete(self, context, **kwargs):
         return [
-            EnumComplete('type=', ['mirror', 'disk', 'raidz1', 'raidz2', 'raidz3', 'cache', 'log']),
+            EnumComplete('type=', ['mirror', 'disk', 'raidz1', 'raidz2', 'raidz3', 'cache', 'log', 'spare']),
             EntitySubscriberComplete('disks=', 'disk', lambda d: d['name'], ['auto'], list=True),
             NullComplete('password=')
         ]

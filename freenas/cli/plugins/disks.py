@@ -31,7 +31,7 @@ from freenas.cli.namespace import (
     EntityNamespace, Command, EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, description,
     CommandException
 )
-from freenas.cli.output import ValueType, Table
+from freenas.cli.output import ValueType, Table, read_value
 from freenas.cli.utils import TaskPromise
 from freenas.utils import extend, query as q
 
@@ -331,7 +331,8 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityN
         self.allow_create = False
         self.entity_commands = lambda this: {
             'format': FormatDiskCommand(this),
-            'erase': EraseDiskCommand(this)
+            'erase': EraseDiskCommand(this),
+            'identify': IdentifyCommand(this)
         }
 
         self.extra_commands = {
@@ -466,6 +467,24 @@ class FormatDiskCommand(Command):
         fstype = kwargs.pop('fstype', 'freebsd-zfs')
         tid = context.submit_task('disk.format.gpt', self.parent.entity['id'], fstype)
         return TaskPromise(context, tid)
+
+
+@description("Identifies the disk in the enclosure")
+class IdentifyDiskCommand(Command):
+    """
+    Usage: format
+
+    Formats the current disk.
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        if len(args) != 1:
+            raise CommandException('Specify whether to on or off identification light')
+
+        on = read_value(args[0], ValueType.BOOLEAN)
+        context.call_sync('disk.identify', self.parent.entity['id'], on)
 
 
 @description("Erases all data on disk safely")

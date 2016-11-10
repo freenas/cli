@@ -231,15 +231,6 @@ class FlowControlInstructionType(enum.Enum):
     BREAK = 'BREAK'
 
 
-class NamespaceList(list):
-    def __init__(self, ns):
-        for i in ns:
-            if not isinstance(i, Namespace):
-                raise AssertionError('Only namespaces can be members of a NamespaceList')
-
-        super(NamespaceList, self).__init__(ns)
-
-
 class Alias(object):
     def __init__(self, context, string):
         self.ast = parse(string, '<alias>')
@@ -1469,17 +1460,8 @@ class MainLoop(object):
                     item = self.eval(top, env=env, path=path, dry_run=dry_run)
 
                     if isinstance(item, Namespace):
-                        if token.args:
-                            item.on_enter()
-                            return self.eval(token, env=env, path=path+[item], dry_run=dry_run)
-
-                        return NamespaceList(path + [item])
-
-                    if isinstance(item, NamespaceList):
-                        for i in item:
-                            i.on_enter()
-
-                        return self.eval(token, env=env, path=list(item), dry_run=dry_run)
+                        item.on_enter()
+                        return self.eval(token, env=env, path=path+[item], dry_run=dry_run)
 
                     if isinstance(item, Alias):
                         return self.eval(item.ast, env=env, path=path)[0]
@@ -1662,17 +1644,12 @@ class MainLoop(object):
                     return
 
                 if ret is not None:
-                    if isinstance(ret, NamespaceList):
-                        for i in ret:
-                            self.path.append(i)
-                            i.on_enter()
+                    output = self.context.variables.get('output')
+                    if output:
+                        with open(output, 'a+') as f:
+                            format_output(ret, file=f)
                     else:
-                        output = self.context.variables.get('output')
-                        if output:
-                            with open(output, 'a+') as f:
-                                format_output(ret, file=f)
-                        else:
-                            format_output(ret)
+                        format_output(ret)
         except SyntaxError as e:
             output_msg(_('Syntax error: {0}'.format(str(e))))
             return 1

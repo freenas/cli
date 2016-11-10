@@ -37,7 +37,8 @@ from freenas.cli.namespace import (
     EntitySubscriberBasedLoadMixin,
     TaskBasedSaveMixin,
     NestedEntityMixin,
-    description
+    description,
+    CommandException,
 )
 from freenas.utils.query import get
 
@@ -92,6 +93,16 @@ class DirectoryServicesConfigNamespace(ConfigNamespace):
 
 class DirectoriesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
     def __init__(self, name, context):
+        def set_type(o, v):
+            elem = self.context.entity_subscribers[self.entity_subscriber_name].query(
+                ('type', '=', v),
+                select='name',
+                single=True,
+            )
+            if elem:
+                raise CommandException(_("Only one instance of type: {0} allowed".format(v)))
+            o['type'] = v
+
         super(DirectoriesNamespace, self).__init__(name, context)
 
         self.primary_key_name = 'name'
@@ -111,6 +122,7 @@ class DirectoriesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, E
             descr='Type',
             name='type',
             get='type',
+            set=set_type,
             list=True,
             enum=['winbind', 'freeipa', 'ldap', 'nis']
         )

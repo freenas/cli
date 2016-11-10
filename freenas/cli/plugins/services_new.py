@@ -392,17 +392,6 @@ class OpenVPNStaticKeyCommand(Command):
         return Sequence(vpn_client_confg['tls_auth'])
 
 
-@description("Provides the URL for the Domain Controller virtual appliance")
-class DomainControllerUrlCommand(Command):
-    """
-    Usage: get_url
-
-    Provides URL that allows to access the virtual Domain Controller appliance.
-    """
-    def run(self, context, args, kwargs, opargs):
-        dc_url = context.call_sync('service.dc.provide_dc_url')
-        return Sequence(dc_url)
-
 
 @description("Configure Domain Controller vm general settings")
 class DomainControllerNamespace(ServiceManageMixIn, ConfigNamespace):
@@ -437,6 +426,19 @@ class DomainControllerNamespace(ServiceManageMixIn, ConfigNamespace):
             Volume name for the DC virtual machine appliance'''),
         )
 
+
+@description("Provides the URL for the Domain Controller virtual appliance")
+class DomainControllerUrlCommand(Command):
+    """
+    Usage: get_url
+
+    Provides URL that allows to access the virtual Domain Controller appliance.
+    """
+    def run(self, context, args, kwargs, opargs):
+        dc_url = context.call_sync('service.dc.provide_dc_url')
+        return Sequence(dc_url)
+
+
 @description("Configure and manage UPS service")
 class UPSNamespace(ServiceManageMixIn, ConfigNamespace):
     """
@@ -458,7 +460,7 @@ class UPSNamespace(ServiceManageMixIn, ConfigNamespace):
         self.add_property(
             descr='Mode',
             name='mode',
-            usage= _("""
+            usage=_("""
             Can be set to MASTER or SLAVE."""),
             get='mode',
             type=ValueType.STRING,
@@ -467,43 +469,43 @@ class UPSNamespace(ServiceManageMixIn, ConfigNamespace):
         self.add_property(
             descr='Identifier',
             name='identifier',
-            usage= _("""
-            Can be set to an alphanumericdescr=ion."""),
+            usage=_("""
+            Can be set to an alphanumeric description."""),
             get='identifier',
             type=ValueType.STRING,
         )
         self.add_property(
             descr='Remote Host',
             name='remote_host',
-            usage= _(""""""),
+            usage=_(""""""),
             get='remote_host',
             type=ValueType.STRING,
         )
         self.add_property(
             descr='Remote Port',
             name='remote_port',
-            usage= _(""""""),
+            usage=_(""""""),
             get='remote_port',
             type=ValueType.STRING,
         )
         self.add_property(
             descr='Driver',
             name='driver',
-            usage= _(""""""),
+            usage=_(""""""),
             get='driver',
             type=ValueType.STRING,
         )
         self.add_property(
             descr='Driver Port',
             name='driver_port',
-            usage= _(""""""),
+            usage=_(""""""),
             get='driver_port',
             type=ValueType.STRING,
         )
         self.add_property(
             descr='Description',
             name='description',
-            usage= _("""
+            usage=_("""
             Optional description. If it contains any spaces,
             enclose it between double quotes."""),
             get='description',
@@ -512,7 +514,7 @@ class UPSNamespace(ServiceManageMixIn, ConfigNamespace):
         self.add_property(
             descr='Shutdown Mode',
             name='shutdown_mode',
-            usage= _("""
+            usage=_("""
             Indicates when the UPS should shutdown. Can be set
             to BATT (UPS goes on battery) or LOWBATT (UPS
             reaches low battery)."""),
@@ -523,7 +525,7 @@ class UPSNamespace(ServiceManageMixIn, ConfigNamespace):
         self.add_property(
             descr='Shutdown Timer',
             name='shutdown_timer',
-            usage= _("""
+            usage=_("""
             Number in seconds. UPS will initiate shutdown this many
             seconds after UPS enters BATT 'shutdown_mode', unless power
             is restored"""),
@@ -533,14 +535,14 @@ class UPSNamespace(ServiceManageMixIn, ConfigNamespace):
         self.add_property(
             descr='Monitor User',
             name='monitor_user',
-            usage= _(""""""),
+            usage=_(""""""),
             get='monitor_user',
             type=ValueType.STRING,
         )
         self.add_property(
             descr='Monitor Password',
             name='monitor_password',
-            usage= _(""""""),
+            usage=_(""""""),
             get=None,
             set='monitor_password',
             type=ValueType.STRING,
@@ -548,7 +550,7 @@ class UPSNamespace(ServiceManageMixIn, ConfigNamespace):
         self.add_property(
             descr='Monitor Remote',
             name='monitor_remote',
-            usage= _("""
+            usage=_("""
             Can be set to yes or no. When set to yes,
             the default is to listen on all interfaces and to use
             the known values upsmon for 'monitor_user' and
@@ -559,14 +561,14 @@ class UPSNamespace(ServiceManageMixIn, ConfigNamespace):
         self.add_property(
             descr='Auxiliary Users',
             name='auxiliary_users',
-            usage= _(""""""),
+            usage=_(""""""),
             get='auxiliary_users',
             type=ValueType.STRING,
         )
         self.add_property(
             descr='Email Notify',
             name='email_notify',
-            usage= _("""
+            usage=_("""
             Can be set to yes or no. When set to yes,
             status updates will be emailed to
             'email_recipients'."""),
@@ -576,7 +578,7 @@ class UPSNamespace(ServiceManageMixIn, ConfigNamespace):
         self.add_property(
             descr='Email Recipients',
             name='email_recipients',
-            usage= _("""
+            usage=_("""
             Space delimited list, enclosed between double
             quotes, of email addresses to receive status
             updates. This requires 'email_notify' to be set
@@ -587,7 +589,7 @@ class UPSNamespace(ServiceManageMixIn, ConfigNamespace):
         self.add_property(
             descr='Email Subject',
             name='email_subject',
-            usage= _("""
+            usage=_("""
             Subject to use in status emails. Enclose between
             double quotes if it contains a space. Requires
             'email_notify' to be set to yes."""),
@@ -597,7 +599,7 @@ class UPSNamespace(ServiceManageMixIn, ConfigNamespace):
         self.add_property(
             descr='Powerdown',
             name='powerdown',
-            usage= _("""
+            usage=_("""
             Can be set to yes or no. When set to yes,
             the UPS will also power off after shutting down the
             FreeNAS system"""),
@@ -607,7 +609,7 @@ class UPSNamespace(ServiceManageMixIn, ConfigNamespace):
         self.add_property(
             descr='Auxiliary',
             name='auxiliary',
-            usage= _("""
+            usage=_("""
             Optional, additional ups.conf(5) parameters not provided
             by other properties. Space delimited list of parameters
             enclosed between double quotes."""),
@@ -692,7 +694,7 @@ class TFTPDNamespace(ServiceManageMixIn, ConfigNamespace):
         self.add_property(
             descr='Port',
             name='port',
-            usage= _("""Number representing the port for tftpd to
+            usage=_("""Number representing the port for tftpd to
             listen on."""),
             get='port',
             type=ValueType.NUMBER,
@@ -700,14 +702,14 @@ class TFTPDNamespace(ServiceManageMixIn, ConfigNamespace):
         self.add_property(
             descr='Path',
             name='path',
-            usage= _(""" """),
+            usage=_(""" """),
             get='path',
             type=ValueType.STRING
         )
         self.add_property(
             descr='Allow New Files',
             name='alllow_new_files',
-            usage= _("""
+            usage=_("""
             Can be set to yes or no. When set to yes,
             network devices can save files on the system."""),
             get='alllow_new_files',
@@ -716,7 +718,7 @@ class TFTPDNamespace(ServiceManageMixIn, ConfigNamespace):
         self.add_property(
             descr='UMASK',
             name='umask',
-            usage= _("""
+            usage=_("""
             Number representing the umask for newly created files, default
             is 022 (everyone can read, nobody can write). Some devices
             require a less strict umask."""),
@@ -726,7 +728,7 @@ class TFTPDNamespace(ServiceManageMixIn, ConfigNamespace):
         self.add_property(
             descr='Auxiliary',
             name='auxiliary',
-            usage= _("""
+            usage=_("""
             Optional, additional tftpd(8) parameters not provided
             by other properties. Space delimited list of parameters
             enclosed between double quotes."""),
@@ -762,7 +764,7 @@ class SSHDNamespace(ServiceManageMixIn, ConfigNamespace):
         self.add_property(
             descr='Allow public key authentication',
             name='allow_pubkey_auth',
-            usage= _("""
+            usage=_("""
             Can be set to yes. If set to yes, properly
             configured key-based authentication for all users
             is possible."""),
@@ -772,14 +774,14 @@ class SSHDNamespace(ServiceManageMixIn, ConfigNamespace):
         self.add_property(
             descr='Allow GSSAPI authentication',
             name='allow_gssapi_auth',
-            usage= _(""""""),
+            usage=_(""""""),
             get='allow_gssapi_auth',
             type=ValueType.BOOLEAN
         )
         self.add_property(
             descr='Enable compression',
             name='compression',
-            usage= _("""
+            usage=_("""
             Can be set to yes or no. When set to yes,
             compression may reduce latency over slow networks."""),
             get='compression',
@@ -788,7 +790,7 @@ class SSHDNamespace(ServiceManageMixIn, ConfigNamespace):
         self.add_property(
             descr='Allow password authentication',
             name='allow_password_auth',
-            usage= _("""
+            usage=_("""
             Can be set to yes or no. If set to yes,
             passoword logins are allowed."""),
             get='allow_password_auth',
@@ -797,7 +799,7 @@ class SSHDNamespace(ServiceManageMixIn, ConfigNamespace):
         self.add_property(
             descr='Allow port forwarding',
             name='allow_port_forwarding',
-            usage= _("""
+            usage=_("""
             Can be set to yes or no. If set to yes, users can
             bypass firewall restrictions using SSH's port forwarding
             feature."""),
@@ -807,7 +809,7 @@ class SSHDNamespace(ServiceManageMixIn, ConfigNamespace):
         self.add_property(
             descr='Permit root login',
             name='permit_root_login',
-            usage= _("""
+            usage=_("""
             Can be set to yes or no. Setting to yes is discouraged
             for security reasons."""),
             get='permit_root_login',
@@ -822,7 +824,7 @@ class SSHDNamespace(ServiceManageMixIn, ConfigNamespace):
         self.add_property(
             descr='Port',
             name='port',
-            usage= _("""
+            usage=_("""
             Numeric port to open for SSH connection requests."""),
             get='port',
             type=ValueType.NUMBER
@@ -849,7 +851,7 @@ class FTPNamespace(ServiceManageMixIn, ConfigNamespace):
         self.add_property(
             descr='Idle timeout',
             name='timeout',
-            usage= _("""
+            usage=_("""
             Number representing the maximum client idle time, in
             seconds, before client is disconnected."""),
             get='timeout',
@@ -858,7 +860,7 @@ class FTPNamespace(ServiceManageMixIn, ConfigNamespace):
         self.add_property(
             descr='root login',
             name='root_login',
-            usage= _("""
+            usage=_("""
             Can be set to yes or no and indicates whether or not
             root logins are allowed."""),
             get='root_login',
@@ -867,7 +869,7 @@ class FTPNamespace(ServiceManageMixIn, ConfigNamespace):
         self.add_property(
             descr='Path for anonymous login',
             name='anonymous_path',
-            usage= _("""
+            usage=_("""
             Full path to the root directory for anonymous FTP
             connections."""),
             get='anonymous_path',
@@ -876,7 +878,7 @@ class FTPNamespace(ServiceManageMixIn, ConfigNamespace):
         self.add_property(
             descr='Only allow anonymous login',
             name='only_anonymous',
-            usage= _("""
+            usage=_("""
             Can be set to yes or no and indicates whether or not
             only anonymous logins are allowed."""),
             get='only_anonymous',
@@ -885,7 +887,7 @@ class FTPNamespace(ServiceManageMixIn, ConfigNamespace):
         self.add_property(
             descr='Only allow local user login',
             name='only_local',
-            usage= _("""
+            usage=_("""
             Can be set to yes or no. When set to yes,
             anonymous logins are not allowed."""),
             get='only_local',
@@ -894,7 +896,7 @@ class FTPNamespace(ServiceManageMixIn, ConfigNamespace):
         self.add_property(
             descr='Login message',
             name='display_login',
-            usage= _("""
+            usage=_("""
             Message displayed to local login users after authentication.
             It is not displayed to anonymous login users. Enclose the
             message between double quotes."""),
@@ -917,7 +919,7 @@ class FTPNamespace(ServiceManageMixIn, ConfigNamespace):
             descr='Enable FXP protocol',
             name='fxp',
             get='fxp',
-            usage= _("""
+            usage=_("""
             Can be set to yes or no. When set to yes,
             it enables the File eXchange Protocol which is
             discouraged as it makes the server vulnerable to
@@ -927,7 +929,7 @@ class FTPNamespace(ServiceManageMixIn, ConfigNamespace):
         self.add_property(
             descr='Automatic transfer resumption',
             name='resume',
-            usage= _("""
+            usage=_("""
             Can be set to yes or no. When set to yes,
             FTP clients can resume interrupted transfers."""),
             get='resume',
@@ -936,7 +938,7 @@ class FTPNamespace(ServiceManageMixIn, ConfigNamespace):
         self.add_property(
             descr='Chroot local users',
             name='chroot',
-            usage= _("""
+            usage=_("""
             Can be set to yes or no. When set to yes,
             local users are restricted to their own home
             directory except for users which are members of
@@ -947,7 +949,7 @@ class FTPNamespace(ServiceManageMixIn, ConfigNamespace):
         self.add_property(
             descr='Require identd authentication',
             name='ident',
-            usage= _("""
+            usage=_("""
             Can be set to yes or no. When set to yes,
             timeouts will occur if the identd service is not
             running on the client."""),
@@ -957,7 +959,7 @@ class FTPNamespace(ServiceManageMixIn, ConfigNamespace):
         self.add_property(
             descr='Perform reverse DNS lookups',
             name='reverse_dns',
-            usage= _("""
+            usage=_("""
             Can be set to yes or no. When set to yes,
             the system will perform reverse DNS lookups on client
             IPs. This can cause long delays if reverse DNS is not
@@ -968,7 +970,7 @@ class FTPNamespace(ServiceManageMixIn, ConfigNamespace):
         self.add_property(
             descr='Masquerade address',
             name='masquerade_address',
-            usage= _("""
+            usage=_("""
             System's public IP address or hosname=Set this
             property if FTP clients can not connect through a
             NAT device."""),
@@ -978,7 +980,7 @@ class FTPNamespace(ServiceManageMixIn, ConfigNamespace):
         self.add_property(
             descr='Minimum passive ports',
             name='passive_ports_min',
-            usage= _("""
+            usage=_("""
             Numeric port number indicating the lowest port number
             available to FTP clients in PASV mode. Default of 0
             means any port above 1023."""),
@@ -988,7 +990,7 @@ class FTPNamespace(ServiceManageMixIn, ConfigNamespace):
         self.add_property(
             descr='Maximum passive ports',
             name='passive_ports_max',
-            usage= _("""
+            usage=_("""
             Numeric port number indicating the highest port number
             available to FTP clients in PASV mode. Default of 0
             means any port above 1023."""),
@@ -998,7 +1000,7 @@ class FTPNamespace(ServiceManageMixIn, ConfigNamespace):
         self.add_property(
             descr='Local user upload bandwidth',
             name='local_up_bandwidth',
-            usage= _("""
+            usage=_("""
             Number representing the maximum upload bandwidth per local
             user in KB/s. Default of 0 means unlimited."""),
             get='local_up_bandwidth',
@@ -1007,7 +1009,7 @@ class FTPNamespace(ServiceManageMixIn, ConfigNamespace):
         self.add_property(
             descr='Local user download bandwidth',
             name='local_down_bandwidth',
-            usage= _("""
+            usage=_("""
             Number representing the maximum download bandwidth per
             local user in KB/s. Default of 0 means unlimited."""),
             get='local_down_bandwidth',
@@ -1016,7 +1018,7 @@ class FTPNamespace(ServiceManageMixIn, ConfigNamespace):
         self.add_property(
             descr='Anonymous upload bandwidth',
             name='anon_up_bandwidth',
-            usage= _("""
+            usage=_("""
             Number representing the maximum upload bandwidth per
             anonymous user in KB/s. Default of 0 means unlimited."""),
             get='anon_up_bandwidth',
@@ -1025,7 +1027,7 @@ class FTPNamespace(ServiceManageMixIn, ConfigNamespace):
         self.add_property(
             descr='Anonymous download bandwidth',
             name='anon_down_bandwidth',
-            usage= _("""
+            usage=_("""
             Number representing the maximum download bandwidth per
             anonymous user in KB/s. Default of 0 means unlimited."""),
             get='anon_down_bandwidth',
@@ -1034,7 +1036,7 @@ class FTPNamespace(ServiceManageMixIn, ConfigNamespace):
         self.add_property(
             descr='Enable TLS',
             name='tls',
-            usage= _("""
+            usage=_("""
             Can be set to yes or no. When set to yes, it
             enables encrypted connections and requires a certificate to
             be created or imported."""),
@@ -1044,7 +1046,7 @@ class FTPNamespace(ServiceManageMixIn, ConfigNamespace):
         self.add_property(
             descr='TLS Policy',
             name='tls_policy',
-            usage= _("""
+            usage=_("""
             The specified policy defines whether the control
             channel, data channel, both channels, or neither
             channel of an FTP session must occur over SSL/TLS.
@@ -1068,7 +1070,7 @@ class FTPNamespace(ServiceManageMixIn, ConfigNamespace):
         self.add_property(
             descr='TLS Options',
             name='tls_options',
-            usage= _("""
+            usage=_("""
             The following options can be set:
             ALLOW_CLIENT_RENEGOTIATIONS, ALLOW_DOT_LOGIN,
             ALLOW_PER_USER, COMMONname=EQUIRED,
@@ -1098,7 +1100,7 @@ class FTPNamespace(ServiceManageMixIn, ConfigNamespace):
         self.add_property(
             descr='TLS SSL Certificate',
             name='tls_ssl_certificate',
-            usage= _("""
+            usage=_("""
             The SSL certificate to be used for TLS FTP
             connections. Enclose the certificate between double
             quotes"""),
@@ -1108,7 +1110,7 @@ class FTPNamespace(ServiceManageMixIn, ConfigNamespace):
         self.add_property(
             descr='Auxiliary parameters',
             name='auxiliary',
-            usage= _("""
+            usage=_("""
             Optional, additional proftpd(8) parameters not provided
             by other properties. Space delimited list of parameters
             enclosed between double quotes."""),
@@ -1218,6 +1220,7 @@ class AFPNamespace(ServiceManageMixIn, ConfigNamespace):
             writable and enclosed between double quotes."""),
             type=ValueType.STRING
         )
+
 
 @description("Configure and manage smb service")
 class SMBNamespace(ServiceManageMixIn, ConfigNamespace):
@@ -1457,6 +1460,7 @@ class SMBNamespace(ServiceManageMixIn, ConfigNamespace):
             get='auxiliary'
         )
 
+
 @description("Configure and manage dyndns service")
 class DynDnsNamespace(ServiceManageMixIn, ConfigNamespace):
     """
@@ -1547,7 +1551,7 @@ class DynDnsNamespace(ServiceManageMixIn, ConfigNamespace):
 @description("Configure and manage ipfs service")
 class IPFSNamespace(ServiceManageMixIn, ConfigNamespace):
     """
-    The ipfs service namespace allows to configure and manage dyndns service.
+    The ipfs service namespace allows to configure and ipfs service.
     """
     def __init__(self, name, context):
         super(IPFSNamespace, self).__init__(name, context)
@@ -1600,7 +1604,7 @@ class IPFSNamespace(ServiceManageMixIn, ConfigNamespace):
 @description("Configure and manage nfs service")
 class NFSNamespace(ServiceManageMixIn, ConfigNamespace):
     """
-    The nfs service namespace allows to configure and manage dyndns service.
+    The nfs service namespace allows to configure and manage nfs service.
     """
     def __init__(self, name, context):
         super(NFSNamespace, self).__init__(name, context)
@@ -1688,7 +1692,472 @@ class NFSNamespace(ServiceManageMixIn, ConfigNamespace):
             type=ValueType.NUMBER
         )
 
+
+@description("Configure and manage iscsi service")
+class ISCSINamespace(ServiceManageMixIn, ConfigNamespace):
+    """
+    The iscsi service namespace allows to configure and manage iscsi service.
+    """
+    def __init__(self, name, context):
+        super(ISCSINamespace, self).__init__(name, context)
+        self.config_call = "service.iscsi.get_config"
+        self.update_task = 'service.iscsi.update'
+        self.name = name
+
+        self.add_property(
+            descr='Enabled',
+            name='enable',
+            get='enable',
+            list=True,
+            type=ValueType.BOOLEAN
+        )
+        self.add_property(
+            descr='Base name',
+            name='base_name',
+            usage= _("""
+            Name in IQN format as described by RFC 3721. Enclose
+            name between double quotes."""),
+            get='base_name',
+            type=ValueType.STRING
+        )
+        self.add_property(
+            descr='Pool space threshold',
+            name='pool_space_threshold',
+            usage= _("""
+            Number representing the percentage of free space that should
+            remain in the pool. When this percentage is reached, the
+            system will issue an alert, but only if zvols are used."""),
+            get='pool_space_threshold',
+            type=ValueType.NUMBER
+        )
+        self.add_property(
+            descr='ISNS servers',
+            name='isns_servers',
+            usage= _("""
+            Space delimited list of hosname=or IP addresses of ISNS server(s)
+            to register the system's iSCSI taget=nd portals with. Enclose
+            the list between double quotes."""),
+            get='isns_servers',
+            type=ValueType.SET
+        )
         
+@description("Configure and manage iscsi service")
+class ISCSINamespace(ServiceManageMixIn, ConfigNamespace):
+    """
+    The iscsi service namespace allows to configure and manage iscsi service.
+    """
+    def __init__(self, name, context):
+        super(ISCSINamespace, self).__init__(name, context)
+        self.config_call = "service.iscsi.get_config"
+        self.update_task = 'service.iscsi.update'
+        self.name = name
+
+        self.add_property(
+            descr='Enabled',
+            name='enable',
+            get='enable',
+            list=True,
+            type=ValueType.BOOLEAN
+        )
+        self.add_property(
+            descr='Base name',
+            name='base_name',
+            usage= _("""
+            Name in IQN format as described by RFC 3721. Enclose
+            name between double quotes."""),
+            get='base_name',
+            type=ValueType.STRING
+        )
+        self.add_property(
+            descr='Pool space threshold',
+            name='pool_space_threshold',
+            usage= _("""
+            Number representing the percentage of free space that should
+            remain in the pool. When this percentage is reached, the
+            system will issue an alert, but only if zvols are used."""),
+            get='pool_space_threshold',
+            type=ValueType.NUMBER
+        )
+        self.add_property(
+            descr='ISNS servers',
+            name='isns_servers',
+            usage= _("""
+            Space delimited list of hosname=or IP addresses of ISNS server(s)
+            to register the system's iSCSI taget=nd portals with. Enclose
+            the list between double quotes."""),
+            get='isns_servers',
+            type=ValueType.SET
+        )
+
+
+@description("Configure and manage lldp service")
+class LLDPNamespace(ServiceManageMixIn, ConfigNamespace):
+    """
+    The lldp service namespace allows to configure and manage lldp service.
+    """
+    def __init__(self, name, context):
+        super(LLDPNamespace, self).__init__(name, context)
+        self.config_call = "service.lldp.get_config"
+        self.update_task = 'service.lldp.update'
+        self.name = name
+
+        self.add_property(
+            descr='Enabled',
+            name='enable',
+            get='enable',
+            list=True,
+            type=ValueType.BOOLEAN
+        )
+        self.add_property(
+            descr='Save description',
+            name='save_description',
+            usage= _("""
+            Can be set to yes or no. When set to yes,
+            receive mode is enabled and received peer information
+            is saved in interfacedescr=ions."""),
+            get='save_description',
+            type=ValueType.BOOLEAN
+        )
+        self.add_property(
+            descr='Country code',
+            name='country_code',
+            usage= _("""
+            Required for LLDP location support. Input 2 letter ISO 3166
+            country code."""),
+            get='country_code',
+            type=ValueType.STRING
+        )
+        self.add_property(
+            descr='Location',
+            name='location',
+            usage= _("""
+            Optional, physical location of the host enclosed within
+            double quotes."""),
+            get='location',
+            type=ValueType.STRING
+        )
+
+
+@description("Configure and manage snmp service")
+class SNMPNamespace(ServiceManageMixIn, ConfigNamespace):
+    """
+    The snmp service namespace allows to configure and manage snmp service.
+    """
+    def __init__(self, name, context):
+        super(SNMPNamespace, self).__init__(name, context)
+        self.config_call = "service.snmp.get_config"
+        self.update_task = 'service.snmp.update'
+        self.name = name
+
+        self.add_property(
+            descr='Enabled',
+            name='enable',
+            get='enable',
+            list=True,
+            type=ValueType.BOOLEAN
+        )
+        self.add_property(
+            descr='Location',
+            name='location',
+            usage= _("""
+            Optional, physical location of the host enclosed within
+            double quotes."""),
+            get='location',
+            type=ValueType.STRING
+        )
+        self.add_property(
+            descr='Contact',
+            name='contact',
+            usage= _("""
+            Optional, email address of administrator enclosed within
+            double quotes."""),
+            get='contact',
+            type=ValueType.STRING
+        )
+        self.add_property(
+            descr='Community',
+            name='community',
+            usage= _("""Value of a community string"""),
+            get='community',
+            type=ValueType.STRING
+        )
+        self.add_property(
+            descr='Enable SNMPv3',
+            name='v3',
+            usage= _("""
+            Can be set to yes or no. When set to yes,
+            support for SNMP version 3 is enabled."""),
+            get='v3',
+            type=ValueType.BOOLEAN
+        )
+        self.add_property(
+            descr='SNMPv3 Username',
+            name='v3_username',
+            usage= _("""
+            Only set if 'v3' is set. Specify the usename=o
+            register with the SNMPv3 service."""),
+            get='v3_username',
+            type=ValueType.STRING
+        )
+        self.add_property(
+            descr='SNMPv3 Password',
+            name='v3_password',
+            usage= _("""
+            Only set if 'v3' is set. Specify a password of
+            at least 8 characters."""),
+            set='v3_password',
+            get=None,
+            list=False,
+            type=ValueType.STRING
+        )
+        self.add_property(
+            descr='SNMPv3 Auth Type',
+            name='v3_auth_type',
+            usage= _("""
+            Only set if 'v3' is set. Specify either
+            MD5 or SHA."""),
+            get='v3_auth_type',
+            enum=['MD5', 'SHA'],
+            type=ValueType.STRING
+        )
+        self.add_property(
+            descr='SNMPv3 Privacy Protocol',
+            name='v3_privacy_protocol',
+            usage= _("""
+            Only set if 'v3' is set. Specify either
+            AES or DES."""),
+            get='v3_privacy_protocol',
+            enum=['AES', 'DES'],
+            type=ValueType.STRING
+        )
+        self.add_property(
+            descr='SNMPv3 Privacy Passphrase',
+            name='v3_privacy_passphrase',
+            usage= _("""
+            Only set if 'v3' is set and 'v3_password' is not
+            set. Specify a passphrase of at least 8
+            characters."""),
+            get=None,
+            set='v3_privacy_passphrase',
+            list=False,
+            type=ValueType.STRING
+        )
+        self.add_property(
+            descr='Auxiliary parameters',
+            name='auxiliary',
+            usage= _("""
+            Optional, additional snmpd.conf(5) parameters. Separate
+            multiple parameters by a space and enclose them between
+            double quotes."""),
+            get='auxiliary',
+            type=ValueType.STRING
+        )
+
+
+@description("Configure and manage smartd service")
+class SMARTDNamespace(ServiceManageMixIn, ConfigNamespace):
+    """
+    The smartd service namespace allows to configure and manage smartd service.
+    """
+    def __init__(self, name, context):
+        super(SMARTDNamespace, self).__init__(name, context)
+        self.config_call = "service.smartd.get_config"
+        self.update_task = 'service.smartd.update'
+        self.name = name
+
+        self.add_property(
+            descr='Enabled',
+            name='enable',
+            get='enable',
+            list=True,
+            type=ValueType.BOOLEAN
+        )
+        self.add_property(
+            descr='Interval',
+            name='interval',
+            usage= _("""
+            Number representing how often, in minutes, to wake
+            up smartd to check to see if any tests have been
+            configured to run."""),
+            get='interval',
+            type=ValueType.NUMBER
+        )
+        self.add_property(
+            descr='Power mode',
+            name='power_mode',
+            usage= _("""
+            Configured tests are not performed if the system enters
+            the specified power mode. Values are: NEVER, SLEEP,
+            STANDBY, or IDLE."""),
+            get='power_mode',
+            enum=[
+                'NEVER',
+                'SLEEP',
+                'STANDBY',
+                'IDLE',
+            ],
+            type=ValueType.STRING
+        )
+        self.add_property(
+            descr='Temperature difference',
+            name='temp_difference',
+            usage= _("""
+            Default of 0 disables this check. Otherwise, reports if
+            the temperature of a drive has changed by the specified
+            number of degrees Celsius since last report."""),
+            get='temp_difference',
+            type=ValueType.NUMBER
+        )
+        self.add_property(
+            descr='Temperature informational',
+            name='temp_informational',
+            usage= _("""
+            By default, this check is disabled. If set, will log
+            an entry of LOG_INFO if the temperature is higher than
+            the specified number of degrees Celsius since the last
+            report."""),
+            get='temp_informational',
+            type=ValueType.NUMBER
+        )
+        self.add_property(
+            descr='Temperature critical',
+            name='temp_critical',
+            usage= _("""
+            By default, this check is disabled. If set, will log
+            an entry of LOG_CRIT and will send an email if the
+            temperature is higher than the specified number of degrees
+            Celsius since the last report."""),
+            get='temp_critical',
+            type=ValueType.NUMBER
+        )
+
+
+@description("Configure and manage webdav service")
+class WebDAVNamespace(ServiceManageMixIn, ConfigNamespace):
+    """
+    The webdav service namespace allows to configure and manage webdav service.
+    """
+    def __init__(self, name, context):
+        super(WebDAVNamespace, self).__init__(name, context)
+        self.config_call = "service.webdav.get_config"
+        self.update_task = 'service.webdav.update'
+        self.name = name
+
+        self.add_property(
+            descr='Enabled',
+            name='enable',
+            get='enable',
+            list=True,
+            type=ValueType.BOOLEAN
+        )
+        self.add_property(
+            descr='Protocol',
+            name='protocol',
+            usage= _("""
+            Set to HTTP (connection always unencrypted), HTTPS
+            (connection always encrypted), or HTTP+HTTPS (both
+            types of connections allowed)."""),
+            get='protocol',
+            type=ValueType.ARRAY,
+            enum=[['HTTP'],
+                      ['HTTPS'],
+                      ['HTTP', 'HTTPS']
+            ],
+            list=True,
+        )
+        self.add_property(
+            descr='Webdav SSL Certificate',
+            name='certificate',
+            usage= _("""The SSL certificate to be used for Secure WebDAV
+            connections. Enclose the certificate between double quotes"""),
+            get='certificate',
+            type=ValueType.STRING,
+            list=True
+        )
+        self.add_property(
+            descr='HTTP Port',
+            name='http_port',
+            usage= _("""
+            Only set if 'protocol' is HTTP or HTTP+HTTPS. Numeric
+            port to be used for unencrypted connections. Do not set a
+            port number already being used by another service."""),
+            get='http_port',
+            type=ValueType.NUMBER,
+        )
+        self.add_property(
+            descr='HTTPS Port',
+            name='https_port',
+            usage= _("""
+            Only set if 'protocol' is HTTPS or HTTP+HTTPS. Numeric
+            port to be used for encrypted connections. Do not set a
+            port number already being used by another service."""),
+            get='https_port',
+            type=ValueType.NUMBER,
+        )
+        self.add_property(
+            descr='Password',
+            name='password',
+            usage= _("""
+            Set a secure password to be used by the webdav user."""),
+            get='password',
+            set='password',
+            type=ValueType.PASSWORD
+        )
+        self.add_property(
+            descr='Authentication mode',
+            name='authentication',
+            usage= _("""
+            Determines whether or not authentication occurs over
+            an encrypted channel. Set either BASIC (unencrypted)
+            or DIGEST (encrypted)."""),
+            get='authentication',
+            enum=[
+                'BASIC',
+                'DIGEST',
+            ],
+            type=ValueType.STRING
+        )
+
+
+@description("Configure and manage rsyncd service")
+class RsyncdNamespace(ServiceManageMixIn, ConfigNamespace):
+    """
+    The rsyncd service namespace allows to configure and manage rsyncd service.
+    """
+    def __init__(self, name, context):
+        super(RsyncdNamespace, self).__init__(name, context)
+        self.config_call = "service.rsyncd.get_config"
+        self.update_task = 'service.rsyncd.update'
+        self.name = name
+
+        self.add_property(
+            descr='Enabled',
+            name='enable',
+            get='enable',
+            list=True,
+            type=ValueType.BOOLEAN
+        )
+        self.add_property(
+            descr='Port',
+            name='port',
+            usage= _("""Number representing the port for rsyncd to
+            listen on."""),
+            get='port',
+            type=ValueType.NUMBER,
+        )
+        self.add_property(
+            descr='Auxiliary',
+            name='auxiliary',
+            usage= _("""
+                Optional, additional rsyncd.conf(5) parameters not provided
+                by other properties. Space delimited list of parameters
+                enclosed between double quotes.
+            """),
+            get='auxiliary',
+            type=ValueType.STRING,
+        )
+
+
 
 @description("Start/stop/restart/reload a service")
 class ServiceManageCommand(Command):
@@ -1787,8 +2256,15 @@ class ServicesNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             DynDnsNamespace('dyndns', self.context),
             IPFSNamespace('ipfs', self.context),
             NFSNamespace('nfs', self.context),
+            ISCSINamespace('iscsi', self.context),
+            LLDPNamespace('lldp', self.context),
+            SNMPNamespace('snmp', self.context),
+            SMARTDNamespace('smartd', self.context),
+            WebDAVNamespace('webdav', self.context),
+            RsyncdNamespace('rsyncd', self.context),
 
         ]
 
 def _init(context):
     context.attach_namespace('/', ServicesNamespace('service-new', context))
+    context.map_tasks('service.*', ServicesNamespace)

@@ -1583,7 +1583,7 @@ class MainLoop(object):
                 else:
                     result = cmd.run(self.context, args, kwargs, opargs)
 
-                return self.eval(token.right, input_data=result)
+                return self.eval(token.right, env=env, path=path, input_data=result)
 
             if isinstance(token, ShellEscape):
                 return self.builtin_commands['shell']().run(

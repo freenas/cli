@@ -1543,6 +1543,153 @@ class DynDnsNamespace(ServiceManageMixIn, ConfigNamespace):
             get='auxiliary'
         )
 
+
+@description("Configure and manage ipfs service")
+class IPFSNamespace(ServiceManageMixIn, ConfigNamespace):
+    """
+    The ipfs service namespace allows to configure and manage dyndns service.
+    """
+    def __init__(self, name, context):
+        super(IPFSNamespace, self).__init__(name, context)
+        self.config_call = "service.ipfs.get_config"
+        self.update_task = 'service.ipfs.update'
+        self.name = name
+
+        self.add_property(
+            descr='Enabled',
+            name='enable',
+            get='enable',
+            list=True,
+            type=ValueType.BOOLEAN
+        )
+        self.add_property(
+            descr='IPFS PATH',
+            name='path',
+            get='path'
+        )
+        self.add_property(
+            descr='IPFS WebUI toggle',
+            name='webui',
+            get='webui',
+            usage= _(
+                "Flag to enable/disable ipfs webui over at http(s)://freenas_machine_ip/ipfsui."
+            ),
+            type=ValueType.BOOLEAN
+        )    
+
+@description("Configure and manage ipfs service")
+class IPFSNamespace(ServiceManageMixIn, ConfigNamespace):
+    """
+    The ipfs service namespace allows to configure and manage dyndns service.
+    """
+    def __init__(self, name, context):
+        super(IPFSNamespace, self).__init__(name, context)
+        self.config_call = "service.ipfs.get_config"
+        self.update_task = 'service.ipfs.update'
+        self.name = name
+
+        self.add_property(
+            descr='Enabled',
+            name='enable',
+            get='enable',
+            list=True,
+            type=ValueType.BOOLEAN
+        )
+
+
+@description("Configure and manage nfs service")
+class NFSNamespace(ServiceManageMixIn, ConfigNamespace):
+    """
+    The nfs service namespace allows to configure and manage dyndns service.
+    """
+    def __init__(self, name, context):
+        super(NFSNamespace, self).__init__(name, context)
+        self.config_call = "service.nfs.get_config"
+        self.update_task = 'service.nfs.update'
+        self.name = name
+
+        self.add_property(
+            descr='Enabled',
+            name='enable',
+            get='enable',
+            list=True,
+            type=ValueType.BOOLEAN
+        )
+        self.add_property(
+            descr='Number of servers',
+            name='servers',
+            usage= _("""
+            When setting this number, do not exceed the number
+            of CPUS shown from running shell "sysctl -n
+            kern.smp.cpus"."""),
+            get='servers',
+            type=ValueType.NUMBER
+        )
+        self.add_property(
+            descr='Enable UDP',
+            name='udp',
+            usage= _("""
+            Can be set to yes or no. When set to yes,
+            older NFS clients that require UDP are supported."""),
+            get='udp',
+            type=ValueType.BOOLEAN
+        )
+        self.add_property(
+            descr='Enable NFSv4',
+            name='v4',
+            usage= _("""
+            Can be set to yes or no. When set to yes,
+            both NFSv3 and NFSv4 are supported."""),
+            get='v4',
+            type=ValueType.BOOLEAN
+        )
+        self.add_property(
+            descr='Enable NFSv4 Kerberos',
+            name='v4_kerberos',
+            usage= _("""
+            Can be set to yes or no. When set to yes,
+            NFS shares will fail if the Kerberos ticket is
+            unavailable."""),
+            get='v4_kerberos',
+            type=ValueType.BOOLEAN
+        )
+        self.add_property(
+            descr='Bind addresses',
+            name='bind_addresses',
+            usage= _("""
+            Space delimited list of IP addresses to listen for NFS
+            requests, placed between double quotes. Unless specified,
+            NFS will listen on all available addresses."""),
+            get='bind_addresses',
+            type=ValueType.SET
+        )
+        self.add_property(
+            descr='Mountd port',
+            name='mountd_port',
+            usage= _("""
+            Number representing the port for mountd(8) to bind to."""),
+            get='mountd_port',
+            type=ValueType.NUMBER
+        )
+        self.add_property(
+            descr='RPC statd port',
+            name='rpcstatd_port',
+            usage= _("""
+            Number representing the port for rpcstatd(8) to bind to."""),
+            get='rpcstatd_port',
+            type=ValueType.NUMBER
+        )
+        self.add_property(
+            descr='RPC Lockd port',
+            name='rpclockd_port',
+            usage= _("""
+            Number representing the port for rpclockd(8) to bind to."""),
+            get='rpclockd_port',
+            type=ValueType.NUMBER
+        )
+
+        
+
 @description("Start/stop/restart/reload a service")
 class ServiceManageCommand(Command):
     """
@@ -1638,7 +1785,8 @@ class ServicesNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             AFPNamespace('afp', self.context),
             SMBNamespace('smb', self.context),
             DynDnsNamespace('dyndns', self.context),
-
+            IPFSNamespace('ipfs', self.context),
+            NFSNamespace('nfs', self.context),
 
         ]
 

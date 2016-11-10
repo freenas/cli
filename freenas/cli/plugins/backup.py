@@ -249,9 +249,9 @@ class BackupQueryCommand(Command):
             ),
             Table(
                 manifest['snapshots'], [
-                    Table.Column('Snapshot name', 'name', ValueType.STRING),
-                    Table.Column('Incremental', 'incremental', ValueType.BOOLEAN),
-                    Table.Column('Created at', 'created_at', ValueType.TIME)
+                    Table.Column('Snapshot name', 'name', ValueType.STRING, 60),
+                    Table.Column('Incremental', 'incremental', ValueType.BOOLEAN, 15),
+                    Table.Column('Created at', 'created_at', ValueType.TIME, 25)
                 ]
             )
         )

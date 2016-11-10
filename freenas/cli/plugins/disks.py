@@ -332,7 +332,7 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityN
         self.entity_commands = lambda this: {
             'format': FormatDiskCommand(this),
             'erase': EraseDiskCommand(this),
-            'identify': IdentifyCommand(this)
+            'identify': IdentifyDiskCommand(this)
         }
 
         self.extra_commands = {

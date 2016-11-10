@@ -54,6 +54,7 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityN
         self.entity_subscriber_name = 'disk'
         self.primary_key_name = 'name'
         self.update_task = 'disk.update'
+        self.default_sort = 'path'
         self.extra_query_params = [
             ('online', '=', True)
         ]

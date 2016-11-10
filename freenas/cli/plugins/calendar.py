@@ -461,7 +461,7 @@ class ScrubNamespace(CalendarTasksNamespaceBaseClass):
             get=lambda obj: self.get_task_args(obj, 'volume'),
             list=True,
             set=lambda obj, val: self.set_task_args(obj, val, 'volume'),
-            enum=[v for v in self.query([], {'subscriber': 'volume', 'select': 'id'})]
+            enum=lambda: self.query([], {'subscriber': 'volume', 'select': 'id'})
         )
 
 
@@ -804,7 +804,7 @@ class SmartNamespace(CalendarTasksNamespaceBaseClass):
             list=True,
             type=ValueType.SET,
             set=lambda obj, val: self.set_disks(obj, val),
-            enum=[d for d in self.query([], {'subscriber': 'disk', 'select': 'name'})]
+            enum=lambda: self.query([], {'subscriber': 'disk', 'select': 'name'})
         )
 
         self.add_property(
@@ -1252,7 +1252,7 @@ class BackupNamespace(CalendarTasksNamespaceBaseClass):
             set=lambda obj, val: self.set_task_args(
                 obj, objname2id(self.context, 'backup', val), 'backup'
             ),
-            enum=lambda: [e for e in self.query([], {'subscriber': 'backup', 'select': 'name'})]
+            enum=lambda: self.query([], {'subscriber': 'backup', 'select': 'name'})
         )
 
 

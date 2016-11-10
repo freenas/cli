@@ -32,7 +32,7 @@ from freenas.cli.namespace import (
     CommandException, NestedEntityMixin, ItemNamespace, EntitySubscriberBasedLoadMixin
 )
 from freenas.cli.output import ValueType
-from freenas.cli.utils import TaskPromise
+from freenas.cli.utils import TaskPromise, objname2id, objid2name
 from freenas.utils import first_or_default
 from freenas.utils import query as q
 
@@ -117,6 +117,7 @@ class CalendarTasksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             ReplicationNamespace('replication', self.context),
             CheckUpdateNamespace('check_update', self.context),
             CommandNamespace('command', self.context),
+            BackupNamespace('backup', self.context),
         ]
 
 
@@ -1185,6 +1186,76 @@ class CommandNamespace(CalendarTasksNamespaceBaseClass):
         )
 
 
+class BackupNamespace(CalendarTasksNamespaceBaseClass):
+    """
+    Backup namespace provides commands to create a periodic job executing 'sync' command
+    of a previously defined 'backup' task.
+    The 'backup' task must first be created in the '/backup' namespace.
+
+    Usage:
+        create <name> backup=<volume> <property>=<value>
+
+    Examples:
+        create my_periodic_backup backup=<backup_entity_name> schedule={"hour":2,"day_of_week":5}
+    """
+    def __init__(self, name, context):
+        super(BackupNamespace, self).__init__(name, context)
+        self.extra_query_params = [('task', '=', 'backup.sync')]
+        self.required_props.extend(['backup'])
+        self.skeleton_entity['task'] = 'backup.sync'
+        self.task_args_helper = ['backup']
+        self.localdoc['CreateEntityCommand'] = ("""\
+            Usage: create <name> backup=<backup_name> <property>=<value>
+
+            Examples: create sshbackup_job backup=mysshbackup
+                      create s3backup_job backup=mys3backup schedule={"hour":2,"day_of_week":5}
+
+            Creates a backup calendar task. For a list of properties, see 'help properties'.""")
+        self.entity_localdoc['SetEntityCommand'] = ("""\
+            Usage: set <property>=<value> ...
+
+            Examples: set name=otherbackup
+                      set enabled=true
+
+            Sets a backup calendar task property. For a list of properties, see 'help properties'.""")
+        self.entity_localdoc['GetEntityCommand'] = ("""\
+            Usage: get <field>
+
+            Examples:
+                get backup
+                get name
+
+            Display value of specified field.""")
+        self.entity_localdoc['EditEntityCommand'] = ("""\
+            Usage: edit <field>
+
+            Examples: edit name
+
+            Opens the default editor for the specified property. The default editor
+            is inherited from the shell's $EDITOR which can be set from the shell.
+            For a list of properties for the current namespace, see 'help properties'.""")
+        self.localdoc['ListCommand'] = ("""\
+            Usage: show
+
+            Lists all smart tasks. Optionally, filter or sort by property.
+            Use 'help properties' to list available properties.
+
+            Examples:
+                show
+                show | search name == somename""")
+
+        self.add_property(
+            descr='Backup',
+            name='backup',
+            get=lambda obj: objid2name(self.context, 'backup', self.get_task_args(obj, 'backup')),
+            list=True,
+            set=lambda obj, val: self.set_task_args(
+                obj, objname2id(self.context, 'backup', val), 'backup'
+            ),
+            enum=lambda: [e for e in self.query([], {'subscriber': 'backup', 'select': 'name'})]
+        )
+
+
 TASK_TYPES = {
     'scrub': 'volume.scrub',
     'smart': 'disk.parallel_test',
@@ -1192,7 +1263,8 @@ TASK_TYPES = {
     'snapshot': 'volume.snapshot_dataset',
     'replication': 'replication.replicate_dataset',
     'check_update': 'update.checkfetch',
-    'command': 'calendar_task.command'
+    'command': 'calendar_task.command',
+    'backup': 'backup.sync'
 }
 
 

@@ -25,8 +25,8 @@ function network_hard_create() {
 		    append(_network_hard_narr, _x)
 		}
 	}
-       _arr = $(network host show | search name ~= ${_test_host + "[A-Z]+"})
-        maybe_barf(length(_arr) == _network_hard_count, "+network-hard#2", "Host entry count of " + str(length(_arr)) + " does not match " + str(_network_hard_count))
+        _l = count_by_name($(network host), _test_host + "[A-Z]+")
+        maybe_barf(_l == _network_hard_count, "+network-hard#2", "Host entry count of " + str(_l) + " does not match " + str(_network_hard_count))
 }
 
 function network_hard_destroy() {
@@ -36,4 +36,6 @@ function network_hard_destroy() {
             @$(i delete)
             maybe_barf(_success, "-network-hard#1", "Unable to delete host entry " + _n)
 	}
+        _l = count_by_name($(network host), _test_host + "[A-Z]+")
+        maybe_barf(_l == 0, "-network-hard#2", "Unable to delete all host entries: " + str(_l) + " remaining.")
 }

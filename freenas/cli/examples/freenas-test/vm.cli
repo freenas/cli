@@ -46,7 +46,8 @@ function vm_hard_create() {
 	    }
 	    
 	}
-	maybe_barf(length($(vm show | search name ~= ${_vm_name + "[0-9]+"})) == _vm_hard_count, "+vm-hard#2", "number of VMs found does not = " + str(_vm_hard_count))
+	_l = count_by_name($(vm), _vm_name + "[0-9]+")
+	maybe_barf(_l == _vm_hard_count, "+vm-hard#2", "VM count of " + str(_l) + " does not match " + str(_vm_hard_count))
 }
 
 function vm_hard_destroy() {
@@ -56,4 +57,6 @@ function vm_hard_destroy() {
 	    @$(i delete)
 	    maybe_barf(_success, "-vm-hard#1", "Unable to delete VM " + _n)
 	}
+	_l = count_by_name($(vm), _vm_name + "[0-9]+")
+	maybe_barf(_l == 0, "-vm-hard#2", "Unable to delete all VMs: " + str(_l) + " remaining.")
 }

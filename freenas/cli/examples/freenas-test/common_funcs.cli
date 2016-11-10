@@ -23,7 +23,7 @@ function maybe_die(flag, test, str) {
 }	
 
 function find_by_name(where, what) {
-	return $(where show | search name ~= what)
+	return $(where show | search name ~= ${what})
 }
 
 function count_by_name(where, name) {
@@ -35,7 +35,7 @@ function action_by_name(where, name, action) {
 	 x = find_by_name(name, where)
 	 if (x != null) {
 	    for (i in x) {
-	    	@$(i["name"] action)
+	    	@$(i["name"] ${action})
 	    }
 	 }
 }
@@ -49,7 +49,7 @@ function set_sentinel() {
 	if (test_sentinel()) {
 	   print("Warning: Sentinel tag " + _sentinel_tag + " was already set.")
 	} else {
-	   @$(system set tags =+ _sentinel_tag)
+	   @$(system set tags =+ ${_sentinel_tag})
 	   maybe_barf(_success, "set_sentinel", "Unable to set tag " + _sentinel_tag)
 	}
 }
@@ -58,7 +58,7 @@ function clear_sentinel() {
 	if (not test_sentinel()) {
 	   print("Warning: Sentinel tag " + _sentinel_tag + " not set.")
 	} else {
-	   @$(system set tags =- _sentinel_tag)
+	   @$(system set tags =- ${_sentinel_tag})
 	   maybe_barf(_success, "clear_sentinel", "Unable to clear tag " + _sentinel_tag)
 	}
 }
@@ -69,14 +69,11 @@ function nuke_from_orbit() {
 	# This should take care of snapshots / datasets / VMs / containers too
 	volume ${VOL_NAME} delete
 
-	for (i in $(account user show | search name ~= ${TEST_USER + ".*"})) { account user ${i["name"]} delete }
-
-	for (i in $(account group show | search name~= ${TEST_USER + ".*"})) { account group ${i["name"]} delete }
-	for (i in $(account group show | search name~= ${TEST_GROUP + ".*"})) { account group ${i["name"]} delete }
-
-	for (i in $(calendar command show | search name~= ${_cmd_name + ".*"})) {calendar command ${i["name"]} delete}
-	for (i in $(calendar scrub show | search name~= ${_scrub_name + ".*"})) {calendar scrub ${i["name"]} delete}
-
-	for (i in $(boot environment show | search name~= ${_test_bootenv + ".*"})) {boot environment ${i["name"]} delete}
+	action_by_name($(account user), TEST_USER + ".*", "delete")
+	action_by_name($(account group), TEST_USER + ".*", "delete")
+	action_by_name($(account group), TEST_GROUP + ".*", "delete")
+	action_by_name($(calendar command), _cmd_name + ".*", "delete")
+	action_by_name($(calendar scrub), _scrub_name + ".*", "delete")
+	action_by_name($(boot environment), _test_bootenv + ".*", "delete")
 }
 

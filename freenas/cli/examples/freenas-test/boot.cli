@@ -37,8 +37,8 @@ function boot_hard_create() {
 	       append(_boot_hard_arr, _x)
 	    }
 	}
-	_arr = $(boot environment show | search name ~= ${_test_bootenv + "[0-9]+"})
-	maybe_barf(length(_arr) == _boot_hard_count, "+boot-hard#2", "boot environment count of " + str(length(_arr)) + " does not match " + str(_boot_hard_count))
+	_l = count_by_name($(boot environment), _test_bootenv + "[0-9]+")
+	maybe_barf(_l == _boot_hard_count, "+boot-hard#2", "boot environment count of " + str(_l) + " does not match " + str(_boot_hard_count))
 }
 
 function boot_hard_destroy() {

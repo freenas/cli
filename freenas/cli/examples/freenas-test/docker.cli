@@ -48,7 +48,8 @@ function container_hard_create() {
 		maybe_barf(_success, "+docker-hard#3", "Unable to stop container " + i)
 	    }
 	}
-	maybe_barf(length($(docker container show | search name ~= ${_container_name + "[0-9]+"})) == _container_hard_count, "+docker-hard#2", "number of Containers found does not = " + str(_container_hard_count))
+	_l = count_by_name($(docker container), _container_name + "[0-9]+")
+	maybe_barf(_l == _container_hard_count, "+docker-hard#2", "Container count of " + str(_l) + " does not match " + str(_container_hard_count))
 }
 
 function container_hard_destroy() {
@@ -58,6 +59,8 @@ function container_hard_destroy() {
 	    @$(i delete)
 	    maybe_barf(_success, "-docker-hard#1", "Unable to delete container " + _n)
 	}
+	_l = count_by_name($(docker container), _container_name + "[0-9]+")
+	maybe_barf(_l == 0, "-docker-hard#2", "Unable to delete all Containers:  " + str(_l) + " remaining.")
 }
 
 

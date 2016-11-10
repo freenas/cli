@@ -39,8 +39,8 @@ function tunable_hard_create() {
 		append(_tunable_hard_arr, _x)
 	    }
 	}
-	_arr = $(tunable show | search name ~= ${_tunable_var_rc + "[0-9]+"})
-	maybe_barf(length(_arr) == _tunable_hard_count, "+tunable-hard#2", "Tunable count of " + str(length(_arr)) + " does not match " + str(_tunable_hard_count))
+	_l = count_by_name($(tunable), _tunable_var_rc + "[0-9]+")
+	maybe_barf(_l == _tunable_hard_count, "+tunable-hard#2", "Tunable count of " + str(_l) + " does not match " + str(_tunable_hard_count))
 }
 
 function tunable_hard_destroy() {
@@ -50,4 +50,6 @@ function tunable_hard_destroy() {
 	    @$(i delete)
 	    maybe_barf(_success, "-tunable-hard#1", "Unable to delete tunable " + _n)
 	}
+	_l = count_by_name($(tunable), _tunable_var_rc + "[0-9]+")
+	maybe_barf(_l == 0, "0tunable-hard#2", "Unable to delete all tunables: " + str(_l) + " remaining.")
 }

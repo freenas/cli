@@ -68,8 +68,8 @@ function volume_hard_create() {
 	    	append(_volume_hard_dset_arr, _x)
 	    }
 	}
-	_arr = $(VOL_OBJECT dataset show | search name ~= ${_dataset_name + "-[0-9]*"})
-	maybe_barf(length(_arr) == _volume_hard_count, "+volume-hard#2", "Dataset count of " + str(length(_arr)) + " does not match " + str(_volume_hard_count))
+	_l = count_by_name($(VOL_OBJECT dataset), _dataset_name + "-[0-9]*")
+	maybe_barf(_l == _volume_hard_count, "+volume-hard#2", "Dataset count of " + str(_l) + " does not match " + str(_volume_hard_count))
 
 	for (i = 0; i < _volume_hard_count; i = i + 1) {
 	    _x = @$(VOL_OBJECT snapshot create dataset=${VOL_NAME} recursive=yes name=${VOL_NAME + "@" + _snap_name + "-" + str(i)})
@@ -77,8 +77,8 @@ function volume_hard_create() {
 	    	append(_volume_hard_snap_arr, _x)
 	    }
 	}
-	_arr = $(VOL_OBJECT snapshot show | search name ~= ${VOL_NAME + "@" + _snap_name + "-[0-9]*"})
-	maybe_barf(length(_arr) == _volume_hard_count, "+volume-hard#3", "Snapshot count of " + str(length(_arr)) + " does not match " + str(_volume_hard_count))
+	_l = count_by_name($(VOL_OBJECT snapshot), VOL_NAME + "@" + _snap_name + "-[0-9]*")
+	maybe_barf(_l == _volume_hard_count, "+volume-hard#3", "Snapshot count of " + str(_l) + " does not match " + str(_volume_hard_count))
 }
 
 function volume_hard_destroy() {
@@ -87,9 +87,14 @@ function volume_hard_destroy() {
 	    @$(i delete)
 	    maybe_barf(_success, "-volume-hard#1", "Unable to delete dataset " + _n)
 	}
+	_l = count_by_name($(VOL_OBJECT dataset), _dataset_name + "-[0-9]*")
+	maybe_barf(_l == 0, "-volume-hard#2", "Unable to delete all datasets: " + str(_l) + " remaining.")
+
 	for (i in _volume_hard_snap_arr) {
 	    _n = $(i get name)
 	    @$(i delete recursive=yes)
 	    maybe_barf(_success, "-account-hard#2", "Unable to delete snapshot " + _n)
 	}
+	_l = count_by_name($(VOL_OBJECT snapshot), VOL_NAME + "@" + _snap_name + "-[0-9]*")
+	maybe_barf(_l == 0, "-volume-hard#3", "Unable to delete all snapshots: " + str(_l) + " remaining.")
 }

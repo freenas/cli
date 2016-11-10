@@ -23,21 +23,20 @@ function maybe_die(flag, test, str) {
 }	
 
 function find_by_name(where, what) {
-	return $(where show | search name ~= ${what})
+	return eval(sprintf("%s show | search name ~= \"%s\"", where, what))
 }
 
 function count_by_name(where, name) {
-	 _x = find_by_name(where, name)
-	 return length(_x)
+	return length(find_by_name(where, name))
 }
 
 function action_by_name(where, name, action) {
-	 x = find_by_name(name, where)
-	 if (x != null) {
+	x = find_by_name(name, where)
+	if (x != null) {
 	    for (i in x) {
 	    	@$(i["name"] ${action})
 	    }
-	 }
+	}
 }
 
 # Functions to detect if tests are already running on a machine.

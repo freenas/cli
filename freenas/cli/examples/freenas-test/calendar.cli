@@ -46,7 +46,7 @@ function calendar_hard_create() {
 	       append(_cal_hard_arr, _x);
             }
 	}
-	_l = count_by_name($(calendar command), _cmd_name + "[0-9]+")
+	_l = count_by_name("calendar command", _cmd_name + "[0-9]+")
 	maybe_barf(_l == _cal_hard_count, "+calendar-hard#2", "Calendar command count of " + str(_l) + " does not match " + str(_cal_hard_count))
 }
 
@@ -57,6 +57,6 @@ function calendar_hard_destroy() {
 	    @$(i delete)
 	    maybe_barf(_success, "-calendar-hard#1", "Unable to delete calendar entry " + _n)
 	}
-	_l = count_by_name($(calendar command), _cmd_name + "[0-9]+")
+	_l = count_by_name("calendar command", _cmd_name + "[0-9]+")
 	maybe_barf(_l == 0, "-calendar-hard#2", "Unable to delete all calendar entries: " + str(_l) + " remaining.")
 }

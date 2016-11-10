@@ -52,6 +52,7 @@ class BackupSSHPropertiesMixin(BaseVariantMixin):
             set=lambda o, v: set_related(self.context, 'peer', o, 'properties.peer', v),
             list=False,
             condition=lambda o: o['provider'] == 'ssh',
+            enum=lambda: [e for e in self.query([], {'subscriber': 'peer', 'select': 'name'})],
         )
 
         self.add_property(

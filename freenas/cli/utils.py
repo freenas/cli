@@ -239,6 +239,16 @@ def parse_timedelta(s):
     return delta
 
 
+def objname2id(context, subscriber, name):
+    entity = context.entity_subscribers[subscriber].query(('name', '=', name), single=True)
+    return entity['id'] if entity else None
+
+
+def objid2name(context, subscriber, id):
+    entity = context.entity_subscribers[subscriber].query(('id', '=', id), single=True)
+    return entity['name'] if entity else None
+
+
 def get_localtime_offset():
     localtz = dateutil.tz.tzlocal()
     localoffset = localtz.utcoffset(datetime.now(localtz))

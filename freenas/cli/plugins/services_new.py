@@ -31,7 +31,7 @@ from freenas.cli.namespace import (
     Command, description, ConfigNamespace
 )
 
-from freenas.cli.output import Sequence, ValueType
+from freenas.cli.output import Sequence, ValueType, Table
 from freenas.cli.utils import TaskPromise
 
 t = gettext.translation('freenas-cli', fallback=True)
@@ -45,7 +45,8 @@ class ServiceManageMixIn(object):
             'start': ServiceManageCommand(self, 'start'),
             'stop': ServiceManageCommand(self, 'stop'),
             'restart': ServiceManageCommand(self, 'restart'),
-            'reload': ServiceManageCommand(self, 'reload')
+            'reload': ServiceManageCommand(self, 'reload'),
+            'status': ServiceStatusCommand(self)
         }
 
 
@@ -2118,7 +2119,6 @@ class WebDAVNamespace(ServiceManageMixIn, ConfigNamespace):
             type=ValueType.STRING
         )
 
-
 @description("Configure and manage rsyncd service")
 class RsyncdNamespace(ServiceManageMixIn, ConfigNamespace):
     """
@@ -2158,7 +2158,6 @@ class RsyncdNamespace(ServiceManageMixIn, ConfigNamespace):
         )
 
 
-
 @description("Start/stop/restart/reload a service")
 class ServiceManageCommand(Command):
     """
@@ -2191,6 +2190,25 @@ class ServiceManageCommand(Command):
         )
 
         return TaskPromise(context, tid)
+
+
+@description("Displays service status")
+class ServiceStatusCommand(Command):
+    """
+    Usage: status
+    """
+    def __init__(self, parent):
+        self.parent = parent
+        self.service_name = parent.name
+
+    def run(self, context, args, kwargs, opargs):
+        service = context.entity_subscribers['service'].query(
+            ('name', '=', self.service_name), single=True
+        )
+        return Table([service], [
+            Table.Column('Sate', 'state')
+
+        ])
 
 
 @description("Configure and manage services")

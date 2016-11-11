@@ -86,6 +86,7 @@ class ImportCertificateCommand(Command):
             NullComplete('privatekey_path='),
         ]
 
+
 @description("Exports Certificate/CA")
 class ExportCertificateCommand(Command):
     """
@@ -116,7 +117,6 @@ class ExportCertificateCommand(Command):
             p = Path(PurePath(kwargs['path']).joinpath(self.parent.entity['name']).with_suffix('.key'))
             with p.open('w') as f:
                 f.writelines(self.parent.entity['privatekey'])
-
 
     def complete(self, context, **kwargs):
         return [
@@ -348,7 +348,7 @@ class CryptoNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Entity
             type=ValueType.NUMBER,
             usersetable=False,
             list=False,
-            condition = lambda e: e['type'] not in (None, ),
+            condition=lambda e: e['type'] not in (None, ),
         )
 
         self.add_property(
@@ -362,7 +362,7 @@ class CryptoNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Entity
             enum=['SHA1', 'SHA224', 'SHA256', 'SHA384', 'SHA512'],
             usersetable=False,
             list=False,
-            condition = lambda e: e['type'] not in (None, ),
+            condition=lambda e: e['type'] not in (None, ),
         )
 
         self.add_property(
@@ -375,7 +375,7 @@ class CryptoNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Entity
             """),
             usersetable=False,
             list=True,
-            condition = lambda e: e['type'] not in (None, ),
+            condition=lambda e: e['type'] not in (None, ),
         )
 
         self.add_property(
@@ -388,7 +388,7 @@ class CryptoNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Entity
             """),
             usersetable=False,
             list=True,
-            condition = lambda e: e['type'] not in (None, ),
+            condition=lambda e: e['type'] not in (None, ),
         )
 
         self.add_property(
@@ -401,7 +401,7 @@ class CryptoNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Entity
             type=ValueType.NUMBER,
             usersetable=False,
             list=False,
-            condition = lambda e: e['type'] not in (None, ),
+            condition=lambda e: e['type'] not in (None, ),
         )
 
         self.add_property(
@@ -413,7 +413,7 @@ class CryptoNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Entity
             Country of the organization"""),
             usersetable=False,
             list=False,
-            condition = lambda e: e['type'] not in (None, ),
+            condition=lambda e: e['type'] not in (None, ),
         )
 
         self.add_property(
@@ -426,7 +426,7 @@ class CryptoNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Entity
             """),
             usersetable=False,
             list=False,
-            condition = lambda e: e['type'] not in (None, ),
+            condition=lambda e: e['type'] not in (None, ),
         )
 
         self.add_property(
@@ -439,7 +439,7 @@ class CryptoNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Entity
             """),
             usersetable=False,
             list=False,
-            condition = lambda e: e['type'] not in (None, ),
+            condition=lambda e: e['type'] not in (None, ),
         )
 
         self.add_property(
@@ -452,7 +452,7 @@ class CryptoNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Entity
             """),
             usersetable=False,
             list=False,
-            condition = lambda e: e['type'] not in (None, ),
+            condition=lambda e: e['type'] not in (None, ),
         )
 
         self.add_property(
@@ -465,7 +465,7 @@ class CryptoNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Entity
             """),
             usersetable=False,
             list=False,
-            condition = lambda e: e['type'] not in (None, ),
+            condition=lambda e: e['type'] not in (None, ),
         )
 
         self.add_property(
@@ -478,7 +478,7 @@ class CryptoNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Entity
             """),
             usersetable=False,
             list=False,
-            condition = lambda e: e['type'] not in (None, ),
+            condition=lambda e: e['type'] not in (None, ),
         )
 
         self.primary_key = self.get_mapping('name')

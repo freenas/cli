@@ -68,11 +68,11 @@ function nuke_from_orbit() {
 	# This should take care of snapshots / datasets / VMs / containers too
 	volume ${VOL_NAME} delete
 
-	action_by_name($(account user), TEST_USER + ".*", "delete")
-	action_by_name($(account group), TEST_USER + ".*", "delete")
-	action_by_name($(account group), TEST_GROUP + ".*", "delete")
-	action_by_name($(calendar command), _cmd_name + ".*", "delete")
-	action_by_name($(calendar scrub), _scrub_name + ".*", "delete")
-	action_by_name($(boot environment), _test_bootenv + ".*", "delete")
+	action_by_name("account user", TEST_USER + ".*", "delete")
+	action_by_name("account group", TEST_USER + ".*", "delete")
+	action_by_name("account group", TEST_GROUP + ".*", "delete")
+	action_by_name("calendar command", _cmd_name + ".*", "delete")
+	action_by_name("calendar scrub", _scrub_name + ".*", "delete")
+	action_by_name("boot environment", _test_bootenv + ".*", "delete")
 }
 

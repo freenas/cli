@@ -31,10 +31,10 @@ function count_by_name(where, name) {
 }
 
 function action_by_name(where, name, action) {
-	x = find_by_name(name, where)
+	x = find_by_name(where, name)
 	if (x != null) {
 	    for (i in x) {
-	    	@$(i["name"] ${action})
+	    	eval(sprintf("%s %s %s", where, i["name"], action))
 	    }
 	}
 }

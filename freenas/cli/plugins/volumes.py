@@ -1457,7 +1457,7 @@ class VMwareDatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin
         self.add_property(
             descr='VM filter entries',
             name='vm_filter_entries',
-            get='vm_filter__entries',
+            get='vm_filter_entries',
             list=False,
             type=ValueType.SET
         )

@@ -445,11 +445,17 @@ class DockerImageNamespace(EntitySubscriberBasedLoadMixin, DockerUtilsMixin, Ent
             DockerImageNamespace.default_images.extend(list(i))
 
         def fetch(collection):
-            context.call_async(
-                'docker.collection.get_entries',
-                lambda r: refresh_images(r),
-                collection
-            )
+            if collection:
+                collection_entity = context.entity_subscribers['docker.collection'].query(
+                    ('id', '=', collection),
+                    single=True
+                )
+                if collection_entity:
+                    context.call_async(
+                        'docker.collection.get_entries',
+                        lambda r: refresh_images(r),
+                        collection
+                    )
 
         context.call_async(
             'docker.config.get_config',

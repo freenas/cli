@@ -2242,7 +2242,6 @@ class ServicesNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         super(ServicesNamespace, self).__init__(name, context)
         self.entity_subscriber_name = 'service'
         self.save_key_name = 'id'
-        self.update_task = 'service.update'
         self.extra_query_params = [('builtin', '=', False)]
         self.primary_key = self.get_mapping('name')
         self.allow_edit = False

@@ -5,7 +5,7 @@
 _alpine_container=null
 _container_name="docker_test_container"
 _image_name="freenas/alpine"
-_container_hard_count=20
+_container_hard_count=10
 _container_arr = []
 
 function docker_create() {

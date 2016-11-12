@@ -453,6 +453,7 @@ class UPSNamespace(ServiceManageMixIn, ConfigNamespace):
 
         self.extra_commands.update({
             'get_usb_devices': UPSDevicesCommand(),
+            'get_ups_drivers': UPSDriversCommand(),
         })
 
         self.add_property(
@@ -635,6 +636,21 @@ class UPSDevicesCommand(Command):
 
         return Table(usb_devices, [
             Table.Column('Device', 'device'),
+            Table.Column('Description', 'description'),
+
+        ])
+
+class UPSDriversCommand(Command):
+    """
+    Usage: get_ups_drivers
+
+    Provides a list of avaliable ups drivers.
+    """
+    def run(self, context, args, kwargs, opargs):
+        usb_devices = context.call_sync('service.ups.drivers')
+
+        return Table(usb_devices, [
+            Table.Column('Driver name', 'driver_name'),
             Table.Column('Description', 'description'),
 
         ])

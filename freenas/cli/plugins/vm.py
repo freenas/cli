@@ -196,6 +196,7 @@ class VMConfigNamespace(ConfigNamespace):
             template_sources = []
             for i in v:
                 template_sources.append({
+                    'id': i.replace('/', '-'),
                     'driver': 'git',
                     'url': i
                 })

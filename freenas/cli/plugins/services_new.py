@@ -451,6 +451,10 @@ class UPSNamespace(ServiceManageMixIn, ConfigNamespace):
         self.update_task = 'service.ups.update'
         self.name = name
 
+        self.extra_commands.update({
+            'get_usb_devices': UPSDevicesCommand(),
+        })
+
         self.add_property(
             descr='Enabled',
             name='enable',
@@ -617,6 +621,23 @@ class UPSNamespace(ServiceManageMixIn, ConfigNamespace):
             get='auxiliary',
             type=ValueType.STRING,
         )
+
+
+@description("Provides a list of attached USB devices")
+class UPSDevicesCommand(Command):
+    """
+    Usage: get_usb_devices
+
+    Provides a list of attached USB devices.
+    """
+    def run(self, context, args, kwargs, opargs):
+        usb_devices = context.call_sync('service.ups.get_usb_devices')
+
+        return Table(usb_devices, [
+            Table.Column('Device', 'device'),
+            Table.Column('Description', 'description'),
+
+        ])
 
 
 @description("Configure and manage Consul service")

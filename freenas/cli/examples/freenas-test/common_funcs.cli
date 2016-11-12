@@ -27,7 +27,8 @@ function find_by_name(where, name) {
 }
 
 function count_by_name(where, name) {
-	return length(find_by_name(where, name))
+	_x = find_by_name(where, name)
+	return length(_x)
 }
 
 function action_by_name(where, name, action) {

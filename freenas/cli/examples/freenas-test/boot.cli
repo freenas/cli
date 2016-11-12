@@ -3,7 +3,7 @@
 
 _test_bootenv="_test_BE"
 _boot_env = none
-_boot_hard_count = 10
+_boot_hard_count = 5
 _boot_hard_arr = []
 
 function boot_create() {

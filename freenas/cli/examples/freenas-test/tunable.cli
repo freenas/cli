@@ -13,11 +13,11 @@ _tunable_hard_arr = []
 
 function tunable_create() {
 	print(">>> Starting tunable tests")
-	@$(tunable create type=LOADER var=${_tunable_var_loader} value=${_tunable_val_loader})
+	@$(tunable create type=LOADER name=${_tunable_var_loader} value=${_tunable_val_loader})
 	maybe_barf(_success, "tunable#1", "Unable to create loader variable " + _tunable_var_loader)
-	@$(tunable create type=RC var=${_tunable_var_rc} value=${_tunable_val_rc})
+	@$(tunable create type=RC name=${_tunable_var_rc} value=${_tunable_val_rc})
 	maybe_barf(_success, "tunable#2", "Unable to create rc variable " + _tunable_var_rc)
-	@$(tunable create type=SYSCTL var=${_tunable_var_sysctl} value=${_tunable_val_sysctl})
+	@$(tunable create type=SYSCTL name=${_tunable_var_sysctl} value=${_tunable_val_sysctl})
 	maybe_barf(_success, "tunable#3", "Unable to set sysctl variable " + _tunable_var_sysctl)
 }
 
@@ -34,7 +34,7 @@ function tunable_destroy() {
 function tunable_hard_create() {
 	print(">>> Starting tunable stress tests")
 	for (i in mapf(range(0, _tunable_hard_count), _tunable_var_rc + "%d")) {
-	    _x = @$(tunable create type=RC var=${i} value=${_tunable_val_rc})
+	    _x = @$(tunable create type=RC name=${i} value=${_tunable_val_rc})
 	    if (not maybe_barf(_success, "tunable-hard#1", "Unable to create RC tunable " + i)) {
 		append(_tunable_hard_arr, _x)
 	    }

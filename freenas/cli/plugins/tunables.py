@@ -68,7 +68,7 @@ class TunablesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Enti
 
         self.add_property(
             descr='Variable',
-            name='var',
+            name='name',
             usage=(_('Typically name of sysctl or driver to load, as indicated by its man page')),
             get='var',
             set='var',
@@ -109,7 +109,7 @@ class TunablesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Enti
             type=ValueType.BOOLEAN,
             list=True)
 
-        self.primary_key = self.get_mapping('var')
+        self.primary_key = self.get_mapping('name')
 
 
 def _init(context):

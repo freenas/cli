@@ -185,6 +185,23 @@ class VMConfigNamespace(ConfigNamespace):
         self.config_call = "vm.config.get_config"
         self.update_task = 'vm.config.update'
 
+        def get_templates(o):
+            result = []
+            for i in o['additional_templates']:
+                result.append(i['url'])
+
+            return result
+
+        def set_templates(o, v):
+            template_sources = []
+            for i in v:
+                template_sources.append({
+                    'driver': 'git',
+                    'url': i
+                })
+
+            o['additional_templates'] = template_sources
+
         self.add_property(
             descr='Management network',
             name='management_network',
@@ -197,6 +214,15 @@ class VMConfigNamespace(ConfigNamespace):
             name='nat_network',
             get='network.nat',
             usage=_("The address range from which VM's with natted nics will be allocated ips")
+        )
+
+        self.add_property(
+            descr='Additional templates',
+            name='additional_templates',
+            get=get_templates,
+            set=set_templates,
+            type=ValueType.ARRAY,
+            usage=_("Array of additional VM template Git repositories")
         )
 
 

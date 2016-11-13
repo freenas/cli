@@ -16,7 +16,7 @@ function docker_create() {
 	if (_x != _container_name) {
 	    maybe_barf(_success, "+docker#2", "docker container name is not " + _container_name)
 	}
-	_y = $(docker image show | find name ~= alpine)
+	_y = $(docker image show | find name ~= ${_image_name})
 	maybe_barf(_y == "freenas/alpine:latest", "+docker#3", "docker image for alpine not found")
 	@$(_alpine_container start)
 	maybe_barf(_success, "+docker#3", "unable to start docker container " + _container_name)

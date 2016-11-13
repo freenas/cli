@@ -889,6 +889,10 @@ class Function(object):
         self.exp = exp
         self.env = env
 
+    @property
+    def value(self):
+        return str(self)
+
     def __call__(self, env, *args):
         env = Environment(self.context, self.env, zip(self.param_names, args))
         try:

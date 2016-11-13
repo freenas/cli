@@ -53,7 +53,7 @@ from six.moves.urllib.parse import urlparse
 from socket import gaierror as socket_error
 from freenas.cli.output import Table
 from freenas.cli.descriptions import events
-from freenas.cli.utils import SIGTSTPException, SIGTSTP_setter, errors_by_path, quote
+from freenas.cli.utils import SIGTSTPException, SIGTSTP_setter, errors_by_path, quote, flatten_table
 from freenas.cli import functions
 from freenas.cli import config
 from freenas.cli.namespace import (
@@ -1286,12 +1286,7 @@ class MainLoop(object):
                 raise SyntaxError(_('{0} not found'.format(token.name)))
 
             if isinstance(token, AssignmentStatement):
-                expr = self.eval(token.expr, env=env, first=first)
-
-                # Table data needs to be flattened upon assignment
-                if isinstance(expr, Table):
-                    rows = list(expr.data)
-                    expr.data = rows
+                expr = flatten_table(self.eval(token.expr, env=env, first=first))
 
                 if token.name in self.context.variables.variables:
                     raise SyntaxError(_(
@@ -1519,7 +1514,7 @@ class MainLoop(object):
                 raise SyntaxError("Command or namespace {0} not found".format(top.name))
 
             if isinstance(token, FunctionCall):
-                args = list(map(lambda a: self.eval(a, env=env, first=True), token.args))
+                args = list(map(lambda a: flatten_table(self.eval(a, env=env, first=True)), token.args))
                 func = env.find(token.name)
                 if func:
                     if isinstance(func, Environment.Variable):
@@ -1536,7 +1531,7 @@ class MainLoop(object):
                 raise SyntaxError("Function {0} not found".format(token.name))
 
             if isinstance(token, Subscript):
-                expr = self.eval(token.expr, env=env)
+                expr = flatten_table(self.eval(token.expr, env=env))
                 index = self.eval(token.index, env=env)
                 return expr[index]
 

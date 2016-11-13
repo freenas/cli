@@ -288,6 +288,16 @@ def quote(value):
     return value
 
 
+def flatten_table(t):
+    from freenas.cli.output import Table
+
+    if isinstance(t, Table):
+        rows = list(t.data)
+        t.data = rows
+
+    return t
+
+
 def get_item_stub(context, parent, name):
     from freenas.cli.namespace import SingleItemNamespace
     ns = SingleItemNamespace(name, parent, context)

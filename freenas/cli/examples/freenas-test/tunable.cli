@@ -51,5 +51,5 @@ function tunable_hard_destroy() {
 	    maybe_barf(_success, "-tunable-hard#1", "Unable to delete tunable " + _n)
 	}
 	_l = count_by_name("tunable", _tunable_var_rc + "[0-9]+")
-	maybe_barf(_l == 0, "0tunable-hard#2", "Unable to delete all tunables: " + str(_l) + " remaining.")
+	maybe_barf(_l == 0, "tunable-hard#2", "Unable to delete all tunables: " + str(_l) + " remaining.")
 }

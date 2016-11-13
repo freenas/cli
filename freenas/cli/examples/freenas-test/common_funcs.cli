@@ -23,7 +23,8 @@ function maybe_die(flag, test, str) {
 }	
 
 function find_by_name(where, name) {
-	return eval(sprintf("%s show | search name ~= \"%s\"", where, name))[0]
+	_x = eval(sprintf("%s show | search name ~= \"%s\"", where, name))
+	return x[0]
 }
 
 function count_by_name(where, name) {

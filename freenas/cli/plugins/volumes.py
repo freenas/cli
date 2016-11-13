@@ -607,7 +607,7 @@ class BackupVolumeMasterKeyCommand(Command):
             raise CommandException('You must provide an output path for a backup file')
 
         name = self.parent.entity['id']
-        result = context.call_task_sync('volume.keys.backup', name, path)
+        result = context.call_task_sync('volume.keys.backup_to_file', name, path)
         return Sequence("Backup password:",
                         str(result['result']))
 
@@ -645,7 +645,7 @@ class RestoreVolumeMasterKeyCommand(Command):
             raise CommandException('You must provide a password protecting a backup file')
 
         name = self.parent.entity['id']
-        tid = context.submit_task('volume.keys.restore', name, password, path)
+        tid = context.submit_task('volume.keys.restore_from_file', name, path, password)
         return TaskPromise(context, tid)
 
     def complete(self, context, **kwargs):

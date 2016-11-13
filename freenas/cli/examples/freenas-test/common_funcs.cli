@@ -29,13 +29,17 @@ function find_by_name(where, name) {
 
 function count_by_name(where, name) {
 	_x = find_by_name(where, name)
-	return length(_x)
+	if (_x) {
+		return length(_x)
+	} else {
+		return 0
+	}
 }
 
 function action_by_name(where, name, action) {
-	x = find_by_name(where, name)
-	if (x != null) {
-	    for (i in x) {
+	_x = find_by_name(where, name)
+	if (_x) {
+	    for (i in _x) {
 	    	eval(sprintf("%s %s %s", where, i["name"], action))
 	    }
 	}

@@ -14,7 +14,7 @@ _nfs_object=none
 _iscsi_name="test_iscs_share"
 _iscsi_service_status="no"
 _iscsi_object=none
-_share_hard_count=20
+_share_hard_count=10
 _share_hard_arr = []
 _share_types = [ "afp", "smb", "nfs", "iscsi" ]
 

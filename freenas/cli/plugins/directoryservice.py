@@ -169,6 +169,7 @@ class DirectoriesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, E
             condition=lambda o: get(o, 'status.state') == 'FAILURE'
         )
 
+        """
         self.add_property(
             descr='Minimum UID',
             name='uid_min',
@@ -196,6 +197,7 @@ class DirectoriesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, E
             get='gid_range.1',
             list=False
         )
+        """
 
         def get_entity_namespaces(this):
             PROVIDERS = {

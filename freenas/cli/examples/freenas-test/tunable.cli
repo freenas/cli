@@ -6,7 +6,7 @@ _tunable_val_loader="test"
 _tunable_var_rc="test_tunable_rc"
 _tunable_val_rc="test"
 _tunable_var_sysctl="kern.sync_on_panic"
-_tunable_val_sysctl="1"
+_tunable_val_sysctl=1
 
 _tunable_hard_count=50
 _tunable_hard_arr = []

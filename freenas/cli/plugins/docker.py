@@ -1016,7 +1016,16 @@ class DockerContainerCreateCommand(Command):
             'interactive': read_value(
                 kwargs.get('interactive', q.get(presets, 'interactive', False)),
                 ValueType.BOOLEAN
-            )
+            ),
+            'bridge': {
+                'enable': read_value(
+                    kwargs.get('bridged', q.get(presets, 'bridge.enable', False)),
+                    ValueType.BOOLEAN
+                ),
+                'address': kwargs.get('bridge_address'),
+                'netmask': None,
+                'broadcast': None
+            }
         }
 
         ns = get_item_stub(context, self.parent, name)
@@ -1046,6 +1055,7 @@ class DockerContainerCreateCommand(Command):
             NullComplete('name='),
             NullComplete('command='),
             NullComplete('hostname='),
+            NullComplete('bridge_address='),
             NullComplete('volume:'),
             NullComplete('port:'),
             EnumComplete('image=', available_images),
@@ -1053,6 +1063,7 @@ class DockerContainerCreateCommand(Command):
             EnumComplete('interactive=', ['yes', 'no']),
             EnumComplete('autostart=', ['yes', 'no']),
             EnumComplete('expose_ports=', ['yes', 'no']),
+            EnumComplete('bridged=', ['yes, no']),
         ]
 
 

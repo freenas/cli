@@ -32,13 +32,13 @@ if (not defined("output_file")) {
 output_handle = fopen(output_file, "w");
 maybe_die(_success, "main#1", "Unable to open log file " + output_file + " for writing")
 
-# Some constants which will be shared across tests, hence "global" - they do not have underscores prepended to their names to
-# designate them as such.
+# Some constants which will be shared across tests, hence "global" in scope.
+# They do not have underscores prepended to their names to designate them
+# as such.
 const TEST_USER = "mytestuser"
 const TEST_GROUP = "mytestgroup"
 const VOL_NAME = "test_tank"
 VOL_OBJECT = null
-SNAP_OBJECT = null
 SYS_DATASET_VOL = null
 
 source ${TOP_DIR + "common_funcs.cli"}

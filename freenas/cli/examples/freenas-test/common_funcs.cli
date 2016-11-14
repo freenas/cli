@@ -78,7 +78,7 @@ function nuke_from_orbit() {
 	action_by_name("account user", TEST_USER + ".*", "delete")
 	action_by_name("account group", TEST_USER + ".*", "delete")
 	action_by_name("account group", TEST_GROUP + ".*", "delete")
-	action_by_name("calendar command", _cmd_name + ".*", "delete")
+	action_by_name("calendar command", _command_name + ".*", "delete")
 	action_by_name("calendar scrub", _scrub_name + ".*", "delete")
 	action_by_name("boot environment", _test_bootenv + ".*", "delete")
 	action_by_name("tunable", _tunable_var_rc + ".*", "delete")

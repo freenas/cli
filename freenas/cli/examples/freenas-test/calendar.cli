@@ -2,7 +2,7 @@
 #
 
 # State variables shared between create and destroy functions.
-_cmd_name="test_command"
+_command_name="test_command"
 _scrub_name="test_scrub"
 _cal_command = none
 _cal_scrub = none
@@ -14,7 +14,7 @@ function calendar_create() {
 	_x = $(calendar check_update show|select name)
 	maybe_barf(_success, "+calendar#1", "Unable to find check_update calendar entry")
 	maybe_barf(_x[0]["result"] == "nightly_update_check", "+calendar#2", "nightly update check calendar entry naming syntax")
-	_cal_command = @$(calendar command create command="echo testing" name=${_cmd_name} username=root schedule={"minute" : "*/10"})
+	_cal_command = @$(calendar command create command="echo testing" name=${_command_name} username=root schedule={"minute" : "*/10"})
 	maybe_barf(_success, "+calendar#3", "unable to create calendar command task")
 	_cal_scrub = @$(calendar scrub create name=${_scrub_name} volume=${VOL_NAME} enabled=yes schedule={"minute" : "*/30"})
 	maybe_barf(_success, "+calendar#4", "unable to create calendar scrub task")
@@ -33,12 +33,12 @@ function calendar_destroy() {
 function calendar_hard_create() {
 	print(">>> Starting calendar stress tests")
 	for (i = 0; i < _cal_hard_count; i = i + 1) {
-	    _x = @$(calendar command create command="echo testing" name=${_cmd_name + str(i)} username=${TEST_USER} schedule={"minute" : ${"*/" + str(i + 10)}})
+	    _x = @$(calendar command create command="echo testing" name=${_command_name + str(i)} username=${TEST_USER} schedule={"minute" : ${"*/" + str(i + 10)}})
 	    if (not maybe_barf(_success, "+calendar-hard#1", "Unable to create calendar " + str(i))) {
 	       append(_cal_hard_arr, _x);
             }
 	}
-	_l = count_by_name("calendar command", _cmd_name + "[0-9]+")
+	_l = count_by_name("calendar command", _command_name + "[0-9]+")
 	maybe_barf(_l == _cal_hard_count, "+calendar-hard#2", "Calendar command count of " + str(_l) + " does not match " + str(_cal_hard_count))
 }
 
@@ -49,6 +49,6 @@ function calendar_hard_destroy() {
 	    @$(i delete)
 	    maybe_barf(_success, "-calendar-hard#1", "Unable to delete calendar entry " + _n)
 	}
-	_l = count_by_name("calendar command", _cmd_name + "[0-9]+")
+	_l = count_by_name("calendar command", _command_name + "[0-9]+")
 	maybe_barf(_l == 0, "-calendar-hard#2", "Unable to delete all calendar entries: " + str(_l) + " remaining.")
 }

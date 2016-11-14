@@ -303,6 +303,16 @@ class BaseSharesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, En
             condition=lambda o: (o['target_type'] in ('DIRECTORY', 'DATASET')) and (o['enabled'])
         )
 
+        self.add_property(
+            descr='Enable service',
+            name='enable_service',
+            get=None,
+            set='1',
+            list=False,
+            type=ValueType.BOOLEAN,
+            create_arg=True
+        )
+
         self.primary_key = self.get_mapping('name')
         self.primary_key_name = 'name'
         self.save_key_name = 'id'

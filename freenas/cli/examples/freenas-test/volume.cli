@@ -41,22 +41,14 @@ function volume_create() {
 
 function volume_destroy() {
 	print(">>> Finishing volume tests")
-	if (SNAP_OBJECT != null) {
-	    @$(SNAP_OBJECT delete)
-	} else {
-	    @$(volume ${VOL_NAME} snapshot ${VOL_NAME + "@" + _snap_name} delete)
-	}	
+	@$(SNAP_OBJECT delete)
 	maybe_barf(_success, "-volume#1", "Unable to delete snapshot " + _snap_name + " from volume " + VOL_NAME)
 	@$(volume ${VOL_NAME} dataset ${VOL_NAME + "/" + _dataset_name} delete)
 	maybe_barf(_success, "-volume#2", "Unable to delete dataset " + _dataset_name)
 	@$(system system_dataset set volume=${SYS_DATASET_VOL})
 	maybe_barf(_success, "-volume#3", "Unable to restore system dataset setting")
 
-	if (VOL_OBJECT != null) {
-	    @$(VOL_OBJECT delete)
-	} else {
-	    @$(volume ${VOL_NAME} delete)
-	}
+	@$(VOL_OBJECT delete)
 	maybe_barf(_success, "-volume#3", "Unable to delete volume " + VOL_NAME)
 }
 

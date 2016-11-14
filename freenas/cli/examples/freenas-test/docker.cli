@@ -26,14 +26,8 @@ function docker_create() {
 
 function docker_destroy() {
 	print(">>> Finishing docker tests")
-	if (_alpine_container != null) {
-		@$(_alpine_container delete)
-		p=" (promise) "
-	} else {
-		@$(docker container ${_container_name} delete)
-		p=" "
-	}
-	maybe_barf(_success, "-docker#1", "unable to delete docker container" + p + _container_name)
+	@$(_alpine_container delete)
+	maybe_barf(_success, "-docker#1", "unable to delete docker container" + _container_name)
 }
 
 function container_hard_create() {

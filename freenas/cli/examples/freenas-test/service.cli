@@ -9,7 +9,7 @@ function service_create() {
 	# make sure it's running first.
 	@$(service ${_service} start)
 	_pid = $(service ${_service} get pid)
-	maybe_barf(_pid != none, "+service#1", "The " + _service + " service is not running on this machine")
+	maybe_barf(_pid, "+service#1", "The " + _service + " service is not running on this machine")
 	@$(service ${_service} config set enable=no)
 	maybe_barf(_success, "+service#2", "Unable to disable " + _service + " service")
 	_pid = $(service ${_service} get pid)
@@ -17,7 +17,7 @@ function service_create() {
 	@$(service ${_service} config set enable=yes)
 	maybe_barf(_success, "+service#4", "Unable to enable " + _service + " service")
 	_pid = $(service ${_service} get pid)
-	maybe_barf(_pid != none, "+service#5", "pid of " + _service + " not set when enabled")
+	maybe_barf(_pid, "+service#5", "pid of " + _service + " not set when enabled")
 
 	_level = $(service sshd config get sftp_log_level)
 	maybe_barf(_success, "+service#6", "unable to get sftp_log_level property of sshd service")

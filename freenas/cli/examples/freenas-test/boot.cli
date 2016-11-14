@@ -21,11 +21,7 @@ function boot_create() {
 
 function boot_destroy() {
 	print(">>> Finishing boot tests")
-	if (_boot_env != none) {
-	    @$(_boot_env delete)
-	} else {
-	    @$(boot environment ${_test_bootenv} delete)
-	}
+	@$(_boot_env delete)
 	maybe_barf(_success, "-boot#1", "Unable to delete test boot environment")
 }
 

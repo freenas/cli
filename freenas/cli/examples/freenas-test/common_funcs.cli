@@ -23,8 +23,9 @@ function maybe_die(flag, test, str) {
 }	
 
 function find_by_name(where, name) {
-	_x = eval(sprintf("%s show | search name ~= \"%s\"", where, name))
-	return x[0]
+	_n = sprintf("%s show | search name ~= \"%s\"", where, name)
+	_x = eval(_n)
+	return _x[0]
 }
 
 function count_by_name(where, name) {
@@ -39,8 +40,9 @@ function count_by_name(where, name) {
 function action_by_name(where, name, action) {
 	_x = find_by_name(where, name)
 	if (_x) {
-	    for (i in _x) {
-	    	eval(sprintf("%s %s %s", where, i["name"], action))
+	    for (_i in _x) {
+		_n = sprintf("%s %s %s", where, _i["name"], action)
+	    	eval(_n)
 	    }
 	}
 }

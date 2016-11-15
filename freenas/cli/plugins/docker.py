@@ -1021,9 +1021,7 @@ class DockerContainerCreateCommand(Command):
                     kwargs.get('bridged', q.get(presets, 'bridge.enable', False)),
                     ValueType.BOOLEAN
                 ),
-                'address': kwargs.get('bridge_address'),
-                'netmask': None,
-                'broadcast': None
+                'address': kwargs.get('bridge_address')
             }
         }
 

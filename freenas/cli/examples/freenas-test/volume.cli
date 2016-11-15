@@ -4,7 +4,7 @@
 # State variables shared between create and destroy functions.
 _snap_obj=null
 _snap_name="_snappysnap"
-_dataset_name="_testdset"
+_dataset_name="_test_dataset"
 _volume_hard_count = 20
 _volume_hard_dset_arr = []
 _volume_hard_snap_arr = []

@@ -1,7 +1,7 @@
 # Test runner for network  category
 #
 
-_test_host="test-host"
+_test_host="_test_host"
 _test_network="10.99.100"
 _network_hard_count=50
 _network_hard_narr = []

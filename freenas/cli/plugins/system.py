@@ -295,6 +295,33 @@ class UploadConfigCommand(Command):
         ]
 
 
+@description("Downloads freenas debug file to the path specified")
+class DownloadDebugCommand(Command):
+    """
+    Usage: download path=/abs/path/to/target/file
+
+    Examples: / system debug download path=/mnt/mypool/mydir/freenasdebug.tar.gz
+
+    Downloads freenas debug file to the path specified.
+    """
+
+    def run(self, context, args, kwargs, opargs):
+        if not kwargs:
+            raise CommandException(_("Download requires more arguments. For help see 'help download'"))
+        if 'path' not in kwargs:
+            raise CommandException(_("Please specify path to the target debug file."
+                                     "For help see 'help download'"))
+
+        p = Path(kwargs['path'])
+        with p.open('w') as fo:
+            context.call_task_sync('debug.collect', FileDescriptor(fd=fo.fileno(), close=False))
+
+    def complete(self, context, **kwargs):
+        return [
+            NullComplete('path='),
+        ]
+
+
 class SystemDatasetImportCommand(Command):
     """
     Usage: import volume=<volume>
@@ -810,6 +837,14 @@ class ConfigDbNamespace(Namespace):
         }
 
 
+@description("FreeNAS Debug Namespace")
+class DebugNamespace(Namespace):
+    def commands(self):
+        return {
+            'download': DownloadDebugCommand()
+        }
+
+
 class SystemDatasetNamespace(ConfigNamespace):
     def __init__(self, name, context):
         super(SystemDatasetNamespace, self).__init__(name, context)
@@ -990,6 +1025,7 @@ class SystemNamespace(ConfigNamespace):
             EventsNamespace('event', self.context),
             SystemDatasetNamespace('system_dataset', self.context),
             ConfigDbNamespace('config'),
+            DebugNamespace('debug')
         ]
 
 

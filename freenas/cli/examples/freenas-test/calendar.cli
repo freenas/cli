@@ -4,8 +4,8 @@
 # State variables shared between create and destroy functions.
 _command_name="test_command"
 _scrub_name="test_scrub"
-_cal_command = none
-_cal_scrub = none
+_cal_command = null
+_cal_scrub = null
 _cal_hard_count = 10
 _cal_hard_arr = []
 

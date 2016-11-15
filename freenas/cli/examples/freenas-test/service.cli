@@ -13,7 +13,7 @@ function service_create() {
 	@$(service ${_service} config set enable=no)
 	maybe_barf(_success, "+service#2", "Unable to disable " + _service + " service")
 	_pid = $(service ${_service} get pid)
-	maybe_barf(_pid == none, "+service#3", "pid of " + _service + " disabled but pid still set to " + str(_pid))
+	maybe_barf(_pid == null, "+service#3", "pid of " + _service + " disabled but pid still set to " + str(_pid))
 	@$(service ${_service} config set enable=yes)
 	maybe_barf(_success, "+service#4", "Unable to enable " + _service + " service")
 	_pid = $(service ${_service} get pid)

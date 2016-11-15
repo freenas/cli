@@ -689,7 +689,6 @@ class CollectionImagesNamespace(RpcBasedLoadMixin, EntityNamespace):
             get='presets.version',
             usersetable=False,
             list=True,
-            type=ValueType.NUMBER,
             usage=_('''\
             Version of container image read from FreeNAS metadata''')
         )

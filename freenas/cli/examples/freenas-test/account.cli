@@ -42,14 +42,14 @@ function account_create() {
 
 function account_destroy() {
 	print(">>> Finishing account tests")
-	@$(VOL_OBJECT dataset ${VOL_NAME + "/home"} delete)
-	maybe_barf(_success, "-account#1", "Unable to delete temporary home dataset on " + VOL_NAME)
 	@$(_user_obj delete)
-	maybe_barf(_success, "-account#2", "Unable to delete user " + TEST_USER)
+	maybe_barf(_success, "-account#1", "Unable to delete user " + TEST_USER)
 	@$(account group ${TEST_USER} delete)
-	maybe_barf(_success, "-account#3", "Unable to delete private group for user " + TEST_USER)
+	maybe_barf(_success, "-account#2", "Unable to delete private group for user " + TEST_USER)
 	@$(_group_obj delete)
-	maybe_barf(_success, "-account#4", "Unable to delete group " + TEST_GROUP)
+	maybe_barf(_success, "-account#3", "Unable to delete group " + TEST_GROUP)
+	@$(VOL_OBJECT dataset ${VOL_NAME + "/home"} delete)
+	maybe_barf(_success, "-account#4", "Unable to delete temporary home dataset on " + VOL_NAME)
 }
 
 function account_hard_create() {

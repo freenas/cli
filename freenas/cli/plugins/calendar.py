@@ -974,18 +974,18 @@ class ReplicationNamespace(CalendarTasksNamespaceBaseClass):
             return peer['id']
 
         def get_transport_option(obj, type, property):
-            opt = first_or_default(lambda i: i['name'] == type, obj['args'][2])
+            opt = first_or_default(lambda i: type in i['%type'], obj['args'][2])
             return opt[property] if opt else None
 
         def set_transport_option(obj, type, property, value):
-            opt = first_or_default(lambda i: i['name'] == type, obj['args'][2])
+            opt = first_or_default(lambda i: type in i['%type'], obj['args'][2])
 
             if value:
                 if opt:
                     opt[property] = value
                 else:
                     obj['args'][2].append({
-                        'name': type,
+                        '%type': '{0}-replication-transport-option'.format(type),
                         property: value
                     })
             else:
@@ -1047,9 +1047,9 @@ class ReplicationNamespace(CalendarTasksNamespaceBaseClass):
         self.add_property(
             descr='Encryption',
             name='encryption',
-            get=lambda obj: get_transport_option(obj, 'encryption', 'type'),
+            get=lambda obj: get_transport_option(obj, 'encrypt', 'type'),
             list=False,
-            set=lambda obj, val: set_transport_option(obj, 'encryption', 'type', val),
+            set=lambda obj, val: set_transport_option(obj, 'encrypt', 'type', val),
             enum=['AES128', 'AES192', 'AES256', None]
         )
 

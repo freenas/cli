@@ -1060,7 +1060,7 @@ class DockerContainerCreateCommand(Command):
             EnumComplete('interactive=', ['yes', 'no']),
             EnumComplete('autostart=', ['yes', 'no']),
             EnumComplete('expose_ports=', ['yes', 'no']),
-            EnumComplete('bridged=', ['yes, no']),
+            EnumComplete('bridged=', ['yes', 'no']),
         ]
 
 

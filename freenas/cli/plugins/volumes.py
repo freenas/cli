@@ -1005,6 +1005,7 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
             get='permissions_type',
             list=False,
             condition=lambda o: o['type'] == 'FILESYSTEM',
+            enum=['PERM', 'ACL'],
             usage=_("Type of permissions (can be either standard PERM or ACL)") 
         )
 

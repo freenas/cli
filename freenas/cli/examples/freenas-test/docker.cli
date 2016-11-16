@@ -30,7 +30,7 @@ function docker_destroy() {
 	maybe_barf(_success, "-docker#1", "unable to delete docker container " + _container_name)
 }
 
-function container_hard_create() {
+function docker_hard_create() {
 	printf(">>> Starting Docker stress tests: %d containers\n", _container_hard_count)
 	for (i in mapf(range(0, _container_hard_count), _container_name + "%d")) {
 	    _x = @$(docker container create image=${_image_name} name=${i} command="/bin/sh" interactive=yes)
@@ -46,7 +46,7 @@ function container_hard_create() {
 	maybe_barf(_l == _container_hard_count, "+docker-hard#2", "Container count of " + str(_l) + " does not match " + str(_container_hard_count))
 }
 
-function container_hard_destroy() {
+function docker_hard_destroy() {
 	print(">>> Finishing docker stress tests")
 	for (i in _container_arr) {
 	    _n = $(i get name)

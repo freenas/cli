@@ -4,6 +4,7 @@
 _tunable_var_loader="test_tunable_loader"
 _tunable_val_loader="test"
 _tunable_var_rc="test_tunable_rc"
+_tunable_var_rc_bad="_bad_tunable_rc"
 _tunable_val_rc="test"
 _tunable_var_sysctl="kern.sync_on_panic"
 _tunable_val_sysctl=1
@@ -17,8 +18,10 @@ function tunable_create() {
 	maybe_barf(_success, "tunable#1", "Unable to create loader variable " + _tunable_var_loader)
 	@$(tunable create type=RC name=${_tunable_var_rc} value=${_tunable_val_rc})
 	maybe_barf(_success, "tunable#2", "Unable to create rc variable " + _tunable_var_rc)
+	@$(tunable create type=RC name=${_tunable_var_rc_bad} value=${_tunable_val_rc})
+	maybe_barf(_success == false, "tunable#3", "Creating bad rc variable " + _tunable_var_rc_bad + " not properly caught.")
 	@$(tunable create type=SYSCTL name=${_tunable_var_sysctl} value=${_tunable_val_sysctl})
-	maybe_barf(_success, "tunable#3", "Unable to set sysctl variable " + _tunable_var_sysctl)
+	maybe_barf(_success, "tunable#4", "Unable to set sysctl variable " + _tunable_var_sysctl)
 }
 
 function tunable_destroy() {

@@ -1,9 +1,9 @@
 # Test runner for tunable  category
 #
 
-_tunable_var_loader="_test_tunable_loader"
+_tunable_var_loader="test_tunable_loader"
 _tunable_val_loader="test"
-_tunable_var_rc="_test_tunable_rc"
+_tunable_var_rc="test_tunable_rc"
 _tunable_val_rc="test"
 _tunable_var_sysctl="kern.sync_on_panic"
 _tunable_val_sysctl=1

@@ -31,6 +31,7 @@ from freenas.cli.namespace import (
     EntityNamespace, Command, TaskBasedSaveMixin, description,
     CommandException, NestedEntityMixin, ItemNamespace, EntitySubscriberBasedLoadMixin
 )
+from freenas.cli.complete import EntitySubscriberComplete
 from freenas.cli.output import ValueType
 from freenas.cli.utils import TaskPromise, objname2id, objid2name
 from freenas.utils import first_or_default
@@ -999,6 +1000,7 @@ class ReplicationNamespace(CalendarTasksNamespaceBaseClass):
             get=lambda obj: self.get_task_args(obj, 'dataset'),
             list=True,
             set=lambda obj, val: self.set_task_args(obj, val, 'dataset'),
+            complete=EntitySubscriberComplete('dataset=', 'volume.dataset', lambda o: o['name']),
         )
 
         self.add_property(
@@ -1015,6 +1017,7 @@ class ReplicationNamespace(CalendarTasksNamespaceBaseClass):
             get=lambda obj: get_peer_name(q.get(self.get_task_args(obj, 'options'), 'peer')),
             list=True,
             set=lambda obj, val: q.set(self.get_task_args(obj, 'options'), 'peer', set_peer_id(val)),
+            complete=EntitySubscriberComplete('peer=', 'peer', lambda o: o['name'] if o['type'] == 'freenas' else None)
         )
 
         self.add_property(

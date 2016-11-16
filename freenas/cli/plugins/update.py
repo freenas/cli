@@ -29,6 +29,7 @@ import gettext
 import copy
 import inspect
 from datetime import datetime
+from freenas.cli.complete import EnumComplete
 from freenas.cli.namespace import ConfigNamespace, Command, description, CommandException
 from freenas.cli.output import output_msg, ValueType, Table, read_value
 from freenas.cli.utils import TaskPromise
@@ -162,11 +163,11 @@ class DownloadNowCommand(Command):
 @description("Updates the system and reboots it (can be specified)")
 class UpdateNowCommand(Command):
     """
-    Usage: update_now [reboot=False]
+    Usage: update_now reboot=<reboot>
 
     Examples:
         update_now (This will not reboot the system post update)
-        update_now reboot=True (This will reboot the system post update)
+        update_now reboot=yes (This will reboot the system post update)
 
     Installs updates if they are available and reboots the system if
     told to do so via the `reboot` flag.
@@ -205,6 +206,11 @@ class UpdateNowCommand(Command):
         )
 
         return TaskPromise(context, self.task_id)
+
+    def complete(self, context, **kwargs):
+        return [
+            EnumComplete('reboot=', ['yes', 'no'])
+        ]
 
 
 @description("Configure system updates")

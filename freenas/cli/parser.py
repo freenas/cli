@@ -362,11 +362,13 @@ def t_ESCAPE_COMMENTS(t):
 
 def t_ANY_EOPEN(t):
     r'\$\('
+    t.lexer.push_state('INITIAL')
     return t
 
 
 def t_ANY_EOPEN_SYNC(t):
     r'@\$\('
+    t.lexer.push_state('INITIAL')
     return t
 
 
@@ -395,12 +397,14 @@ def t_ANY_COPEN(t):
 
 def t_LBRACE(t):
     r'{'
+    t.lexer.push_state('script')
     t.lexer.parens += 1
     return t
 
 
 def t_ANY_RBRACE(t):
     r'}'
+    t.lexer.pop_state()
     t.lexer.parens -= 1
     return t
 
@@ -723,14 +727,14 @@ def p_expr_parens(p):
 
 def p_expr_expansion(p):
     """
-    expr_expansion : EOPEN push_initial command pop_state RPAREN
+    expr_expansion : EOPEN command RPAREN
     """
     p[0] = CommandExpansion(p[3], p=p)
 
 
 def p_sync_expr_expansion(p):
     """
-    sync_expr_expansion : EOPEN_SYNC push_initial command pop_state RPAREN
+    sync_expr_expansion : EOPEN_SYNC command RPAREN
     """
     p[0] = SyncCommandExpansion(p[3], p=p)
 
@@ -947,7 +951,7 @@ def p_command_item_2(p):
 
 def p_command_item_3(p):
     """
-    command_item : COPEN expr pop_state RBRACE
+    command_item : COPEN expr RBRACE
     """
     p[0] = ExpressionExpansion(p[2], p=p)
 

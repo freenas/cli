@@ -320,6 +320,17 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             Version of container image read from FreeNAS metadata''')
         )
 
+        self.add_property(
+            descr='Container address',
+            name='address',
+            get='bridge.address',
+            usersetable=False,
+            list=False,
+            condition=lambda o: q.get(o, 'bridge.enabled'),
+            usage=_('''\
+            IP address of a container when it's set to a bridged mode.'''),
+        )
+
         self.primary_key = self.get_mapping('name')
         self.entity_commands = self.get_entity_commands
 

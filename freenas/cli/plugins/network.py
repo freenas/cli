@@ -998,6 +998,7 @@ class IPMINamespace(RpcBasedLoadMixin, EntityNamespace):
             When the IPMI out-of-band management interface is not on the same VLAN as
             management networking, specify the VLAN number."""),
             get='vlan_id',
+            type=ValueType.NUMBER,
             list=False
         )
 

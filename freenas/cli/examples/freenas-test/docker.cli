@@ -4,7 +4,7 @@
 # State variables shared between create and destroy functions.
 _image_name="freenas/alpine"
 _container_obj=null
-_container_name="test_container"
+_container_name="testcontainer"
 _container_name_bad="_test_container"
 _container_hard_count=10
 _container_arr = []

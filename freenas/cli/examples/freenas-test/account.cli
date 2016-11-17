@@ -4,7 +4,7 @@
 # State variables shared between create and destroy functions.
 _user_obj=null
 _group_obj=null
-_account_hard_count=20
+_account_hard_count=10
 _account_hard_uarr = []
 _account_hard_garr = []
 

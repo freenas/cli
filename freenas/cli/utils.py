@@ -349,7 +349,7 @@ class TaskPromise(object):
     def wait(self):
         self.task = self.subscriber.wait_for(self.tid, lambda o: o['state'] in ('FINISHED', 'FAILED', 'ABORTED'))
         if self.task['state'] != 'FINISHED':
-            raise RuntimeError('Task {0} failed'.format(self.tid))
+            raise RuntimeError('Task {0} failed: {1}'.format(self.tid, get(self.task, 'error.message')))
 
         return self.result or self.task['result']
 

@@ -1398,7 +1398,12 @@ class MainLoop(object):
             if isinstance(token, SyncCommandExpansion):
                 expr = self.eval(token.expr, env=env, first=first)
                 if hasattr(expr, 'wait'):
-                    return expr.wait()
+                    try:
+                        return expr.wait()
+                    except BaseException as err:
+                        env['_success'] = Environment.Variable(False)
+                        env['_error'] = Environment.Variable(str(err))
+                        return
 
             if isinstance(token, (ExpressionExpansion, CommandExpansion)):
                 expr = self.eval(token.expr, env=env, first=first)

@@ -8,7 +8,7 @@ function alert_create() {
 	@$(alert send "Critical message from test" priority=CRITICAL)
 	_x = $(alert show)
 	maybe_barf(length(_x) >= 3, "+alert#1", "Number of alerts doesn't match expected values.")
-	_x = $(alert show | find description~="Warning message from test")
+	_x = $(alert show | search description ~= "Warning message from test")
 	maybe_barf(_x, "+alert#2", "Unable to find warning message posted by test")
 }
 

@@ -4,7 +4,8 @@
 # State variables shared between create and destroy functions.
 _image_name="freenas/alpine"
 _container_obj=null
-_container_name="_test_container"
+_container_name="test_container"
+_container_name_bad="_test_container"
 _container_hard_count=10
 _container_arr = []
 
@@ -12,6 +13,8 @@ function docker_create() {
 	print(">>> Starting docker tests")
 	_container_obj = @$(docker container create image=${_image_name} name=${_container_name} command="/bin/sh" interactive=yes)
 	maybe_barf(_success, "+docker#1", "Unable to create docker container " + _container_name)
+	@$(docker container create image=${_image_name} name=${_container_name_bad} command="/bin/sh" interactive=yes)
+	maybe_barf(_success == false, "+docker#2", "Creating known bad docker container " + _container_name_bad + " succeeded.")
 	_x = $(_container_obj get name)
 	if (_x != _container_name) {
 	    maybe_barf(_success, "+docker#2", "docker container name is not " + _container_name)

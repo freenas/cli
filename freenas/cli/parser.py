@@ -586,13 +586,6 @@ def p_push_script(p):
     p.lexer.push_state('script')
 
 
-def p_push_initial(p):
-    """
-    push_initial :
-    """
-    p.lexer.push_state('INITIAL')
-
-
 def p_pop_state(p):
     """
     pop_state :
@@ -729,14 +722,14 @@ def p_expr_expansion(p):
     """
     expr_expansion : EOPEN command RPAREN
     """
-    p[0] = CommandExpansion(p[3], p=p)
+    p[0] = CommandExpansion(p[2], p=p)
 
 
 def p_sync_expr_expansion(p):
     """
     sync_expr_expansion : EOPEN_SYNC command RPAREN
     """
-    p[0] = SyncCommandExpansion(p[3], p=p)
+    p[0] = SyncCommandExpansion(p[2], p=p)
 
 
 def p_array_literal(p):

@@ -52,8 +52,10 @@ function volume_destroy() {
 	print(">>> Volume: FYI: System dataset back on " + SYS_DATASET_VOL)
 	maybe_barf(_success, "-volume#3", "Unable to restore system dataset setting")
 
-	@$(VOL_OBJECT delete)
-	maybe_barf(_success, "-volume#3", "Unable to delete volume " + VOL_NAME)
+	if (test_me_harder == false) {
+	   @$(VOL_OBJECT delete)
+	   maybe_barf(_success, "-volume#3", "Unable to delete volume " + VOL_NAME)
+	}
 }
 
 function volume_hard_create() {
@@ -93,4 +95,6 @@ function volume_hard_destroy() {
 	}
 	_l = count_by_name("volume " + VOL_NAME + " snapshot", VOL_NAME + "@" + _snap_name + "-[0-9]*")
 	maybe_barf(_l == 0, "-volume-hard#3", "Unable to delete all snapshots: " + str(_l) + " remaining.")
+	@$(VOL_OBJECT delete)
+	maybe_barf(_success, "-volume-hard#4", "Unable to delete volume " + VOL_NAME)
 }

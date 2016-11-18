@@ -99,9 +99,6 @@ function destroy_all() {
 	}
 }
 
-# OK do it.
-load_all()
-
 function run_all() {
 	if (_batch == "yes") {
 		x="yes"
@@ -121,8 +118,10 @@ function run_all() {
 		fclose(output_handle)
 	} else {
 		print("You can run the tests yourself by calling create_all()")
-		print("(or testname_create()) then destroy_all() (or testname_destroy())")
+		print("or testname_create() then destroy_all() or testname_destroy()")
 	}
 }
 
+# OK do it.
+load_all()
 run_all()

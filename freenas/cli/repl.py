@@ -1403,7 +1403,11 @@ class MainLoop(object):
                     except BaseException as err:
                         env['_success'] = Environment.Variable(False)
                         env['_error'] = Environment.Variable(str(err))
-                        return
+                    else:
+                        env['_success'] = True
+                        env['_error'] = None
+
+                    return
 
             if isinstance(token, (ExpressionExpansion, CommandExpansion)):
                 expr = self.eval(token.expr, env=env, first=first)

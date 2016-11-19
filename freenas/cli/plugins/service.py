@@ -2196,6 +2196,26 @@ class WebDAVNamespace(NestedEntityMixin, ItemNamespace):
         )
 
 
+@description("Configure and manage simulator service")
+class SimulatorNamespace(NestedEntityMixin, ItemNamespace):
+    """
+    The simulator service namespace allows to configure and manage simulator service.
+    """
+
+    def __init__(self, name, context, parent):
+        super(SimulatorNamespace, self).__init__(name, context)
+        self.parent = parent
+        self.parent_entity_path = 'config'
+
+        self.add_property(
+            descr='Enabled',
+            name='enable',
+            get='enable',
+            list=True,
+            type=ValueType.BOOLEAN
+        )
+
+
 @description("Configure and manage rsyncd service")
 class RsyncdNamespace(NestedEntityMixin, ItemNamespace):
     """
@@ -2302,6 +2322,7 @@ class ServicesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Enti
                 'smartd': SMARTDNamespace,
                 'webdav': WebDAVNamespace,
                 'rsyncd': RsyncdNamespace,
+                'simulator': SimulatorNamespace,
             }
 
             this.load()

@@ -720,7 +720,9 @@ class ItemNamespace(Namespace):
 
         for i in self.property_mappings:
             if i.ns:
-                yield i.ns(self)
+                ret = i.ns(self)
+                if ret:
+                    yield ret
 
     def update_commands(self):
         pass

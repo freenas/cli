@@ -1,0 +1,15 @@
+_collection = "freenas"
+_count = 20
+_name = "foo"
+_total = 0
+
+_images = $(docker collection ${_collection} image show)
+print("Found " + length(_images) + " images in " + _collection + " collection")
+
+for (_x in _images) {
+	for (i = 0; i < _count; i = i + 1) {
+		_total = _total + 1
+		docker container create name=${_name + str(_total)} image=${_x["name"]} autostart=yes
+	}
+}
+

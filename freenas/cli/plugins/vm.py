@@ -454,6 +454,14 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
         )
 
         self.add_property(
+            descr='Logging',
+            name='logging',
+            get='config.logging',
+            list=False,
+            type=ValueType.SET
+        )
+
+        self.add_property(
             descr='VM tools available',
             name='vm_tools_available',
             get='status.vm_tools_available',

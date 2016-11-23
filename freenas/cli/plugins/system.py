@@ -33,7 +33,7 @@ from freenas.cli.namespace import (
 )
 from freenas.cli.output import Object, Sequence, ValueType, format_value, output_msg
 from freenas.cli.descriptions import events
-from freenas.cli.utils import TaskPromise, post_save, parse_timedelta, set_related, get_related
+from freenas.cli.utils import TaskPromise, post_save, parse_timedelta, set_related, get_related, get_filtered
 from freenas.cli.complete import NullComplete
 from freenas.dispatcher.fd import FileDescriptor
 
@@ -663,8 +663,7 @@ class SystemUINamespace(ConfigNamespace):
             usage=_("""\
             Name of the certificate
             """),
-            enum=lambda: self.context.entity_subscribers['crypto.certificate'].query(
-                ('type', '!=', 'CERT_CSR'), select='name'),
+            enum=lambda: get_filtered(context, 'name', 'crypto.certificate', ('type', '!=', 'CERT_CSR')),
             type=ValueType.STRING
         )
 

@@ -385,7 +385,8 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityN
 
     def namespaces(self, name=None):
         return list(super(DisksNamespace, self).namespaces()) + [
-            EnclosureNamespace('enclosure', self.context)
+            EnclosureNamespace('enclosure', self.context),
+            ISCSINamespace('iscsi', self.context)
         ]
 
 
@@ -434,6 +435,50 @@ class EnclosureNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         self.entity_commands = lambda this: {
             'devices': EnclosureDevicesCommand(this)
         }
+
+
+@description("iSCSI targets")
+class ISCSINamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
+    def __init__(self, name, context):
+        super(ISCSINamespace, self).__init__(name, context)
+        self.entity_subscriber_name = 'disk.iscsi.target'
+        self.create_task = 'disk.iscsi.target.create'
+        self.update_task = 'disk.iscsi.target.update'
+        self.delete_task = 'disk.iscsi.target.delete'
+        self.primary_key_name = 'name'
+
+        self.add_property(
+            descr='Target name',
+            name='name',
+            get='name',
+            list=True
+        )
+
+        self.add_property(
+            descr='Target address',
+            name='address',
+            get='address',
+            list=True
+        )
+
+        self.add_property(
+            descr='Connected',
+            name='connected',
+            get='status.connected',
+            set=None,
+            list=True,
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
+            descr='Status',
+            name='status',
+            get='status.status',
+            set=None,
+            list=False
+        )
+
+        self.primary_key = self.get_mapping('name')
 
 
 @description("Shows enclosure contents")

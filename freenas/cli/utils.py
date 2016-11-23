@@ -273,6 +273,10 @@ def set_related(context, name, obj, field, value):
     set(obj, field, thing['id'])
 
 
+def get_filtered(context, field, subscriber, *filters):
+    return context.entity_subscribers[subscriber].query(*filters, select=field)
+
+
 def add_tty_formatting(context, input):
     set_bold_font = '\033[1m'
     reset_font = '\033[0m'

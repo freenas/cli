@@ -6,6 +6,12 @@ _test_network="10.99.100"
 _network_hard_count=50
 _network_hard_narr = []
 
+function good_char(c) {
+	i = c + 65;
+	if (i > 90 and i < 97) { i = i + 6 }
+	return i
+}
+
 function network_create() {
 	print(">>> Starting network tests")
 	@$(network host create name=${_test_host} addresses=${_test_network + ".1"})
@@ -20,13 +26,13 @@ function network_destroy() {
 function network_hard_create() {
 	print(">>> Starting network stress tests")
 	for (i = 0; i < _network_hard_count; i = i + 1) {
-		_x = @$(network host create name=${_test_host + sprintf("%c", i + 65)} addresses=${_test_network + "." + str(i)})
+		_x = @$(network host create name=${_test_host + sprintf("%c", good_char(i))} addresses=${_test_network + "." + str(i)})
 		if (not maybe_barf(_success, "network-hard#1", "Unable to create host entry " + ${_test_host + str(i)})) {
 		    append(_network_hard_narr, _x)
 		}
 	}
 
-    _l = count_by_name("network host", _test_host + "[A-Z]+")
+    _l = count_by_name("network host", _test_host + "[A-Za-z]+")
     maybe_barf(_l == _network_hard_count, "+network-hard#2", "Host entry count of " + str(_l) + " does not match " + str(_network_hard_count))
 }
 
@@ -38,6 +44,6 @@ function network_hard_destroy() {
             maybe_barf(_success, "-network-hard#1", "Unable to delete host entry " + _n)
 	}
 	
-    _l = count_by_name("network host", _test_host + "[A-Z]+")
+    _l = count_by_name("network host", _test_host + "[A-Za-z]+")
     maybe_barf(_l == 0, "-network-hard#2", "Unable to delete all host entries: " + str(_l) + " remaining.")
 }

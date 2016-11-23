@@ -240,12 +240,13 @@ class CalendarTasksScheduleNamespace(NestedEntityMixin, ItemNamespace):
     A task which is enabled and has it's schedule edited to 'empty' will also be
     silently disabled.
     The schedule property takes a key/value pair with keys of second, minute, hour,
-    day_of_month, month, day_of_week, week, and year with values of `*`, `*/integer`, or
-    integer.
+    day_of_month, month, day_of_week, week, and year with values of `*`, `*/integer`, integer or
+    a string representing comma separated integer values.
 
     Examples:
         set coalesce=no
         set hour="`*/2`"
+        set minute="2,20,24"
     """
     def __init__(self, name, context, parent):
         super(CalendarTasksScheduleNamespace, self).__init__(name, context)
@@ -272,6 +273,7 @@ class CalendarTasksScheduleNamespace(NestedEntityMixin, ItemNamespace):
 
             Examples: set coalesce=no
                       set month="*/2"
+                      set minute="2,20,24"
                       set day=5
                       set timezone=America/New_York
 
@@ -409,6 +411,7 @@ class ScrubNamespace(CalendarTasksNamespaceBaseClass):
 
     Examples:
         create myscrub volume=mypool schedule={"hour":2,"day_of_week":5}
+        create myscrub volume=mypool schedule={"hour":"2,12","day_of_week":5}
     """
     def __init__(self, name, context):
         super(ScrubNamespace, self).__init__(name, context)
@@ -421,6 +424,7 @@ class ScrubNamespace(CalendarTasksNamespaceBaseClass):
 
             Examples: create myscrub volume=mypool
                       create somescrub volume=somepool schedule={"hour":2,"day_of_week":5}
+                      create somescrub volume=somepool schedule={"hour":"2,12","day_of_week":5}
 
             Creates a scrub calendar task. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
@@ -750,6 +754,7 @@ class SmartNamespace(CalendarTasksNamespaceBaseClass):
 
     Examples: create mysmart disks=ada0,ada1,ada2 test_type=SHORT
               create somesmart disks=ada0,ada1,ada2 rest_type=LONG schedule={"hour":3}
+              create somesmart disks=ada0,ada1,ada2 rest_type=LONG schedule={"hour":"3,20"}
     """
     def __init__(self, name, context):
         super(SmartNamespace, self).__init__(name, context)
@@ -762,6 +767,7 @@ class SmartNamespace(CalendarTasksNamespaceBaseClass):
 
             Examples: create mysmart disks=ada0,ada1,ada2 test_type=SHORT
                       create somesmart disks=ada0,ada1,ada2 test_type=LONG schedule={"hour":"*/4"}
+                      create somesmart disks=ada0,ada1,ada2 test_type=LONG schedule={"hour":"3,20"}
 
             Creates a SMART calendar task. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
@@ -844,6 +850,7 @@ class SnapshotNamespace(CalendarTasksNamespaceBaseClass):
 
     Examples:   create mysnapshot dataset=mypool schedule={"minute":"`*/30`"}
                 create somesnapshot dataset=mypool/mydataset recursive=yes lifetime=1h schedule={"minute":"0"}
+                create othersnapshot dataset=mypool/mydataset schedule={"minute":"1,30,50"}
     """
     def __init__(self, name, context):
         super(SnapshotNamespace, self).__init__(name, context)
@@ -857,6 +864,7 @@ class SnapshotNamespace(CalendarTasksNamespaceBaseClass):
 
             Examples:   create mysnapshot dataset=mypool
                         create somesnapshot dataset=mypool/mydataset recursive=yes lifetime=1h schedule={"minute":"0"}
+                        create somesnapshot dataset=mypool/mydataset schedule={"minute":"1,30,50"}
 
             Creates a snapshot calendar task. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
@@ -945,6 +953,7 @@ class ReplicationNamespace(CalendarTasksNamespaceBaseClass):
 
     Examples:
         create myrepl dataset=mypool/dataset remote_dataset=otherpool/bak peer=mypeer recursive=yes schedule={"minute": "`*/30`"}
+        create myrepl dataset=mypool/dataset remote_dataset=otherpool/bak peer=mypeer schedule={"day":"1,3,5","minute": "`*/30`"}
     """
     def __init__(self, name, context):
         super(ReplicationNamespace, self).__init__(name, context)
@@ -1073,6 +1082,7 @@ class CheckUpdateNamespace(CalendarTasksNamespaceBaseClass):
     Usage: create <name> <property>=<value>
 
     Examples: create myupdate schedule={"hour":1}
+    Examples: create myupdate schedule={"day":"1,4","hour":1}
     """
     def __init__(self, name, context):
         super(CheckUpdateNamespace, self).__init__(name, context)
@@ -1083,7 +1093,8 @@ class CheckUpdateNamespace(CalendarTasksNamespaceBaseClass):
             Usage: create <name> <property>=<value>
 
             Examples: create myupdate schedule={"hour":1}
-            
+            Examples: create myupdate schedule={"day":"1,4","hour":1}
+
             Creates a update calendar task. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
             Usage: set <property>=<value> ...
@@ -1125,6 +1136,7 @@ class CommandNamespace(CalendarTasksNamespaceBaseClass):
     Usage: create <name> username=<username> command=<command> <property>=<value>
 
     Examples: create mycommand username=myuser command="ls -l" schedule={"minute":"`*/5`"}
+              create mycommand username=myuser command="ls -l" schedule={"minute":"`*/5`","second":"10,30,50"}
     """
     def __init__(self, name, context):
         super(CommandNamespace, self).__init__(name, context)
@@ -1136,7 +1148,8 @@ class CommandNamespace(CalendarTasksNamespaceBaseClass):
             Usage: create <name> username=<username> command=<command> <property>=<value>
 
             Examples: create mycommand username=myuser command="ls -l" schedule={"minute":"*/5"}
-            
+                      create mycommand username=myuser command="ls -l" schedule={"minute":"*/5","second":"10,30,50"}
+
             Creates a command calendar task. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
             Usage: set <property>=<value> ...
@@ -1200,6 +1213,7 @@ class BackupNamespace(CalendarTasksNamespaceBaseClass):
 
     Examples:
         create my_periodic_backup backup=<backup_entity_name> schedule={"hour":2,"day_of_week":5}
+        create my_periodic_backup backup=<backup_entity_name> schedule={"hour":2,"day_of_week":"1,5"}
     """
     def __init__(self, name, context):
         super(BackupNamespace, self).__init__(name, context)
@@ -1212,6 +1226,7 @@ class BackupNamespace(CalendarTasksNamespaceBaseClass):
 
             Examples: create sshbackup_job backup=mysshbackup
                       create s3backup_job backup=mys3backup schedule={"hour":2,"day_of_week":5}
+                      create s3backup_job backup=mys3backup schedule={"hour":2,"day_of_week":"1,5"}
 
             Creates a backup calendar task. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['SetEntityCommand'] = ("""\

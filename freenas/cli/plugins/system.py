@@ -33,7 +33,7 @@ from freenas.cli.namespace import (
 )
 from freenas.cli.output import Object, Sequence, ValueType, format_value, output_msg
 from freenas.cli.descriptions import events
-from freenas.cli.utils import TaskPromise, post_save, parse_timedelta
+from freenas.cli.utils import TaskPromise, post_save, parse_timedelta, set_related, get_related
 from freenas.cli.complete import NullComplete
 from freenas.dispatcher.fd import FileDescriptor
 
@@ -658,7 +658,13 @@ class SystemUINamespace(ConfigNamespace):
         self.add_property(
             descr='HTTPS certificate',
             name='https_certificate',
-            get='webui_https_certificate',
+            get=lambda o: get_related(self.context, 'crypto.certificate', o, 'webui_https_certificate'),
+            set=lambda o, v: set_related(self.context, 'crypto.certificate', o, 'webui_https_certificate', v),
+            usage=_("""\
+            Name of the certificate
+            """),
+            enum=lambda: self.context.entity_subscribers['crypto.certificate'].query(
+                ('type', '!=', 'CERT_CSR'), select='name'),
             type=ValueType.STRING
         )
 

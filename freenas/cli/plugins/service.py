@@ -31,7 +31,7 @@ from freenas.cli.namespace import (
     Command, NestedEntityMixin, CommandException, description
 )
 from freenas.cli.output import ValueType, Table, Sequence
-from freenas.cli.utils import TaskPromise, post_save
+from freenas.cli.utils import TaskPromise, post_save, get_related, set_related, get_filtered
 from freenas.utils import extend
 
 
@@ -320,17 +320,19 @@ class OpenVPNNamespace(NestedEntityMixin, ItemNamespace):
         self.add_property(
             descr='Certificate for OpenVPN server',
             name='certificate',
-            get='cert',
-            set='cert',
+            get=lambda o: get_related(context, 'crypto.certificate', o, 'cert'),
+            set=lambda o, v: set_related(context, 'crypto.certificate', o, 'cert', v),
             type=ValueType.STRING,
+            enum=lambda: get_filtered(self.context, 'name', 'crypto.certificate'),
             usage=_('''\
             PKI mode server certificate.'''),
         )
         self.add_property(
             descr='CA for OpenVPN server',
             name='certificate_authority',
-            get='ca',
-            set='ca',
+            get=lambda o: get_related(context, 'crypto.certificate', o, 'ca'),
+            set=lambda o, v: set_related(context, 'crypto.certificate', o, 'ca', v),
+            enum=lambda: get_filtered(self.context, 'name', 'crypto.certificate'),
             type=ValueType.STRING,
             usage=_('''\
             PKI mode server CA'''),
@@ -1178,7 +1180,9 @@ class FTPNamespace(NestedEntityMixin, ItemNamespace):
             The SSL certificate to be used for TLS FTP
             connections. Enclose the certificate between double
             quotes"""),
-            get='tls_ssl_certificate',
+            get=lambda o: get_related(context, 'crypto.certificate', o, 'tls_ssl_certificate'),
+            set=lambda o, v: set_related(context, 'crypto.certificate', o, 'tls_ssl_certificate', v),
+            enum=lambda: get_filtered(self.context, 'name', 'crypto.certificate'),
             type=ValueType.STRING
         )
         self.add_property(
@@ -2149,6 +2153,7 @@ class WebDAVNamespace(NestedEntityMixin, ItemNamespace):
             connections. Enclose the certificate between double quotes"""),
             get='certificate',
             type=ValueType.STRING,
+            enum=lambda: get_filtered(context, 'name', 'crypto.certificate'),
             list=True
         )
         self.add_property(

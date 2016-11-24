@@ -462,6 +462,7 @@ class NFSSharesNamespace(BaseSharesNamespace):
             set in services/nfs."""),
             get='properties.security',
             list=True,
+            enum=['sys', 'krb5', 'krb5i', 'krb5p'],
             type=ValueType.SET
         )
 

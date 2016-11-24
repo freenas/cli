@@ -99,15 +99,6 @@ class OpenVPNNamespace(NestedEntityMixin, ItemNamespace):
             Device type for openvpn server. tap/tun''')
         )
         self.add_property(
-            descr='Enables OpenVPN server',
-            name='enable',
-            get='enable',
-            set='enable',
-            type=ValueType.BOOLEAN,
-            usage=_('''\
-            Allows to start OpenVPN server at boot time''')
-        )
-        self.add_property(
             descr='OpenVPN server user',
             name='user',
             get='user',
@@ -339,12 +330,13 @@ class OpenVPNNamespace(NestedEntityMixin, ItemNamespace):
         )
 
     def commands(self):
-        return {
+        ret = super(OpenVPNNamespace, self).commands()
+        return extend(ret, {
             'bridge': OpenVPNBridgeCommand(),
             'generate_crypto': OpenVPNCryptoCommand(),
             'provide_client_config': OpenVPNClientConfigCommand(),
             'provide_static_key': OpenVPNStaticKeyCommand()
-        }
+        })
 
 
 @description("Allows to bridge openvpn interface to the main interface")

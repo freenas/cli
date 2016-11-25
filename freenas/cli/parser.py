@@ -1080,6 +1080,9 @@ def p_error(p):
             parser.errok()
             return e
     else:
+        while lexer.lexstatestack:
+            lexer.pop_state()
+
         if not p:
             raise SyntaxError("Parse error")
 

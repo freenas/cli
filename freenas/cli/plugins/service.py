@@ -917,6 +917,41 @@ class FTPNamespace(NestedEntityMixin, ItemNamespace):
             type=ValueType.BOOLEAN
         )
         self.add_property(
+            descr='FTP port',
+            name='port',
+            usage=_("""
+            Numeric port the FTP service listens on."""),
+            get='port',
+            type=ValueType.NUMBER
+        )
+        self.add_property(
+            descr='Maximum clients',
+            name='max_clients',
+            usage=_("""
+            Number representing the maximum number of simultaneous
+            clients."""),
+            get='max_clients',
+            type=ValueType.NUMBER
+        )
+        self.add_property(
+            descr='Maximum connections per IP',
+            name='ip_connections',
+            usage=_("""
+            Number representing the maximum number of connections
+            per IP address, where 0 means unlimited."""),
+            get='ip_connections',
+            type=ValueType.NUMBER
+        )
+        self.add_property(
+            descr='Maximum login attempts',
+            name='login_attempts',
+            usage=_("""
+            Number representing the maximum number of failed login
+            attempts before client is disconnected."""),
+            get='login_attempt',
+            type=ValueType.NUMBER
+        )
+        self.add_property(
             descr='Idle timeout',
             name='timeout',
             usage=_("""

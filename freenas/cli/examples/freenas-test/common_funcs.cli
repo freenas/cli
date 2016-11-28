@@ -83,6 +83,7 @@ function nuke_from_orbit() {
 	action_by_name("calendar scrub", _scrub_name + ".*", "delete")
 	action_by_name("boot environment", _test_bootenv + ".*", "delete")
 	action_by_name("tunable", _tunable_var_rc + ".*", "delete")
+	action_by_name("network host", _test_host + ".*", "delete")
 	action_by_name("vm", _vm_name + ".*", "delete")
 	action_by_name("docker container", _container_name + ".*", "delete")
 }

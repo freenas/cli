@@ -112,7 +112,6 @@ else:
 DEFAULT_CLI_CONFIGFILE = os.path.join(os.getcwd(), '.freenascli.conf')
 
 
-
 t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
 
@@ -131,6 +130,7 @@ ENTITY_SUBSCRIBERS = [
     'group',
     'disk',
     'disk.enclosure',
+    'disk.iscsi.target',
     'volume',
     'volume.dataset',
     'volume.snapshot',

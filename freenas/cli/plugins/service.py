@@ -946,8 +946,8 @@ class FTPNamespace(NestedEntityMixin, ItemNamespace):
             descr='Maximum login attempts',
             name='login_attempts',
             usage=_("""
-            Number representing the maximum number of simultaneous
-            clients."""),
+            Number representing the maximum number of failed login
+            attempts before client is disconnected."""),
             get='login_attempt',
             type=ValueType.NUMBER
         )

@@ -73,8 +73,8 @@ function load_all() {
 
 # Run all of the create functions.
 function create_all() {
-	setopt abort_on_errors=yes
 	if (test_and_set_sentinel() == false) {
+	    setopt abort_on_errors=yes
 	    for (test in TEST_SET) {
 		eval(test + "_create()")
 		if (test_me_harder == true) {
@@ -87,8 +87,8 @@ function create_all() {
 
 # Run all of the destroy (cleanup) functions.
 function destroy_all() {
-	setopt abort_on_errors=no
 	if (test_and_set_sentinel() == false) {
+	    setopt abort_on_errors=no
 	    for (i = length(TEST_SET) - 1; i >= 0; i = i - 1) {
 		eval(TEST_SET[i] + "_destroy()")
 		if (test_me_harder == true) {

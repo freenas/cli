@@ -260,6 +260,13 @@ class ActiveDirectoryPropertiesNamespace(BaseDirectoryPropertiesNamespace):
             get='dc_address',
         )
 
+        self.add_property(
+            descr='SASL wrapping',
+            name='sasl_wrapping',
+            get='sasl_wrapping',
+            enum=['PLAIN', 'SIGN', 'SEAL']
+        )
+
 
 class FreeIPAPropertiesNamespace(BaseDirectoryPropertiesNamespace):
     def __init__(self, name, context, parent):

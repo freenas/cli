@@ -23,7 +23,7 @@ function maybe_die(flag, test, str) {
 }	
 
 function find_by_name(where, name) {
-	_n = sprintf("%s show | search name ~= \"%s\"", where, name)
+	_n = sprintf("/ %s show | search name ~= \"%s\"", where, name)
 	_x = eval(_n)
 	return _x[0]
 }
@@ -40,7 +40,7 @@ function action_by_name(where, name, action) {
 	_x = find_by_name(where, name)
 	if (_x) {
 	    for (_i in _x) {
-		_n = sprintf("%s %s %s", where, _i["name"], action)
+		_n = sprintf("/ %s %s %s", where, _i["name"], action)
 	    	eval(_n)
 	    }
 	}

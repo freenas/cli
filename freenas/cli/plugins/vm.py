@@ -195,11 +195,12 @@ class VMConfigNamespace(ConfigNamespace):
         def set_templates(o, v):
             template_sources = []
             for i in v:
-                template_sources.append({
-                    'id': i.replace('/', '-'),
-                    'driver': 'git',
-                    'url': i
-                })
+                if i:
+                    template_sources.append({
+                        'id': i.replace('/', '-'),
+                        'driver': 'git',
+                        'url': i
+                    })
 
             o['additional_templates'] = template_sources
 

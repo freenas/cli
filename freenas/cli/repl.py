@@ -1215,8 +1215,6 @@ class MainLoop(object):
         variables = kwargs.pop('variables', self.context.variables)
         cwd = self.get_cwd(path)
 
-        print(token)
-
         if not token:
             return []
 

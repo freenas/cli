@@ -210,7 +210,7 @@ def eval_(ast):
     if isinstance(ast, Quote):
         ast = ast.body
 
-    return Sequence(*config.instance.eval(ast))
+    return Sequence(*config.instance.eval(ast, first=True))
 
 
 # Reads a json object from a file or a str and returns a parsed dict of it

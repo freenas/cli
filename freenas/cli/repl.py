@@ -1215,6 +1215,8 @@ class MainLoop(object):
         variables = kwargs.pop('variables', self.context.variables)
         cwd = self.get_cwd(path)
 
+        print(token)
+
         if not token:
             return []
 
@@ -1227,7 +1229,7 @@ class MainLoop(object):
 
         try:
             if isinstance(token, list):
-                return [self.eval(i, env=env, path=path) for i in token]
+                return [self.eval(i, env=env, path=path, first=first) for i in token]
 
             if isinstance(token, Parentheses):
                 return self.eval(token.expr, env=env, path=path)

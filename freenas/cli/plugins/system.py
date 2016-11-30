@@ -487,6 +487,25 @@ class NTPServersNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
 
         self.primary_key = self.get_mapping('address')
 
+        self.entity_commands = lambda this: {
+            'sync_now': SyncNowCommand(this)
+        }
+
+@description("Synchronizes with an NTP server")
+class SyncNowCommand(Command):
+    """
+    Usage: sync_now
+
+    Synchronizes the time with the specified NTP server
+    """
+
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        tid = context.submit_task('ntp_server.sync_now', self.parent.entity['address'])
+        return TaskPromise(context, tid)
+
 
 @description("Time namespace")
 class TimeNamespace(ConfigNamespace):

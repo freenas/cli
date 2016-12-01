@@ -326,6 +326,14 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
 
             obj['datasets'] = datasets
 
+        def get_initial_master(obj):
+            if obj['initial_master'] == obj['master']:
+                return get_peer(obj, 'master')
+            elif obj['initial_master'] == obj['slave']:
+                return get_peer(obj, 'slave')
+            else:
+                return
+
         self.add_property(
             descr='Name',
             name='name',
@@ -397,7 +405,7 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
         self.add_property(
             descr='Initial master side',
             name='initial_master',
-            get='initial_master',
+            get=get_initial_master,
             usersetable=False,
             createsetable=False,
             list=False,

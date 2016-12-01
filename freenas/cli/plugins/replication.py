@@ -132,6 +132,8 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
 
             Example: create my_replication master=10.0.0.2 slave=10.0.0.3
                                            datasets=mypool,mypool/dataset
+                     create my_replication master=freenas-1.local slave=freenas-2.local
+                                           datasets=source:target,source2/data:target2
                      create my_replication master=10.0.0.2 slave=10.0.0.3
                                            datasets=mypool recursive=yes
                      create my_replication master=10.0.0.2 slave=10.0.0.3 datasets=mypool
@@ -163,7 +165,15 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             used in later replication process.
 
             All ZFS pools referenced in 'datasets' property must exist on both
-            slave and master at creation time. They also need to have the same names.
+            slave and master at creation time. Datasets can be defined as a simple list
+            of datasets available on master (source) eg. mypool/mydataset,mypool2/mydataset2,
+            or a list of {source}:{target} eg. mypool/ds:targetpool/ds2,otherpool:targetpool2.
+            First example could be expanded to:
+            mypool/mydataset:mypool/mydataset,mypool2/mydataset2:mypool2mydataset2
+            It would have the same meaning.
+
+            Bidirectional replication is accepting only identical master and slave
+            (source and target) datasets trees eg mypool:mypool,mypool2:mypool2.
 
             Created replication is implicitly: unidirectional, non-recursive,
             does not recover automatically and does not replicate services
@@ -302,6 +312,20 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
                 )
                 obj[role] = peer_id
 
+        def get_datasets(obj):
+            return ['{0}:{1}'.format(i['master'], i['slave']) for i in obj['datasets']]
+
+        def set_datasets(obj, value):
+            datasets = []
+            for ds in value:
+                sp_dataset = ds.split(':', 1)
+                datasets.append({
+                    'master': sp_dataset[0],
+                    'slave': sp_dataset[int(len(sp_dataset) == 2 and sp_dataset[1])]
+                })
+
+            obj['datasets'] = datasets
+
         self.add_property(
             descr='Name',
             name='name',
@@ -336,11 +360,11 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
         self.add_property(
             descr='Datasets',
             name='datasets',
-            get='datasets',
-            set='datasets',
+            get=get_datasets,
+            set=set_datasets,
             list=False,
             type=ValueType.SET,
-            complete=EntitySubscriberComplete('datasets=', 'volume.dataset', lambda o: o['name']),
+            complete=EntitySubscriberComplete('datasets=', 'volume.dataset', lambda o: o['name'] + ':'),
             usage=_('List of datasets to be replicated.')
         )
 

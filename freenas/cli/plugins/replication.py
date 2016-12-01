@@ -524,8 +524,7 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
         return self.context.submit_task(self.delete_task, this.entity[self.save_key_name], kwargs.get('scrub', False))
 
 
-# Not a BETA2 goal - disconnecting for now
-# def _init(context):
-#     context.attach_namespace('/', ReplicationNamespace('replication', context))
-#     context.map_tasks('replication.*', ReplicationNamespace)
+def _init(context):
+    context.attach_namespace('/', ReplicationNamespace('replication', context))
+    context.map_tasks('replication.*', ReplicationNamespace)
 

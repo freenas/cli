@@ -53,7 +53,7 @@ class SyncCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        name = self.parent.entity['id']
+        name = self.parent.entity['name']
         tid = context.submit_task(
             'replication.sync',
             name,
@@ -116,7 +116,7 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
                 )
 
         self.primary_key_name = 'name'
-        self.save_key_name = 'id'
+        self.save_key_name = 'name'
         self.entity_subscriber_name = 'replication'
         self.create_task = 'replication.create'
         self.update_task = 'replication.update'

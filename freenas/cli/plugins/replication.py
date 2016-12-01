@@ -363,6 +363,7 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             get=get_datasets,
             set=set_datasets,
             list=False,
+            strict=False,
             type=ValueType.SET,
             complete=EntitySubscriberComplete('datasets=', 'volume.dataset', lambda o: o['name'] + ':'),
             usage=_('List of datasets to be replicated.')

@@ -321,7 +321,7 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
                 sp_dataset = ds.split(':', 1)
                 datasets.append({
                     'master': sp_dataset[0],
-                    'slave': sp_dataset[int(len(sp_dataset) == 2 and sp_dataset[1])]
+                    'slave': sp_dataset[int(bool(len(sp_dataset) == 2 and sp_dataset[1]))]
                 })
 
             obj['datasets'] = datasets

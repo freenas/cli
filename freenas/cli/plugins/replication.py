@@ -53,7 +53,7 @@ class SyncCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        name = self.parent.entity['name']
+        name = self.parent.entity['id']
         tid = context.submit_task(
             'replication.sync',
             name,

@@ -25,9 +25,8 @@
 #
 #####################################################################
 
-
-import json
 import six
+from freenas.dispatcher.jsonenc import dumps
 from freenas.cli.output import ValueType, resolve_cell
 
 
@@ -58,15 +57,18 @@ class JsonOutputFormatter(object):
         if vt == ValueType.PASSWORD:
             return "*****"
 
-        return json.dumps(value)
+        if vt == ValueType.DATE:
+            return '{:%Y-%m-%d %H:%M:%S}'.format(value)
+
+        return dumps(value)
 
     @staticmethod
     def output_list(data, label):
-        six.print_(json.dumps(list(data), indent=4))
+        six.print_(dumps(list(data), indent=4))
 
     @staticmethod
     def output_dict(data, key_label, value_label):
-        six.print_(json.dumps(dict(data), indent=4))
+        six.print_(dumps(dict(data), indent=4))
 
     @staticmethod
     def output_table(table):
@@ -77,22 +79,22 @@ class JsonOutputFormatter(object):
                 rowdata[col.label] = JsonOutputFormatter.format_value(resolve_cell(row, col.accessor), col.vt)
             output.append(rowdata)
 
-        six.print_(json.dumps(output, indent=4))
+        six.print_(dumps(output, indent=4))
 
     @staticmethod
     def output_tree(data, children, label):
-        six.print_(json.dumps(list(data), indent=4))
+        six.print_(dumps(list(data), indent=4))
 
     @staticmethod
     def output_msg(data, **kwargs):
-        six.print_(json.dumps(data, indent=4))
+        six.print_(dumps(data, indent=4))
 
     @staticmethod
     def output_object(obj):
         output = {}
         for item in obj:
             output[item.name] = JsonOutputFormatter.format_value(item.value, item.vt)
-        six.print_(json.dumps(output, indent=4))
+        six.print_(dumps(output, indent=4))
 
 
 def _formatter():

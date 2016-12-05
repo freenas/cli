@@ -1,0 +1,27 @@
+# This script creates iSCSI 20 luns suitable for use by another machine,
+# perhaps even another FreeNAS machine which would like to use them as
+# virtual disks.
+
+COUNT=20
+SIZE=20g
+VOL_NAME=tank
+
+# First, create the iSCSI shares themselves.
+for (i = 0; i < ${COUNT}; i = i + 1) {
+	share iscsi create name=${"lun" + str(i)} rpm=10000 size=${SIZE} parent=${VOL_NAME}
+}
+
+# Now, set the LUN/target mappings.
+for (i = 0; i < ${COUNT}; i = i + 1) {
+	share iscsi targets create ${"iqn.2005-10.org.freenas.ctl.lun" + str(i)}
+}
+
+for (i = 0; i < ${COUNT}; i = i + 1) {
+	share iscsi targets ${"iqn.2005-10.org.freenas.ctl.lun" + str(i)} luns create name=${"lun" + str(i)} number=${i}
+}
+
+# Now, from another FreeNAS machine, you might mount them from the machine
+# sharing these by doing something like:
+# for (i = 0; i < 20; i = i + 1) { disk iscsi create name=${"iqn.2005-10.org.freenas.ctl.lun" + str(i)} address=192.168.1.1}
+# substituting 192.168.1.1 for the actual IP of the machine with the iscsi
+# shares of course.

@@ -483,8 +483,9 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
             'renew': InterfaceRenewCommand(this)
         }
 
-        self.leaf_entity_namespace = lambda this: AliasesNamespace('aliases', self.context, this)
-        self.leaf_harborer = True
+        self.entity_namespaces = lambda this: [
+            AliasesNamespace('alias', self.context, this)
+        ]
 
     def get_link_state(self, entity):
         return self.link_states[get(entity, 'status.link_state')]

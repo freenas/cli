@@ -442,7 +442,8 @@ class DockerImageNamespace(EntitySubscriberBasedLoadMixin, DockerUtilsMixin, Ent
             'pull': DockerImagePullCommand(self),
             'search': DockerImageSearchCommand(),
             'list': DockerImageListCommand(),
-            'readme': DockerImageReadmeCommand()
+            'readme': DockerImageReadmeCommand(),
+            'flush_cache': DockerImageFlushCacheCommand()
         }
 
         self.entity_commands = lambda this: {
@@ -868,6 +869,21 @@ class DockerImageReadmeCommand(Command):
         return [
             NullComplete('name=')
         ]
+
+
+@description("Delete all cached Docker container images")
+class DockerImageFlushCacheCommand(Command):
+    """
+    Usage: flush_cache
+
+    Example: flush_cache
+
+    Deletes all cached Docker container images.
+    """
+    def run(self, context, args, kwargs, opargs):
+        tid = context.submit_task('docker.image.flush')
+
+        return TaskPromise(context, tid)
 
 
 @description("Delete cached container image")

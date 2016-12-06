@@ -1173,21 +1173,16 @@ class MainLoop(object):
 
         for stmt in block:
             try:
-                ret = self.eval(stmt, env=env, first=True)
+                self.eval(stmt, env=env, first=True)
             except SystemExit:
+                raise
+            except FlowControlInstruction:
                 raise
             except BaseException as e:
                 if self.context.variables.get('abort_on_errors'):
                     raise e
 
                 continue
-
-            if type(ret) is FlowControlInstruction:
-                if ret.type == FlowControlInstructionType.BREAK:
-                    if not allow_break:
-                        raise SyntaxError("'break' cannot be used in this block")
-
-                raise ret
 
     def get_cwd(self, path):
         if not path:
@@ -1376,13 +1371,13 @@ class MainLoop(object):
                         raise f
 
             if isinstance(token, ReturnStatement):
-                return FlowControlInstruction(
+                raise FlowControlInstruction(
                     FlowControlInstructionType.RETURN,
                     self.eval(token.expr, env=env)
                 )
 
             if isinstance(token, BreakStatement):
-                return FlowControlInstruction(FlowControlInstructionType.BREAK)
+                raise FlowControlInstruction(FlowControlInstructionType.BREAK)
 
             if isinstance(token, UndefStatement):
                 del env[token.name]

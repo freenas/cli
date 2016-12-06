@@ -362,7 +362,7 @@ INET             10.0.0.150   24        10.0.0.255
 Now set the default gateway and DNS server:
 
 ```
-127.0.0.1:>network config ipv4_gateway=10.0.0.1 dns_servers=10.0.0.1
+127.0.0.1:>network config set ipv4_gateway=10.0.0.1 dns_servers=10.0.0.1
 127.0.0.1:>network config show
 IPv4 gateway (ipv4_gateway)                         10.0.0.1 
 IPv6 gateway (ipv6_gateway)                         none     

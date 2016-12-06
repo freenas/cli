@@ -1279,6 +1279,11 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
 
         return commands
 
+    def commands(self):
+        commands = super(TemplateNamespace, self).commands()
+        commands['flush_cache'] = FlushImagesCommand(self)
+        return commands
+
 
 @description("Downloads VM images to the local cache")
 class DownloadImagesCommand(Command):
@@ -1393,6 +1398,23 @@ class DeleteImagesCommand(Command):
 
     def run(self, context, args, kwargs, opargs, filtering=None):
         tid = context.submit_task('vm.cache.delete', self.parent.entity['template']['name'])
+        return TaskPromise(context, tid)
+
+
+@description("Deletes all VM images from the local cache")
+class FlushImagesCommand(Command):
+    """
+    Usage: flush_cache
+
+    Examples: flush_cache
+
+    Deletes all VM template images from the local cache.
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs, filtering=None):
+        tid = context.submit_task('vm.cache.flush')
         return TaskPromise(context, tid)
 
 

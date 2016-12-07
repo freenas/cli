@@ -448,7 +448,7 @@ class Context(object):
                 ))
 
             if task['state'] == 'FAILED':
-                if not task['parent'] or self.variables.get('verbosity') > 1:
+                if self.variables.get('verbosity') > 0 and (not task['parent'] or self.variables.get('verbosity') > 1):
                     self.output_queue.put(_(
                         "Task #{0} error: {1}".format(
                             task['id'],
@@ -465,7 +465,7 @@ class Context(object):
                 self.handle_task_callback(task)
 
             if old_task:
-                if len(task['warnings']) > len(old_task['warnings']):
+                if len(task['warnings']) > len(old_task['warnings']) and self.variables.get('verbosity') > 0:
                     for i in task['warnings'][len(old_task['warnings']):]:
                         self.output_queue.put(_("Task #{0}: {1}: warning: {2}".format(
                             task['id'],

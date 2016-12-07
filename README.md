@@ -337,7 +337,7 @@ By default FreeNAS is set to use a DHCP address, if you wish to set a static IP,
 Then create an alias with the IP you wish to set your system's IP to:
 
 ```
-127.0.0.1:>network interface em0 alias create 10.0.0.150 netmask=255.255.255.0
+127.0.0.1:>network interface em0 alias create address=10.0.0.150 netmask=255.255.255.0
 ```
 
 If you do network interface em0 show, you will see that DHCP is disabled and it is listening on the static IP:

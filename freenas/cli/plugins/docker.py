@@ -321,6 +321,17 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
         )
 
         self.add_property(
+            descr='DHCP Enabled',
+            name='dhcp',
+            get='bridge.dhcp',
+            usersetable=False,
+            list=True,
+            condition=lambda o: q.get(o, 'bridge.enabled'),
+            usage=_('''\
+            Defines if container will have it's IP address acquired via DHCP.'''),
+        )
+
+        self.add_property(
             descr='Container address',
             name='address',
             get='bridge.address',
@@ -1048,6 +1059,10 @@ class DockerContainerCreateCommand(Command):
                     kwargs.get('bridged', q.get(presets, 'bridge.enable', False)),
                     ValueType.BOOLEAN
                 ),
+                'dhcp': read_value(
+                    kwargs.get('dhcp', q.get(presets, 'bridge.dhcp', False)),
+                    ValueType.BOOLEAN
+                ),
                 'address': kwargs.get('bridge_address')
             }
         }
@@ -1088,6 +1103,7 @@ class DockerContainerCreateCommand(Command):
             EnumComplete('autostart=', ['yes', 'no']),
             EnumComplete('expose_ports=', ['yes', 'no']),
             EnumComplete('bridged=', ['yes', 'no']),
+            EnumComplete('dhcp=', ['yes', 'no']),
         ]
 
 

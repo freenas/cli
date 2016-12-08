@@ -969,6 +969,10 @@ class DockerContainerCreateCommand(Command):
                      expose_ports=yes
               create my-container image=dockerhub_image_name
                      volume:/container/directory=/mnt/my_pool/container_data
+              create bridged-and-static-ip image=ubuntu:latest interactive=yes
+                     bridged=yes bridge_address=10.20.0.180
+              create bridged-and-dhcp image=ubuntu:latest interactive=yes
+                     bridged=yes dhcp=yes
 
     Environment variables are provided as any number of uppercase KEY=VALUE
     elements.

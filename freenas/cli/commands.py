@@ -728,7 +728,7 @@ class HelpCommand(Command):
                 else:
                     description = obj.get_name()
                 value_description = re.sub('<entity>',
-                                           obj.get_name(),
+                                           str(obj.get_name()),
                                            description)
                 cmd_dict = {
                     'cmd': key,

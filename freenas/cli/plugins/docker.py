@@ -321,6 +321,17 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
         )
 
         self.add_property(
+            descr='DHCP Enabled',
+            name='dhcp',
+            get='bridge.dhcp',
+            usersetable=False,
+            list=True,
+            condition=lambda o: q.get(o, 'bridge.enabled'),
+            usage=_('''\
+            Defines if container will have it's IP address acquired via DHCP.'''),
+        )
+
+        self.add_property(
             descr='Container address',
             name='address',
             get='bridge.address',
@@ -947,17 +958,21 @@ class DockerContainerCreateCommand(Command):
                   port:<CONTAINER_PORT>/<PROTOCOL>=<HOST_PORT>
                   volume:<CONTAINER_PATH>=<HOST_PATH>
 
-    Examples: create my_ubuntu_container image=ubuntu:latest interactive=yes
-              create my_ubuntu_container image=ubuntu:latest interactive=yes
+    Examples: create my-ubuntu-container image=ubuntu:latest interactive=yes
+              create my-ubuntu-container image=ubuntu:latest interactive=yes
                      VAR1=VALUE1 VAR2=2
-              create my_container image=dockerhub_image_name
+              create my-container image=dockerhub_image_name
                      host=docker_host_vm_name hostname=container_hostname
-              create my_container image=dockerhub_image_name autostart=yes
-              create my_container image=dockerhub_image_name
+              create my-container image=dockerhub_image_name autostart=yes
+              create my-container image=dockerhub_image_name
                      port:8443/TCP=8443 port:1234/UDP=12356
                      expose_ports=yes
-              create my_container image=dockerhub_image_name
+              create my-container image=dockerhub_image_name
                      volume:/container/directory=/mnt/my_pool/container_data
+              create bridged-and-static-ip image=ubuntu:latest interactive=yes
+                     bridged=yes bridge_address=10.20.0.180
+              create bridged-and-dhcp image=ubuntu:latest interactive=yes
+                     bridged=yes dhcp=yes
 
     Environment variables are provided as any number of uppercase KEY=VALUE
     elements.
@@ -1048,6 +1063,10 @@ class DockerContainerCreateCommand(Command):
                     kwargs.get('bridged', q.get(presets, 'bridge.enable', False)),
                     ValueType.BOOLEAN
                 ),
+                'dhcp': read_value(
+                    kwargs.get('dhcp', q.get(presets, 'bridge.dhcp', False)),
+                    ValueType.BOOLEAN
+                ),
                 'address': kwargs.get('bridge_address')
             }
         }
@@ -1088,6 +1107,7 @@ class DockerContainerCreateCommand(Command):
             EnumComplete('autostart=', ['yes', 'no']),
             EnumComplete('expose_ports=', ['yes', 'no']),
             EnumComplete('bridged=', ['yes', 'no']),
+            EnumComplete('dhcp=', ['yes', 'no']),
         ]
 
 

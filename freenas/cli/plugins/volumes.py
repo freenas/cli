@@ -1106,7 +1106,6 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
             get='properties.refreservation.parsed',
             list=False,
             type=ValueType.SIZE,
-            condition=lambda o: o['type'] == 'FILESYSTEM',
             usage=_("Amount of space reserved for this dataset")
         )
 
@@ -1116,7 +1115,6 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
             get='properties.reservation.parsed',
             list=False,
             type=ValueType.SIZE,
-            condition=lambda o: o['type'] == 'FILESYSTEM',
             usage=_("Amount of space reserved for the child datasets")
         )
 

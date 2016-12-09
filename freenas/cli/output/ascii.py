@@ -86,11 +86,11 @@ def format_literal(value, **kwargs):
 class AsciiOutputFormatter(object):
     @staticmethod
     def format_value(value, vt):
-        if vt == ValueType.BOOLEAN:
-            return _("yes") if value else _("no")
-
         if value is None:
             return _("none")
+
+        if vt == ValueType.BOOLEAN:
+            return _("yes") if value else _("no")
 
         if vt == ValueType.SET:
             value = set(value)

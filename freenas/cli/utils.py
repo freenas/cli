@@ -289,7 +289,7 @@ def quote(value):
     if not value.isdigit() and value[0].isdigit():
         return '"{0}"'.format(value)
 
-    for c in ' \t\n`~!@#$%^&*()-=+[{]}\\|;:\'",<>/?':
+    for c in ' \t\n`~!@#$%^&*()=+[{]}\\|;:\'",<>/?':
         if c in value:
             return '"{0}"'.format(value)
 

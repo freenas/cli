@@ -1008,13 +1008,13 @@ class FTPNamespace(NestedEntityMixin, ItemNamespace):
         )
         self.add_property(
             descr='File creation mask',
-            name='filemask',
+            name='file_creation_mask',
             get='filemask',
             type=ValueType.PERMISSIONS
         )
         self.add_property(
             descr='Directory creation mask',
-            name='dirmask',
+            name='directory_creation_mask',
             get='dirmask',
             type=ValueType.PERMISSIONS
         )

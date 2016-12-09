@@ -26,6 +26,7 @@
 #####################################################################
 
 from freenas.cli.output import format_value
+from freenas.cli.utils import quote
 from copy import deepcopy
 
 
@@ -40,16 +41,6 @@ class NullComplete(object):
 
 class EnumComplete(NullComplete):
     def __init__(self, name, choices, **kwargs):
-        def quote(s):
-            if s is None:
-                return 'none'
-
-            for c in ' \t\n`~!@#$%^&*()-=+[{]}\\|;:\'",<>/?':
-                if c in s:
-                    return '"{0}"'.format(s)
-
-            return s
-
         super(EnumComplete, self).__init__(name, **kwargs)
         self.data = list(map(quote, choices))
 

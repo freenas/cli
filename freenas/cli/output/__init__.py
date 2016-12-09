@@ -351,6 +351,10 @@ def read_value(value, tv=ValueType.STRING):
     if tv == ValueType.PERMISSIONS:
         if isinstance(value, str):
             value = string_to_int(value)
+        else:
+            if value > 0o777:
+                raise ValueError('Invalid permissions format - use octal notation with maximum value of 0o777')
+
         return get_unix_permissions(value)
 
     if tv == ValueType.PASSWORD:

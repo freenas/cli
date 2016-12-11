@@ -869,7 +869,7 @@ class VMVolumeNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityName
             'type': 'VOLUME',
             'properties': {}
         }
-        self.required_props = ['name', 'destination']
+        self.required_props = ['name']
         self.localdoc['CreateEntityCommand'] = ("""\
             Usage: create <name> destination=<destination> <property>=<value> ...
 

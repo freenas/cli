@@ -197,16 +197,6 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
         )
 
         self.add_property(
-            descr='Status',
-            name='status',
-            get='status',
-            set=None,
-            usersetable=False,
-            list=True,
-            usage=_('String status of a container returned by a Docker service.')
-        )
-
-        self.add_property(
             descr='Web UI URL',
             name='web_ui_url',
             get='web_ui_url',

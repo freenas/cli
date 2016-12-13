@@ -816,7 +816,7 @@ class ISCSIPortalsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespa
 
             Examples:
                 create myiscsi listen=192.168.1.10
-                create someiscsi listen=127.0.0.1,somehost.local:8888
+                create someiscsi listen=127.0.0.1,192.168.1.10:8888
 
             Creates an iSCSI portal. For a list of properties, see
             'help properties'.""")
@@ -824,7 +824,7 @@ class ISCSIPortalsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespa
             Usage: set <property>=<value> ...
 
             Examples: set discovery_auth_group=somegroup
-                      set listen=hostname,127.0.0.1,192.168.1.10:8888
+                      set listen=127.0.0.1,192.168.1.10:8888
 
             Sets a iSCSI portal property. For a list of properties, see
             'help properties'.""")

@@ -60,6 +60,20 @@ class DismissAlertCommand(Command):
             context.ml.cd_up()
 
 
+@description("Dismisses all alerts at once")
+class DismissAllAlertsCommand(Command):
+    """
+    Usage: dismiss_all
+
+    Examples:
+        dismiss_all
+
+    Dismisses all alerts at once
+    """
+    def run(self, context, args, kwargs, opargs):
+        context.call_sync('alert.dismiss_all')
+
+
 @description("Sends user-defined alert")
 class SendAlertCommand(Command):
     """
@@ -181,7 +195,8 @@ class AlertNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         }
 
         self.extra_commands = {
-            'send': SendAlertCommand()
+            'send': SendAlertCommand(),
+            'dismiss_all': DismissAllAlertsCommand()
         }
 
     def namespaces(self):

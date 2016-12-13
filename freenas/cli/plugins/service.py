@@ -572,14 +572,14 @@ class UPSNamespace(NestedEntityMixin, ItemNamespace):
             type=ValueType.STRING,
         )
         self.add_property(
-            descr='Monitor Remote',
-            name='monitor_remote',
+            descr='Allow Remote Connections',
+            name='allow_remote_connections',
             usage=_("""
             Can be set to yes or no. When set to yes,
             the default is to listen on all interfaces and to use
             the known values upsmon for 'monitor_user' and
             fixmepass for 'monitor_password'."""),
-            get='monitor_remote',
+            get='allow_remote_connections',
             type=ValueType.BOOLEAN,
         )
         self.add_property(
@@ -1008,13 +1008,13 @@ class FTPNamespace(NestedEntityMixin, ItemNamespace):
         )
         self.add_property(
             descr='File creation mask',
-            name='filemask',
+            name='file_creation_mask',
             get='filemask',
             type=ValueType.PERMISSIONS
         )
         self.add_property(
             descr='Directory creation mask',
-            name='dirmask',
+            name='directory_creation_mask',
             get='dirmask',
             type=ValueType.PERMISSIONS
         )

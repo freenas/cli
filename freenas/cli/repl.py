@@ -448,7 +448,7 @@ class Context(object):
                 ))
 
             if task['state'] == 'FAILED':
-                if not task['parent'] or self.variables.get('verbosity') > 1:
+                if self.variables.get('verbosity') > 0 and (not task['parent'] or self.variables.get('verbosity') > 1):
                     self.output_queue.put(_(
                         "Task #{0} error: {1}".format(
                             task['id'],
@@ -465,7 +465,7 @@ class Context(object):
                 self.handle_task_callback(task)
 
             if old_task:
-                if len(task['warnings']) > len(old_task['warnings']):
+                if len(task['warnings']) > len(old_task['warnings']) and self.variables.get('verbosity') > 0:
                     for i in task['warnings'][len(old_task['warnings']):]:
                         self.output_queue.put(_("Task #{0}: {1}: warning: {2}".format(
                             task['id'],
@@ -1173,21 +1173,16 @@ class MainLoop(object):
 
         for stmt in block:
             try:
-                ret = self.eval(stmt, env=env, first=True)
+                self.eval(stmt, env=env, first=True)
             except SystemExit:
+                raise
+            except FlowControlInstruction:
                 raise
             except BaseException as e:
                 if self.context.variables.get('abort_on_errors'):
                     raise e
 
                 continue
-
-            if type(ret) is FlowControlInstruction:
-                if ret.type == FlowControlInstructionType.BREAK:
-                    if not allow_break:
-                        raise SyntaxError("'break' cannot be used in this block")
-
-                raise ret
 
     def get_cwd(self, path):
         if not path:
@@ -1376,13 +1371,13 @@ class MainLoop(object):
                         raise f
 
             if isinstance(token, ReturnStatement):
-                return FlowControlInstruction(
+                raise FlowControlInstruction(
                     FlowControlInstructionType.RETURN,
                     self.eval(token.expr, env=env)
                 )
 
             if isinstance(token, BreakStatement):
-                return FlowControlInstruction(FlowControlInstructionType.BREAK)
+                raise FlowControlInstruction(FlowControlInstructionType.BREAK)
 
             if isinstance(token, UndefStatement):
                 del env[token.name]

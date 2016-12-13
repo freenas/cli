@@ -51,7 +51,7 @@ from freenas.cli.output import (
 )
 from freenas.cli.output import Object as output_obj, get_terminal_size
 from freenas.cli.descriptions.tasks import translate as translate_task
-from freenas.cli.utils import TaskPromise, describe_task_state, parse_timedelta, add_tty_formatting
+from freenas.cli.utils import TaskPromise, describe_task_state, parse_timedelta, add_tty_formatting, quote
 from freenas.dispatcher.shell import ShellClient
 from freenas.utils.url import wrap_address
 
@@ -728,7 +728,7 @@ class HelpCommand(Command):
                 else:
                     description = obj.get_name()
                 value_description = re.sub('<entity>',
-                                           obj.get_name(),
+                                           str(obj.get_name()),
                                            description)
                 cmd_dict = {
                     'cmd': key,
@@ -836,7 +836,7 @@ class IndexCommand(Command):
         ns_seq = Sequence(
             _("Current namespace items:"),
             sorted(list(cmds)) +
-            [add_tty_formatting(context, ns.get_name()) for ns in sorted(nss, key=lambda i: str(i.get_name()))]
+            [add_tty_formatting(context, quote(ns.get_name())) for ns in sorted(nss, key=lambda i: str(i.get_name()))]
         )
         if outseq is not None:
             outseq += ns_seq

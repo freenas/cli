@@ -7,9 +7,12 @@ _network_hard_count=50
 _network_hard_narr = []
 
 function good_char(c) {
-	i = c + 65;
-	if (i > 90 and i < 97) { i = i + 6 }
-	return i
+	if (c > 25) {
+		offset = 6
+	} else {
+		offset = 0
+	}
+	return c + 65 + offset;
 }
 
 function network_create() {

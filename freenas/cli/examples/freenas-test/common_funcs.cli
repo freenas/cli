@@ -4,8 +4,8 @@ _sentinel_tag="_running_tests"
 
 function maybe_barf(flag, test, str) {
 	if (flag != true) {
-	    printf("ERROR %s in %s (%s)\n", str, test, _error)
-	    fprintf(output_handle, "ERROR %s in %s (\"%s\" : %d)\n", str, test, _error, _last_task_id)
+	    printf("ERROR %s in %s (\"%s\" : task #%d)\n", str, test, _error, _last_task_id)
+	    fprintf(output_handle, "ERROR %s in %s (\"%s\" : task #%d)\n", str, test, _error, _last_task_id)
 	    if (_exit_on_error == "yes") {
 		exit 1
 	    }
@@ -15,8 +15,8 @@ function maybe_barf(flag, test, str) {
 
 function maybe_die(flag, test, str) {
 	if (flag != true) {
-	    printf("FATAL error %s in %s (%s)\n", str, test, _error)
-	    fprintf(output_handle, "FATAL error %s in %s (\"%s\" : %d)\n", str, test, _error, _last_task_id)
+	    printf("FATAL error %s in %s (\"%s\" : task #%d)\n", str, test, _error, _last_task_id)
+	    fprintf(output_handle, "FATAL error %s in %s (\"%s\" : task #%d)\n", str, test, _error, _last_task_id)
 	    exit 2
 	}
 	return not flag

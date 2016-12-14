@@ -161,6 +161,17 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
         )
 
         self.add_property(
+            descr='Running',
+            name='running',
+            get='running',
+            set=None,
+            usersetable=False,
+            type=ValueType.BOOLEAN,
+            list=True,
+            usage=_('State of a container returned by a Docker service.')
+        )
+
+        self.add_property(
             descr='Image name',
             name='image',
             get='image',

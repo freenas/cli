@@ -2324,6 +2324,15 @@ class ServicesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Enti
         )
 
         self.add_property(
+            descr='Error',
+            name='error',
+            get='error',
+            set=None,
+            list=True,
+            condition=lambda o: o.get('error')
+        )
+
+        self.add_property(
             descr='Process ID',
             name='pid',
             get='pid',

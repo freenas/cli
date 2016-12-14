@@ -17,7 +17,7 @@ function good_char(c) {
 
 function network_create() {
 	print(">>> Starting network tests")
-	@$(network host create name=${_test_host} addresses=${_test_network + ".1"})
+	@$(network host create name=${_test_host} addresses=${_test_network + ".254"})
 	maybe_barf(_success, "network#1", "Unable to create host entry " + _test_host)
 }
 

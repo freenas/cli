@@ -164,10 +164,22 @@ class ImportVMCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        try:
-            name = args[0]
-        except IndexError:
+        if not args and not kwargs:
+            raise CommandException(_("import requires more arguments, see 'help import' for more information"))
+        if len(args) > 1:
+            raise CommandException(_("Wrong syntax for import, see 'help import' for more information"))
+
+        if len(args) == 1:
+            if 'name' in kwargs:
+                raise CommandException(_("Both positional and keyword 'name' parameters are specified."))
+            else:
+                kwargs['name'] = args.pop(0)
+
+        if 'name' not in kwargs:
             raise CommandException(_("Please specify the name of VM."))
+        else:
+            name = kwargs.pop('name')
+
         volume = kwargs.get('volume', None)
         if not volume:
             raise CommandException(_("Please specify which volume is containing a VM being imported."))
@@ -176,6 +188,12 @@ class ImportVMCommand(Command):
 
         tid = context.submit_task('vm.import', name, volume, callback=lambda s, t: post_save(ns, s, t))
         return EntityPromise(context, tid, ns)
+
+    def complete(self, context, **kwargs):
+        return [
+            NullComplete('name='),
+            EntitySubscriberComplete('volume=', 'volume', lambda i: i['id'])
+        ]
 
 
 @description("Configure system-wide virtualization behavior")

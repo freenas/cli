@@ -26,8 +26,9 @@ function network_destroy() {
 function network_hard_create() {
 	print(">>> Starting network stress tests")
 	for (i = 0; i < _network_hard_count; i = i + 1) {
-		_x = @$(network host create name=${_test_host + sprintf("%c", good_char(i))} addresses=${_test_network + "." + str(i)})
-		if (not maybe_barf(_success, "network-hard#1", "Unable to create host entry " + ${_test_host + str(i)})) {
+		_hname = ${_test_host + sprintf("%c", good_char(i))}
+		_x = @$(network host create name=${_hname} addresses=${_test_network + "." + str(i)})
+		if (not maybe_barf(_success, "network-hard#1", "Unable to create host entry " + ${_hname})) {
 		    append(_network_hard_narr, _x)
 		}
 	}

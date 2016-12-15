@@ -983,7 +983,7 @@ class ISCSIUsersNamespace(EntityNamespace):
         self.primary_key = self.get_mapping('name')
 
     def get_one(self, name):
-        return first_or_default(lambda a: a['name'] == name, self.parent.entity.get('users', []))
+        return first_or_default(lambda a: a['name'] == name, self.parent.entity['users'] or [])
 
     def query(self, params, options):
         return self.parent.entity['users'] or []
@@ -1224,3 +1224,5 @@ def find_share_namespace(context, task):
 def _init(context):
     context.attach_namespace('/', SharesNamespace('share', context))
     context.map_tasks('share.*', find_share_namespace)
+    context.map_tasks('share.iscsi.target.*', ISCSITargetsNamespace)
+    context.map_tasks('share.iscsi.auth.*', ISCSIAuthGroupsNamespace)

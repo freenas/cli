@@ -48,7 +48,6 @@ source ${TOP_DIR + "common_funcs.cli"}
 
 # Set some sensible default options before beginning the test run
 setopt rollbar_enabled=no
-#setopt verbosity=0
 
 function test_and_set_sentinel() {
 	if (test_sentinel()) {

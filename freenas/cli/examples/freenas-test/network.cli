@@ -7,14 +7,17 @@ _network_hard_count=50
 _network_hard_narr = []
 
 function good_char(c) {
-	i = c + 65;
-	if (i > 90 and i < 97) { i = i + 6 }
-	return i
+	if (c > 25) {
+		offset = 6
+	} else {
+		offset = 0
+	}
+	return c + 65 + offset;
 }
 
 function network_create() {
 	print(">>> Starting network tests")
-	@$(network host create name=${_test_host} addresses=${_test_network + ".1"})
+	@$(network host create name=${_test_host} addresses=${_test_network + ".254"})
 	maybe_barf(_success, "network#1", "Unable to create host entry " + _test_host)
 }
 
@@ -26,8 +29,9 @@ function network_destroy() {
 function network_hard_create() {
 	print(">>> Starting network stress tests")
 	for (i = 0; i < _network_hard_count; i = i + 1) {
-		_x = @$(network host create name=${_test_host + sprintf("%c", good_char(i))} addresses=${_test_network + "." + str(i)})
-		if (not maybe_barf(_success, "network-hard#1", "Unable to create host entry " + ${_test_host + str(i)})) {
+		_hname = ${_test_host + sprintf("%c", good_char(i))}
+		_x = @$(network host create name=${_hname} addresses=${_test_network + "." + str(i)})
+		if (not maybe_barf(_success, "network-hard#1", "Unable to create host entry " + ${_hname})) {
 		    append(_network_hard_narr, _x)
 		}
 	}

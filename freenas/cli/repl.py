@@ -159,6 +159,7 @@ ENTITY_SUBSCRIBERS = [
     'peer',
     'docker.host',
     'docker.container',
+    'docker.network',
     'docker.image',
     'docker.collection',
     'vmware.dataset'

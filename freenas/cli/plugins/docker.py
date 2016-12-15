@@ -31,7 +31,7 @@ from freenas.cli.namespace import (
     TaskBasedSaveMixin, CommandException, description, ConfigNamespace, RpcBasedLoadMixin
 )
 from freenas.cli.output import ValueType, Table, Sequence, read_value
-from freenas.cli.utils import TaskPromise, post_save, EntityPromise, get_item_stub
+from freenas.cli.utils import TaskPromise, post_save, EntityPromise, get_item_stub, netmask_to_cidr
 from freenas.utils import query as q
 from freenas.cli.complete import NullComplete, EntitySubscriberComplete, EnumComplete, RpcComplete
 from freenas.cli.console import Console
@@ -55,6 +55,12 @@ class DockerUtilsMixin(object):
         if h:
             o['host'] = h['id']
             return h['id']
+
+    def set_netmask(entity, netmask):
+        try:
+            netmask_to_cidr(entity, netmask)
+        except ValueError as error:
+            raise CommandException(error)
 
 
 @description("View information about Docker hosts")
@@ -113,6 +119,104 @@ class DockerHostNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         self.primary_key = self.get_mapping('name')
 
 
+@description("Configure and manage Docker networks")
+class DockerNetworkNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, DockerUtilsMixin, EntityNamespace):
+    """
+    The docker network namespace provides commands for listing,
+    creating, and managing Docker networks.
+    """
+    def __init__(self, name, context):
+        super(DockerNetworkNamespace, self).__init__(name, context)
+        self.entity_subscriber_name = 'docker.network'
+        self.create_task = 'docker.network.create'
+        self.delete_task = 'docker.network.delete'
+        self.allow_edit = False
+        self.primary_key_name = 'name'
+        self.required_props = ['name']
+        self.skeleton_entity = {
+        }
+
+        self.entity_localdoc['DeleteEntityCommand'] = ("""\
+            Usage: delete
+
+            Deletes the specified Docker container.""")
+        self.localdoc['ListCommand'] = ("""\
+            Usage: show
+
+            Lists all Docker containers. Optionally, filter or sort by property.
+            Use 'help properties' to list available properties.
+
+            Examples:
+                show
+                show | search name == foo""")
+
+        self.add_property(
+            descr='Host',
+            name='host',
+            get=self.get_host,
+            set=self.set_host,
+            usersetable=False,
+            list=True,
+            complete=EntitySubscriberComplete('host=', 'docker.host', lambda d: d['name']),
+            usage=_('''\
+            Name of Docker host instance owning network instance.
+            Docker host name equals to name of Virtual Machine
+            hosting Docker service.''')
+        )
+
+        self.add_property(
+            descr='Name',
+            name='name',
+            get='name',
+            usersetable=False,
+            list=True,
+            usage=_('Name of a network.')
+        )
+
+        self.add_property(
+            descr='Driver',
+            name='driver',
+            get='driver',
+            usersetable=False,
+            list=True,
+            usage=_('Type of a docker network driver. Supported values : "bridge"'),
+            enum=['bridge']
+        )
+
+        self.add_property(
+            descr='Subnet',
+            name='subnet',
+            get='subnet',
+            set=self.set_netmask,
+            list=True,
+            usage=_("The subnet of the network.")
+        )
+
+        self.add_property(
+            descr='Gateway',
+            name='gateway',
+            get='gateway',
+            usage=_("""\
+            IPv4 address of the network's default gateway.
+            """),
+            list=True
+        )
+
+        self.primary_key = self.get_mapping('name')
+        self.entity_commands = self.get_entity_commands
+
+    def commands(self):
+        ret = super(DockerNetworkNamespace, self).commands()
+        return ret
+
+    def get_entity_commands(self, this):
+        this.load()
+        commands = {
+        }
+
+        return commands
+
+
 @description("Configure and manage Docker containers")
 class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, DockerUtilsMixin, EntityNamespace):
     """
@@ -158,6 +262,17 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             usersetable=False,
             list=True,
             usage=_('Name of a container instance.')
+        )
+
+        self.add_property(
+            descr='Running',
+            name='running',
+            get='running',
+            set=None,
+            usersetable=False,
+            type=ValueType.BOOLEAN,
+            list=True,
+            usage=_('State of a container returned by a Docker service.')
         )
 
         self.add_property(
@@ -1215,6 +1330,7 @@ class DockerNamespace(Namespace):
         return [
             DockerHostNamespace('host', self.context),
             DockerContainerNamespace('container', self.context),
+            DockerNetworkNamespace('network', self.context),
             DockerImageNamespace('image', self.context),
             DockerConfigNamespace('config', self.context),
             DockerCollectionNamespace('collection', self.context)
@@ -1225,6 +1341,7 @@ def _init(context):
     context.attach_namespace('/', DockerNamespace('docker', context))
     context.map_tasks('docker.config.*', DockerConfigNamespace)
     context.map_tasks('docker.container.*', DockerContainerNamespace)
+    context.map_tasks('docker.network.*', DockerNetworkNamespace)
     context.map_tasks('docker.host.*', DockerHostNamespace)
     context.map_tasks('docker.image.*', DockerImageNamespace)
     context.map_tasks('docker.collection.*', DockerCollectionNamespace)

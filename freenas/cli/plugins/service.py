@@ -1463,7 +1463,7 @@ class SMBNamespace(NestedEntityMixin, ItemNamespace):
             usage=_("""
             Can be set to yes or no. If set to yes,
             users can just press Enter when prompted for a
-            password. Requires that the usename=assword be the
+            password. Requires that the username/password be the
             same as the Windows user account."""),
             get='empty_password',
             type=ValueType.BOOLEAN
@@ -1610,12 +1610,12 @@ class DynDnsNamespace(NestedEntityMixin, ItemNamespace):
             type=ValueType.SET
         )
         self.add_property(
-            descr='Usename',
-            name='usename',
+            descr='Username',
+            name='username',
             usage=_("""
-            Usename=sed to logon to the provider and update the
+            Username to logon to the provider and update the
             record."""),
-            get='usename',
+            get='username',
         )
         self.add_property(
             descr='Password',
@@ -2002,7 +2002,7 @@ class SNMPNamespace(NestedEntityMixin, ItemNamespace):
             descr='SNMPv3 Username',
             name='v3_username',
             usage=_("""
-            Only set if 'v3' is set. Specify the usename=o
+            Only set if 'v3' is set. Specify the username
             register with the SNMPv3 service."""),
             get='v3_username',
             type=ValueType.STRING

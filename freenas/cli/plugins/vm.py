@@ -1347,18 +1347,19 @@ class ShowGuestInfoCommand(Command):
 
     def run(self, context, args, kwargs, opargs):
         guest_info = context.call_sync('vm.get_guest_info', self.parent.entity['id'])
-        addresses = []
 
-        for name, config in guest_info['interfaces'].items():
-            if name.startswith('lo'):
-                continue
+        if guest_info:
+            addresses = []
+            for name, config in guest_info['interfaces'].items():
+                if name.startswith('lo'):
+                    continue
 
-            addresses += [i['address'] for i in config['aliases'] if i['af'] != 'LINK']
+                addresses += [i['address'] for i in config['aliases'] if i['af'] != 'LINK']
 
-        return Object(
-            Object.Item('Load average', 'load_avg', guest_info['load_avg'], ValueType.ARRAY),
-            Object.Item('Network configuration', 'interfaces', addresses, ValueType.SET)
-        )
+            return Object(
+                Object.Item('Load average', 'load_avg', guest_info['load_avg'], ValueType.ARRAY),
+                Object.Item('Network configuration', 'interfaces', addresses, ValueType.SET)
+            )
 
 
 class GuestLsCommand(Command):

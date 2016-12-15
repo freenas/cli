@@ -246,6 +246,74 @@ class VMConfigNamespace(ConfigNamespace):
         )
 
 
+class VMDatastoreLocalPropertiesMixin(BaseVariantMixin):
+    def add_properties(self):
+        super(VMDatastoreLocalPropertiesMixin, self).add_properties()
+
+        self.add_property(
+            descr='Path',
+            name='local_path',
+            get='properties.path',
+            condition=lambda o: o['type'] == 'local'
+        )
+
+
+class VMDatastoreNFSPropertiesMixin(BaseVariantMixin):
+    def add_properties(self):
+        super(VMDatastoreNFSPropertiesMixin, self).add_properties()
+
+        self.add_property(
+            descr='Path',
+            name='nfs_path',
+            get='properties.path',
+            condition=lambda o: o['type'] == 'nfs'
+        )
+
+        self.add_property(
+            descr='Address',
+            name='nfs_address',
+            get='properties.address',
+            condition=lambda o: o['type'] == 'nfs'
+        )
+
+
+
+@description("Configure virtual machine datastores")
+class VMDatastoreNamespace(
+    TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, VMDatastoreLocalPropertiesMixin,
+    VMDatastoreNFSPropertiesMixin, EntityNamespace
+):
+    def __init__(self, name, context):
+        super(VMDatastoreNamespace, self).__init__(name, context)
+        self.entity_subscriber_name = 'vm.datastore'
+        self.create_task = 'vm.datastore.create'
+        self.update_task = 'vm.datastore.update'
+        self.delete_task = 'vm.datastore.delete'
+        self.primary_key_name = 'name'
+        self.skeleton_entity = {
+            'type': None
+        }
+
+        self.add_property(
+            descr='Name',
+            name='name',
+            get='name',
+            list=True
+        )
+
+        self.add_property(
+            descr='Type',
+            name='type',
+            get='type',
+            set='type',
+            usersettable=False,
+            list=True
+        )
+
+        self.add_properties()
+        self.primary_key = self.get_mapping('name')
+
+
 @description("Configure and manage virtual machines")
 class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):
     """
@@ -329,7 +397,7 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             get='target',
             createsetable=True,
             usersetable=False,
-            complete=EntitySubscriberComplete('volume=', 'volume', lambda i: i['id']),
+            #complete=EntitySubscriberComplete('volume=', 'volume', lambda i: i['id']),
             usage=_("The volume on which the VM is stored")
         )
 
@@ -511,6 +579,7 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
 
     def namespaces(self):
         yield TemplateNamespace('template', self.context)
+        yield VMDatastoreNamespace('datastore', self.context)
         yield VMConfigNamespace('config', self.context)
         for namespace in super(VMNamespace, self).namespaces():
             yield namespace

@@ -198,9 +198,8 @@ class DockerNetworkNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin,
             descr='Subnet',
             name='subnet',
             get='subnet',
-            set=self.set_netmask,
             list=True,
-            usage=_("The subnet of the network.")
+            usage=_("The subnet of the network in CIDR format. Specify the value between quotes")
         )
 
         self.add_property(

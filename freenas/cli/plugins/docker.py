@@ -138,12 +138,15 @@ class DockerNetworkNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin,
         }
 
         self.localdoc['CreateEntityCommand'] = ("""\
-            Usage: create <name> subnet=<subnet> <gateway>=<gateway>
+            Usage: create <name> <property>=<value>
 
-            Examples: create my_network subnet="10.20.4.0/24" gateway=10.20.4.1
-                driver=bridge
+            Examples:
+                create with-my-subnet subnet="10.20.4.0/24" gateway=10.20.4.1 driver=bridge
+                create docker-selects-subnet driver=bridge
 
-            Creates a Docker network.
+            Creates a Docker network. If subnet and gateway properties are not specified
+            the values will be selected by the docker engine.
+            The driver property defaults to 'bridge'
 
             For a list of properties, see 'help properties'.""")
 
@@ -199,7 +202,10 @@ class DockerNetworkNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin,
             name='subnet',
             get='subnet',
             list=True,
-            usage=_("The subnet of the network in CIDR format. Specify the value between quotes")
+            usage=_("""\
+            The subnet of the network in CIDR format. Specify the value between quotes.
+            If left unspecified it will be selected by the docker engine
+            """)
         )
 
         self.add_property(
@@ -208,6 +214,7 @@ class DockerNetworkNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin,
             get='gateway',
             usage=_("""\
             IPv4 address of the network's default gateway.
+            If left unspecified it will be selected by the docker engine
             """),
             list=True
         )

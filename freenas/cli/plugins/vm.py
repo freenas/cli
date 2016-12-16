@@ -33,7 +33,7 @@ from freenas.cli.namespace import (
     Namespace
 )
 from freenas.cli.output import Object, ValueType, get_humanized_size
-from freenas.cli.utils import TaskPromise, post_save, EntityPromise, get_item_stub
+from freenas.cli.utils import TaskPromise, post_save, EntityPromise, get_item_stub, get_related, set_related
 from freenas.utils import first_or_default
 from freenas.utils.query import get, set
 from freenas.cli.complete import NullComplete, EntitySubscriberComplete, RpcComplete, MultipleSourceComplete
@@ -254,6 +254,7 @@ class VMDatastoreLocalPropertiesMixin(BaseVariantMixin):
             descr='Path',
             name='local_path',
             get='properties.path',
+            list=False,
             condition=lambda o: o['type'] == 'local'
         )
 
@@ -266,6 +267,7 @@ class VMDatastoreNFSPropertiesMixin(BaseVariantMixin):
             descr='Path',
             name='nfs_path',
             get='properties.path',
+            list=False,
             condition=lambda o: o['type'] == 'nfs'
         )
 
@@ -273,9 +275,18 @@ class VMDatastoreNFSPropertiesMixin(BaseVariantMixin):
             descr='Address',
             name='nfs_address',
             get='properties.address',
+            list=False,
             condition=lambda o: o['type'] == 'nfs'
         )
 
+        self.add_property(
+            descr='NFS version',
+            name='nfs_version',
+            get='properties.version',
+            enum=['NFSV3', 'NFSV4'],
+            list=False,
+            condition=lambda o: o['type'] == 'nfs'
+        )
 
 
 @description("Configure virtual machine datastores")
@@ -326,7 +337,7 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
         self.create_task = 'vm.create'
         self.update_task = 'vm.update'
         self.delete_task = 'vm.delete'
-        self.required_props = ['name', 'volume']
+        self.required_props = ['name', 'datastore']
         self.primary_key_name = 'name'
         self.localdoc['CreateEntityCommand'] = ("""\
             Usage: create <name> volume=<volume> <property>=<value> ...
@@ -392,12 +403,13 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
         )
 
         self.add_property(
-            descr='Volume',
-            name='volume',
-            get='target',
+            descr='Datastore',
+            name='datastore',
+            get=lambda o: get_related(self.context, 'vm.datastore', o, 'target'),
+            set=lambda o, v: set_related(self.context, 'vm.datastore', o, 'target', v),
             createsetable=True,
             usersetable=False,
-            #complete=EntitySubscriberComplete('volume=', 'volume', lambda i: i['id']),
+            complete=EntitySubscriberComplete('datastore=', 'vm.datastore', lambda i: i['name']),
             usage=_("The volume on which the VM is stored")
         )
 

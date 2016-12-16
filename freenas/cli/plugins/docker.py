@@ -137,6 +137,16 @@ class DockerNetworkNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin,
             'driver': 'bridge'
         }
 
+        self.localdoc['CreateEntityCommand'] = ("""\
+            Usage: create <name> subnet=<subnet> <gateway>=<gateway>
+
+            Examples: create my_network subnet="10.20.4.0/24" gateway=10.20.4.1
+                driver=bridge
+
+            Creates a Docker network.
+
+            For a list of properties, see 'help properties'.""")
+
         self.entity_localdoc['DeleteEntityCommand'] = ("""\
             Usage: delete
 

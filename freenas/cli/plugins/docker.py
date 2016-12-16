@@ -216,10 +216,6 @@ class DockerNetworkNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin,
         self.primary_key = self.get_mapping('name')
         self.entity_commands = self.get_entity_commands
 
-    def commands(self):
-        ret = super(DockerNetworkNamespace, self).commands()
-        return ret
-
     def get_entity_commands(self, this):
         this.load()
         commands = {

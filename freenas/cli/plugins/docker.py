@@ -134,6 +134,7 @@ class DockerNetworkNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin,
         self.primary_key_name = 'name'
         self.required_props = ['name']
         self.skeleton_entity = {
+            'driver': 'bridge'
         }
 
         self.entity_localdoc['DeleteEntityCommand'] = ("""\

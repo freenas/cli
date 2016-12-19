@@ -25,6 +25,7 @@
 #
 #####################################################################
 
+import re
 import gettext
 from freenas.cli.namespace import (
     Namespace, EntityNamespace, Command, EntitySubscriberBasedLoadMixin,
@@ -61,6 +62,17 @@ class DockerUtilsMixin(object):
             netmask_to_cidr(entity, netmask)
         except ValueError as error:
             raise CommandException(error)
+
+    def set_name(self, obj, field, name):
+        DockerUtilsMixin.check_name(name)
+        obj[field] = name
+
+    @staticmethod
+    def check_name(name):
+        if not re.match(r'[a-zA-Z0-9._-]*$', name):
+            raise CommandException(_(
+                'Invalid name: {0}. Only [a-zA-Z0-9._-] characters are allowed'.format(name)
+            ))
 
 
 @description("View information about Docker hosts")
@@ -134,7 +146,21 @@ class DockerNetworkNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin,
         self.primary_key_name = 'name'
         self.required_props = ['name']
         self.skeleton_entity = {
+            'driver': 'bridge'
         }
+
+        self.localdoc['CreateEntityCommand'] = ("""\
+            Usage: create <name> <property>=<value>
+
+            Examples:
+                create with-my-subnet subnet="10.20.4.0/24" gateway=10.20.4.1 driver=bridge
+                create docker-selects-subnet driver=bridge
+
+            Creates a Docker network. If subnet and gateway properties are not specified
+            the values will be selected by the docker engine.
+            The driver property defaults to 'bridge'
+
+            For a list of properties, see 'help properties'.""")
 
         self.entity_localdoc['DeleteEntityCommand'] = ("""\
             Usage: delete
@@ -168,6 +194,7 @@ class DockerNetworkNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin,
             descr='Name',
             name='name',
             get='name',
+            set=lambda o, v: self.set_name(o, 'name', v),
             usersetable=False,
             list=True,
             usage=_('Name of a network.')
@@ -187,9 +214,11 @@ class DockerNetworkNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin,
             descr='Subnet',
             name='subnet',
             get='subnet',
-            set=self.set_netmask,
             list=True,
-            usage=_("The subnet of the network.")
+            usage=_("""\
+            The subnet of the network in CIDR format. Specify the value between quotes.
+            If left unspecified it will be selected by the docker engine
+            """)
         )
 
         self.add_property(
@@ -198,16 +227,13 @@ class DockerNetworkNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin,
             get='gateway',
             usage=_("""\
             IPv4 address of the network's default gateway.
+            If left unspecified it will be selected by the docker engine
             """),
             list=True
         )
 
         self.primary_key = self.get_mapping('name')
         self.entity_commands = self.get_entity_commands
-
-    def commands(self):
-        ret = super(DockerNetworkNamespace, self).commands()
-        return ret
 
     def get_entity_commands(self, this):
         this.load()
@@ -1097,6 +1123,9 @@ class DockerContainerCreateCommand(Command):
             raise CommandException('image is a required property')
 
         name = kwargs.get('name') or args[0]
+
+        DockerUtilsMixin.check_name(name)
+
         image = context.entity_subscribers['docker.image'].query(('names', 'in', kwargs['image']), single=True)
         if not image:
             image = q.query(DockerImageNamespace.default_images, ('name', '=', kwargs['image']), single=True)

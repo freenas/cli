@@ -25,6 +25,7 @@
 #
 #####################################################################
 
+import re
 import gettext
 from freenas.cli.namespace import (
     Namespace, EntityNamespace, Command, EntitySubscriberBasedLoadMixin,
@@ -61,6 +62,17 @@ class DockerUtilsMixin(object):
             netmask_to_cidr(entity, netmask)
         except ValueError as error:
             raise CommandException(error)
+
+    def set_name(self, obj, field, name):
+        DockerUtilsMixin.check_name(name)
+        obj[field] = name
+
+    @staticmethod
+    def check_name(name):
+        if not re.match(r'[a-zA-Z0-9._-]*$', name):
+            raise CommandException(_(
+                'Invalid name: {0}. Only [a-zA-Z0-9._-] characters are allowed'.format(name)
+            ))
 
 
 @description("View information about Docker hosts")
@@ -182,6 +194,7 @@ class DockerNetworkNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin,
             descr='Name',
             name='name',
             get='name',
+            set=lambda o, v: self.set_name(o, 'name', v),
             usersetable=False,
             list=True,
             usage=_('Name of a network.')
@@ -1110,6 +1123,9 @@ class DockerContainerCreateCommand(Command):
             raise CommandException('image is a required property')
 
         name = kwargs.get('name') or args[0]
+
+        DockerUtilsMixin.check_name(name)
+
         image = context.entity_subscribers['docker.image'].query(('names', 'in', kwargs['image']), single=True)
         if not image:
             image = q.query(DockerImageNamespace.default_images, ('name', '=', kwargs['image']), single=True)

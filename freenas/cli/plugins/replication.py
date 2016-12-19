@@ -31,9 +31,9 @@ from freenas.cli.namespace import (
     EntitySubscriberBasedLoadMixin, description
 )
 from freenas.cli.complete import EntitySubscriberComplete, MultipleSourceComplete, RpcComplete
-from freenas.cli.output import ValueType
+from freenas.cli.output import ValueType, Table
 from freenas.cli.utils import TaskPromise, post_save, parse_timedelta
-from freenas.utils import query as q
+from freenas.utils import query as q, human_readable_bytes
 
 
 t = gettext.translation('freenas-cli', fallback=True)
@@ -95,6 +95,52 @@ class SwitchCommand(Command):
         )
 
         return TaskPromise(context, tid)
+
+
+@description(_("Delete replication status history"))
+class DeleteHistoryCommand(Command):
+    """
+    Usage: clean_history
+
+    Example: clean_history
+
+    Deletes replication status history.
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        tid = context.submit_task(
+            'replication.clean_history',
+            self.parent.entity['id']
+        )
+
+        return TaskPromise(context, tid)
+
+
+@description(_("Displays history of replication results"))
+class HistoryCommand(Command):
+    """
+    Usage: history
+
+    Example: history
+
+    Display history of replication results
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        return Table(
+            self.parent.entity['status'],
+            [
+                Table.Column('Started', 'started_at', ValueType.TIME),
+                Table.Column('Ended', 'ended_at', ValueType.TIME),
+                Table.Column('Status', 'status'),
+                Table.Column('Send size', lambda row: human_readable_bytes(row['size'])),
+                Table.Column('Transfer speed', lambda row: human_readable_bytes(row['speed'], '/s')),
+            ]
+        )
 
 
 @description(_("List and manage replication tasks"))
@@ -494,47 +540,38 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
         )
 
         self.add_property(
-            descr='Last result',
-            name='result',
-            get='status.status',
+            descr='Current status',
+            name='status',
+            get='current_state.status',
             usersetable=False,
             createsetable=False,
             list=False,
             type=ValueType.STRING,
-            usage=_('String status of last replication run.')
+            usage=_('Current status of replication.')
         )
 
         self.add_property(
-            descr='Last output message',
-            name='message',
-            get='status.message',
+            descr='Current progress',
+            name='progress',
+            get=lambda o: '{0:.2f}'.format(round(q.get(o, 'current_state.progress'), 2)) + '%',
             usersetable=False,
             createsetable=False,
             list=False,
             type=ValueType.STRING,
-            usage=_('Output message of last replication run.')
+            condition=lambda o: q.get(o, 'current_state.status') == 'RUNNING',
+            usage=_('Current progress of replication.')
         )
 
         self.add_property(
-            descr='Last transfer size',
-            name='size',
-            get='status.size',
-            usersetable=False,
-            createsetable=False,
-            list=False,
-            type=ValueType.SIZE,
-            usage=_('Transfer size of last replication run.')
-        )
-
-        self.add_property(
-            descr='Last transfer speed per second',
+            descr='Last speed',
             name='speed',
-            get='status.speed',
+            get='current_state.speed',
             usersetable=False,
             createsetable=False,
             list=False,
-            type=ValueType.SIZE,
-            usage=_('Transfer speed of last replication run.')
+            type=ValueType.STRING,
+            condition=lambda o: q.get(o, 'current_state.status') == 'RUNNING',
+            usage=_('Transfer speed of current replication run.')
         )
 
         self.primary_key = self.get_mapping('name')
@@ -544,7 +581,9 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
     def get_entity_commands(self, this):
         this.load()
         commands = {
-            'sync': SyncCommand(this)
+            'sync': SyncCommand(this),
+            'history': HistoryCommand(this),
+            'clean_history': DeleteHistoryCommand(this)
         }
 
         if this.entity:

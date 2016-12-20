@@ -619,6 +619,48 @@ class AFPSharesNamespace(BaseSharesNamespace):
             type=ValueType.BOOLEAN
         )
 
+        self.add_property(
+            descr='Zero device numbers',
+            name='zero_dev_numbers',
+            usage=_("""\
+            Can be set to yes or no. When set the device number
+            won't be used in the CNID backends"""),
+            get='properties.zero_dev_numbers',
+            list=False,
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
+            descr='No Stat',
+            name='no_stat',
+            usage=_("""\
+            Can be set to yes or no. When set stat volume path
+            when enumerating volumes list is disabled"""),
+            get='properties.no_stat',
+            list=False,
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
+            descr='AFP3 Privileges',
+            name='afp3_privileges',
+            usage=_("""\
+            Can be set to yes or no. Whether to use AFP3 UNIX privileges"""),
+            get='properties.afp3_privileges',
+            list=False,
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
+            descr='SMB Compatible',
+            name='smb_compatible',
+            usage=_("""\
+            Can be set to yes or no. Enables SMB compatibility mode"""),
+            get='properties.smb_compatible',
+            list=False,
+            type=ValueType.BOOLEAN
+        )
+
 
 @description("SMB shares")
 class SMBSharesNamespace(BaseSharesNamespace):

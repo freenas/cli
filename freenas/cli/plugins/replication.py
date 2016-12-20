@@ -31,9 +31,9 @@ from freenas.cli.namespace import (
     EntitySubscriberBasedLoadMixin, description
 )
 from freenas.cli.complete import EntitySubscriberComplete, MultipleSourceComplete, RpcComplete
-from freenas.cli.output import ValueType
+from freenas.cli.output import ValueType, Table
 from freenas.cli.utils import TaskPromise, post_save, parse_timedelta
-from freenas.utils import query as q
+from freenas.utils import query as q, human_readable_bytes
 
 
 t = gettext.translation('freenas-cli', fallback=True)
@@ -97,6 +97,52 @@ class SwitchCommand(Command):
         return TaskPromise(context, tid)
 
 
+@description(_("Delete replication status history"))
+class DeleteHistoryCommand(Command):
+    """
+    Usage: clean_history
+
+    Example: clean_history
+
+    Deletes replication status history.
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        tid = context.submit_task(
+            'replication.clean_history',
+            self.parent.entity['id']
+        )
+
+        return TaskPromise(context, tid)
+
+
+@description(_("Displays history of replication results"))
+class HistoryCommand(Command):
+    """
+    Usage: history
+
+    Example: history
+
+    Display history of replication results
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        return Table(
+            self.parent.entity['status'],
+            [
+                Table.Column('Started', 'started_at', ValueType.TIME),
+                Table.Column('Ended', 'ended_at', ValueType.TIME),
+                Table.Column('Status', 'status'),
+                Table.Column('Send size', lambda row: human_readable_bytes(row['size'])),
+                Table.Column('Transfer speed', lambda row: human_readable_bytes(row['speed'], '/s')),
+            ]
+        )
+
+
 @description(_("List and manage replication tasks"))
 class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):
     """
@@ -116,7 +162,7 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
                 )
 
         self.primary_key_name = 'name'
-        self.save_key_name = 'id'
+        self.save_key_name = 'name'
         self.entity_subscriber_name = 'replication'
         self.create_task = 'replication.create'
         self.update_task = 'replication.update'
@@ -132,6 +178,8 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
 
             Example: create my_replication master=10.0.0.2 slave=10.0.0.3
                                            datasets=mypool,mypool/dataset
+                     create my_replication master=freenas-1.local slave=freenas-2.local
+                                           datasets=source:target,source2/data:target2
                      create my_replication master=10.0.0.2 slave=10.0.0.3
                                            datasets=mypool recursive=yes
                      create my_replication master=10.0.0.2 slave=10.0.0.3 datasets=mypool
@@ -163,7 +211,15 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             used in later replication process.
 
             All ZFS pools referenced in 'datasets' property must exist on both
-            slave and master at creation time. They also need to have the same names.
+            slave and master at creation time. Datasets can be defined as a simple list
+            of datasets available on master (source) eg. mypool/mydataset,mypool2/mydataset2,
+            or a list of {source}:{target} eg. mypool/ds:targetpool/ds2,otherpool:targetpool2.
+            First example could be expanded to:
+            mypool/mydataset:mypool/mydataset,mypool2/mydataset2:mypool2mydataset2
+            It would have the same meaning.
+
+            Bidirectional replication is accepting only identical master and slave
+            (source and target) datasets trees eg mypool:mypool,mypool2:mypool2.
 
             Created replication is implicitly: unidirectional, non-recursive,
             does not recover automatically and does not replicate services
@@ -302,6 +358,28 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
                 )
                 obj[role] = peer_id
 
+        def get_datasets(obj):
+            return ['{0}:{1}'.format(i['master'], i['slave']) for i in obj['datasets']]
+
+        def set_datasets(obj, value):
+            datasets = []
+            for ds in value:
+                sp_dataset = ds.split(':', 1)
+                datasets.append({
+                    'master': sp_dataset[0],
+                    'slave': sp_dataset[int(bool(len(sp_dataset) == 2 and sp_dataset[1]))]
+                })
+
+            obj['datasets'] = datasets
+
+        def get_initial_master(obj):
+            if obj['initial_master'] == obj['master']:
+                return get_peer(obj, 'master')
+            elif obj['initial_master'] == obj['slave']:
+                return get_peer(obj, 'slave')
+            else:
+                return
+
         self.add_property(
             descr='Name',
             name='name',
@@ -336,11 +414,12 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
         self.add_property(
             descr='Datasets',
             name='datasets',
-            get='datasets',
-            set='datasets',
+            get=get_datasets,
+            set=set_datasets,
             list=False,
+            strict=False,
             type=ValueType.SET,
-            complete=EntitySubscriberComplete('datasets=', 'volume.dataset', lambda o: o['name']),
+            complete=EntitySubscriberComplete('datasets=', 'volume.dataset', lambda o: o['name'] + ':'),
             usage=_('List of datasets to be replicated.')
         )
 
@@ -372,7 +451,7 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
         self.add_property(
             descr='Initial master side',
             name='initial_master',
-            get='initial_master',
+            get=get_initial_master,
             usersetable=False,
             createsetable=False,
             list=False,
@@ -461,47 +540,38 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
         )
 
         self.add_property(
-            descr='Last result',
-            name='result',
-            get='status.status',
+            descr='Current status',
+            name='status',
+            get='current_state.status',
             usersetable=False,
             createsetable=False,
             list=False,
             type=ValueType.STRING,
-            usage=_('String status of last replication run.')
+            usage=_('Current status of replication.')
         )
 
         self.add_property(
-            descr='Last output message',
-            name='message',
-            get='status.message',
+            descr='Current progress',
+            name='progress',
+            get=lambda o: '{0:.2f}'.format(round(q.get(o, 'current_state.progress'), 2)) + '%',
             usersetable=False,
             createsetable=False,
             list=False,
             type=ValueType.STRING,
-            usage=_('Output message of last replication run.')
+            condition=lambda o: q.get(o, 'current_state.status') == 'RUNNING',
+            usage=_('Current progress of replication.')
         )
 
         self.add_property(
-            descr='Last transfer size',
-            name='size',
-            get='status.size',
-            usersetable=False,
-            createsetable=False,
-            list=False,
-            type=ValueType.SIZE,
-            usage=_('Transfer size of last replication run.')
-        )
-
-        self.add_property(
-            descr='Last transfer speed per second',
+            descr='Last speed',
             name='speed',
-            get='status.speed',
+            get='current_state.speed',
             usersetable=False,
             createsetable=False,
             list=False,
-            type=ValueType.SIZE,
-            usage=_('Transfer speed of last replication run.')
+            type=ValueType.STRING,
+            condition=lambda o: q.get(o, 'current_state.status') == 'RUNNING',
+            usage=_('Transfer speed of current replication run.')
         )
 
         self.primary_key = self.get_mapping('name')
@@ -511,7 +581,9 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
     def get_entity_commands(self, this):
         this.load()
         commands = {
-            'sync': SyncCommand(this)
+            'sync': SyncCommand(this),
+            'history': HistoryCommand(this),
+            'clean_history': DeleteHistoryCommand(this)
         }
 
         if this.entity:
@@ -524,8 +596,7 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
         return self.context.submit_task(self.delete_task, this.entity[self.save_key_name], kwargs.get('scrub', False))
 
 
-# Not a BETA2 goal - disconnecting for now
-# def _init(context):
-#     context.attach_namespace('/', ReplicationNamespace('replication', context))
-#     context.map_tasks('replication.*', ReplicationNamespace)
+def _init(context):
+    context.attach_namespace('/', ReplicationNamespace('replication', context))
+    context.map_tasks('replication.*', ReplicationNamespace)
 

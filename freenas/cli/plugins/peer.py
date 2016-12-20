@@ -131,7 +131,7 @@ class FreeNASPeerListTokensCommand(Command):
     def run(self, context, args, kwargs, opargs):
         codes = list(context.call_sync('peer.freenas.get_auth_codes'))
         for c in codes:
-            remaining_time = c['expires_at'] - datetime.now()
+            remaining_time = c['expires_at'] - datetime.utcnow()
             remaining_time = int(remaining_time.total_seconds())
             if remaining_time < 0:
                 c['lifetime'] = 'Expired {0} seconds ago'.format(abs(remaining_time))

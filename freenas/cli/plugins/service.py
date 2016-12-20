@@ -590,35 +590,13 @@ class UPSNamespace(NestedEntityMixin, ItemNamespace):
             type=ValueType.STRING,
         )
         self.add_property(
-            descr='Email Notify',
-            name='email_notify',
+            descr='Propagate UPS alerts',
+            name='propagate_alerts',
             usage=_("""
             Can be set to yes or no. When set to yes,
-            status updates will be emailed to
-            'email_recipients'."""),
-            get='email_notify',
+            for every UPS status update alert will be created."""),
+            get='propagate_alerts',
             type=ValueType.BOOLEAN,
-        )
-        self.add_property(
-            descr='Email Recipients',
-            name='email_recipients',
-            usage=_("""
-            Space delimited list, enclosed between double
-            quotes, of email addresses to receive status
-            updates. This requires 'email_notify' to be set
-            to yes."""),
-            get='email_recipients',
-            type=ValueType.SET,
-        )
-        self.add_property(
-            descr='Email Subject',
-            name='email_subject',
-            usage=_("""
-            Subject to use in status emails. Enclose between
-            double quotes if it contains a space. Requires
-            'email_notify' to be set to yes."""),
-            get='email_subject',
-            type=ValueType.STRING,
         )
         self.add_property(
             descr='Powerdown',

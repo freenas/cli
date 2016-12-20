@@ -821,6 +821,23 @@ class VMDeviceDiskPropertiesMixin(BaseVariantMixin):
             condition=lambda o: o['type'] == 'DISK',
         )
 
+        self.add_property(
+            descr='Target type',
+            name='target_type',
+            get='properties.target_type',
+            list=False,
+            enum=['ZVOL', 'FILE', 'DISK'],
+            condition=lambda o: o['type'] == 'DISK',
+        )
+
+        self.add_property(
+            descr='Target path',
+            name='target_path',
+            get='properties.target_path',
+            list=False,
+            condition=lambda o: o['type'] == 'DISK',
+        )
+
     @staticmethod
     def get_humanized_summary(o):
         return "{0} {1} DISK".format(

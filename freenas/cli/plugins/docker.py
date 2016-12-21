@@ -32,11 +32,14 @@ from freenas.cli.namespace import (
     TaskBasedSaveMixin, CommandException, description, ConfigNamespace, RpcBasedLoadMixin
 )
 from freenas.cli.output import ValueType, Table, Sequence, read_value
-from freenas.cli.utils import TaskPromise, post_save, EntityPromise, get_item_stub, netmask_to_cidr, objname2id
+from freenas.cli.utils import (
+    TaskPromise, post_save, EntityPromise, get_item_stub, netmask_to_cidr, objname2id, get_related
+)
 from freenas.utils import query as q
 from freenas.cli.complete import NullComplete, EntitySubscriberComplete, EnumComplete, RpcComplete
 from freenas.cli.console import Console
 from freenas.utils import first_or_default
+from freenas.utils.query import get
 
 
 t = gettext.translation('freenas-cli', fallback=True)
@@ -50,6 +53,14 @@ class DockerUtilsMixin(object):
 
     def get_hosts(self, o):
         return list(self.context.entity_subscribers['docker.host'].query(('id', 'in', o['hosts']), select='name')) or []
+
+    def get_container_name(self, context, obj, field):
+        id = get(obj, field)
+        thing = context.entity_subscribers['docker.container'].query(('id', '=', id), single=True)
+        if not thing:
+            return None
+
+        return thing['names'][0]
 
     def set_host(self, o, v):
         h = self.context.entity_subscribers['docker.host'].query(('name', '=', v), single=True)
@@ -230,6 +241,18 @@ class DockerNetworkNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin,
             If left unspecified it will be selected by the docker engine
             """),
             list=True
+        )
+
+        self.add_property(
+            descr='Containers',
+            name='containers',
+            #get=lambda o: [get_related(self.context, 'docker.container', c, 'id') for c in o.get('containers')],
+            get=lambda o: [self.get_container_name(self.context, c, 'id') for c in o.get('containers')],
+            usage=_("""\
+            List of containers connected to the network.
+            """),
+            list=True,
+            type=ValueType.ARRAY
         )
 
         self.primary_key = self.get_mapping('name')

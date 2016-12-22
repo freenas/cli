@@ -32,7 +32,9 @@ from freenas.cli.namespace import (
     TaskBasedSaveMixin, CommandException, description, ConfigNamespace, RpcBasedLoadMixin
 )
 from freenas.cli.output import ValueType, Table, Sequence, read_value
-from freenas.cli.utils import TaskPromise, post_save, EntityPromise, get_item_stub, netmask_to_cidr, objname2id
+from freenas.cli.utils import (
+    TaskPromise, post_save, EntityPromise, get_item_stub, netmask_to_cidr, objname2id, get_related
+)
 from freenas.utils import query as q
 from freenas.cli.complete import NullComplete, EntitySubscriberComplete, EnumComplete, RpcComplete
 from freenas.cli.console import Console
@@ -232,6 +234,17 @@ class DockerNetworkNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin,
             list=True
         )
 
+        self.add_property(
+            descr='Containers',
+            name='containers',
+            get=lambda o: [get_related(self.context, 'docker.container', c, 'id') for c in o.get('containers')],
+            usage=_("""\
+            List of containers connected to the network.
+            """),
+            list=True,
+            type=ValueType.ARRAY
+        )
+
         self.primary_key = self.get_mapping('name')
         self.entity_commands = self.get_entity_commands
 
@@ -263,9 +276,7 @@ class DockerNetworkConnectCommand(Command):
             raise CommandException('Please specify container to connect to the network')
         tid = context.submit_task(
             'docker.network.connect',
-            #objname2id(context, 'docker.container', kwargs.get('container')),
-            context.entity_subscribers['docker.container'].query((
-                'names.0', '=', kwargs.get('container')), select='id', single=True),
+            objname2id(context, 'docker.container', kwargs.get('container')),
             self.parent.entity['id']
         )
         return TaskPromise(context, tid)
@@ -294,9 +305,7 @@ class DockerNetworkDisconnectCommand(Command):
             raise CommandException('Please specify container to disconnect from the network')
         tid = context.submit_task(
             'docker.network.disconnect',
-            #container_id=objname2id(context, 'docker.container', kwargs.get('container')),
-            context.entity_subscribers['docker.container'].query((
-                'names.0', '=', kwargs.get('container')), select='id', single=True),
+            objname2id(context, 'docker.container', kwargs.get('container')),
             self.parent.entity['id']
         )
         return TaskPromise(context, tid)

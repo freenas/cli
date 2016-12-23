@@ -1257,30 +1257,31 @@ class MainLoop(object):
                 return Function(self.context, '<anonymous>', token.args, token.body, env)
 
             if isinstance(token, Symbol):
+                item = self.find_in_scope(token.name, cwd=cwd, env=env, variables=variables)
+                if item is not None:
+                    return item
+
+                item = self.find_in_scope(token.name.split('/')[0], cwd=cwd, env=env, variables=variables) \
+                    if isinstance(token.name, str) \
+                    else None
+
+                if item is not None:
+                    raise SyntaxError("Use of slashes as separators not allowed. Please use spaces instead or "
+                                        "use the 'cd' command to navigate")
+
                 try:
                     item = env.find(token.name)
                     return item.value if isinstance(item, Environment.Variable) else item
                 except KeyError:
-                    item = self.find_in_scope(token.name, cwd=cwd, env=env, variables=variables)
-                    if item is not None:
-                        return item
 
-                    item = self.find_in_scope(token.name.split('/')[0], cwd=cwd, env=env, variables=variables) \
-                        if isinstance(token.name, str) \
-                        else None
+                    # After all scope checks are done check if this is a
+                    # config environment var of the cli
+                    try:
+                        return self.context.variables.variables[token.name].value
+                    except KeyError:
+                        pass
 
-                    if item is not None:
-                        raise SyntaxError("Use of slashes as separators not allowed. Please use spaces instead or "
-                                          "use the 'cd' command to navigate")
-
-                # After all scope checks are done check if this is a
-                # config environment var of the cli
-                try:
-                    return self.context.variables.variables[token.name].value
-                except KeyError:
-                    pass
-
-                raise SyntaxError(_('{0} not found'.format(token.name)))
+                    raise SyntaxError(_('{0} not found'.format(token.name)))
 
             if isinstance(token, AssignmentStatement):
                 expr = flatten_table(self.eval(token.expr, env=env, first=first))

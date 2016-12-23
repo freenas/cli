@@ -1242,11 +1242,6 @@ class DockerContainerCreateCommand(Command):
                     'protocol': protocol
                 })
 
-        if presets and len(presets.get('volumes', [])) > len(volumes):
-            presets_volumes = set(i['container_path'] for i in presets['volumes'])
-            entered_volumes = set(i['container_path'] for i in volumes)
-            raise CommandException('Required volumes missing: {0}'.format(', '.join(presets_volumes - entered_volumes)))
-
         create_args = {
             'names': [name],
             'image': kwargs['image'],

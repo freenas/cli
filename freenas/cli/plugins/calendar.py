@@ -945,130 +945,30 @@ class SnapshotNamespace(CalendarTasksNamespaceBaseClass):
 class ReplicationNamespace(CalendarTasksNamespaceBaseClass):
     """
     Replication namespaces provides commands to create 'replication' type calendar tasks
+    The calendar task is created by pointing to a replication object and assigning a schedule.
+    The replication object defines the details of the given replication task
+    and can be created in the 'replication' namespace.
 
     Usage: create <name> <property>=<value>
 
     Examples:
-        create myrepl dataset=mypool/dataset remote_dataset=otherpool/bak peer=mypeer recursive=yes schedule={"minute": "`*/30`"}
-        create myrepl dataset=mypool/dataset remote_dataset=otherpool/bak peer=mypeer schedule={"day":"1,3,5","minute": "`*/30`"}
+        create myrepl replication=my_replication schedule={"day": "`*/30`"}
     """
     def __init__(self, name, context):
         super(ReplicationNamespace, self).__init__(name, context)
-        self.extra_query_params = [('task', '=', 'replication.replicate_dataset')]
-        self.required_props.extend([])
-        self.task_args_helper = ['dataset', 'options', 'transport_options']
-        self.skeleton_entity['task'] = 'replication.replicate_dataset'
-        self.skeleton_entity['args'] = [
-            None,
-            {
-                'remote_dataset': None,
-                'peer': None,
-                'recursive': False,
-                'followdelete': False
-            },
-            []
-        ]
-
-        def get_peer_name(id):
-            peer = self.context.entity_subscribers['peer'].query(('id', '=', id), single=True)
-            return peer['name'] if peer else None
-
-        def set_peer_id(name):
-            peer = self.context.entity_subscribers['peer'].query(('name', '=', name), single=True)
-            if not peer:
-                raise CommandException('Peer {0} not found'.format(name))
-
-            return peer['id']
-
-        def get_transport_option(obj, type, property):
-            opt = first_or_default(lambda i: type in i['%type'], obj['args'][2])
-            return opt[property] if opt else None
-
-        def set_transport_option(obj, type, property, value):
-            opt = first_or_default(lambda i: type in i['%type'], obj['args'][2])
-
-            if value:
-                if opt:
-                    opt[property] = value
-                else:
-                    obj['args'][2].append({
-                        '%type': '{0}-replication-transport-option'.format(type),
-                        property: value
-                    })
-            else:
-                obj['args'][2].remove(opt)
-
-            obj['args'] = copy.copy(obj['args'])
+        self.extra_query_params = [('task', '=', 'replication.sync')]
+        self.required_props.extend(['replication'])
+        self.skeleton_entity['task'] = 'replication.sync'
+        self.task_args_helper = ['replication']
 
         self.add_property(
-            descr='Local dataset',
-            name='dataset',
-            get=lambda obj: self.get_task_args(obj, 'dataset'),
+            descr='Replication',
+            name='replication',
+            get=lambda obj: self.get_task_args(obj, 'replication'),
+            set=lambda obj, val: self.set_task_args(obj, val, 'replication'),
             list=True,
-            set=lambda obj, val: self.set_task_args(obj, val, 'dataset'),
-            complete=EntitySubscriberComplete('dataset=', 'volume.dataset', lambda o: o['name']),
-        )
-
-        self.add_property(
-            descr='Remote dataset',
-            name='remote_dataset',
-            get=lambda obj: q.get(self.get_task_args(obj, 'options'), 'remote_dataset'),
-            list=True,
-            set=lambda obj, val: q.set(self.get_task_args(obj, 'options'), 'remote_dataset', val),
-        )
-
-        self.add_property(
-            descr='Peer name',
-            name='peer',
-            get=lambda obj: get_peer_name(q.get(self.get_task_args(obj, 'options'), 'peer')),
-            list=True,
-            set=lambda obj, val: q.set(self.get_task_args(obj, 'options'), 'peer', set_peer_id(val)),
-            complete=EntitySubscriberComplete('peer=', 'peer', lambda o: o['name'] if o['type'] == 'freenas' else None)
-        )
-
-        self.add_property(
-            descr='Recursive',
-            name='recursive',
-            get=lambda obj: q.get(self.get_task_args(obj, 'options'), 'recursive'),
-            list=True,
-            set=lambda obj, val: q.set(self.get_task_args(obj, 'options'), 'recursive', val),
-            type=ValueType.BOOLEAN
-        )
-
-        self.add_property(
-            descr='Follow delete',
-            name='followdelete',
-            get=lambda obj: q.get(self.get_task_args(obj, 'options'), 'followdelete'),
-            list=False,
-            set=lambda obj, val: q.set(self.get_task_args(obj, 'options'), 'followdelete', val),
-            type=ValueType.BOOLEAN
-        )
-
-        self.add_property(
-            descr='Compression',
-            name='compression',
-            get=lambda obj: get_transport_option(obj, 'compress', 'level'),
-            list=False,
-            set=lambda obj, val: set_transport_option(obj, 'compress', 'level', val),
-            enum=['FAST', 'DEFAULT', 'BEST', None]
-        )
-
-        self.add_property(
-            descr='Encryption',
-            name='encryption',
-            get=lambda obj: get_transport_option(obj, 'encrypt', 'type'),
-            list=False,
-            set=lambda obj, val: set_transport_option(obj, 'encrypt', 'type', val),
-            enum=['AES128', 'AES192', 'AES256', None]
-        )
-
-        self.add_property(
-            descr='Throttle',
-            name='throttle',
-            get=lambda obj: get_transport_option(obj, 'throttle', 'buffer_size'),
-            list=False,
-            set=lambda obj, val: set_transport_option(obj, 'throttle', 'buffer_size', val),
-            type=ValueType.SIZE
+            complete=EntitySubscriberComplete('replication=', 'replication', lambda o: o['name']),
+            usage=_('Name of the replication object to be used in the replication calendar task.')
         )
 
 
@@ -1276,7 +1176,7 @@ TASK_TYPES = {
     'smart': 'disk.parallel_test',
     'rsync': 'rsync.copy',
     'snapshot': 'volume.snapshot_dataset',
-    'replication': 'replication.replicate_dataset',
+    'replication': 'replication.sync',
     'check_update': 'update.checkfetch',
     'command': 'calendar_task.command',
     'backup': 'backup.sync'

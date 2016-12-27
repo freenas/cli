@@ -424,6 +424,7 @@ class ScrubNamespace(CalendarTasksNamespaceBaseClass):
                       create somescrub volume=somepool schedule={"hour":"2,12","day_of_week":5}
 
             Creates a scrub calendar task. For a list of properties, see 'help properties'.""")
+
         self.entity_localdoc['SetEntityCommand'] = ("""\
             Usage: set <property>=<value> ...
 
@@ -431,6 +432,7 @@ class ScrubNamespace(CalendarTasksNamespaceBaseClass):
                       set enabled=true
 
             Sets a scrub calendar task property. For a list of properties, see 'help properties'.""")
+
         self.entity_localdoc['GetEntityCommand'] = ("""\
             Usage: get <field>
 
@@ -439,23 +441,6 @@ class ScrubNamespace(CalendarTasksNamespaceBaseClass):
                 get name
 
             Display value of specified field.""")
-        self.entity_localdoc['EditEntityCommand'] = ("""\
-            Usage: edit <field>
-
-            Examples: edit name
-
-            Opens the default editor for the specified property. The default editor
-            is inherited from the shell's $EDITOR which can be set from the shell.
-            For a list of properties for the current namespace, see 'help properties'.""")
-        self.localdoc['ListCommand'] = ("""\
-            Usage: show
-
-            Lists all smart tasks. Optionally, filter or sort by property.
-            Use 'help properties' to list available properties.
-
-            Examples:
-                show
-                show | search name == somename""")
 
         self.add_property(
             descr='Volume',
@@ -463,7 +448,7 @@ class ScrubNamespace(CalendarTasksNamespaceBaseClass):
             get=lambda obj: self.get_task_args(obj, 'volume'),
             list=True,
             set=lambda obj, val: self.set_task_args(obj, val, 'volume'),
-            enum=lambda: self.query([], {'subscriber': 'volume', 'select': 'id'})
+            complete=EntitySubscriberComplete('volume=', 'volume')
         )
 
 
@@ -515,29 +500,6 @@ class RsyncNamespace(CalendarTasksNamespaceBaseClass):
                 get disks
 
             Display value of specified field.""")
-
-        self.entity_localdoc['EditEntityCommand'] = ("""\
-            Usage:
-                edit <field>
-
-            Examples:
-                edit user
-
-            Opens the default editor for the specified property. The default editor
-            is inherited from the shell's $EDITOR which can be set from the shell.
-            For a list of properties for the current namespace, see 'help properties'.
-            """)
-
-        self.localdoc['ListCommand'] = ("""\
-            Usage: show
-
-            Lists all rsync tasks. Optionally, filter or sort by property.
-            Use 'help properties' to list available properties.
-
-            Examples:
-                show
-                show | search user == bazuser
-            """)
 
         self.add_property(
             descr='User',
@@ -775,6 +737,7 @@ class SmartNamespace(CalendarTasksNamespaceBaseClass):
                       set enabled=true
 
             Sets a SMART calendar task property. For a list of properties, see 'help properties'.""")
+
         self.entity_localdoc['GetEntityCommand'] = ("""\
             Usage: get <field>
 
@@ -783,23 +746,6 @@ class SmartNamespace(CalendarTasksNamespaceBaseClass):
                 get disks
 
             Display value of specified field.""")
-        self.entity_localdoc['EditEntityCommand'] = ("""\
-            Usage: edit <field>
-
-            Examples: edit name
-
-            Opens the default editor for the specified property. The default editor
-            is inherited from the shell's $EDITOR which can be set from the shell.
-            For a list of properties for the current namespace, see 'help properties'.""")
-        self.localdoc['ListCommand'] = ("""\
-            Usage: show
-
-            Lists all smart tasks. Optionally, filter or sort by property.
-            Use 'help properties' to list available properties.
-
-            Examples:
-                show
-                show | search name == somename""")
 
         self.add_property(
             descr='Disks',
@@ -808,7 +754,7 @@ class SmartNamespace(CalendarTasksNamespaceBaseClass):
             list=True,
             type=ValueType.SET,
             set=lambda obj, val: self.set_disks(obj, val),
-            enum=lambda: self.query([], {'subscriber': 'disk', 'select': 'name'})
+            complete=EntitySubscriberComplete('disks=', 'disk', lambda i: i['name'])
         )
 
         self.add_property(
@@ -821,20 +767,22 @@ class SmartNamespace(CalendarTasksNamespaceBaseClass):
         )
 
     def get_disks(self, obj):
-        disks_ids = self.get_task_args(obj, 'disks')
-        disks_names = []
-        for i in disks_ids:
-            disks_names.append(self.query([('id', '=', i)], {'subscriber': 'disk', 'select': 'name', 'single': True}))
-        return disks_names
+        return self.context.entity_subscribers['disk'].query(
+            ('id', 'in', self.get_task_args(obj, 'disks')),
+            select='name'
+        )
 
-    def set_disks(self, obj, disks_names):
-        all_disks = [d for d in self.query([], {'subscriber': 'disk', 'select': 'name'})]
-        disk_ids = []
-        for d in disks_names:
+    def set_disks(self, obj, disk_names):
+        all_disks = self.context.entity_subscribers['disk'].query(select='name')
+        for d in disk_names:
             if d not in all_disks:
                 raise CommandException(_("Invalid disk: {0}, see '/ disk show' for a list of disks".format(d)))
-            disk_ids.append(self.context.call_sync('disk.path_to_id', d))
-        self.set_task_args(obj, disk_ids, 'disks')
+
+        self.set_task_args(
+            obj,
+            self.context.entity_subscribers['disk'].query(('name', 'in', list(disk_names)), select='id'),
+            'disks'
+        )
 
 
 class SnapshotNamespace(CalendarTasksNamespaceBaseClass):
@@ -864,39 +812,6 @@ class SnapshotNamespace(CalendarTasksNamespaceBaseClass):
                         create somesnapshot dataset=mypool/mydataset schedule={"minute":"1,30,50"}
 
             Creates a snapshot calendar task. For a list of properties, see 'help properties'.""")
-        self.entity_localdoc['SetEntityCommand'] = ("""\
-            Usage: set <property>=<value> ...
-
-            Examples: set lifetime=2h
-                      set name=newname
-                      set enabled=true
-
-            Sets a snapshot calendar task property. For a list of properties, see 'help properties'.""")
-        self.entity_localdoc['GetEntityCommand'] = ("""\
-            Usage: get <field>
-
-            Examples:
-                get lifetime
-                get dataset
-
-            Display value of specified field.""")
-        self.entity_localdoc['EditEntityCommand'] = ("""\
-            Usage: edit <field>
-
-            Examples: edit name
-
-            Opens the default editor for the specified property. The default editor
-            is inherited from the shell's $EDITOR which can be set from the shell.
-            For a list of properties for the current namespace, see 'help properties'.""")
-        self.localdoc['ListCommand'] = ("""\
-            Usage: show
-
-            Lists all snapshot tasks. Optionally, filter or sort by property.
-            Use 'help properties' to list available properties.
-
-            Examples:
-                show
-                show | search name == somename""")
 
         self.add_property(
             descr='Dataset',
@@ -993,37 +908,6 @@ class CheckUpdateNamespace(CalendarTasksNamespaceBaseClass):
             Examples: create myupdate schedule={"day":"1,4","hour":1}
 
             Creates a update calendar task. For a list of properties, see 'help properties'.""")
-        self.entity_localdoc['SetEntityCommand'] = ("""\
-            Usage: set <property>=<value> ...
-
-            Examples: set name=newname
-                      set enabled=true
-
-            Sets a update calendar task property. For a list of properties, see 'help properties'.""")
-        self.entity_localdoc['GetEntityCommand'] = ("""\
-            Usage: get <field>
-
-            Examples:
-                get name
-
-            Display value of specified field.""")
-        self.entity_localdoc['EditEntityCommand'] = ("""\
-            Usage: edit <field>
-
-            Examples: edit name
-
-            Opens the default editor for the specified property. The default editor
-            is inherited from the shell's $EDITOR which can be set from the shell.
-            For a list of properties for the current namespace, see 'help properties'.""")
-        self.localdoc['ListCommand'] = ("""\
-            Usage: show
-
-            Lists all smart tasks. Optionally, filter or sort by property.
-            Use 'help properties' to list available properties.
-
-            Examples:
-                show
-                show | search name == somename""")
 
 
 class CommandNamespace(CalendarTasksNamespaceBaseClass):
@@ -1048,6 +932,7 @@ class CommandNamespace(CalendarTasksNamespaceBaseClass):
                       create mycommand username=myuser command="ls -l" schedule={"minute":"*/5","second":"10,30,50"}
 
             Creates a command calendar task. For a list of properties, see 'help properties'.""")
+
         self.entity_localdoc['SetEntityCommand'] = ("""\
             Usage: set <property>=<value> ...
 
@@ -1056,6 +941,7 @@ class CommandNamespace(CalendarTasksNamespaceBaseClass):
                       set enabled=true
 
             Sets a command calendar task property. For a list of properties, see 'help properties'.""")
+
         self.entity_localdoc['GetEntityCommand'] = ("""\
             Usage: get <field>
 
@@ -1064,23 +950,6 @@ class CommandNamespace(CalendarTasksNamespaceBaseClass):
                 get username
 
             Display value of specified field.""")
-        self.entity_localdoc['EditEntityCommand'] = ("""\
-            Usage: edit <field>
-
-            Examples: edit name
-
-            Opens the default editor for the specified property. The default editor
-            is inherited from the shell's $EDITOR which can be set from the shell.
-            For a list of properties for the current namespace, see 'help properties'.""")
-        self.localdoc['ListCommand'] = ("""\
-            Usage: show
-
-            Lists all smart tasks. Optionally, filter or sort by property.
-            Use 'help properties' to list available properties.
-
-            Examples:
-                show
-                show | search name == somename""")
 
         self.add_property(
             descr='Username',
@@ -1126,6 +995,7 @@ class BackupNamespace(CalendarTasksNamespaceBaseClass):
                       create s3backup_job backup=mys3backup schedule={"hour":2,"day_of_week":"1,5"}
 
             Creates a backup calendar task. For a list of properties, see 'help properties'.""")
+
         self.entity_localdoc['SetEntityCommand'] = ("""\
             Usage: set <property>=<value> ...
 
@@ -1133,6 +1003,7 @@ class BackupNamespace(CalendarTasksNamespaceBaseClass):
                       set enabled=true
 
             Sets a backup calendar task property. For a list of properties, see 'help properties'.""")
+
         self.entity_localdoc['GetEntityCommand'] = ("""\
             Usage: get <field>
 
@@ -1141,23 +1012,6 @@ class BackupNamespace(CalendarTasksNamespaceBaseClass):
                 get name
 
             Display value of specified field.""")
-        self.entity_localdoc['EditEntityCommand'] = ("""\
-            Usage: edit <field>
-
-            Examples: edit name
-
-            Opens the default editor for the specified property. The default editor
-            is inherited from the shell's $EDITOR which can be set from the shell.
-            For a list of properties for the current namespace, see 'help properties'.""")
-        self.localdoc['ListCommand'] = ("""\
-            Usage: show
-
-            Lists all smart tasks. Optionally, filter or sort by property.
-            Use 'help properties' to list available properties.
-
-            Examples:
-                show
-                show | search name == somename""")
 
         self.add_property(
             descr='Backup',
@@ -1167,7 +1021,7 @@ class BackupNamespace(CalendarTasksNamespaceBaseClass):
             set=lambda obj, val: self.set_task_args(
                 obj, objname2id(self.context, 'backup', val), 'backup'
             ),
-            enum=lambda: self.query([], {'subscriber': 'backup', 'select': 'name'})
+            complete=EntitySubscriberComplete('backup=', 'backup', lambda i: i['name'])
         )
 
 

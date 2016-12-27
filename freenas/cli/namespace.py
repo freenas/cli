@@ -1308,7 +1308,7 @@ class EntitySubscriberBasedLoadMixin(object):
         if not self.context.docgen_run:
             self.context.entity_subscribers[self.entity_subscriber_name].wait_ready()
             return self.context.entity_subscribers[self.entity_subscriber_name].query(
-                *(extra_query_params + params),
+                *(self.extra_query_params + params),
                 **options
             )
         else:

@@ -60,12 +60,13 @@ class EntitySubscriberComplete(NullComplete):
 
 
 class RpcComplete(EntitySubscriberComplete):
-    def __init__(self, name, datasource, mapper=None, extra=None, **kwargs):
+    def __init__(self, name, datasource, mapper=None, extra=None, call_args=None, **kwargs):
+        self.call_args = call_args
         super(RpcComplete, self).__init__(name, datasource, mapper, extra, **kwargs)
 
     def choices(self, context, token):
         result = deepcopy(self.extra)
-        datasource = context.call_sync(self.datasource)
+        datasource = context.call_sync(self.datasource, *(self.call_args or ()))
 
         if isinstance(datasource, dict):
             if self.mapper:

@@ -31,8 +31,9 @@ from freenas.cli.namespace import (
     Command, NestedEntityMixin, CommandException, description
 )
 from freenas.cli.output import ValueType, Table, Sequence
-from freenas.cli.utils import TaskPromise, post_save, get_related, set_related, get_filtered
+from freenas.cli.utils import TaskPromise, post_save, get_related, set_related
 from freenas.utils import extend
+from freenas.cli.complete import EntitySubscriberComplete
 
 
 t = gettext.translation('freenas-cli', fallback=True)
@@ -314,7 +315,7 @@ class OpenVPNNamespace(NestedEntityMixin, ItemNamespace):
             get=lambda o: get_related(context, 'crypto.certificate', o, 'cert'),
             set=lambda o, v: set_related(context, 'crypto.certificate', o, 'cert', v),
             type=ValueType.STRING,
-            enum=lambda: get_filtered(self.context, 'name', 'crypto.certificate'),
+            complete=EntitySubscriberComplete('certificate=', 'crypto.certificate', lambda o: o['name']),
             usage=_('''\
             PKI mode server certificate.'''),
         )
@@ -323,7 +324,7 @@ class OpenVPNNamespace(NestedEntityMixin, ItemNamespace):
             name='certificate_authority',
             get=lambda o: get_related(context, 'crypto.certificate', o, 'ca'),
             set=lambda o, v: set_related(context, 'crypto.certificate', o, 'ca', v),
-            enum=lambda: get_filtered(self.context, 'name', 'crypto.certificate'),
+            complete=EntitySubscriberComplete('certificate_authority=', 'crypto.certificate', lambda o: o['name']),
             type=ValueType.STRING,
             usage=_('''\
             PKI mode server CA'''),
@@ -1187,7 +1188,7 @@ class FTPNamespace(NestedEntityMixin, ItemNamespace):
             quotes"""),
             get=lambda o: get_related(context, 'crypto.certificate', o, 'tls_ssl_certificate'),
             set=lambda o, v: set_related(context, 'crypto.certificate', o, 'tls_ssl_certificate', v),
-            enum=lambda: get_filtered(self.context, 'name', 'crypto.certificate'),
+            complete=EntitySubscriberComplete('tls_ssl_certificate=', 'crypto.certificate', lambda o: o['name']),
             type=ValueType.STRING
         )
         self.add_property(
@@ -2158,7 +2159,7 @@ class WebDAVNamespace(NestedEntityMixin, ItemNamespace):
             connections. Enclose the certificate between double quotes"""),
             get='certificate',
             type=ValueType.STRING,
-            enum=lambda: get_filtered(context, 'name', 'crypto.certificate'),
+            complete=EntitySubscriberComplete('certificate=', 'crypto.certificate', lambda o: o['name']),
             list=True
         )
         self.add_property(

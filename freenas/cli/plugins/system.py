@@ -33,8 +33,8 @@ from freenas.cli.namespace import (
 )
 from freenas.cli.output import Object, Sequence, ValueType, format_value, output_msg
 from freenas.cli.descriptions import events
-from freenas.cli.utils import TaskPromise, post_save, parse_timedelta, set_related, get_related, get_filtered
-from freenas.cli.complete import NullComplete
+from freenas.cli.utils import TaskPromise, post_save, parse_timedelta, set_related, get_related
+from freenas.cli.complete import NullComplete, EntitySubscriberComplete, RpcComplete
 from freenas.dispatcher.fd import FileDescriptor
 
 t = gettext.translation('freenas-cli', fallback=True)
@@ -682,7 +682,11 @@ class SystemUINamespace(ConfigNamespace):
             usage=_("""\
             Name of the certificate
             """),
-            enum=lambda: get_filtered(context, 'name', 'crypto.certificate', ('type', '!=', 'CERT_CSR')),
+            complete=EntitySubscriberComplete(
+                'https_certificate=',
+                'crypto.certificate',
+                lambda o: o['name'] if o['type'] != 'CERT_CSR' else None
+            ),
             type=ValueType.STRING
         )
 
@@ -749,7 +753,12 @@ class AdvancedNamespace(ConfigNamespace):
             to use for console access."""),
             get='serial_port',
             set='serial_port',
-            enum=[e['name'] for e in self.context.call_sync('system.device.get_devices', "serial_port")]
+            complete=RpcComplete(
+                'serial_port=',
+                'system.device.get_devices',
+                lambda o: o['name'],
+                call_args=('serial_port',)
+            )
         )
 
         self.add_property(

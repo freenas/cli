@@ -30,11 +30,11 @@
 import gettext
 from pathlib import PurePath, Path
 from freenas.cli.namespace import (
-    Command, Namespace, EntityNamespace, TaskBasedSaveMixin,
+    Command, EntityNamespace, TaskBasedSaveMixin,
     EntitySubscriberBasedLoadMixin, description, CommandException
 )
 from freenas.cli.output import ValueType
-from freenas.cli.complete import EnumComplete, NullComplete
+from freenas.cli.complete import EnumComplete, NullComplete, EntitySubscriberComplete
 
 
 t = gettext.translation('freenas-cli', fallback=True)
@@ -317,7 +317,11 @@ class CryptoNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Entity
             usage=_("""\
             Name of the CA signing this certificate.
             """),
-            enum=self.get_ca_names,
+            complete=EntitySubscriberComplete(
+                'signing_ca_name=',
+                self.entity_subscriber_name,
+                lambda o: o['name'] if o['type'] in ('CA_INTERNAL', 'CA_INTERMEDIATE') else None
+            ),
             createsetable=True,
             usersetable=False,
             list=True,
@@ -482,12 +486,6 @@ class CryptoNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Entity
         )
 
         self.primary_key = self.get_mapping('name')
-
-    def get_ca_names(self):
-        return self.context.entity_subscribers[self.entity_subscriber_name].query(
-            ('type', 'in', ('CA_INTERNAL', 'CA_INTERMEDIATE')),
-            select='name'
-        )
 
 
 def _init(context):

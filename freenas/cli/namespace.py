@@ -257,6 +257,7 @@ class PropertyMapping(object):
         self.ns = kwargs.pop('ns', None)
         self.create_arg = kwargs.pop('create_arg', False)
         self.update_arg = kwargs.pop('update_arg', False)
+        self.delete_arg = kwargs.pop('delete_arg', False)
         self.width = kwargs.pop('width', None)
         self.strict = kwargs.pop('strict', True)
 
@@ -442,7 +443,7 @@ class ItemNamespace(Namespace):
                     with contextlib.suppress(BaseException):
                         prop.do_set(ns.entity, v)
 
-                return [EnumComplete(0, [x.name for x in self.parent.property_mappings if x.can_set(ns.entity)])]
+                return [EnumComplete(0, [x.name for x in self.parent.property_mappings if x.can_set(ns.entity) and not x.delete_arg])]
 
             return []
 
@@ -516,7 +517,7 @@ class ItemNamespace(Namespace):
                     with contextlib.suppress(BaseException):
                         prop.do_set(ns.entity, v)
 
-                return [create_completer(x) for x in self.parent.property_mappings if x.can_set(ns.entity)]
+                return [create_completer(x) for x in self.parent.property_mappings if x.can_set(ns.entity) and not x.delete_arg]
 
             return []
 
@@ -569,7 +570,7 @@ class ItemNamespace(Namespace):
                     with contextlib.suppress(BaseException):
                         prop.do_set(ns.entity, v)
 
-                return [EnumComplete(0, [x.name for x in self.parent.property_mappings if x.can_set(ns.entity)])]
+                return [EnumComplete(0, [x.name for x in self.parent.property_mappings if x.can_set(ns.entity) and not x.delete_arg])]
 
             return []
 
@@ -590,6 +591,12 @@ class ItemNamespace(Namespace):
         def run(self, context, args, kwargs, opargs):
             if len(args) > 0:
                 raise CommandException(_("Invalid syntax:{0}\n{1}.".format(args, inspect.getdoc(self))))
+
+            for k, v in list(kwargs.items()):
+                prop = self.parent.get_mapping(k)
+                if prop.delete_arg:
+                    prop.do_set(self.parent.delete_args, v, self.parent.entity)
+
             entity_id = self.parent.primary_key
             tid = self.parent.parent.delete(self.parent, kwargs)
             curr_ns = context.ml.path[-1]
@@ -597,6 +604,10 @@ class ItemNamespace(Namespace):
                 context.ml.cd_up()
 
             return TaskPromise(context, tid)
+
+        def complete(self, context, **kwargs):
+            return [create_completer(x) for x in self.parent.property_mappings if x.delete_arg]
+
 
     def __init__(self, name, context):
         super(ItemNamespace, self).__init__(name)
@@ -809,6 +820,7 @@ class SingleItemNamespace(ItemNamespace):
         self.password = None
         self.create_args = []
         self.update_args = []
+        self.delete_args = []
 
         if parent.entity_commands:
             self.subcommands = parent.entity_commands(self)
@@ -851,6 +863,9 @@ class SingleItemNamespace(ItemNamespace):
 
     def get_update_args(self):
         return [self.get_diff()] + self.update_args
+
+    def get_delete_args(self):
+        return self.delete_args
 
     def serialize(self):
         self.on_enter()
@@ -1349,7 +1364,7 @@ class TaskBasedSaveMixin(object):
             callback=callback)
 
     def delete(self, this, kwargs):
-        return self.context.submit_task(self.delete_task, this.entity[self.save_key_name])
+        return self.context.submit_task(self.delete_task, this.entity[self.save_key_name], *this.get_delete_args())
 
 
 class NestedObjectLoadMixin(object):

@@ -304,6 +304,24 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             list=True
         )
 
+        self.add_property(
+            descr='Delete own group',
+            name='delete_own_group',
+            get=None,
+            set='0.delete_own_group',
+            delete_arg=True,
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
+            descr='Delete home directory',
+            name='delete_home_directory',
+            get=None,
+            set='0.delete_home_directory',
+            delete_arg=True,
+            type=ValueType.BOOLEAN
+        )
+
         self.primary_key = self.get_mapping('name')
         self.extra_commands = {
             'shells': ShellsCommand()

@@ -42,14 +42,12 @@ function account_create() {
 
 function account_destroy() {
 	print(">>> Finishing account tests")
-	@$(_user_obj delete)
+	@$(_user_obj delete delete_own_group=yes delete_home_directory=yes)
 	maybe_barf(_success, "-account#1", "Unable to delete user " + TEST_USER)
-	@$(account group ${TEST_USER} delete)
-	maybe_barf(_success, "-account#2", "Unable to delete private group for user " + TEST_USER)
 	@$(_group_obj delete)
-	maybe_barf(_success, "-account#3", "Unable to delete group " + TEST_GROUP)
+	maybe_barf(_success, "-account#2", "Unable to delete group " + TEST_GROUP)
 	@$(VOL_OBJECT dataset ${VOL_NAME + "/home"} delete)
-	maybe_barf(_success, "-account#4", "Unable to delete temporary home dataset on " + VOL_NAME)
+	maybe_barf(_success, "-account#3", "Unable to delete temporary home dataset on " + VOL_NAME)
 }
 
 function account_hard_create() {
@@ -78,19 +76,16 @@ function account_hard_destroy() {
 
 	for (i in _account_hard_uarr) {
 	    _n = $(i get name)
-	    @$(i delete)
+	    @$(i delete delete_own_group=yes delete_home_directory=yes)
 	    maybe_barf(_success, "-account-hard#1", "Unable to delete user " + _n)
-	    # XXX delete this if delete private group support goes in.
-	    @$(account group ${_n} delete)
-	    maybe_barf(_success, "-account-hard#2", "Unable to delete user group " + _n)
 	}
 	_l = count_by_name("account user", TEST_USER + "[0-9]+")
-	maybe_barf(_l == 0, "-account-hard#3", "Unable to delete all test users: " + str(_l) + " remaining.")
+	maybe_barf(_l == 0, "-account-hard#2", "Unable to delete all test users: " + str(_l) + " remaining.")
 
 	for (i in _account_hard_garr) {
 	    _n = $(i get name)
 	    @$(i delete)
-	    maybe_barf(_success, "-account-hard#4", "Unable to delete group " + _n)
+	    maybe_barf(_success, "-account-hard#3", "Unable to delete group " + _n)
 	}
 	_l = count_by_name("account group", TEST_GROUP + "[0-9]+")
 	maybe_barf(_l == 0, "-account-hard#4", "Unable to delete all test groups: " + str(_l) + " remaining.")

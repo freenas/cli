@@ -91,9 +91,10 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
 
             Sets a user property. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['DeleteEntityCommand'] = ("""\
-            Usage: delete
+            Usage: delete <property>=<value> ...
 
             Examples: delete
+                      delete delete_home_directory=yes delete_own_group=yes
 
             Deletes the specified user.
             Note that built-in user accounts can not be deleted.""")

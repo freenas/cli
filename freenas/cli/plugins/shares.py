@@ -783,6 +783,17 @@ class SMBSharesNamespace(BaseSharesNamespace):
             type=ValueType.BOOLEAN
         )
 
+        self.add_property(
+            descr='Recyclebin',
+            name='recyclebin',
+            usage=_("""\
+            Can be set to yes or no. When set to yes, file deletion requests result in moving
+            deleted file to the .recycle/%U directory."""),
+            get='properties.recyclebin',
+            list=False,
+            type=ValueType.BOOLEAN
+        )
+
 
 @description("WebDAV shares")
 class WebDAVSharesNamespace(BaseSharesNamespace):

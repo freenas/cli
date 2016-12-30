@@ -794,6 +794,17 @@ class SMBSharesNamespace(BaseSharesNamespace):
             type=ValueType.BOOLEAN
         )
 
+        self.add_property(
+            descr='VFS objects',
+            name='vfs_objects',
+            usage=_("""\
+            Space delimited list, enclosed within double quotes,
+            of additional vfs objects."""),
+            get='properties.vfs_objects',
+            list=False,
+            type=ValueType.SET
+        )
+
 
 @description("WebDAV shares")
 class WebDAVSharesNamespace(BaseSharesNamespace):

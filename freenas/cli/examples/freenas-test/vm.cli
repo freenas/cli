@@ -11,7 +11,7 @@ _vm_hard_arr = []
 
 function vm_create() {
 	print(">>> Starting vm tests")
-	_vm_object = @$(vm create name=${_vm_name} template=${_vm_template} volume=${VOL_NAME})
+	_vm_object = @$(vm create name=${_vm_name} template=${_vm_template} datastore=${VOL_NAME})
 	maybe_barf(_success, "+vm#1", "Unable to create VM " + _vm_name)
 	maybe_barf($(_vm_object get cores) == 1, "+vm#2", "Wrong number of cores returned for VM " + _vm_name)
 	@$(_vm_object set description=${_vm_description})
@@ -32,7 +32,7 @@ function vm_destroy() {
 function vm_hard_create() {
 	printf(">>> Starting vm stress tests: %d virtual machines\n", _vm_hard_count)
 	for (i in mapf(range(0, _vm_hard_count), _vm_name + "%d")) {
-	    _x = @$(vm create name=${i} template=${_vm_template} volume=${VOL_NAME})
+	    _x = @$(vm create name=${i} template=${_vm_template} datastore=${VOL_NAME})
 	    if (not (maybe_barf(_success, "+vm-hard#1", "Unable to create VM " + i))) {
 	       append(_vm_hard_arr, _x)
 	       @$(_x start)

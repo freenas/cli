@@ -560,7 +560,8 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             'start': DockerContainerStartCommand(this),
             'stop': DockerContainerStopCommand(this),
             'console': DockerContainerConsoleCommand(this),
-            'exec': DockerContainerExecConsoleCommand(this)
+            'exec': DockerContainerExecConsoleCommand(this),
+            'readme': DockerContainerReadmeCommand(this)
         }
         if this.entity and not this.entity.get('interactive'):
             commands['logs'] = DockerContainerLogsCommand(this)
@@ -1420,6 +1421,25 @@ class DockerContainerExecConsoleCommand(Command):
         exec_id = context.call_sync('docker.container.create_exec', self.parent.entity['id'], args[0])
         console = Console(context, exec_id)
         console.start()
+
+
+@description("Display container's image readme from Dockerhub")
+class DockerContainerReadmeCommand(Command):
+    """
+    Usage: readme
+
+    Examples: readme
+
+    Displays container's image readme from Dockerhub
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        readme = context.call_sync('docker.image.readme', self.parent.entity['image'].split(':')[0])
+        if not readme:
+            readme = 'Selected container\'s image does not have readme entry'
+        return Sequence(readme)
 
 
 @description("Configure and manage Docker hosts, images and containers")

@@ -17,14 +17,14 @@ function docker_create() {
 	maybe_barf(_success == false, "+docker#2", "Creating known bad docker container " + _container_name_bad + " succeeded.")
 	_x = $(_container_obj get name)
 	if (_x != _container_name) {
-	    maybe_barf(_success, "+docker#2", "docker container name is not " + _container_name)
+	    maybe_barf(_success, "+docker#3", "docker container name is not " + _container_name)
 	}
 	_y = $(docker image show | find name ~= ${_image_name})
-	maybe_barf(_y == _image_name, "+docker#3", "docker image for " + _image_name + " not found")
+	maybe_barf(_y == _image_name, "+docker#4", "docker image for " + _image_name + " not found")
 	@$(_container_obj start)
-	maybe_barf(_success, "+docker#3", "unable to start docker container " + _container_name)
+	maybe_barf(_success, "+docker#5", "unable to start docker container " + _container_name)
 	@$(_container_obj stop)
-	maybe_barf(_success, "+docker#4", "unable to stop docker container " + _container_name)
+	maybe_barf(_success, "+docker#6", "unable to stop docker container " + _container_name)
 }
 
 function docker_destroy() {

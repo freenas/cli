@@ -1219,6 +1219,14 @@ class DockerContainerCreateCommand(Command):
                     'readonly': False
                 })
 
+            if k.startswith('ro_volume:'):
+                _, container_path = k.split(':', maxsplit=1)
+                volumes.append({
+                    'container_path': container_path,
+                    'host_path': v,
+                    'readonly': True
+                })
+
             if k.startswith('port:'):
                 _, portspec = k.split(':', maxsplit=1)
                 port, protocol = portspec.split('/', maxsplit=1)
@@ -1289,7 +1297,7 @@ class DockerContainerCreateCommand(Command):
             if image and image['presets']:
                 presets = image['presets']
                 props += [NullComplete('{id}='.format(**i)) for i in presets['settings']]
-                props += [NullComplete('volume:{container_path}='.format(**v)) for v in presets['volumes']]
+                props += [NullComplete(('ro_' if v.get('readonly') else '') + 'volume:{container_path}='.format(**v)) for v in presets['volumes']]
                 props += [NullComplete('port:{container_port}/{protocol}='.format(**v)) for v in presets['ports']]
 
         available_images = q.query(DockerImageNamespace.default_images, select='name')
@@ -1302,6 +1310,7 @@ class DockerContainerCreateCommand(Command):
             NullComplete('hostname='),
             NullComplete('bridge_address='),
             NullComplete('volume:'),
+            NullComplete('ro_volume:'),
             NullComplete('port:'),
             EnumComplete('image=', available_images),
             EntitySubscriberComplete('host=', 'docker.host', lambda i: q.get(i, 'name')),

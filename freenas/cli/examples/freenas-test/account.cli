@@ -7,13 +7,14 @@ _group_obj=null
 _account_hard_count=10
 _account_hard_uarr = []
 _account_hard_garr = []
+_account_home="/home"
 
 function account_create() {
 	print(">>> Starting account tests")
-	@$(VOL_OBJECT dataset create name=${VOL_NAME + "/home"})
-	maybe_barf(_success, "+account#1", "Unable to create home dataset on volume " + VOL_NAME)
+	@$(VOL_OBJECT dataset create name=${VOL_NAME + _account_home})
+	maybe_barf(_success, "+account#1", "Unable to create " + _account_home + " dataset on volume " + VOL_NAME)
 
-	_user_obj = @$(account user create name=${TEST_USER} fullname="My Test User" home=${"/mnt/" + VOL_NAME + "/home"} password_disabled=yes)
+	_user_obj = @$(account user create name=${TEST_USER} fullname="My Test User" home=${"/mnt/" + VOL_NAME + _account_home} password_disabled=yes)
 	maybe_barf(_success, "+account#2", "Unable to create user " + TEST_USER)
 	_olduid=$(_user_obj get uid)
 	maybe_barf(_success, "+account#3", "Cannot get uid value for user " + TEST_USER)
@@ -46,15 +47,15 @@ function account_destroy() {
 	maybe_barf(_success, "-account#1", "Unable to delete user " + TEST_USER)
 	@$(_group_obj delete)
 	maybe_barf(_success, "-account#2", "Unable to delete group " + TEST_GROUP)
-	@$(VOL_OBJECT dataset ${VOL_NAME + "/home"} delete)
-	maybe_barf(_success, "-account#3", "Unable to delete temporary home dataset on " + VOL_NAME)
+	@$(VOL_OBJECT dataset ${VOL_NAME + _account_home} delete)
+	maybe_barf(_success, "-account#3", "Unable to delete temporary home dataset " + _account_home + " on " + VOL_NAME)
 }
 
 function account_hard_create() {
 	printf(">>> Starting account stress tests: %d users and groups\n", _account_hard_count)
 
 	for (i in mapf(range(0, _account_hard_count), TEST_USER + "%d")) {
-	    _x = @$(account user create name=${i} fullname=${"My Test User " + i} home=${sprintf("/mnt/%s/home/%s", VOL_NAME, i)} password_disabled=yes)
+	    _x = @$(account user create name=${i} fullname=${"My Test User " + i} home=${"/mnt/" + VOL_NAME + _account_home + str(i)} password_disabled=yes)
 	    if (not maybe_barf(_success, "+account-hard#1", "Unable to create user " + i)) {
 	       append(_account_hard_uarr, _x)
 	    }

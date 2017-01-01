@@ -1,8 +1,6 @@
 # Test runner for tunable  category
 #
 
-_tunable_var_loader="test_tunable_loader"
-_tunable_val_loader="test"
 _tunable_var_rc="test_tunable_rc"
 _tunable_var_rc_bad="_bad_tunable_rc"
 _tunable_val_rc="test"
@@ -14,24 +12,20 @@ _tunable_hard_arr = []
 
 function tunable_create() {
 	print(">>> Starting tunable tests")
-	@$(tunable create type=LOADER name=${_tunable_var_loader} value=${_tunable_val_loader})
-	maybe_barf(_success, "tunable#1", "Unable to create loader variable " + _tunable_var_loader)
 	@$(tunable create type=RC name=${_tunable_var_rc} value=${_tunable_val_rc})
-	maybe_barf(_success, "tunable#2", "Unable to create rc variable " + _tunable_var_rc)
+	maybe_barf(_success, "tunable#1", "Unable to create rc variable " + _tunable_var_rc)
 	@$(tunable create type=RC name=${_tunable_var_rc_bad} value=${_tunable_val_rc})
-	maybe_barf(_success == false, "tunable#3", "Creating bad rc variable " + _tunable_var_rc_bad + " not properly caught.")
+	maybe_barf(_success == false, "tunable#2", "Creating bad rc variable " + _tunable_var_rc_bad + " not properly caught.")
 	@$(tunable create type=SYSCTL name=${_tunable_var_sysctl} value=${_tunable_val_sysctl})
-	maybe_barf(_success, "tunable#4", "Unable to set sysctl variable " + _tunable_var_sysctl)
+	maybe_barf(_success, "tunable#3", "Unable to set sysctl variable " + _tunable_var_sysctl)
 }
 
 function tunable_destroy() {
 	print(">>> Finishing tunable tests")
-	@$(tunable ${_tunable_var_loader} delete)
-	maybe_barf(_success, "-tunable#1", "Unable to delete loader variable " + _tunable_var_loader)
 	@$(tunable ${_tunable_var_rc} delete)
-	maybe_barf(_success, "-tunable#2", "Unable to delete rc variable " + _tunable_var_rc)
+	maybe_barf(_success, "-tunable#1", "Unable to delete rc variable " + _tunable_var_rc)
 	@$(tunable ${_tunable_var_sysctl} delete)
-	maybe_barf(_success, "-tunable#3", "Unable to delete sysctl variable " + _tunable_var_sysctl)
+	maybe_barf(_success, "-tunable#2", "Unable to delete sysctl variable " + _tunable_var_sysctl)
 }
 
 function tunable_hard_create() {

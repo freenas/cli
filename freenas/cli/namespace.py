@@ -57,12 +57,12 @@ def description(descr):
     return wrapped
 
 
-def create_completer(prop):
+def create_completer(prop, obj=None):
     if prop.complete:
         return prop.complete
     else:
         if prop.enum:
-            enum_val = prop.enum() if callable(prop.enum) else prop.enum
+            enum_val = prop.enum(obj) if callable(prop.enum) else prop.enum
             return EnumComplete(prop.name + '=', enum_val)
 
         if prop.type == ValueType.BOOLEAN:
@@ -291,8 +291,8 @@ class PropertyMapping(object):
 
         value = read_value(value, self.type)
 
-        if self.strict and (self.enum or (self.complete and self.context)):
-            enum_val = self.enum() if callable(self.enum) else self.enum or self.complete.choices(self.context, None)
+        if self.strict and self.enum:
+            enum_val = self.enum(obj) if callable(self.enum) else self.enum
             if self.type == ValueType.SET:
                 for e in value:
                     if e not in enum_val:
@@ -517,7 +517,7 @@ class ItemNamespace(Namespace):
                     with contextlib.suppress(BaseException):
                         prop.do_set(ns.entity, v)
 
-                return [create_completer(x) for x in self.parent.property_mappings if x.can_set(ns.entity) and not x.delete_arg]
+                return [create_completer(x, ns.entity) for x in self.parent.property_mappings if x.can_set(ns.entity) and not x.delete_arg]
 
             return []
 

@@ -375,9 +375,17 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
 
         self.add_property(
             descr='Active media type',
-            name='media_type',
+            name='active_media_type',
             get=self.get_media_type,
             set=None,
+            list=False
+        )
+
+        self.add_property(
+            descr='Selected media type',
+            name='media_type',
+            get='media',
+            enum=lambda o: get(o, 'status.supported_media'),
             list=False
         )
 

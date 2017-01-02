@@ -766,7 +766,7 @@ class VMDeviceNicPropertiesMixin(BaseVariantMixin):
             get='properties.bridge',
             list=False,
             complete=MultipleSourceComplete(
-                'bridge=', (
+                'nic_bridge=', (
                     EntitySubscriberComplete('bridge=', 'network.interface', lambda i: i['id']),
                     EntitySubscriberComplete('bridge=', 'network.interface', lambda i: i['name'])
                 ),

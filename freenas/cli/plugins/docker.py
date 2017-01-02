@@ -351,8 +351,8 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
         def get_ports(o):
             return ['{0}/{2}={1}'.format(i['container_port'], i['host_port'], i['protocol']) for i in o['ports']]
 
-        def get_volumes(o):
-            return ['{0}={1}'.format(i['container_path'], i['host_path']) for i in o['volumes']]
+        def get_volumes(o, ro):
+            return ['{0}={1}'.format(i['container_path'], i['host_path']) for i in o['volumes'] if i['readonly'] == ro]
 
         self.add_property(
             descr='Name',
@@ -503,7 +503,20 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
         self.add_property(
             descr='Volumes',
             name='volumes',
-            get=get_volumes,
+            get=lambda o: get_volumes(o, False),
+            usersetable=False,
+            list=True,
+            type=ValueType.SET,
+            usage=_('''\
+            List of strings formatted like:
+            <container_path>=<freenas_path>
+            Defines which of FreeNAS paths should be exposed to a container.''')
+        )
+
+        self.add_property(
+            descr='Readonly Volumes',
+            name='ro_volumes',
+            get=lambda o: get_volumes(o, True),
             usersetable=False,
             list=True,
             type=ValueType.SET,

@@ -1213,7 +1213,7 @@ class DockerContainerCreateCommand(Command):
 
         DockerUtilsMixin.check_name(name)
 
-        image = context.entity_subscribers['docker.image'].query(('names', 'in', kwargs['image']), single=True)
+        image = context.entity_subscribers['docker.image'].query(('names.0', 'in', kwargs['image']), single=True)
         if not image:
             image = q.query(DockerImageNamespace.default_images, ('name', '=', kwargs['image']), single=True)
 

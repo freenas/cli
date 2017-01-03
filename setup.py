@@ -72,7 +72,7 @@ class build_docs(install):
 setup(
     name='freenas.cli',
     url='http://github.com/freenas/middleware',
-    packages=find_packages() + ['freenas.cli.plugins'],
+    packages=['freenas.cli', 'freenas.cli.descriptions', 'freenas.cli.output', 'freenas.cli.plugins'],
     license='BSD',
     description='Command Line Interface for FreeNAS',
     platforms='any',

@@ -124,7 +124,7 @@ class DirectoriesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, E
             get='type',
             set=set_type,
             list=True,
-            enum=['winbind', 'ldap', 'nis']
+            enum=['winbind', 'freeipa', 'ldap', 'nis']
         )
 
         self.add_property(

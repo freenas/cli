@@ -235,6 +235,14 @@ class UpdateNamespace(ConfigNamespace):
         )
 
         self.add_property(
+            descr='Use internal update server',
+            name='internal',
+            type=ValueType.BOOLEAN,
+            get='internal',
+            set='internal'
+        )
+
+        self.add_property(
             descr='Enable/Disable Auto check for Updates',
             name='check_auto',
             type=ValueType.BOOLEAN,

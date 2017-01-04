@@ -27,6 +27,7 @@
 
 import re
 import gettext
+from freenas.dispatcher.rpc import RpcException
 from freenas.cli.namespace import (
     Namespace, EntityNamespace, Command, EntitySubscriberBasedLoadMixin,
     TaskBasedSaveMixin, CommandException, description, ConfigNamespace, RpcBasedLoadMixin
@@ -683,6 +684,8 @@ class DockerImageNamespace(EntitySubscriberBasedLoadMixin, DockerUtilsMixin, Ent
     def load_collection_images(context):
         def refresh_images(i):
             DockerImageNamespace.default_images.clear()
+            if isinstance(i, RpcException):
+                raise i
             DockerImageNamespace.default_images.extend(list(i))
 
         def fetch(collection):

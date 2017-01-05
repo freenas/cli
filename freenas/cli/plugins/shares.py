@@ -856,7 +856,7 @@ class SMBSharesNamespace(BaseSharesNamespace):
             Case sensitive option controls whether filenames are case sensitive.
             Allowed values yes/no/auto."""),
             get='properties.case_sensitive',
-            enum=['yes', 'no', 'auto'],
+            enum=['AUTO', 'YES', 'NO'],
             list=False,
             type=ValueType.STRING
         )

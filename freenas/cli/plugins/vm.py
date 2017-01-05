@@ -1365,13 +1365,13 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
         )
 
         self.add_property(
-            descr='Template images cached',
-            name='cached',
-            get='template.cached',
+            descr='Template images cached on',
+            name='cached_on',
+            get='template.cached_on',
             usersetable=False,
             list=False,
-            type=ValueType.BOOLEAN,
-            usage=_("Flag describing wehter template's images are cached or not")
+            type=ValueType.SET,
+            usage=_("List of datastores which store the template in their local cache")
         )
 
         self.primary_key = self.get_mapping('name')

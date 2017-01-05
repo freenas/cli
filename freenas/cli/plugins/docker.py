@@ -685,7 +685,7 @@ class DockerImageNamespace(EntitySubscriberBasedLoadMixin, DockerUtilsMixin, Ent
         def refresh_images(i):
             DockerImageNamespace.default_images.clear()
             if isinstance(i, RpcException):
-                raise i
+                return
             DockerImageNamespace.default_images.extend(list(i))
 
         def fetch(collection):

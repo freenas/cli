@@ -1404,9 +1404,9 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
 @description("Downloads VM images to the local cache")
 class DownloadImagesCommand(Command):
     """
-    Usage: download
+    Usage: download volume=<volume>
 
-    Example: download
+    Example: download volume=tank
 
     Downloads VM template images to the local cache.
     """
@@ -1414,8 +1414,16 @@ class DownloadImagesCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs, filtering=None):
-        tid = context.submit_task('vm.cache.update', self.parent.entity['template']['name'])
+        pool = kwargs.get('pool')
+        if not pool:
+            raise CommandException(_('Target volume has to be specified'))
+        tid = context.submit_task('vm.cache.update', self.parent.entity['template']['name'], pool)
         return TaskPromise(context, tid)
+
+    def complete(self, context, **kwargs):
+        return [
+            EntitySubscriberComplete('volume=', 'volume', lambda i: i['id'])
+        ]
 
 
 @description("Shows readme entry of selected VM template")
@@ -1501,14 +1509,14 @@ class GuestExecCommand(Command):
         return context.call_sync('vm.guest_exec', self.parent.entity['id'], args[0], args[1:])
 
 
-@description("Deletes VM images from the local cache")
+@description("Deletes unused VM images from the local cache")
 class DeleteImagesCommand(Command):
     """
     Usage: delete_cache
 
     Examples: delete_cache
 
-    Deletes VM template images from the local cache.
+    Deletes unused VM template images from the local cache.
     """
     def __init__(self, parent):
         self.parent = parent
@@ -1518,14 +1526,14 @@ class DeleteImagesCommand(Command):
         return TaskPromise(context, tid)
 
 
-@description("Deletes all VM images from the local cache")
+@description("Deletes all unused VM images from the local cache")
 class FlushImagesCommand(Command):
     """
     Usage: flush_cache
 
     Examples: flush_cache
 
-    Deletes all VM template images from the local cache.
+    Deletes all unused VM template images from the local cache.
     """
     def __init__(self, parent):
         self.parent = parent

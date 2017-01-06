@@ -1414,10 +1414,10 @@ class DownloadImagesCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs, filtering=None):
-        pool = kwargs.get('pool')
-        if not pool:
+        volume = kwargs.get('volume')
+        if not volume:
             raise CommandException(_('Target volume has to be specified'))
-        tid = context.submit_task('vm.cache.update', self.parent.entity['template']['name'], pool)
+        tid = context.submit_task('vm.cache.update', self.parent.entity['template']['name'], volume)
         return TaskPromise(context, tid)
 
     def complete(self, context, **kwargs):

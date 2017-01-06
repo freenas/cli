@@ -223,7 +223,10 @@ class CalendarTasksNamespaceBaseClass(EntitySubscriberBasedLoadMixin, TaskBasedS
 
     @staticmethod
     def get_type(entity):
-        return TASK_TYPES_REVERSE[entity['task']]
+        try:
+            return TASK_TYPES_REVERSE[entity['task']]
+        except KeyError:
+            return
 
 
 class CalendarTasksScheduleNamespace(NestedEntityMixin, ItemNamespace):

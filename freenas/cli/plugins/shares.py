@@ -945,7 +945,7 @@ class SMBSharesNamespace(BaseSharesNamespace):
             Controls where the MacOS metadata is stored.
             Allowed values: stream | netatalk ."""),
             get='properties.fruit_metadata',
-            enum=['stream', 'netatalk'],
+            enum=['STREAM', 'NETATALK'],
             list=False,
             type=ValueType.STRING
         )

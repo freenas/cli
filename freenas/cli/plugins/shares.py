@@ -805,6 +805,151 @@ class SMBSharesNamespace(BaseSharesNamespace):
             type=ValueType.SET
         )
 
+        self.add_property(
+            descr='Full audit prefix',
+            name='full_audit_prefix',
+            usage=_("""\
+            Provided string is processed by variables substitution provided by smb.conf(5)
+            Example: '%u|%I|%m|%S'."""),
+            get='properties.full_audit_prefix',
+            list=False,
+            type=ValueType.STRING
+        )
+
+        self.add_property(
+            descr='Full audit priority',
+            name='full_audit_priority',
+            usage=_("""\
+            Priority for the syslog messages.
+            Full list of valid values is defned by RFC 3164."""),
+            get='properties.full_audit_priority',
+            list=False,
+            type=ValueType.STRING
+        )
+
+        self.add_property(
+            descr='Full audit failure',
+            name='full_audit_failure',
+            usage=_("""\
+            Space delimited list, enclosed within double quotes,
+            of the VFS operations that should be recorded if they failed."""),
+            get='properties.full_audit_failure',
+            list=False,
+            type=ValueType.STRING
+        )
+
+        self.add_property(
+            descr='Full audit success',
+            name='full_audit_success',
+            usage=_("""\
+            Space delimited list, enclosed within double quotes,
+            of the VFS operations that should be recorded if they succeed."""),
+            get='properties.full_audit_success',
+            list=False,
+            type=ValueType.STRING
+        )
+
+        self.add_property(
+            descr='Case sensitive',
+            name='case_sensitive',
+            usage=_("""\
+            Case sensitive option controls whether filenames are case sensitive.
+            Allowed values yes/no/auto."""),
+            get='properties.case_sensitive',
+            enum=['AUTO', 'YES', 'NO'],
+            list=False,
+            type=ValueType.STRING
+        )
+
+        self.add_property(
+            descr='Allocation roundup size',
+            name='allocation_roundup_size',
+            usage=_("""\
+            Property that allows to tune the allocation size reported to Windows clients.
+            Default: 1048576, to disable: 0."""),
+            get='properties.allocation_roundup_size',
+            list=False,
+            type=ValueType.NUMBER
+        )
+
+        self.add_property(
+            descr='ea support',
+            name='ea_support',
+            usage=_("""\
+            ea support property allow clients to attempt to store OS/2
+            style Extended attributes on a share."""),
+            get='properties.store_dos_attributes',
+            list=False,
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
+            descr='Store dos attributes',
+            name='store_dos_attributes',
+            usage=_("""\
+            store dos attributes allows SMB to first read the DOS attributes
+            before mapping to the UNIX premission bits"""),
+            get='properties.store_dos_attributes',
+            list=False,
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
+            descr='Map archive',
+            name='map_archive',
+            usage=_("""\
+            map archive controls whether DOS style system files should be mapped
+            to the UNIX owner execute bit."""),
+            get='properties.map_archive',
+            list=False,
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
+            descr='Map hidden',
+            name='map_hidden',
+            usage=_("""\
+            map hidden controls whether DOS style hidden files should be mapped
+            to the UNIX world execute bit."""),
+            get='properties.map_hidden',
+            list=False,
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
+            descr='Map readonly',
+            name='map_readonly',
+            usage=_("""\
+            map readonly controls how the DOS read only attribute should be mapped
+            from a UNIX filesystem"""),
+            get='properties.map_readonly',
+            list=False,
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
+            descr='Map system',
+            name='map_system',
+            usage=_("""\
+            map system controls whether DOS style system files should be mapped
+            to the UNIX group execute bit."""),
+            get='properties.map_system',
+            list=False,
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
+            descr='Fruit metadata',
+            name='fruit_metadata',
+            usage=_("""\
+            Controls where the MacOS metadata is stored.
+            Allowed values: stream | netatalk ."""),
+            get='properties.fruit_metadata',
+            enum=['STREAM', 'NETATALK'],
+            list=False,
+            type=ValueType.STRING
+        )
+
 
 @description("WebDAV shares")
 class WebDAVSharesNamespace(BaseSharesNamespace):

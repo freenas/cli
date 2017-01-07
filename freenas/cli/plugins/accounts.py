@@ -309,6 +309,7 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             descr='Delete own group',
             name='delete_own_group',
             get=None,
+            list=False,
             set='0.delete_own_group',
             delete_arg=True,
             type=ValueType.BOOLEAN
@@ -318,6 +319,7 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             descr='Delete home directory',
             name='delete_home_directory',
             get=None,
+            list=False,
             set='0.delete_home_directory',
             delete_arg=True,
             type=ValueType.BOOLEAN

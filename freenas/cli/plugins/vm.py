@@ -132,6 +132,33 @@ class ConsoleCommand(Command):
         console.start()
 
 
+@description("Clones a VM into a new VM instance")
+class CloneVMCommand(Command):
+    """
+    Usage: clone name=<name>
+
+    Example: clone name=test_vm_clone
+
+    Clones a VM into a new VM instance.
+    """
+
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        new_name = kwargs.pop('name')
+        if not new_name:
+            raise CommandException(_('Name of a new VM has to be specified'))
+
+        tid = context.submit_task(
+            'vm.clone',
+            self.parent.entity['id'],
+            new_name
+        )
+
+        return TaskPromise(context, tid)
+
+
 class ConsoleVGACommand(Command):
     """
     Usage: console_vga
@@ -611,6 +638,7 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             'kill': KillVMCommand(this),
             'reboot': RebootVMCommand(this),
             'console': ConsoleCommand(this),
+            'clone': CloneVMCommand(this),
             'readme': ReadmeCommand(this, 'config'),
             'guest_info': ShowGuestInfoCommand(this)
         }
@@ -1088,7 +1116,8 @@ class VMSnapshotsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
 
         self.entity_commands = lambda this: {
             'publish': PublishVMCommand(this),
-            'rollback': RollbackVMCommand(this)
+            'rollback': RollbackVMCommand(this),
+            'clone': CloneVMSnapshotCommand(this)
         }
 
     def commands(self):
@@ -1231,6 +1260,33 @@ class RollbackVMCommand(Command):
         tid = context.submit_task(
             'vm.snapshot.rollback',
             self.parent.entity['id'],
+        )
+
+        return TaskPromise(context, tid)
+
+
+@description("Clones a VM snapshot into a new VM instance")
+class CloneVMSnapshotCommand(Command):
+    """
+    Usage: clone name=<name>
+
+    Example: clone name=test_vm_clone
+
+    Clones a VM snapshot into a new VM instance.
+    """
+
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        new_name = kwargs.pop('name')
+        if not new_name:
+            raise CommandException(_('Name of a new VM has to be specified'))
+
+        tid = context.submit_task(
+            'vm.snapshot.clone',
+            self.parent.entity['id'],
+            new_name
         )
 
         return TaskPromise(context, tid)

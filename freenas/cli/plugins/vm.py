@@ -456,7 +456,7 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
         self.add_property(
             descr='Parent',
             name='parent',
-            get=lambda o: self.context.entity_subscribers['vm'].query(('id', '=', o['parent']), single=True, select=name),
+            get=lambda o: self.context.entity_subscribers['vm'].query(('id', '=', o['parent']), single=True, select='name'),
             usersetable=False,
             list=False,
             usage=_("Parent of a VM. Set to name of a other VM when VM is a clone")

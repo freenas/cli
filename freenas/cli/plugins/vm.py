@@ -158,6 +158,11 @@ class CloneVMCommand(Command):
 
         return TaskPromise(context, tid)
 
+    def complete(self, context, **kwargs):
+        return [
+            NullComplete('name='),
+        ]
+
 
 class ConsoleVGACommand(Command):
     """
@@ -1299,6 +1304,11 @@ class CloneVMSnapshotCommand(Command):
         )
 
         return TaskPromise(context, tid)
+
+    def complete(self, context, **kwargs):
+        return [
+            NullComplete('name='),
+        ]
 
 
 @description("Container templates operations")

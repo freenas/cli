@@ -58,6 +58,10 @@ class DirectoryStatusCommand(Command):
 
 @description("Configure and manage directory services")
 class DirectoryServiceNamespace(Namespace):
+    """
+    The directoryservice namespace contains namespaces for managing
+    the client site of FreeIPA, ActiveDirecory, LDAP and NIS directory services.
+    """
     def __init__(self, name, context):
         super(DirectoryServiceNamespace, self).__init__(name)
         self.context = context
@@ -71,27 +75,42 @@ class DirectoryServiceNamespace(Namespace):
 
 
 class DirectoryServicesConfigNamespace(ConfigNamespace):
+    """
+    The directoryservice config namespace provides commands for listing,
+    and managing directory services general settings.
+    """
     def __init__(self, name, context):
         super(DirectoryServicesConfigNamespace, self).__init__(name, context)
         self.config_call = "directoryservice.get_config"
         self.update_task = 'directoryservice.update'
 
+
         self.add_property(
             descr='Search order',
             name='search_order',
             get='search_order',
-            type=ValueType.SET
+            type=ValueType.SET,
+            usage=_('''\
+            Serach order for the directory service connections
+            created within 'directories' namespace.''')
         )
 
         self.add_property(
             descr='Cache TTL',
             name='cache_ttl',
             get='cache_ttl',
-            type=ValueType.NUMBER
+            type=ValueType.NUMBER,
+            usage=_('''\
+            TTL value of cached data provided by directory service connections
+            created within 'directories' namespace.''')
         )
 
 
 class DirectoriesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
+    """
+    The directories namespace provides commands for listing,
+    creating, and managing directory service connections.
+    """
     def __init__(self, name, context):
         def set_type(o, v):
             elem = self.context.entity_subscribers[self.entity_subscriber_name].query(
@@ -111,11 +130,44 @@ class DirectoriesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, E
         self.update_task = 'directory.update'
         self.delete_task = 'directory.delete'
 
+        self.localdoc['CreateEntityCommand'] = ("""\
+            Usage: create <name> type=<type> <property>=<value>
+
+            Examples: create LDAP_connection type=ldap enumerate=yes enabled=yes
+
+            For a list of properties, see 'help properties'.""")
+
+        self.entity_localdoc['SetEntityCommand'] = ("""\
+            Usage: set <property>=<value> ...
+
+            Examples: set name=new_directory_service_connection_name
+                      set enabled=yes
+                      set enumerate=no
+
+            Sets a directory service connection general property.
+            For a list of properties, see 'help properties'.""")
+
+        self.entity_localdoc['DeleteEntityCommand'] = ("""\
+            Usage: delete
+
+            Deletes the specified directory service connection.""")
+        self.localdoc['ListCommand'] = ("""\
+            Usage: show
+
+            Lists all directory service connections. Optionally, filter or sort by property.
+            Use 'help properties' to list available properties.
+
+            Examples:
+                show
+                show | search name == foo""")
+
+
         self.add_property(
             descr='Directory name',
             name='name',
             get='name',
-            list=True
+            list=True,
+            usage=_("The name of the directory service connection.")
         )
 
         self.add_property(
@@ -124,7 +176,10 @@ class DirectoriesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, E
             get='type',
             set=set_type,
             list=True,
-            enum=['winbind', 'freeipa', 'ldap', 'nis']
+            enum=['winbind', 'freeipa', 'ldap', 'nis'],
+            usage=_("""\
+            Type of the directory service connection type.
+            Supported values : 'winbind', 'freeipa', 'ldap', 'nis' """)
         )
 
         self.add_property(
@@ -132,7 +187,8 @@ class DirectoriesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, E
             name='enabled',
             get='enabled',
             list=True,
-            type=ValueType.BOOLEAN
+            type=ValueType.BOOLEAN,
+            usage=_("Defines whether the directory service connection is enabled ")
         )
 
         self.add_property(
@@ -140,7 +196,9 @@ class DirectoriesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, E
             name='enumerate',
             get='enumerate',
             list=True,
-            type=ValueType.BOOLEAN
+            type=ValueType.BOOLEAN,
+            usage=_("Defines whether the directory service connection enumerates users and groups ")
+
         )
 
         self.add_property(
@@ -149,6 +207,9 @@ class DirectoriesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, E
             get='status.state',
             set=None,
             list=True,
+            usage=_("""\
+            State of the directory service connection.
+            Possible values : 'DISABLED', 'JOINING', 'FAILURE', 'BOUND', 'EXITING' """)
         )
 
         self.add_property(
@@ -157,7 +218,8 @@ class DirectoriesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, E
             get=lambda o: errno.errorcode.get(get(o, 'status.status_code')),
             set=None,
             list=True,
-            condition=lambda o: get(o, 'status.state') == 'FAILURE'
+            condition=lambda o: get(o, 'status.state') == 'FAILURE',
+            usage=_("Directory service connection error code ")
         )
 
         self.add_property(
@@ -166,7 +228,8 @@ class DirectoriesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, E
             get='status.status_message',
             set=None,
             list=True,
-            condition=lambda o: get(o, 'status.state') == 'FAILURE'
+            condition=lambda o: get(o, 'status.state') == 'FAILURE',
+            usage=_("Directory service connection status ")
         )
 
         """
@@ -238,33 +301,41 @@ class ActiveDirectoryPropertiesNamespace(BaseDirectoryPropertiesNamespace):
         self.add_property(
             descr='Realm',
             name='realm',
-            get='realm'
+            get='realm',
+            usage=_("Active Directory realm. For example: 'contoso.com'")
+
         )
 
         self.add_property(
             descr='Username',
             name='username',
-            get='username'
+            get='username',
+            usage=_("Active Directory privileged username")
         )
 
         self.add_property(
             descr='Password',
             name='password',
             get=None,
-            set='password'
+            set='password',
+            usage=_("Active Directory privileged user password")
         )
 
         self.add_property(
             descr='DC address',
             name='dc_address',
             get='dc_address',
+            usage=_("Active Directory domain controller IP address")
         )
 
         self.add_property(
             descr='SASL wrapping',
             name='sasl_wrapping',
             get='sasl_wrapping',
-            enum=['PLAIN', 'SIGN', 'SEAL']
+            enum=['PLAIN', 'SIGN', 'SEAL'],
+            usage=_("""\
+            Active Directory traffic encryption mode.
+            Supported values : 'PLAIN', 'SIGN', 'SEAL' """)
         )
 
 
@@ -275,26 +346,30 @@ class FreeIPAPropertiesNamespace(BaseDirectoryPropertiesNamespace):
         self.add_property(
             descr='Realm',
             name='realm',
-            get='realm'
+            get='realm',
+            usage=_("FreeIPA realm. For example: 'contoso.com'")
         )
 
         self.add_property(
             descr='Username',
             name='username',
-            get='username'
+            get='username',
+            usage=_("FreeIPA privileged username")
         )
 
         self.add_property(
             descr='Password',
             name='password',
             get=None,
-            set='password'
+            set='password',
+            usage=_("FreeIPA privileged user password")
         )
 
         self.add_property(
             descr='Server address',
             name='server',
-            get='server'
+            get='server',
+            usage=_("FreeIPA server IP address")
         )
 
 
@@ -305,64 +380,76 @@ class LDAPPropertiesNamespace(BaseDirectoryPropertiesNamespace):
         self.add_property(
             descr='Server address',
             name='server',
-            get='server'
+            get='server',
+            usage=_("LDAP server IP address")
         )
 
         self.add_property(
             descr='Base DN',
             name='base_dn',
-            get='base_dn'
+            get='base_dn',
+            usage=_("LDAP Base DN. For example: 'dc=example,dc=com'")
         )
 
         self.add_property(
             descr='Bind DN',
             name='bind_dn',
-            get='bind_dn'
+            get='bind_dn',
+            usage=_("LDAP privileged user. For example: 'cn=admin,dc=example,dc=com'")
         )
 
         self.add_property(
             descr='Bind password',
             name='password',
             get=None,
-            set='password'
+            set='password',
+            usage=_("LDAP privileged user password")
         )
 
         self.add_property(
             descr='User suffix',
             name='user_suffix',
             get='user_suffix',
+            usage=_("LDAP user suffix. For example: 'ou=users'")
         )
 
         self.add_property(
             descr='Group suffix',
             name='group_suffix',
             get='group_suffix',
+            usage=_("LDAP group suffix. For example: 'ou=groups'")
         )
 
         self.add_property(
             descr='Encryption',
             name='encryption',
             get='encryption',
-            enum=['OFF', 'SSL', 'TLS']
+            enum=['OFF', 'SSL', 'TLS'],
+            usage=_("""\
+            LDAP traffic encryption mode.
+            Supported values : 'OFF', 'SSL', 'TLS' """)
         )
 
         self.add_property(
-            descr='CA/Certificate',
+            descr='CA Certificate',
             name='certificate',
-            get='certificate'
+            get='certificate',
+            usage=_("LDAP server CA certificate")
         )
 
         self.add_property(
             descr='Verify certificate',
             name='verify_certificate',
             get='verify_certificate',
-            type=ValueType.BOOLEAN
+            type=ValueType.BOOLEAN,
+            usage=_("LDAP server CA certificate veryfication")
         )
 
         self.add_property(
             descr='Kerberos principal',
             name='krb_principal',
-            get='krb_principal'
+            get='krb_principal',
+            usage=_("Kerberos principal identity")
         )
 
 
@@ -373,17 +460,24 @@ class NISPropertiesNamespace(BaseDirectoryPropertiesNamespace):
         self.add_property(
             descr='Domain',
             name='domain',
-            get='domain'
+            get='domain',
+            usage=_("NIS domain name. For example: 'radom.pl'")
+
         )
 
         self.add_property(
             descr='Server',
             name='server',
-            get='server'
+            get='server',
+            usage=_("NIS server IP address")
         )
 
 
 class KerberosNamespace(Namespace):
+    """
+    The kerberos namespace provides namespaces for managing
+    kerberos realms and keytabs.
+    """
     def __init__(self, name, context):
         super(KerberosNamespace, self).__init__(name)
         self.context = context
@@ -396,6 +490,10 @@ class KerberosNamespace(Namespace):
 
 
 class KerberosRealmsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):
+    """
+    The realm namespace provides commands for listing,
+    creating, and managing kerberos realms.
+    """
     def __init__(self, name, context):
         super(KerberosRealmsNamespace, self).__init__(name, context)
 
@@ -405,38 +503,77 @@ class KerberosRealmsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin
         self.update_task = 'kerberos.realm.update'
         self.delete_task = 'kerberos.realm.delete'
 
+        self.localdoc['CreateEntityCommand'] = ("""\
+            Usage: create <name> kdc=192.168.10.1 <property>=<value>
+
+            Examples: create example.com kdc=192.168.10.1
+
+            For a list of properties, see 'help properties'.""")
+
+        self.entity_localdoc['SetEntityCommand'] = ("""\
+            Usage: set <property>=<value> ...
+
+            Examples: set name=new_realm_name
+
+            Sets a kerberos realm general property.
+            For a list of properties, see 'help properties'.""")
+
+        self.entity_localdoc['DeleteEntityCommand'] = ("""\
+            Usage: delete
+
+            Deletes the specified kerberos realm.""")
+        self.localdoc['ListCommand'] = ("""\
+            Usage: show
+
+            Lists all kerberos realms. Optionally, filter or sort by property.
+            Use 'help properties' to list available properties.
+
+            Examples:
+                show
+                show | search name == foo""")
+
+
+
         self.add_property(
             descr='Realm name',
             name='realm',
             get='realm',
-            list=True
+            list=True,
+            usage=_("Kerberos realm name")
         )
 
         self.add_property(
             descr='KDC',
             name='kdc',
             get='kdc_address',
-            list=True
+            list=True,
+            usage=_("Kerberos distribution key IP address")
         )
 
         self.add_property(
             descr='Admin server',
             name='admin_server',
             get='admin_server_address',
-            list=True
+            list=True,
+            usage=_("Kerberos admin server IP address")
         )
 
         self.add_property(
             descr='Password server',
             name='password_server',
             get='password_server_address',
-            list=True
+            list=True,
+            usage=_("Kerberos password server IP address")
         )
 
         self.primary_key = self.get_mapping('realm')
 
 
 class KerberosKeytabsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):
+    """
+    The keytab namespace provides commands for listing,
+    creating, and managing kerberos keytabs.
+    """
     def __init__(self, name, context):
         super(KerberosKeytabsNamespace, self).__init__(name, context)
 
@@ -446,11 +583,41 @@ class KerberosKeytabsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixi
         self.update_task = 'kerberos.keytab.update'
         self.delete_task = 'kerberos.keytab.delete'
 
+        self.localdoc['CreateEntityCommand'] = ("""\
+            Usage: create <name> keytab=<file>
+
+            Examples: create my_key_tab kdc=key_tab_file
+
+            For a list of properties, see 'help properties'.""")
+
+        self.entity_localdoc['SetEntityCommand'] = ("""\
+            Usage: set <property>=<value> ...
+
+            Examples: set name=new_keytab_name
+
+            Sets a kerberos keytab general property.
+            For a list of properties, see 'help properties'.""")
+
+        self.entity_localdoc['DeleteEntityCommand'] = ("""\
+            Usage: delete
+
+            Deletes the specified kerberos keytab.""")
+        self.localdoc['ListCommand'] = ("""\
+            Usage: show
+
+            Lists all kerberos keytabs. Optionally, filter or sort by property.
+            Use 'help properties' to list available properties.
+
+            Examples:
+                show
+                show | search name == foo""")
+
         self.add_property(
             descr='Keytab name',
             name='name',
             get='name',
-            list=True
+            list=True,
+            usage=_("Kerberos keytab name")
         )
 
         self.add_property(
@@ -458,7 +625,8 @@ class KerberosKeytabsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixi
             name='keytab',
             get=None,
             set=self.set_keytab_file,
-            list=False
+            list=False,
+            usage=_("Kerberos keytab file")
         )
 
         self.add_property(
@@ -467,7 +635,8 @@ class KerberosKeytabsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixi
             get=self.get_keytab_entries,
             set=None,
             type=ValueType.SET,
-            list=False
+            list=False,
+            usage=_("Kerberos keytab entries")
         )
 
         self.primary_key = self.get_mapping('name')

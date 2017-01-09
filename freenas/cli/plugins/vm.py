@@ -132,6 +132,38 @@ class ConsoleCommand(Command):
         console.start()
 
 
+@description("Clones a VM into a new VM instance")
+class CloneVMCommand(Command):
+    """
+    Usage: clone name=<name>
+
+    Example: clone name=test_vm_clone
+
+    Clones a VM into a new VM instance.
+    """
+
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        new_name = kwargs.pop('name')
+        if not new_name:
+            raise CommandException(_('Name of a new VM has to be specified'))
+
+        tid = context.submit_task(
+            'vm.clone',
+            self.parent.entity['id'],
+            new_name
+        )
+
+        return TaskPromise(context, tid)
+
+    def complete(self, context, **kwargs):
+        return [
+            NullComplete('name='),
+        ]
+
+
 class ConsoleVGACommand(Command):
     """
     Usage: console_vga
@@ -422,6 +454,15 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
         )
 
         self.add_property(
+            descr='Parent',
+            name='parent',
+            get=lambda o: self.context.entity_subscribers['vm'].query(('id', '=', o['parent']), single=True, select=name),
+            usersetable=False,
+            list=False,
+            usage=_("Parent of a VM. Set to name of a other VM when VM is a clone")
+        )
+
+        self.add_property(
             descr='Memory size (MB)',
             name='memsize',
             get=lambda o: get(o, 'config.memsize') * 1024 * 1024,
@@ -611,6 +652,7 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             'kill': KillVMCommand(this),
             'reboot': RebootVMCommand(this),
             'console': ConsoleCommand(this),
+            'clone': CloneVMCommand(this),
             'readme': ReadmeCommand(this, 'config'),
             'guest_info': ShowGuestInfoCommand(this)
         }
@@ -1088,7 +1130,8 @@ class VMSnapshotsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
 
         self.entity_commands = lambda this: {
             'publish': PublishVMCommand(this),
-            'rollback': RollbackVMCommand(this)
+            'rollback': RollbackVMCommand(this),
+            'clone': CloneVMSnapshotCommand(this)
         }
 
     def commands(self):
@@ -1236,6 +1279,38 @@ class RollbackVMCommand(Command):
         return TaskPromise(context, tid)
 
 
+@description("Clones a VM snapshot into a new VM instance")
+class CloneVMSnapshotCommand(Command):
+    """
+    Usage: clone name=<name>
+
+    Example: clone name=test_vm_clone
+
+    Clones a VM snapshot into a new VM instance.
+    """
+
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        new_name = kwargs.pop('name')
+        if not new_name:
+            raise CommandException(_('Name of a new VM has to be specified'))
+
+        tid = context.submit_task(
+            'vm.snapshot.clone',
+            self.parent.entity['id'],
+            new_name
+        )
+
+        return TaskPromise(context, tid)
+
+    def complete(self, context, **kwargs):
+        return [
+            NullComplete('name='),
+        ]
+
+
 @description("Container templates operations")
 class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
     def __init__(self, name, context):
@@ -1365,13 +1440,13 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
         )
 
         self.add_property(
-            descr='Template images cached',
-            name='cached',
-            get='template.cached',
+            descr='Template images cached on',
+            name='cached_on',
+            get='template.cached_on',
             usersetable=False,
             list=False,
-            type=ValueType.BOOLEAN,
-            usage=_("Flag describing wehter template's images are cached or not")
+            type=ValueType.SET,
+            usage=_("List of datastores which store the template in their local cache")
         )
 
         self.primary_key = self.get_mapping('name')
@@ -1404,9 +1479,9 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
 @description("Downloads VM images to the local cache")
 class DownloadImagesCommand(Command):
     """
-    Usage: download
+    Usage: download volume=<volume>
 
-    Example: download
+    Example: download volume=tank
 
     Downloads VM template images to the local cache.
     """
@@ -1414,8 +1489,16 @@ class DownloadImagesCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs, filtering=None):
-        tid = context.submit_task('vm.cache.update', self.parent.entity['template']['name'])
+        volume = kwargs.get('volume')
+        if not volume:
+            raise CommandException(_('Target volume has to be specified'))
+        tid = context.submit_task('vm.cache.update', self.parent.entity['template']['name'], volume)
         return TaskPromise(context, tid)
+
+    def complete(self, context, **kwargs):
+        return [
+            EntitySubscriberComplete('volume=', 'volume', lambda i: i['id'])
+        ]
 
 
 @description("Shows readme entry of selected VM template")
@@ -1501,14 +1584,14 @@ class GuestExecCommand(Command):
         return context.call_sync('vm.guest_exec', self.parent.entity['id'], args[0], args[1:])
 
 
-@description("Deletes VM images from the local cache")
+@description("Deletes unused VM images from the local cache")
 class DeleteImagesCommand(Command):
     """
     Usage: delete_cache
 
     Examples: delete_cache
 
-    Deletes VM template images from the local cache.
+    Deletes unused VM template images from the local cache.
     """
     def __init__(self, parent):
         self.parent = parent
@@ -1518,14 +1601,14 @@ class DeleteImagesCommand(Command):
         return TaskPromise(context, tid)
 
 
-@description("Deletes all VM images from the local cache")
+@description("Deletes all unused VM images from the local cache")
 class FlushImagesCommand(Command):
     """
     Usage: flush_cache
 
     Examples: flush_cache
 
-    Deletes all VM template images from the local cache.
+    Deletes all unused VM template images from the local cache.
     """
     def __init__(self, parent):
         self.parent = parent

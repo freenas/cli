@@ -1330,7 +1330,19 @@ class DockerContainerCreateCommand(Command):
                     ValueType.BOOLEAN
                 ),
                 'address': kwargs.get('bridge_address')
-            }
+            },
+            'capabilities_add': read_value(
+                kwargs.get('capabilities_add', q.get(presets, 'capabilities_add', [])),
+                ValueType.SET
+            ),
+            'capabilities_drop': read_value(
+                kwargs.get('capabilities_drop', q.get(presets, 'capabilities_drop', [])),
+                ValueType.SET
+            ),
+            'privileged': read_value(
+                kwargs.get('privileged', q.get(presets, 'privileged', False)),
+                ValueType.BOOLEAN
+            )
         }
 
         ns = get_item_stub(context, self.parent, name)
@@ -1348,9 +1360,15 @@ class DockerContainerCreateCommand(Command):
 
             if image and image['presets']:
                 presets = image['presets']
+                caps_add = ','.join(presets['capabilities_add'])
+                caps_drop = ','.join(presets['capabilities_drop'])
                 props += [NullComplete('{id}='.format(**i)) for i in presets['settings']]
                 props += [NullComplete(('ro_' if v.get('readonly') else '') + 'volume:{container_path}='.format(**v)) for v in presets['volumes']]
                 props += [NullComplete('port:{container_port}/{protocol}='.format(**v)) for v in presets['ports']]
+                if caps_add:
+                    props += NullComplete('capabilities_add={0}'.format(caps_add))
+                if caps_drop:
+                    props += NullComplete('capabilities_drop={0}'.format(caps_drop))
 
         available_images = q.query(DockerImageNamespace.default_images, select='name')
         available_images += context.entity_subscribers['docker.image'].query(select='names.0')
@@ -1362,6 +1380,8 @@ class DockerContainerCreateCommand(Command):
             NullComplete('hostname='),
             NullComplete('bridge_address='),
             NullComplete('volume:'),
+            NullComplete('capabilities_add='),
+            NullComplete('capabilities_drop='),
             NullComplete('ro_volume:'),
             NullComplete('port:'),
             EnumComplete('image=', available_images),
@@ -1371,6 +1391,7 @@ class DockerContainerCreateCommand(Command):
             EnumComplete('expose_ports=', ['yes', 'no']),
             EnumComplete('bridged=', ['yes', 'no']),
             EnumComplete('dhcp=', ['yes', 'no']),
+            EnumComplete('privileged=', ['yes', 'no']),
         ]
 
 

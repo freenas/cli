@@ -391,7 +391,7 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             name='command',
             get='command',
             usersetable=False,
-            list=True,
+            list=False,
             type=ValueType.ARRAY,
             usage=_('''\
             Command being run on a container (like /bin/sh).
@@ -452,7 +452,7 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             name='ports',
             get=get_ports,
             usersetable=False,
-            list=True,
+            list=False,
             type=ValueType.SET,
             usage=_('''\
             Array of strings used for defining network ports forwarding.
@@ -479,7 +479,7 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             name='autostart',
             get='autostart',
             usersetable=False,
-            list=True,
+            list=False,
             type=ValueType.BOOLEAN,
             usage=_('''\
             Defines if a container should be started automatically
@@ -517,7 +517,7 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             name='volumes',
             get=lambda o: get_volumes(o, False),
             usersetable=False,
-            list=True,
+            list=False,
             type=ValueType.SET,
             usage=_('''\
             List of strings formatted like:
@@ -530,7 +530,7 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             name='ro_volumes',
             get=lambda o: get_volumes(o, True),
             usersetable=False,
-            list=True,
+            list=False,
             type=ValueType.SET,
             usage=_('''\
             List of strings formatted like:
@@ -567,7 +567,7 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             name='version',
             get='version',
             usersetable=False,
-            list=True,
+            list=False,
             type=ValueType.NUMBER,
             usage=_('''\
             Version of container image read from FreeNAS metadata''')
@@ -578,7 +578,7 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             name='dhcp',
             get='bridge.dhcp',
             usersetable=False,
-            list=True,
+            list=False,
             condition=lambda o: q.get(o, 'bridge.enabled'),
             usage=_('''\
             Defines if container will have it's IP address acquired via DHCP.'''),

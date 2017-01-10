@@ -487,6 +487,17 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
         )
 
         self.add_property(
+            descr='Privileged container',
+            name='privileged',
+            get='privileged',
+            usersetable=False,
+            list=False,
+            type=ValueType.BOOLEAN,
+            usage=_('''\
+            Defines if a container should started in priveleged mode.''')
+        )
+
+        self.add_property(
             descr='Interactive',
             name='interactive',
             get='interactive',
@@ -525,6 +536,30 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             List of strings formatted like:
             <container_path>=<freenas_path>
             Defines which of FreeNAS paths should be exposed to a container.''')
+        )
+
+        self.add_property(
+            descr='Capabilities Added',
+            name='capabilities_add',
+            get='capabilities_add',
+            usersetable=False,
+            list=False,
+            type=ValueType.SET,
+            usage=_('''\
+            List of Linux capabilities added to the
+            capabilities of docker container.''')
+        )
+
+        self.add_property(
+            descr='Capabilities Dropped',
+            name='capabilities_drop',
+            get='capabilities_drop',
+            usersetable=False,
+            list=False,
+            type=ValueType.SET,
+            usage=_('''\
+            List of Linux capabilities removed from the
+            capabilities of docker container.''')
         )
 
         self.add_property(

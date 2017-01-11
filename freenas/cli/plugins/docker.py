@@ -34,7 +34,7 @@ from freenas.cli.namespace import (
 )
 from freenas.cli.output import ValueType, Table, Sequence, read_value
 from freenas.cli.utils import (
-    TaskPromise, post_save, EntityPromise, get_item_stub, netmask_to_cidr, objname2id, get_related
+    TaskPromise, post_save, EntityPromise, get_item_stub, netmask_to_cidr, objname2id, objid2name
 )
 from freenas.utils import query as q
 from freenas.cli.complete import NullComplete, EntitySubscriberComplete, EnumComplete, RpcComplete
@@ -238,7 +238,7 @@ class DockerNetworkNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin,
         self.add_property(
             descr='Containers',
             name='containers',
-            get=lambda o: [get_related(self.context, 'docker.container', c, 'id') for c in o.get('containers')],
+            get=lambda o: [objid2name(self.context, 'docker.container', id) for id in o.get('containers')],
             usage=_("""\
             List of containers connected to the network.
             """),

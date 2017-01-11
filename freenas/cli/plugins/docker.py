@@ -579,7 +579,7 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             get='bridge.dhcp',
             usersetable=False,
             list=False,
-            condition=lambda o: q.get(o, 'bridge.enabled'),
+            condition=lambda o: q.get(o, 'bridge.enable'),
             usage=_('''\
             Defines if container will have it's IP address acquired via DHCP.'''),
         )
@@ -590,7 +590,18 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             get='bridge.address',
             usersetable=False,
             list=False,
-            condition=lambda o: q.get(o, 'bridge.enabled'),
+            condition=lambda o: q.get(o, 'bridge.enable'),
+            usage=_('''\
+            IP address of a container when it's set to a bridged mode.'''),
+        )
+
+        self.add_property(
+            descr='Container Mac address',
+            name='macaddress',
+            get='bridge.macaddress',
+            usersetable=False,
+            list=False,
+            condition=lambda o: q.get(o, 'bridge.enable'),
             usage=_('''\
             IP address of a container when it's set to a bridged mode.'''),
         )
@@ -1229,6 +1240,8 @@ class DockerContainerCreateCommand(Command):
                      bridged=yes bridge_address=10.20.0.180
               create bridged-and-dhcp image=ubuntu:latest interactive=yes
                      bridged=yes dhcp=yes
+              create bridged-and-dhcp-macaddr image=ubuntu:latest interactive=yes
+                     bridged=yes dhcp=yes bridge_macaddress=01:02:03:04:05:06
 
     Environment variables are provided as any number of uppercase KEY=VALUE
     elements.
@@ -1329,7 +1342,8 @@ class DockerContainerCreateCommand(Command):
                     kwargs.get('dhcp', q.get(presets, 'bridge.dhcp', False)),
                     ValueType.BOOLEAN
                 ),
-                'address': kwargs.get('bridge_address')
+                'address': kwargs.get('bridge_address'),
+                'macaddress': kwargs.get('bridge_macaddress')
             },
             'capabilities_add': read_value(
                 kwargs.get('capabilities_add', q.get(presets, 'capabilities_add', [])),
@@ -1379,6 +1393,7 @@ class DockerContainerCreateCommand(Command):
             NullComplete('command='),
             NullComplete('hostname='),
             NullComplete('bridge_address='),
+            NullComplete('bridge_macaddress='),
             NullComplete('volume:'),
             NullComplete('capabilities_add='),
             NullComplete('capabilities_drop='),

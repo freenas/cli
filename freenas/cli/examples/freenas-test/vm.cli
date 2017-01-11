@@ -6,7 +6,7 @@ _vm_name="_vm_test_image"
 _vm_template="freebsd-10.3-zfs"
 _vm_object=null
 _vm_description="This is a test"
-_vm_hard_count = 5
+_vm_hard_count = 20
 _vm_hard_arr = []
 
 function vm_create() {

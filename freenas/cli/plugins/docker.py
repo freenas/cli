@@ -218,6 +218,7 @@ class DockerNetworkNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin,
             name='subnet',
             get='subnet',
             list=True,
+            usersetable=False,
             usage=_("""\
             The subnet of the network in CIDR format. Specify the value between quotes.
             If left unspecified it will be selected by the docker engine
@@ -228,6 +229,7 @@ class DockerNetworkNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin,
             descr='Gateway',
             name='gateway',
             get='gateway',
+            usersetable=False,
             usage=_("""\
             IPv4 address of the network's default gateway.
             If left unspecified it will be selected by the docker engine
@@ -239,6 +241,8 @@ class DockerNetworkNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin,
             descr='Containers',
             name='containers',
             get=lambda o: [objid2name(self.context, 'docker.container', id) for id in o.get('containers')],
+            createsetable=False,
+            usersetable=False,
             usage=_("""\
             List of containers connected to the network.
             """),

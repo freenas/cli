@@ -579,7 +579,7 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             get='bridge.dhcp',
             usersetable=False,
             list=False,
-            condition=lambda o: q.get(o, 'bridge.enabled'),
+            condition=lambda o: q.get(o, 'bridge.enable'),
             usage=_('''\
             Defines if container will have it's IP address acquired via DHCP.'''),
         )
@@ -590,7 +590,7 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             get='bridge.address',
             usersetable=False,
             list=False,
-            condition=lambda o: q.get(o, 'bridge.enabled'),
+            condition=lambda o: q.get(o, 'bridge.enable'),
             usage=_('''\
             IP address of a container when it's set to a bridged mode.'''),
         )

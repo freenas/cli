@@ -31,7 +31,7 @@ from freenas.cli.namespace import (
     Namespace, ConfigNamespace, Command, CommandException, description,
     RpcBasedLoadMixin, EntityNamespace, TaskBasedSaveMixin
 )
-from freenas.cli.output import Object, Sequence, ValueType, format_value, output_msg
+from freenas.cli.output import Object, Table, Sequence, ValueType, format_value, output_msg
 from freenas.cli.descriptions import events
 from freenas.cli.utils import TaskPromise, post_save, parse_timedelta, set_related, get_related
 from freenas.cli.complete import NullComplete, EntitySubscriberComplete, RpcComplete
@@ -213,6 +213,21 @@ class VersionCommand(Command):
                 ' '.join(context.call_sync('system.info.uname_full'))
             )
         )
+
+
+@description("Prints FreeNAS packages version information")
+class PackagesCommand(Command):
+    """
+    Usage: packages
+
+    Displays version information of packages installed in the system.
+    """
+
+    def run(self, context, args, kwargs, opargs):
+        return Table(context.call_sync('software.package.query'), [
+            Table.Column('Package name', 'name'),
+            Table.Column('Version', 'version')
+        ])
 
 
 @description("Gets a list of valid timezones")
@@ -1035,6 +1050,7 @@ class SystemNamespace(ConfigNamespace):
         self.extra_commands = {
             'status': StatusCommand(),
             'version': VersionCommand(),
+            'packages': PackagesCommand(),
             'timezones': TimezonesCommand(),
             'info': InfoCommand(),
             'reboot': RebootCommand(),

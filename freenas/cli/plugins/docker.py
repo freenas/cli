@@ -391,7 +391,7 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             name='command',
             get='command',
             usersetable=False,
-            list=True,
+            list=False,
             type=ValueType.ARRAY,
             usage=_('''\
             Command being run on a container (like /bin/sh).
@@ -452,7 +452,7 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             name='ports',
             get=get_ports,
             usersetable=False,
-            list=True,
+            list=False,
             type=ValueType.SET,
             usage=_('''\
             Array of strings used for defining network ports forwarding.
@@ -479,11 +479,22 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             name='autostart',
             get='autostart',
             usersetable=False,
-            list=True,
+            list=False,
             type=ValueType.BOOLEAN,
             usage=_('''\
             Defines if a container should be started automatically
             when a Docker host related to it goes UP''')
+        )
+
+        self.add_property(
+            descr='Privileged container',
+            name='privileged',
+            get='privileged',
+            usersetable=False,
+            list=False,
+            type=ValueType.BOOLEAN,
+            usage=_('''\
+            Defines if a container should started in priveleged mode.''')
         )
 
         self.add_property(
@@ -506,7 +517,7 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             name='volumes',
             get=lambda o: get_volumes(o, False),
             usersetable=False,
-            list=True,
+            list=False,
             type=ValueType.SET,
             usage=_('''\
             List of strings formatted like:
@@ -519,7 +530,7 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             name='ro_volumes',
             get=lambda o: get_volumes(o, True),
             usersetable=False,
-            list=True,
+            list=False,
             type=ValueType.SET,
             usage=_('''\
             List of strings formatted like:
@@ -528,11 +539,35 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
         )
 
         self.add_property(
+            descr='Capabilities Added',
+            name='capabilities_add',
+            get='capabilities_add',
+            usersetable=False,
+            list=False,
+            type=ValueType.SET,
+            usage=_('''\
+            List of Linux capabilities added to the
+            capabilities of docker container.''')
+        )
+
+        self.add_property(
+            descr='Capabilities Dropped',
+            name='capabilities_drop',
+            get='capabilities_drop',
+            usersetable=False,
+            list=False,
+            type=ValueType.SET,
+            usage=_('''\
+            List of Linux capabilities removed from the
+            capabilities of docker container.''')
+        )
+
+        self.add_property(
             descr='Version',
             name='version',
             get='version',
             usersetable=False,
-            list=True,
+            list=False,
             type=ValueType.NUMBER,
             usage=_('''\
             Version of container image read from FreeNAS metadata''')
@@ -543,7 +578,7 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             name='dhcp',
             get='bridge.dhcp',
             usersetable=False,
-            list=True,
+            list=False,
             condition=lambda o: q.get(o, 'bridge.enabled'),
             usage=_('''\
             Defines if container will have it's IP address acquired via DHCP.'''),
@@ -1295,7 +1330,19 @@ class DockerContainerCreateCommand(Command):
                     ValueType.BOOLEAN
                 ),
                 'address': kwargs.get('bridge_address')
-            }
+            },
+            'capabilities_add': read_value(
+                kwargs.get('capabilities_add', q.get(presets, 'capabilities_add', [])),
+                ValueType.SET
+            ),
+            'capabilities_drop': read_value(
+                kwargs.get('capabilities_drop', q.get(presets, 'capabilities_drop', [])),
+                ValueType.SET
+            ),
+            'privileged': read_value(
+                kwargs.get('privileged', q.get(presets, 'privileged', False)),
+                ValueType.BOOLEAN
+            )
         }
 
         ns = get_item_stub(context, self.parent, name)
@@ -1313,9 +1360,15 @@ class DockerContainerCreateCommand(Command):
 
             if image and image['presets']:
                 presets = image['presets']
+                caps_add = ','.join(presets['capabilities_add'])
+                caps_drop = ','.join(presets['capabilities_drop'])
                 props += [NullComplete('{id}='.format(**i)) for i in presets['settings']]
                 props += [NullComplete(('ro_' if v.get('readonly') else '') + 'volume:{container_path}='.format(**v)) for v in presets['volumes']]
                 props += [NullComplete('port:{container_port}/{protocol}='.format(**v)) for v in presets['ports']]
+                if caps_add:
+                    props += NullComplete('capabilities_add={0}'.format(caps_add))
+                if caps_drop:
+                    props += NullComplete('capabilities_drop={0}'.format(caps_drop))
 
         available_images = q.query(DockerImageNamespace.default_images, select='name')
         available_images += context.entity_subscribers['docker.image'].query(select='names.0')
@@ -1327,6 +1380,8 @@ class DockerContainerCreateCommand(Command):
             NullComplete('hostname='),
             NullComplete('bridge_address='),
             NullComplete('volume:'),
+            NullComplete('capabilities_add='),
+            NullComplete('capabilities_drop='),
             NullComplete('ro_volume:'),
             NullComplete('port:'),
             EnumComplete('image=', available_images),
@@ -1336,6 +1391,7 @@ class DockerContainerCreateCommand(Command):
             EnumComplete('expose_ports=', ['yes', 'no']),
             EnumComplete('bridged=', ['yes', 'no']),
             EnumComplete('dhcp=', ['yes', 'no']),
+            EnumComplete('privileged=', ['yes', 'no']),
         ]
 
 

@@ -146,6 +146,9 @@ class CloneVMCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
+        if len(args) == 1:
+            kwargs['name'] = args[0]
+
         new_name = kwargs.pop('name')
         if not new_name:
             raise CommandException(_('Name of a new VM has to be specified'))

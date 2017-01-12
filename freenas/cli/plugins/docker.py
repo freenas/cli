@@ -515,7 +515,6 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             descr='Privileged container',
             name='privileged',
             get='privileged',
-            usersetable=False,
             list=False,
             type=ValueType.BOOLEAN,
             usage=_('''\
@@ -566,7 +565,6 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             descr='Capabilities Added',
             name='capabilities_add',
             get='capabilities_add',
-            usersetable=False,
             list=False,
             type=ValueType.SET,
             usage=_('''\
@@ -578,7 +576,6 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             descr='Capabilities Dropped',
             name='capabilities_drop',
             get='capabilities_drop',
-            usersetable=False,
             list=False,
             type=ValueType.SET,
             usage=_('''\
@@ -620,7 +617,6 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             descr='Container Mac address',
             name='macaddress',
             get='bridge.macaddress',
-            usersetable=False,
             list=False,
             condition=lambda o: q.get(o, 'bridge.enable'),
             usage=_('''\

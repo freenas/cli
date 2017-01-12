@@ -592,7 +592,9 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             'stop': DockerContainerStopCommand(this),
             'console': DockerContainerConsoleCommand(this),
             'exec': DockerContainerExecConsoleCommand(this),
-            'readme': DockerContainerReadmeCommand(this)
+            'readme': DockerContainerReadmeCommand(this),
+            'clone': DockerContainerCloneCommand(this),
+            'commit': DockerContainerCommitCommand(this)
         }
         if this.entity and not this.entity.get('interactive'):
             commands['logs'] = DockerContainerLogsCommand(this)
@@ -1473,6 +1475,81 @@ class DockerContainerReadmeCommand(Command):
         if not readme:
             readme = 'Selected container\'s image does not have readme entry'
         return Sequence(readme)
+
+
+@description("Clones a Docker container into a new container instance")
+class DockerContainerCloneCommand(Command):
+    """
+    Usage: clone name=<name>
+
+    Example: clone name=test_container_clone
+
+    Clones a Docker container
+    into a new container instance.
+    """
+
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        if len(args) == 1:
+            kwargs['name'] = args[0]
+
+        new_name = kwargs.pop('name')
+        if not new_name:
+            raise CommandException(_('Name of a new container has to be specified'))
+
+        tid = context.submit_task(
+            'docker.container.clone',
+            self.parent.entity['id'],
+            new_name
+        )
+
+        return TaskPromise(context, tid)
+
+    def complete(self, context, **kwargs):
+        return [
+            NullComplete('name='),
+        ]
+
+
+@description("Commits a new image from existing Docker container")
+class DockerContainerCommitCommand(Command):
+    """
+    Usage: commit name=<name> tag=<tag>
+
+    Example: clone name="my_repository/test_image" tag=my_tag
+
+    Commits a new image from an existing Docker container
+    """
+
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        if len(args) == 1:
+            kwargs['name'] = args[0]
+
+        new_name = kwargs.pop('name')
+        if not new_name:
+            raise CommandException(_('Name of a new image has to be specified'))
+
+        tag = kwargs.get('tag')
+
+        tid = context.submit_task(
+            'docker.container.commit',
+            self.parent.entity['id'],
+            new_name,
+            tag
+        )
+
+        return TaskPromise(context, tid)
+
+    def complete(self, context, **kwargs):
+        return [
+            NullComplete('name='),
+            NullComplete('tag='),
+        ]
 
 
 @description("Configure and manage Docker hosts, images and containers")

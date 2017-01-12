@@ -533,7 +533,6 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             set='followdelete',
             list=False,
             type=ValueType.BOOLEAN,
-            enum=['yes', 'no'],
             usage=_('''\
             Defines if replication should automatically remove
             stale snapshots at slave side.''')

@@ -62,7 +62,10 @@ def create_completer(prop, obj=None):
         return prop.complete
     else:
         if prop.enum:
-            enum_val = prop.enum(obj) if callable(prop.enum) else prop.enum
+            if callable(prop.enum):
+                enum_val = prop.enum(obj) if obj else []
+            else:
+                enum_val = prop.enum
             return EnumComplete(prop.name + '=', enum_val)
 
         if prop.type == ValueType.BOOLEAN:

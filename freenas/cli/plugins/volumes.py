@@ -816,6 +816,9 @@ class ReplicateCommand(Command):
         if dry_run:
             def describe(row):
                 if row['type'] == 'SEND_STREAM':
+                    if row.get('resume'):
+                        return '{localfs}@{snapshot} -> {remotefs}@{snapshot} (resume)'.format(**row)
+
                     return '{localfs}@{snapshot} -> {remotefs}@{snapshot} ({incr})'.format(
                         incr='incremental' if row.get('incremental') else 'full',
                         **row

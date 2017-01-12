@@ -327,8 +327,8 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
         super(DockerContainerNamespace, self).__init__(name, context)
         self.entity_subscriber_name = 'docker.container'
         self.create_task = 'docker.container.create'
+        self.update_task = 'docker.container.update'
         self.delete_task = 'docker.container.delete'
-        self.allow_edit = False
         self.primary_key_name = 'names.0'
         self.required_props = ['name', 'image']
         self.skeleton_entity = {
@@ -350,16 +350,44 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
                 show | search name == foo""")
 
         def get_ports(o):
-            return ['{0}/{2}={1}'.format(i['container_port'], i['host_port'], i['protocol']) for i in o['ports']]
+            return {'{0}/{1}'.format(i['container_port'], i['protocol']): str(i['host_port']) for i in o['ports']}
+
+        def set_ports(o, p):
+            ports = []
+            for k, v in p.items():
+                protocol = 'TCP'
+                if '/' in k:
+                    container_port, protocol = k.split('/', 1)
+                    protocol = protocol.upper()
+                else:
+                    container_port = k
+
+                ports.append({
+                    'container_port': int(container_port),
+                    'host_port': int(v),
+                    'protocol': protocol
+                })
+
+            o['ports'] = ports
 
         def get_volumes(o, ro):
-            return ['{0}={1}'.format(i['container_path'], i['host_path']) for i in o['volumes'] if i['readonly'] == ro]
+            return {i['container_path']: i['host_path'] for i in o['volumes'] if i['readonly'] == ro}
+
+        def set_volumes(o, vol, ro):
+            volumes = []
+            for k, v in vol.items():
+                volumes.append({
+                    'container_path': k,
+                    'host_path': v,
+                    'readonly': ro
+                })
+
+            o['volumes'] = volumes
 
         self.add_property(
             descr='Name',
             name='name',
             get='names.0',
-            usersetable=False,
             list=True,
             usage=_('Name of a container instance.')
         )
@@ -379,7 +407,6 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             descr='Image name',
             name='image',
             get='image',
-            usersetable=False,
             list=True,
             complete=EntitySubscriberComplete('image=', 'docker.image', lambda i: q.get(i, 'names.0')),
             strict=False,
@@ -390,7 +417,6 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             descr='Command',
             name='command',
             get='command',
-            usersetable=False,
             list=True,
             type=ValueType.ARRAY,
             usage=_('''\
@@ -402,7 +428,6 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             descr='Environment',
             name='environment',
             get='environment',
-            set='environment',
             list=False,
             type=ValueType.ARRAY,
             usage=_('''\
@@ -425,7 +450,6 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             name='hostname',
             get='hostname',
             set=None,
-            usersetable=False,
             list=False,
             usage=_('''\
             Used to set host name of a container - like my_ubuntu_container.
@@ -438,7 +462,6 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             name='host',
             get=self.get_host,
             set=self.set_host,
-            usersetable=False,
             list=True,
             complete=EntitySubscriberComplete('host=', 'docker.host', lambda d: d['name']),
             usage=_('''\
@@ -451,9 +474,9 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             descr='Ports',
             name='ports',
             get=get_ports,
-            usersetable=False,
+            set=set_ports,
             list=True,
-            type=ValueType.SET,
+            type=ValueType.DICT,
             usage=_('''\
             Array of strings used for defining network ports forwarding.
             Each of values should be formatted like:
@@ -466,7 +489,6 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             descr='Expose ports',
             name='expose_ports',
             get='expose_ports',
-            usersetable=False,
             list=True,
             type=ValueType.BOOLEAN,
             usage=_('''\
@@ -478,7 +500,6 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             descr='Autostart container',
             name='autostart',
             get='autostart',
-            usersetable=False,
             list=True,
             type=ValueType.BOOLEAN,
             usage=_('''\
@@ -490,7 +511,6 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             descr='Interactive',
             name='interactive',
             get='interactive',
-            usersetable=False,
             list=False,
             type=ValueType.BOOLEAN,
             usage=_('''\
@@ -505,9 +525,9 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             descr='Volumes',
             name='volumes',
             get=lambda o: get_volumes(o, False),
-            usersetable=False,
+            set=lambda o, v: set_volumes(o, v, False),
             list=True,
-            type=ValueType.SET,
+            type=ValueType.DICT,
             usage=_('''\
             List of strings formatted like:
             <container_path>=<freenas_path>
@@ -518,9 +538,9 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             descr='Readonly Volumes',
             name='ro_volumes',
             get=lambda o: get_volumes(o, True),
-            usersetable=False,
+            set=lambda o, v: set_volumes(o, v, True),
             list=True,
-            type=ValueType.SET,
+            type=ValueType.DICT,
             usage=_('''\
             List of strings formatted like:
             <container_path>=<freenas_path>
@@ -531,7 +551,6 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             descr='Version',
             name='version',
             get='version',
-            usersetable=False,
             list=True,
             type=ValueType.NUMBER,
             usage=_('''\
@@ -542,7 +561,6 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             descr='DHCP Enabled',
             name='dhcp',
             get='bridge.dhcp',
-            usersetable=False,
             list=True,
             condition=lambda o: q.get(o, 'bridge.enabled'),
             usage=_('''\
@@ -553,7 +571,6 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             descr='Container address',
             name='address',
             get='bridge.address',
-            usersetable=False,
             list=False,
             condition=lambda o: q.get(o, 'bridge.enabled'),
             usage=_('''\

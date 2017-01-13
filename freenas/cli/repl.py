@@ -2006,6 +2006,8 @@ def main(argv=None):
                 readline.add_history(line)
     except FileNotFoundError:
         pass
+    except UnicodeEncodeError:
+        pass
 
     cli_rc_paths = ['/usr/local/etc/clirc', os.path.expanduser('~/.clirc')]
     for path in cli_rc_paths:

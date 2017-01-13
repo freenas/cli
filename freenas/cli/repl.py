@@ -2003,10 +2003,11 @@ def main(argv=None):
             history_list = history_file.read().decode('utf8', 'ignore').splitlines()
             history_list = history_list[-1000:]
             for line in history_list:
-                readline.add_history(line)
+                try:
+                    readline.add_history(line)
+                except UnicodeEncodeError:
+                    pass
     except FileNotFoundError:
-        pass
-    except UnicodeEncodeError:
         pass
 
     cli_rc_paths = ['/usr/local/etc/clirc', os.path.expanduser('~/.clirc')]

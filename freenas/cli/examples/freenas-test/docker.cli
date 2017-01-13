@@ -5,38 +5,46 @@
 _image_name="freenas/alpine:latest"
 _container_obj=null
 _container_name="testcontainer"
+_container_vm_obj=null
+_container_vm_name="_temp_docker_host"
 _container_name_bad="_test_container"
 _container_hard_count=10
 _container_arr = []
 
 function docker_create() {
 	print(">>> Starting docker tests")
-	_container_obj = @$(docker container create image=${_image_name} name=${_container_name} command="/bin/sh" interactive=yes)
-	maybe_barf(_success, "+docker#1", "Unable to create docker container " + _container_name)
-	@$(docker container create image=${_image_name} name=${_container_name_bad} command="/bin/sh" interactive=yes)
-	maybe_barf(_success == false, "+docker#2", "Creating known bad docker container " + _container_name_bad + " succeeded.")
+	_container_vm_obj = @$(vm create name=${_container_vm_name} template=boot2docker datastore=${VOL_NAME})
+	maybe_barf(_success, "+docker#1", "Unable to create vm " + _container_vm_name + " for containers.")
+	@$(_container_vm_obj start)
+	maybe_barf(_success, "+docker#2", "Unable to start vm " + _container_vm_name + " for containers.")
+	_container_obj = @$(docker container create image=${_image_name} name=${_container_name} command="/bin/sh" interactive=yes host=${_container_vm_name})
+	maybe_barf(_success, "+docker#3", "Unable to create docker container " + _container_name)
+	@$(docker container create image=${_image_name} name=${_container_name_bad} command="/bin/sh" interactive=yes host=${_container_vm_name})
+	maybe_barf(_success == false, "+docker#4", "Creating known bad docker container " + _container_name_bad + " succeeded.")
 	_x = $(_container_obj get name)
 	if (_x != _container_name) {
-	    maybe_barf(_success, "+docker#3", "docker container name is not " + _container_name)
+	    maybe_barf(_success, "+docker#5", "docker container name is not " + _container_name)
 	}
 	_y = $(docker image show | find name ~= ${_image_name})
-	maybe_barf(_y == _image_name, "+docker#4", "docker image for " + _image_name + " not found")
+	maybe_barf(_y == _image_name, "+docker#6", "docker image for " + _image_name + " not found")
 	@$(_container_obj start)
-	maybe_barf(_success, "+docker#5", "unable to start docker container " + _container_name)
+	maybe_barf(_success, "+docker#7", "Unable to start docker container " + _container_name)
 	@$(_container_obj stop)
-	maybe_barf(_success, "+docker#6", "unable to stop docker container " + _container_name)
+	maybe_barf(_success, "+docker#8", "Unable to stop docker container " + _container_name)
 }
 
 function docker_destroy() {
 	print(">>> Finishing docker tests")
 	@$(_container_obj delete)
-	maybe_barf(_success, "-docker#1", "unable to delete docker container " + _container_name)
+	maybe_barf(_success, "-docker#1", "Unable to delete docker container " + _container_name)
+	@$(_container_vm_obj delete)
+	maybe_barf(_success, "-docker#2", "Unable to delete docker vm " + _container_vm_name)
 }
 
 function docker_hard_create() {
 	printf(">>> Starting Docker stress tests: %d containers\n", _container_hard_count)
 	for (i in mapf(range(0, _container_hard_count), _container_name + "%d")) {
-	    _x = @$(docker container create image=${_image_name} name=${i} command="/bin/sh" interactive=yes)
+	    _x = @$(docker container create image=${_image_name} name=${i} command="/bin/sh" interactive=yes host=${_container_vm_name})
 	    if (not maybe_barf(_success, "+docker-hard#1", "Unable to create container " + i)) {
 	        append(_container_arr, _x)
 		@$(_x start)
@@ -59,5 +67,3 @@ function docker_hard_destroy() {
 	_l = count_by_name("docker container", _container_name + "[0-9]+")
 	maybe_barf(_l == 0, "-docker-hard#2", "Unable to delete all Containers:  " + str(_l) + " remaining.")
 }
-
-

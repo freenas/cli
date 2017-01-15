@@ -11,7 +11,7 @@ function disk_create() {
 	maybe_die(_success, "+disk#1", "Unable to find any disks")
 
 	_unalloc = 0
-	for (i in $(disk show)) {
+	for (i in _x) {
 	    if (i["allocation"] == "unallocated") {
 	       _unalloc = _unalloc + 1
 	    }

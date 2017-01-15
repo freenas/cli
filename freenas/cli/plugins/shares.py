@@ -1376,7 +1376,8 @@ class ISCSISharesNamespace(BaseSharesNamespace):
         self.add_property(
             descr='Block size',
             name='block_size',
-            get='properties.block_size'
+            get='properties.block_size',
+            type=ValueType.NUMBER
         )
 
         self.add_property(

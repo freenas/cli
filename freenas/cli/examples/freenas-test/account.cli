@@ -47,8 +47,6 @@ function account_destroy() {
 	maybe_barf(_success, "-account#1", "Unable to delete user " + TEST_USER)
 	@$(_group_obj delete)
 	maybe_barf(_success, "-account#2", "Unable to delete group " + TEST_GROUP)
-	@$(VOL_OBJECT dataset ${VOL_NAME + _account_home} delete)
-	maybe_barf(_success, "-account#3", "Unable to delete temporary home dataset " + _account_home + " on " + VOL_NAME)
 }
 
 function account_hard_create() {

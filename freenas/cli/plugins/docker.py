@@ -1201,6 +1201,7 @@ class DockerImageDeleteCommand(Command):
     def run(self, context, args, kwargs, opargs):
         host = kwargs.get('host', None)
         name = q.get(self.parent.entity, 'names.0')
+        id = q.get(self.parent.entity, 'id')
 
         if host:
             host = context.call_sync('docker.host.query', [('name', '=', host)], {'single': True, 'select': 'id'})
@@ -1215,7 +1216,7 @@ class DockerImageDeleteCommand(Command):
 
         tid = context.submit_task(
             'docker.image.delete',
-            name,
+            id,
             host,
             callback=lambda s, t: post_save(self.parent, s, t)
         )

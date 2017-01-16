@@ -1399,9 +1399,9 @@ class DockerContainerCreateCommand(Command):
                 props += [NullComplete(('ro_' if v.get('readonly') else '') + 'volume:{container_path}='.format(**v)) for v in presets['volumes']]
                 props += [NullComplete('port:{container_port}/{protocol}='.format(**v)) for v in presets['ports']]
                 if caps_add:
-                    props += NullComplete('capabilities_add={0}'.format(caps_add))
+                    props += [NullComplete('capabilities_add={0}'.format(caps_add))]
                 if caps_drop:
-                    props += NullComplete('capabilities_drop={0}'.format(caps_drop))
+                    props += [NullComplete('capabilities_drop={0}'.format(caps_drop))]
 
         available_images = q.query(DockerImageNamespace.default_images, select='name')
         available_images += context.entity_subscribers['docker.image'].query(select='names.0')

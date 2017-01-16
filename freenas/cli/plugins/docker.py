@@ -1387,7 +1387,7 @@ class DockerContainerCreateCommand(Command):
         props = []
         name = q.get(kwargs, 'kwargs.image')
         if name:
-            image = context.entity_subscribers['docker.image'].query(('names', 'in', name), single=True)
+            image = context.entity_subscribers['docker.image'].query(('names.0', 'in', name), single=True)
             if not image:
                 image = q.query(DockerImageNamespace.default_images, ('name', '=', name), single=True)
 

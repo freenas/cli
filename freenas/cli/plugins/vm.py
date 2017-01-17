@@ -871,7 +871,7 @@ class VMDeviceDiskPropertiesMixin(BaseVariantMixin):
             name='target_type',
             get='properties.target_type',
             list=False,
-            enum=['ZVOL', 'FILE', 'DISK'],
+            enum=['ZVOL', 'DISK'],
             condition=lambda o: o['type'] == 'DISK',
         )
 

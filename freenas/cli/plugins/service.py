@@ -805,6 +805,8 @@ class SSHDNamespace(NestedEntityMixin, ItemNamespace):
             descr='sftp log facility',
             name='sftp_log_facility',
             get='sftp_log_facility',
+            enum=['DAEMON', 'USER', 'AUTH', 'LOCAL0',
+                  'LOCAL1', 'LOCAL2', 'LOCAL3', 'LOCAL4', 'LOCAL5', 'LOCAL6', 'LOCAL7'],
             type=ValueType.STRING
         )
         self.add_property(
@@ -865,6 +867,8 @@ class SSHDNamespace(NestedEntityMixin, ItemNamespace):
             descr='sftp log level',
             name='sftp_log_level',
             get='sftp_log_level',
+            enum=['QUIET', 'FATAL', 'ERROR', 'INFO',
+                  'VERBOSE', 'DEBUG', 'DEBUG2', 'DEBUG3'],
             type=ValueType.STRING
         )
         self.add_property(

@@ -1832,55 +1832,6 @@ class ISCSINamespace(NestedEntityMixin, ItemNamespace):
         )
 
 
-@description("Configure and manage iscsi service")
-class ISCSINamespace(NestedEntityMixin, ItemNamespace):
-    """
-    The iscsi service namespace allows to configure and manage iscsi service.
-    """
-
-    def __init__(self, name, context, parent):
-        super(ISCSINamespace, self).__init__(name, context)
-        self.parent = parent
-        self.parent_entity_path = 'config'
-
-        self.add_property(
-            descr='Enabled',
-            name='enable',
-            get='enable',
-            list=True,
-            type=ValueType.BOOLEAN
-        )
-        self.add_property(
-            descr='Base name',
-            name='base_name',
-            usage=_("""
-            Name in IQN format as described by RFC 3721. Enclose
-            name between double quotes."""),
-            get='base_name',
-            type=ValueType.STRING
-        )
-        self.add_property(
-            descr='Pool space threshold',
-            name='pool_space_threshold',
-            usage=_("""
-            Number representing the percentage of free space that should
-            remain in the pool. When this percentage is reached, the
-            system will issue an alert, but only if zvols are used."""),
-            get='pool_space_threshold',
-            type=ValueType.NUMBER
-        )
-        self.add_property(
-            descr='ISNS servers',
-            name='isns_servers',
-            usage=_("""
-            Space delimited list of hosname=or IP addresses of ISNS server(s)
-            to register the system's iSCSI taget=nd portals with. Enclose
-            the list between double quotes."""),
-            get='isns_servers',
-            type=ValueType.SET
-        )
-
-
 @description("Configure and manage lldp service")
 class LLDPNamespace(NestedEntityMixin, ItemNamespace):
     """

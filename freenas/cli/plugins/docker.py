@@ -241,7 +241,7 @@ class DockerNetworkNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin,
             descr='Containers',
             name='containers',
             get=lambda o: [objid2name(self.context, 'docker.container', id) for id in o.get('containers')],
-            createsetable=False,
+            set=self.set_containers,
             usersetable=False,
             usage=_("""\
             List of containers connected to the network.
@@ -252,6 +252,9 @@ class DockerNetworkNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin,
 
         self.primary_key = self.get_mapping('name')
         self.entity_commands = self.get_entity_commands
+
+    def set_containers(self, o, v):
+        o['containers'] = [objname2id(self.context, 'docker.container', name) for name in read_value(v, ValueType.SET)]
 
     def get_entity_commands(self, this):
         this.load()

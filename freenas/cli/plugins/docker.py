@@ -263,61 +263,63 @@ class DockerNetworkNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin,
         return commands
 
 
-@description("Connect container to a network")
+@description("Connect containers to a network")
 class DockerNetworkConnectCommand(Command):
     """
-    Usage: connect container=<container_name>
+    Usage: connect containers=<container1>,<container2>...
 
     Example:
-        / docker network mynetwork connect container=mycontainer
+        / docker network mynetwork connect containers=mycontainer
+        / docker network mynetwork connect containers=mycontainer,mycontainer2
 
-    Connects container to a network.
+    Connects containers to a network.
     """
     def __init__(self, parent):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        if not kwargs.get('container'):
-            raise CommandException('Please specify container to connect to the network')
+        if not kwargs.get('containers'):
+            raise CommandException('Please specify containers to connect to the network')
         tid = context.submit_task(
             'docker.network.connect',
-            objname2id(context, 'docker.container', kwargs.get('container')),
+            [objname2id(context, 'docker.container', c) for c in read_value(kwargs.get('containers'), ValueType.SET)],
             self.parent.entity['id']
         )
         return TaskPromise(context, tid)
 
     def complete(self, context, **kwargs):
         return [
-            EntitySubscriberComplete('container=', 'docker.container', lambda c: q.get(c, 'names.0'))
+            EntitySubscriberComplete('containers=', 'docker.container', lambda c: q.get(c, 'names.0'))
         ]
 
 
-@description("Disconnect container from a network")
+@description("Disconnect containers from a network")
 class DockerNetworkDisconnectCommand(Command):
     """
-    Usage: disconnect container=<container_name>
+    Usage: disconnect containers=<container1>,<container2>
 
     Example:
-        / docker network mynetwork disconnect container=mycontainer
+        / docker network mynetwork disconnect containers=mycontainer
+        / docker network mynetwork disconnect containers=mycontainer,mycontainer2
 
-    Disconnects container from a network.
+    Disconnects containers from a network.
     """
     def __init__(self, parent):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        if not kwargs.get('container'):
-            raise CommandException('Please specify container to disconnect from the network')
+        if not kwargs.get('containers'):
+            raise CommandException('Please specify containers to disconnect from the network')
         tid = context.submit_task(
             'docker.network.disconnect',
-            objname2id(context, 'docker.container', kwargs.get('container')),
+            [objname2id(context, 'docker.container', c) for c in read_value(kwargs.get('containers'), ValueType.SET)],
             self.parent.entity['id']
         )
         return TaskPromise(context, tid)
 
     def complete(self, context, **kwargs):
         return [
-            EntitySubscriberComplete('container=', 'docker.container', lambda c: q.get(c, 'names.0'))
+            EntitySubscriberComplete('containers=', 'docker.container', lambda c: q.get(c, 'names.0'))
         ]
 
 

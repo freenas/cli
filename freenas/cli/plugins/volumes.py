@@ -1062,6 +1062,14 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
         )
 
         self.add_property(
+            descr='Read only',
+            name='readonly',
+            get='properties.readonly.parsed',
+            type=ValueType.BOOLEAN,
+            usage=_("Property setting a selected dataset in read only mode.")
+        )
+
+        self.add_property(
             descr='Access time',
             name='atime',
             get='properties.atime.parsed',

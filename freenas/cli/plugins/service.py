@@ -1671,26 +1671,6 @@ class IPFSNamespace(NestedEntityMixin, ItemNamespace):
         )
 
 
-@description("Configure and manage ipfs service")
-class IPFSNamespace(NestedEntityMixin, ItemNamespace):
-    """
-    The ipfs service namespace allows to configure and manage dyndns service.
-    """
-
-    def __init__(self, name, context, parent):
-        super(IPFSNamespace, self).__init__(name, context)
-        self.parent = parent
-        self.parent_entity_path = 'config'
-
-        self.add_property(
-            descr='Enabled',
-            name='enable',
-            get='enable',
-            list=True,
-            type=ValueType.BOOLEAN
-        )
-
-
 @description("Configure and manage nfs service")
 class NFSNamespace(NestedEntityMixin, ItemNamespace):
     """

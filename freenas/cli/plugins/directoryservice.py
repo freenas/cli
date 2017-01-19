@@ -322,10 +322,10 @@ class ActiveDirectoryPropertiesNamespace(BaseDirectoryPropertiesNamespace):
         )
 
         self.add_property(
-            descr='DC address',
+            descr='DC hostname',
             name='dc_address',
             get='dc_address',
-            usage=_("Active Directory domain controller IP address")
+            usage=_("Active Directory domain controller hostname")
         )
 
         self.add_property(

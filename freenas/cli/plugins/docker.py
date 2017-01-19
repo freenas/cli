@@ -246,6 +246,7 @@ class DockerNetworkNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin,
             usage=_("""\
             List of containers connected to the network.
             """),
+            complete=EntitySubscriberComplete('containers=', 'docker.container', lambda c: q.get(c, 'names.0')),
             list=True,
             type=ValueType.ARRAY
         )

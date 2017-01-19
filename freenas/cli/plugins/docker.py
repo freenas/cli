@@ -629,6 +629,25 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             IP address of a container when it's set to a bridged mode.'''),
         )
 
+        self.add_property(
+            descr='Networks',
+            name='networks',
+            get=lambda o: [objid2name(self.context, 'docker.network', id) for id in o.get('networks')],
+            set=self.set_networks,
+            usersetable=False,
+            usage=_("""\
+            List of networks the container is connected to.
+            """),
+            list=True,
+            type=ValueType.ARRAY
+        )
+
+        self.primary_key = self.get_mapping('name')
+        self.entity_commands = self.get_entity_commands
+
+    def set_networks(self, o, v):
+        o['networks'] = [objname2id(self.context, 'docker.network', name) for name in read_value(v, ValueType.SET)]
+
         self.primary_key = self.get_mapping('name')
         self.entity_commands = self.get_entity_commands
 
@@ -1382,7 +1401,13 @@ class DockerContainerCreateCommand(Command):
             'privileged': read_value(
                 kwargs.get('privileged', q.get(presets, 'privileged', False)),
                 ValueType.BOOLEAN
-            )
+            ),
+            'networks': [
+                objname2id(context, 'docker.network', name) for name in read_value(
+                    kwargs.get('networks'),
+                    ValueType.SET
+                )
+            ]
         }
 
         ns = get_item_stub(context, self.parent, name)
@@ -1433,6 +1458,7 @@ class DockerContainerCreateCommand(Command):
             EnumComplete('bridged=', ['yes', 'no']),
             EnumComplete('dhcp=', ['yes', 'no']),
             EnumComplete('privileged=', ['yes', 'no']),
+            EntitySubscriberComplete('networks=', 'docker.network', lambda i: q.get(i, 'name')),
         ]
 
 

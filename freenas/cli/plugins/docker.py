@@ -158,6 +158,7 @@ class DockerNetworkNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin,
             Examples:
                 create with-my-subnet subnet="10.20.4.0/24" gateway=10.20.4.1 driver=bridge
                 create docker-selects-subnet driver=bridge
+                create create-and-connect containers=mycontainer1,mycontainer2
 
             Creates a Docker network. If subnet and gateway properties are not specified
             the values will be selected by the docker engine.
@@ -1288,6 +1289,8 @@ class DockerContainerCreateCommand(Command):
                      bridged=yes dhcp=yes
               create bridged-and-dhcp-macaddr image=ubuntu:latest interactive=yes
                      bridged=yes dhcp=yes bridge_macaddress=01:02:03:04:05:06
+              create create-and-connect image=dockerhub_image_name
+                     networks=mynetwork1,mynetwork2
 
     Environment variables are provided as any number of uppercase KEY=VALUE
     elements.

@@ -241,17 +241,21 @@ class DockerNetworkNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin,
             descr='Containers',
             name='containers',
             get=lambda o: [objid2name(self.context, 'docker.container', id) for id in o.get('containers')],
-            createsetable=False,
+            set=self.set_containers,
             usersetable=False,
             usage=_("""\
             List of containers connected to the network.
             """),
+            complete=EntitySubscriberComplete('containers=', 'docker.container', lambda c: q.get(c, 'names.0')),
             list=True,
             type=ValueType.ARRAY
         )
 
         self.primary_key = self.get_mapping('name')
         self.entity_commands = self.get_entity_commands
+
+    def set_containers(self, o, v):
+        o['containers'] = [objname2id(self.context, 'docker.container', name) for name in read_value(v, ValueType.SET)]
 
     def get_entity_commands(self, this):
         this.load()
@@ -263,61 +267,63 @@ class DockerNetworkNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin,
         return commands
 
 
-@description("Connect container to a network")
+@description("Connect containers to a network")
 class DockerNetworkConnectCommand(Command):
     """
-    Usage: connect container=<container_name>
+    Usage: connect containers=<container1>,<container2>...
 
     Example:
-        / docker network mynetwork connect container=mycontainer
+        / docker network mynetwork connect containers=mycontainer
+        / docker network mynetwork connect containers=mycontainer,mycontainer2
 
-    Connects container to a network.
+    Connects containers to a network.
     """
     def __init__(self, parent):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        if not kwargs.get('container'):
-            raise CommandException('Please specify container to connect to the network')
+        if not kwargs.get('containers'):
+            raise CommandException('Please specify containers to connect to the network')
         tid = context.submit_task(
             'docker.network.connect',
-            objname2id(context, 'docker.container', kwargs.get('container')),
+            [objname2id(context, 'docker.container', c) for c in read_value(kwargs.get('containers'), ValueType.SET)],
             self.parent.entity['id']
         )
         return TaskPromise(context, tid)
 
     def complete(self, context, **kwargs):
         return [
-            EntitySubscriberComplete('container=', 'docker.container', lambda c: q.get(c, 'names.0'))
+            EntitySubscriberComplete('containers=', 'docker.container', lambda c: q.get(c, 'names.0'))
         ]
 
 
-@description("Disconnect container from a network")
+@description("Disconnect containers from a network")
 class DockerNetworkDisconnectCommand(Command):
     """
-    Usage: disconnect container=<container_name>
+    Usage: disconnect containers=<container1>,<container2>
 
     Example:
-        / docker network mynetwork disconnect container=mycontainer
+        / docker network mynetwork disconnect containers=mycontainer
+        / docker network mynetwork disconnect containers=mycontainer,mycontainer2
 
-    Disconnects container from a network.
+    Disconnects containers from a network.
     """
     def __init__(self, parent):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        if not kwargs.get('container'):
-            raise CommandException('Please specify container to disconnect from the network')
+        if not kwargs.get('containers'):
+            raise CommandException('Please specify containers to disconnect from the network')
         tid = context.submit_task(
             'docker.network.disconnect',
-            objname2id(context, 'docker.container', kwargs.get('container')),
+            [objname2id(context, 'docker.container', c) for c in read_value(kwargs.get('containers'), ValueType.SET)],
             self.parent.entity['id']
         )
         return TaskPromise(context, tid)
 
     def complete(self, context, **kwargs):
         return [
-            EntitySubscriberComplete('container=', 'docker.container', lambda c: q.get(c, 'names.0'))
+            EntitySubscriberComplete('containers=', 'docker.container', lambda c: q.get(c, 'names.0'))
         ]
 
 
@@ -333,6 +339,7 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
         self.create_task = 'docker.container.create'
         self.update_task = 'docker.container.update'
         self.delete_task = 'docker.container.delete'
+        self.allow_edit = False
         self.primary_key_name = 'names.0'
         self.required_props = ['name', 'image']
         self.skeleton_entity = {
@@ -622,6 +629,25 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             usage=_('''\
             IP address of a container when it's set to a bridged mode.'''),
         )
+
+        self.add_property(
+            descr='Networks',
+            name='networks',
+            get=lambda o: [objid2name(self.context, 'docker.network', id) for id in o.get('networks')],
+            set=self.set_networks,
+            usersetable=False,
+            usage=_("""\
+            List of networks the container is connected to.
+            """),
+            list=True,
+            type=ValueType.ARRAY
+        )
+
+        self.primary_key = self.get_mapping('name')
+        self.entity_commands = self.get_entity_commands
+
+    def set_networks(self, o, v):
+        o['networks'] = [objname2id(self.context, 'docker.network', name) for name in read_value(v, ValueType.SET)]
 
         self.primary_key = self.get_mapping('name')
         self.entity_commands = self.get_entity_commands
@@ -1376,7 +1402,13 @@ class DockerContainerCreateCommand(Command):
             'privileged': read_value(
                 kwargs.get('privileged', q.get(presets, 'privileged', False)),
                 ValueType.BOOLEAN
-            )
+            ),
+            'networks': [
+                objname2id(context, 'docker.network', name) for name in read_value(
+                    kwargs.get('networks'),
+                    ValueType.SET
+                )
+            ]
         }
 
         ns = get_item_stub(context, self.parent, name)
@@ -1427,6 +1459,7 @@ class DockerContainerCreateCommand(Command):
             EnumComplete('bridged=', ['yes', 'no']),
             EnumComplete('dhcp=', ['yes', 'no']),
             EnumComplete('privileged=', ['yes', 'no']),
+            EntitySubscriberComplete('networks=', 'docker.network', lambda i: q.get(i, 'name')),
         ]
 
 

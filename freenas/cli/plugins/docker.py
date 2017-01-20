@@ -1364,10 +1364,16 @@ class DockerContainerCreateCommand(Command):
                     'protocol': protocol
                 })
 
+        host = kwargs.get('host')
+        if host:
+            host_id = context.entity_subscribers['docker.host'].query(('name', '=', host), single=True, select='id')
+            if host_id:
+                host = host_id
+
         create_args = {
             'names': [name],
             'image': kwargs['image'],
-            'host': kwargs.get('host'),
+            'host': host,
             'hostname': kwargs.get('hostname'),
             'command': command,
             'environment': env,

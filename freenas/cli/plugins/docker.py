@@ -70,8 +70,7 @@ class DockerUtilsMixin(object):
         DockerUtilsMixin.check_name(name)
         obj[field] = name
 
-    @staticmethod
-    def check_name(name):
+    def check_name(self, name):
         if not re.match(r'[a-zA-Z0-9._-]*$', name):
             raise CommandException(_(
                 'Invalid name: {0}. Only [a-zA-Z0-9._-] characters are allowed'.format(name)
@@ -1262,7 +1261,7 @@ class DockerImageDeleteCommand(Command):
         ]
 
 
-class DockerContainerCreateCommand(Command):
+class DockerContainerCreateCommand(Command, DockerUtilsMixin):
     """
     Usage: create <name> image=<image> command=<command> hostname=<hostname>
                   host=<host> expose_ports=<expose_ports>
@@ -1311,7 +1310,7 @@ class DockerContainerCreateCommand(Command):
 
         name = kwargs.get('name') or args[0]
 
-        DockerUtilsMixin.check_name(name)
+        self.check_name(name)
 
         image = context.entity_subscribers['docker.image'].query(('names.0', 'in', kwargs['image']), single=True)
         if not image:

@@ -315,6 +315,19 @@ def get_item_stub(context, parent, name):
     return ns
 
 
+def set_name(obj, field, name, charset):
+    check_name(name, charset)
+    obj[field] = name
+
+
+def check_name(name, charset):
+    if not re.match(r'[{0}]*$'.format(charset), name):
+        from freenas.cli.namespace import CommandException
+        raise CommandException(_(
+            'Invalid name: {0}. Only {1} characters are allowed'.format(name, charset)
+        ))
+
+
 class PrintableNone(object):
     def __bool__(self):
         return False

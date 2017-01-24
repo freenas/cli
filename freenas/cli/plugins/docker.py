@@ -25,7 +25,6 @@
 #
 #####################################################################
 
-import re
 import gettext
 from freenas.dispatcher.rpc import RpcException
 from freenas.cli.namespace import (
@@ -34,7 +33,7 @@ from freenas.cli.namespace import (
 )
 from freenas.cli.output import ValueType, Table, Sequence, read_value
 from freenas.cli.utils import (
-    TaskPromise, post_save, EntityPromise, get_item_stub, netmask_to_cidr, objname2id, objid2name
+    TaskPromise, post_save, EntityPromise, get_item_stub, objname2id, objid2name, set_name, check_name
 )
 from freenas.utils import query as q
 from freenas.cli.complete import NullComplete, EntitySubscriberComplete, EnumComplete, RpcComplete
@@ -44,37 +43,6 @@ from freenas.utils import first_or_default
 
 t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
-
-
-class DockerUtilsMixin(object):
-    def get_host(self, o):
-        h = self.context.entity_subscribers['docker.host'].query(('id', '=', o['host']), single=True)
-        return h['name'] if h else None
-
-    def get_hosts(self, o):
-        return list(self.context.entity_subscribers['docker.host'].query(('id', 'in', o['hosts']), select='name')) or []
-
-    def set_host(self, o, v):
-        h = self.context.entity_subscribers['docker.host'].query(('name', '=', v), single=True)
-        if h:
-            o['host'] = h['id']
-            return h['id']
-
-    def set_netmask(entity, netmask):
-        try:
-            netmask_to_cidr(entity, netmask)
-        except ValueError as error:
-            raise CommandException(error)
-
-    def set_name(self, obj, field, name):
-        DockerUtilsMixin.check_name(name)
-        obj[field] = name
-
-    def check_name(self, name):
-        if not re.match(r'[a-zA-Z0-9._-]*$', name):
-            raise CommandException(_(
-                'Invalid name: {0}. Only [a-zA-Z0-9._-] characters are allowed'.format(name)
-            ))
 
 
 @description("View information about Docker hosts")
@@ -134,7 +102,7 @@ class DockerHostNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
 
 
 @description("Configure and manage Docker networks")
-class DockerNetworkNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, DockerUtilsMixin, EntityNamespace):
+class DockerNetworkNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
     """
     The docker network namespace provides commands for listing,
     creating, and managing Docker networks.
@@ -182,8 +150,8 @@ class DockerNetworkNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin,
         self.add_property(
             descr='Host',
             name='host',
-            get=self.get_host,
-            set=self.set_host,
+            get=lambda o: objid2name(context, 'docker.host', o['host']),
+            set=lambda o, v: q.set(o, 'host', objname2id(context, 'docker.host', v)),
             usersetable=False,
             list=True,
             complete=EntitySubscriberComplete('host=', 'docker.host', lambda d: d['name']),
@@ -197,7 +165,7 @@ class DockerNetworkNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin,
             descr='Name',
             name='name',
             get='name',
-            set=lambda o, v: self.set_name(o, 'name', v),
+            set=lambda o, v: set_name(o, 'name', v, 'a-zA-Z0-9._-'),
             usersetable=False,
             list=True,
             usage=_('Name of a network.')
@@ -328,7 +296,7 @@ class DockerNetworkDisconnectCommand(Command):
 
 
 @description("Configure and manage Docker containers")
-class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, DockerUtilsMixin, EntityNamespace):
+class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
     """
     The docker container namespace provides commands for listing,
     creating, and managing Docker container.
@@ -471,8 +439,8 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
         self.add_property(
             descr='Host',
             name='host',
-            get=self.get_host,
-            set=self.set_host,
+            get=lambda o: objid2name(context, 'docker.host', o['host']),
+            set=lambda o, v: q.set(o, 'host', objname2id(context, 'docker.host', v)),
             list=True,
             complete=EntitySubscriberComplete('host=', 'docker.host', lambda d: d['name']),
             usage=_('''\
@@ -675,7 +643,7 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
 
 
 @description("Configure and manage Docker container images")
-class DockerImageNamespace(EntitySubscriberBasedLoadMixin, DockerUtilsMixin, EntityNamespace):
+class DockerImageNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
     """
     The docker image namespace provides commands for listing,
     creating, and managing Docker container images.
@@ -701,6 +669,9 @@ class DockerImageNamespace(EntitySubscriberBasedLoadMixin, DockerUtilsMixin, Ent
             Examples:
                 show
                 show | search name == foo""")
+
+        def get_hosts(o):
+            return list(context.entity_subscribers['docker.host'].query(('id', 'in', o['hosts']), select='name')) or []
 
         self.add_property(
             descr='Name',
@@ -736,7 +707,7 @@ class DockerImageNamespace(EntitySubscriberBasedLoadMixin, DockerUtilsMixin, Ent
         self.add_property(
             descr='Host',
             name='host',
-            get=self.get_hosts,
+            get=get_hosts,
             set=None,
             usersetable=False,
             list=False,
@@ -795,7 +766,7 @@ class DockerImageNamespace(EntitySubscriberBasedLoadMixin, DockerUtilsMixin, Ent
 
 
 @description("Configure Docker general settings")
-class DockerConfigNamespace(DockerUtilsMixin, ConfigNamespace):
+class DockerConfigNamespace(ConfigNamespace):
     """
     The docker config namespace provides commands for listing,
     and managing Docker general settings.
@@ -808,8 +779,8 @@ class DockerConfigNamespace(DockerUtilsMixin, ConfigNamespace):
         self.add_property(
             descr='Default Docker host',
             name='default_host',
-            get=lambda o: self.get_host({'host': o['default_host']}),
-            set=lambda o, v: q.set(o, 'default_host', self.set_host({}, v)),
+            get=lambda o: objid2name(context, 'docker.host', o['default_host']),
+            set=lambda o, v: q.set(o, 'default_host', objname2id(context, 'docker.host', v)),
             complete=EntitySubscriberComplete('default_host=', 'docker.host', lambda d: d['name']),
             usage=_('''\
             Name of a Docker host selected by default for any
@@ -820,9 +791,9 @@ class DockerConfigNamespace(DockerUtilsMixin, ConfigNamespace):
         self.add_property(
             descr='Forward Docker remote API to host',
             name='api_forwarding',
-            get=lambda o: self.get_host({'host': o['default_host']}),
-            set=lambda o, v: q.set(o, 'default_host', self.set_host({}, v)),
-            complete=EntitySubscriberComplete('default_host=', 'docker.host', lambda d: d['name']),
+            get=lambda o: objid2name(context, 'docker.host', o['api_forwarding']),
+            set=lambda o, v: q.set(o, 'api_forwarding', objname2id(context, 'docker.host', v)),
+            complete=EntitySubscriberComplete('api_forwarding=', 'docker.host', lambda d: d['name']),
             usage=_('''\
             Defines which (if any) Docker host - Virtual Machine hosting
             a Docker service - should expose their standard remote HTTP API
@@ -867,7 +838,7 @@ class DockerConfigNamespace(DockerUtilsMixin, ConfigNamespace):
 
 
 @description("Configure and manage Docker container collections")
-class DockerCollectionNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, DockerUtilsMixin, EntityNamespace):
+class DockerCollectionNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
     """
     The docker collection namespace provides commands for listing,
     creating, and managing Docker container collections.
@@ -1245,7 +1216,7 @@ class DockerImageDeleteCommand(Command):
         ]
 
 
-class DockerContainerCreateCommand(Command, DockerUtilsMixin):
+class DockerContainerCreateCommand(Command):
     """
     Usage: create <name> image=<image> command=<command> hostname=<hostname>
                   host=<host> expose_ports=<expose_ports>
@@ -1294,7 +1265,7 @@ class DockerContainerCreateCommand(Command, DockerUtilsMixin):
 
         name = kwargs.get('name') or args[0]
 
-        self.check_name(name)
+        check_name(name, 'a-zA-Z0-9._-')
 
         image = context.entity_subscribers['docker.image'].query(('names.0', 'in', kwargs['image']), single=True)
         if not image:

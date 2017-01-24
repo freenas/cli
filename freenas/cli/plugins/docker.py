@@ -45,6 +45,9 @@ t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
 
 
+docker_names_pattern = 'a-zA-Z0-9._-'
+
+
 @description("View information about Docker hosts")
 class DockerHostNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
     """
@@ -165,7 +168,7 @@ class DockerNetworkNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin,
             descr='Name',
             name='name',
             get='name',
-            set=lambda o, v: set_name(o, 'name', v, 'a-zA-Z0-9._-'),
+            set=lambda o, v: set_name(o, 'name', v, docker_names_pattern),
             usersetable=False,
             list=True,
             usage=_('Name of a network.')
@@ -1264,7 +1267,7 @@ class DockerContainerCreateCommand(Command):
 
         name = kwargs.get('name') or args[0]
 
-        check_name(name, 'a-zA-Z0-9._-')
+        check_name(name, docker_names_pattern)
 
         image = context.entity_subscribers['docker.image'].query(('names.0', 'in', kwargs['image']), single=True)
         if not image:

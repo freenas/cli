@@ -622,6 +622,16 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
         )
 
         self.add_property(
+            descr='Bridged',
+            name='bridged',
+            get='bridge.enable',
+            list=False,
+            type=ValueType.BOOLEAN,
+            usage=_('''\
+            Defines if container is in bridged mode.'''),
+        )
+
+        self.add_property(
             descr='Networks',
             name='networks',
             get=lambda o: [objid2name(self.context, 'docker.network', id) for id in o.get('networks')],

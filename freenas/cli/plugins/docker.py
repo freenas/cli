@@ -596,6 +596,7 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             name='dhcp',
             get='bridge.dhcp',
             list=False,
+            type=ValueType.BOOLEAN,
             condition=lambda o: q.get(o, 'bridge.enable'),
             usage=_('''\
             Defines if container will have it's IP address acquired via DHCP.'''),

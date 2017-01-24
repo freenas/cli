@@ -49,14 +49,15 @@ class EnumComplete(NullComplete):
 
 
 class EntitySubscriberComplete(NullComplete):
-    def __init__(self, name, datasource, mapper=None, extra=None, **kwargs):
+    def __init__(self, name, datasource, mapper=None, extra=None, filter=None, **kwargs):
         super(EntitySubscriberComplete, self).__init__(name, **kwargs)
         self.datasource = datasource
         self.mapper = mapper or (lambda x: x['id'])
         self.extra = extra or []
+        self.filter = filter or []
 
     def choices(self, context, token):
-        return context.entity_subscribers[self.datasource].query(callback=self.mapper) + self.extra
+        return context.entity_subscribers[self.datasource].query(*self.filter, callback=self.mapper) + self.extra
 
 
 class RpcComplete(EntitySubscriberComplete):

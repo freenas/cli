@@ -223,7 +223,12 @@ class DockerNetworkNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin,
             usage=_("""\
             List of containers connected to the network.
             """),
-            complete=EntitySubscriberComplete('containers=', 'docker.container', lambda c: q.get(c, 'names.0')),
+            complete=EntitySubscriberComplete(
+                name='containers=',
+                datasource='docker.container',
+                mapper=lambda c: q.get(c, 'names.0'),
+                filter=[('host', '=', self.parent.entity.get('id'))]
+            ),
             list=True,
             type=ValueType.ARRAY
         )
@@ -270,7 +275,12 @@ class DockerNetworkConnectCommand(Command):
 
     def complete(self, context, **kwargs):
         return [
-            EntitySubscriberComplete('containers=', 'docker.container', lambda c: q.get(c, 'names.0'))
+            EntitySubscriberComplete(
+                name='containers=',
+                datasource='docker.container',
+                mapper=lambda c: q.get(c, 'names.0'),
+                filter=[('host', '=', self.parent.entity.get('host'))]
+            )
         ]
 
 
@@ -300,7 +310,12 @@ class DockerNetworkDisconnectCommand(Command):
 
     def complete(self, context, **kwargs):
         return [
-            EntitySubscriberComplete('containers=', 'docker.container', lambda c: q.get(c, 'names.0'))
+            EntitySubscriberComplete(
+                name='containers=',
+                datasource='docker.container',
+                mapper=lambda c: q.get(c, 'names.0'),
+                filter=[('host', '=', self.parent.entity.get('host'))]
+            )
         ]
 
 
@@ -1251,7 +1266,7 @@ class DockerContainerCreateCommand(Command):
                      bridged=yes dhcp=yes
               create bridged-and-dhcp-macaddr image=ubuntu:latest interactive=yes
                      bridged=yes dhcp=yes bridge_macaddress=01:02:03:04:05:06
-              create create-and-connect image=dockerhub_image_name
+              create create-and-connect image=dockerhub_image_name host=docker_host_0
                      networks=mynetwork1,mynetwork2
 
     Environment variables are provided as any number of uppercase KEY=VALUE
@@ -1390,6 +1405,8 @@ class DockerContainerCreateCommand(Command):
     def complete(self, context, **kwargs):
         props = []
         name = q.get(kwargs, 'kwargs.image')
+        host_name = q.get(kwargs, 'kwargs.host')
+        host_id = context.entity_subscribers['docker.host'].query(('name', '=', host_name), single=True, select='id')
         if name:
             image = context.entity_subscribers['docker.image'].query(('names.0', 'in', name), single=True)
             if not image:
@@ -1430,7 +1447,12 @@ class DockerContainerCreateCommand(Command):
             EnumComplete('bridged=', ['yes', 'no']),
             EnumComplete('dhcp=', ['yes', 'no']),
             EnumComplete('privileged=', ['yes', 'no']),
-            EntitySubscriberComplete('networks=', 'docker.network', lambda i: q.get(i, 'name')),
+            EntitySubscriberComplete(
+                name='networks=',
+                datasource='docker.network',
+                mapper=lambda i: q.get(i, 'name'),
+                filter=[('host', '=', host_id)]
+            )
         ]
 
 

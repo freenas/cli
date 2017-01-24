@@ -307,7 +307,6 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
         self.create_task = 'docker.container.create'
         self.update_task = 'docker.container.update'
         self.delete_task = 'docker.container.delete'
-        self.allow_edit = False
         self.primary_key_name = 'names.0'
         self.required_props = ['name', 'image']
         self.skeleton_entity = {

@@ -1408,6 +1408,10 @@ class DockerContainerCreateCommand(Command):
             ]
         }
 
+        bridge = create_args.get('bridge')
+        if bridge.get('enable') and not (bridge.get('dhcp') or bridge.get('address')):
+            raise CommandException('Either dhcp or static address must be selected for bridged container')
+
         ns = get_item_stub(context, self.parent, name)
 
         tid = context.submit_task(self.parent.create_task, create_args, callback=lambda s, t: post_save(ns, s, t))

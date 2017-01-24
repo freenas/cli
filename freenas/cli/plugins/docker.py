@@ -103,22 +103,29 @@ class DockerHostNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
 
         self.primary_key = self.get_mapping('name')
 
+        self.entity_namespaces = lambda this: [
+            DockerNetworkNamespace('network', self.context, this)
+        ]
 
-@description("Configure and manage Docker networks")
+
+@description("Configure and manage Docker host networks")
 class DockerNetworkNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
     """
     The docker network namespace provides commands for listing,
-    creating, and managing Docker networks.
+    creating, and managing networks on selected docker host.
     """
-    def __init__(self, name, context):
+    def __init__(self, name, context, parent):
         super(DockerNetworkNamespace, self).__init__(name, context)
+        self.parent = parent
         self.entity_subscriber_name = 'docker.network'
         self.create_task = 'docker.network.create'
         self.delete_task = 'docker.network.delete'
         self.allow_edit = False
+        self.extra_query_params = [('host', '=', self.parent.entity.get('id'))]
         self.primary_key_name = 'name'
         self.required_props = ['name']
         self.skeleton_entity = {
+            'host': self.parent.entity.get('id'),
             'driver': 'bridge'
         }
 
@@ -153,11 +160,10 @@ class DockerNetworkNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin,
         self.add_property(
             descr='Host',
             name='host',
-            get=lambda o: objid2name(context, 'docker.host', o['host']),
-            set=lambda o, v: q.set(o, 'host', objname2id(context, 'docker.host', v)),
+            get=self.parent.entity.get('name'),
+            createsetable=False,
             usersetable=False,
-            list=True,
-            complete=EntitySubscriberComplete('host=', 'docker.host', lambda d: d['name']),
+            list=False,
             usage=_('''\
             Name of Docker host instance owning network instance.
             Docker host name equals to name of Virtual Machine
@@ -1685,7 +1691,6 @@ class DockerNamespace(Namespace):
         return [
             DockerHostNamespace('host', self.context),
             DockerContainerNamespace('container', self.context),
-            DockerNetworkNamespace('network', self.context),
             DockerImageNamespace('image', self.context),
             DockerConfigNamespace('config', self.context),
             DockerCollectionNamespace('collection', self.context)
@@ -1701,7 +1706,7 @@ def _init(context):
     context.attach_namespace('/', DockerNamespace('docker', context))
     context.map_tasks('docker.config.*', DockerConfigNamespace)
     context.map_tasks('docker.container.*', DockerContainerNamespace)
-    context.map_tasks('docker.network.*', DockerNetworkNamespace)
+    context.map_tasks('docker.host.network.*', DockerNetworkNamespace)
     context.map_tasks('docker.host.*', DockerHostNamespace)
     context.map_tasks('docker.image.*', DockerImageNamespace)
     context.map_tasks('docker.collection.*', DockerCollectionNamespace)

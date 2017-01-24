@@ -702,9 +702,6 @@ class DockerImageNamespace(EntitySubscriberBasedLoadMixin, DockerUtilsMixin, Ent
                 show
                 show | search name == foo""")
 
-        if not DockerImageNamespace.default_images:
-            DockerImageNamespace.load_collection_images(context)
-
         self.add_property(
             descr='Name',
             name='name',
@@ -762,7 +759,6 @@ class DockerImageNamespace(EntitySubscriberBasedLoadMixin, DockerUtilsMixin, Ent
         self.extra_commands = {
             'pull': DockerImagePullCommand(self),
             'search': DockerImageSearchCommand(),
-            'list': DockerImageListCommand(),
             'readme': DockerImageReadmeCommand(),
             'flush_cache': DockerImageFlushCacheCommand()
         }
@@ -1152,18 +1148,6 @@ class DockerImageSearchCommand(Command):
         return [
             NullComplete('name=')
         ]
-
-
-@description("Get a list of canned FreeNAS docker images")
-class DockerImageListCommand(Command):
-    """
-    Usage: canned
-    """
-    def run(self, context, args, kwargs, opargs):
-        return Table(DockerImageNamespace.default_images, [
-            Table.Column('Name', 'name', width=30),
-            Table.Column('Description', 'description')
-        ])
 
 
 @description("Get full description of container image")
@@ -1665,6 +1649,55 @@ class DockerContainerCommitCommand(Command):
         ]
 
 
+@description("Fetches presets from a given Docker collection")
+class DockerFetchPresetsCommand(Command):
+    """
+    Usage: fetch_presets collection=<collection>
+
+    Example: fetch_presets
+             fetch_presets collection=freenas
+
+    Fetch presets of a given Docker collection
+    into CLI's cache for tab completion purposes
+    around docker namespace.
+
+    If 'collection' parameter is not provided, default collection is used.
+    """
+    def run(self, context, args, kwargs, opargs):
+        def update_default_images(state, task):
+            if state == 'FINISHED':
+                DockerImageNamespace.default_images = list(task['result'])
+
+        collection_name = kwargs.get('collection')
+
+        if collection_name:
+            collection = context.entity_subscribers['docker.collection'].query(
+                ('name', '=', collection_name),
+                single=True,
+                select='id'
+            )
+            if not collection:
+                raise CommandException(_(f'Collection {collection_name} does not exist'))
+
+        else:
+            collection = context.call_sync('docker.config.get_config').get('default_collection')
+            if not collection:
+                raise CommandException(_('Default Docker collection is not set'))
+
+        tid = context.submit_task(
+            'docker.collection.get_presets',
+            collection,
+            callback=update_default_images
+        )
+
+        return TaskPromise(context, tid)
+
+    def complete(self, context, **kwargs):
+        return [
+            EntitySubscriberComplete('collection=', 'docker.collection', lambda c: c['name'])
+        ]
+
+
 @description("Configure and manage Docker hosts, images and containers")
 class DockerNamespace(Namespace):
     """
@@ -1684,6 +1717,11 @@ class DockerNamespace(Namespace):
             DockerConfigNamespace('config', self.context),
             DockerCollectionNamespace('collection', self.context)
         ]
+
+    def commands(self):
+        return {
+            'fetch_presets': DockerFetchPresetsCommand()
+        }
 
 
 def _init(context):

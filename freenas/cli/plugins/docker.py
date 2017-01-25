@@ -626,22 +626,22 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             descr='Bridged',
             name='bridged',
             get='bridge.enable',
-            list=False,
+            list=True,
             type=ValueType.BOOLEAN,
             usage=_('''\
             Defines if container is in bridged mode.'''),
         )
 
         self.add_property(
-            descr='Networks',
+            descr='Docker networks',
             name='networks',
             get=lambda o: [objid2name(self.context, 'docker.network', id) for id in o.get('networks')],
             set=self.set_networks,
             usersetable=False,
             usage=_("""\
-            List of networks the container is connected to.
+            List of docker networks the container is connected to.
             """),
-            list=True,
+            list=False,
             type=ValueType.ARRAY
         )
 

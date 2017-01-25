@@ -1305,12 +1305,11 @@ class DockerContainerCreateCommand(Command):
         if not image:
             image = q.query(DockerImageNamespace.default_images, ('name', '=', kwargs['image']), single=True)
 
-        command = kwargs.get('command', [])
-        command = command if isinstance(command, (list, tuple)) else [command]
         env = ['{0}={1}'.format(k, v) for k, v in kwargs.items() if k.isupper()]
         presets = image.get('presets') or {} if image else {}
         ports = presets.get('ports', [])
         volumes = presets.get('static_volumes', [])
+        command = read_value(kwargs.get('command', presets.get('command')), ValueType.SET)
 
         for k, v in kwargs.items():
             if k.startswith('volume:'):
@@ -1431,6 +1430,7 @@ class DockerContainerCreateCommand(Command):
                 presets = image['presets']
                 caps_add = ','.join(presets['capabilities_add'])
                 caps_drop = ','.join(presets['capabilities_drop'])
+                command = ','.join(presets['command'])
                 props += [NullComplete('{id}='.format(**i)) for i in presets['settings']]
                 props += [NullComplete(('ro_' if v.get('readonly') else '') + 'volume:{container_path}='.format(**v)) for v in presets['volumes']]
                 props += [NullComplete('port:{container_port}/{protocol}='.format(**v)) for v in presets['ports']]
@@ -1438,6 +1438,8 @@ class DockerContainerCreateCommand(Command):
                     props += [NullComplete('capabilities_add={0}'.format(caps_add))]
                 if caps_drop:
                     props += [NullComplete('capabilities_drop={0}'.format(caps_drop))]
+                if command:
+                    props += [NullComplete('command={0}'.format(command))]
 
         available_images = q.query(DockerImageNamespace.default_images, select='name')
         available_images += context.entity_subscribers['docker.image'].query(select='names.0')

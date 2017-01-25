@@ -237,7 +237,7 @@ class ReplaceCommand(Command):
         replace <olddisk> <newdisk>
 
     Example:
-        extend_vdev ada1 ada2
+        replace ada1 ada2
 
     Replaces <olddisk> with <newdisk> in a volume. If <newdisk> is a spare of current volume,
     it will be removed from the spares list.

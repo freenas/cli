@@ -45,6 +45,20 @@ t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
 
 
+DOCKER_PRESET_2_PROPERTY_MAP = {
+    'autostart': 'autostart',
+    'bridge.enable': 'bridged',
+    'bridge.dhcp': 'dhcp',
+    'capabilities_add': 'capabilities_add',
+    'capabilities_drop': 'capabilities_drop',
+    'command': 'command',
+    'expose_ports': 'expose_ports',
+    'interactive': 'interactive',
+    'ports': 'port',
+    'privileged': 'privileged',
+}
+
+
 docker_names_pattern = 'a-zA-Z0-9._-'
 
 
@@ -1311,7 +1325,7 @@ class DockerContainerCreateCommand(Command):
         presets = image.get('presets') or {} if image else {}
         ports = presets.get('ports', [])
         volumes = presets.get('static_volumes', [])
-        command = read_value(kwargs.get('command', presets.get('command')), ValueType.SET)
+        command = read_value(kwargs.get('command', presets.get('command')), ValueType.ARRAY)
 
         for k, v in kwargs.items():
             if k.startswith('volume:'):
@@ -1413,6 +1427,12 @@ class DockerContainerCreateCommand(Command):
         if bridge.get('enable') and not (bridge.get('dhcp') or bridge.get('address')):
             raise CommandException('Either dhcp or static address must be selected for bridged container')
 
+        for p in presets.get('immutable'):
+            if q.get(create_args, p) != q.get(presets, p):
+                raise CommandException(
+                    'Cannot change property: {0}. It was defined as immutable in the Dockerfile'.format(DOCKER_PRESET_2_PROPERTY_MAP[p])
+                )
+
         ns = get_item_stub(context, self.parent, name)
 
         tid = context.submit_task(self.parent.create_task, create_args, callback=lambda s, t: post_save(ns, s, t))
@@ -1420,6 +1440,7 @@ class DockerContainerCreateCommand(Command):
 
     def complete(self, context, **kwargs):
         props = []
+        immutable = []
         name = q.get(kwargs, 'kwargs.image')
         host_name = q.get(kwargs, 'kwargs.host')
         host_id = context.entity_subscribers['docker.host'].query(('name', '=', host_name), single=True, select='id')
@@ -1430,42 +1451,55 @@ class DockerContainerCreateCommand(Command):
 
             if image and image['presets']:
                 presets = image['presets']
+                immutable = [DOCKER_PRESET_2_PROPERTY_MAP[v] for v in presets.get('immutable')]
                 caps_add = ','.join(presets['capabilities_add'])
                 caps_drop = ','.join(presets['capabilities_drop'])
                 command = ','.join(presets['command'])
                 props += [NullComplete('{id}='.format(**i)) for i in presets['settings']]
                 props += [NullComplete(('ro_' if v.get('readonly') else '') + 'volume:{container_path}='.format(**v)) for v in presets['volumes']]
-                props += [NullComplete('port:{container_port}/{protocol}='.format(**v)) for v in presets['ports']]
-                if caps_add:
+                if 'port' not in immutable:
+                    props += [NullComplete('port:{container_port}/{protocol}='.format(**v)) for v in presets['ports']]
+                if caps_add and 'capabilities_add' not in immutable:
                     props += [NullComplete('capabilities_add={0}'.format(caps_add))]
-                if caps_drop:
+                if caps_drop and 'capabilities_drop' not in immutable:
                     props += [NullComplete('capabilities_drop={0}'.format(caps_drop))]
-                if command:
+                if command and 'command' not in immutable:
                     props += [NullComplete('command={0}'.format(command))]
 
         available_images = q.query(DockerImageNamespace.default_images, select='name')
         available_images += context.entity_subscribers['docker.image'].query(select='names.0')
         available_images = list(set(available_images))
 
+        if 'autostart' not in immutable:
+            props += [EnumComplete('autostart=', ['yes', 'no'])]
+        if 'bridged' not in immutable:
+            props += [EnumComplete('bridged=', ['yes', 'no'])]
+        if 'dhcp' not in immutable and 'bridged' not in immutable:
+            props += [EnumComplete('dhcp=', ['yes', 'no'])]
+        if 'capabilities_add' not in immutable:
+            props += [NullComplete('capabilities_add=')]
+        if 'capabilities_drop' not in immutable:
+            props += [NullComplete('capabilities_drop=')]
+        if 'command' not in immutable:
+            props += [NullComplete('command=')]
+        if 'expose_ports' not in immutable:
+            props += [EnumComplete('expose_ports=', ['yes', 'no'])]
+        if 'interactive' not in immutable:
+            props += [EnumComplete('interactive=', ['yes', 'no'])]
+        if 'port' not in immutable:
+            props += [NullComplete('port:')]
+        if 'privileged' not in immutable:
+            props += [EnumComplete('privileged=', ['yes', 'no'])]
+
         return props + [
             NullComplete('name='),
-            NullComplete('command='),
             NullComplete('hostname='),
             NullComplete('bridge_address='),
             NullComplete('bridge_macaddress='),
             NullComplete('volume:'),
-            NullComplete('capabilities_add='),
-            NullComplete('capabilities_drop='),
             NullComplete('ro_volume:'),
-            NullComplete('port:'),
             EnumComplete('image=', available_images),
             EntitySubscriberComplete('host=', 'docker.host', lambda i: q.get(i, 'name')),
-            EnumComplete('interactive=', ['yes', 'no']),
-            EnumComplete('autostart=', ['yes', 'no']),
-            EnumComplete('expose_ports=', ['yes', 'no']),
-            EnumComplete('bridged=', ['yes', 'no']),
-            EnumComplete('dhcp=', ['yes', 'no']),
-            EnumComplete('privileged=', ['yes', 'no']),
             EntitySubscriberComplete(
                 name='networks=',
                 datasource='docker.network',

@@ -405,9 +405,6 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
                 show
                 show | search name == foo""")
 
-        def set_memsize(o, v):
-            set(o, 'config.memsize', int(v / 1024 / 1024))
-
         self.skeleton_entity = {
             'devices': [],
             'config': {}
@@ -469,7 +466,7 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             descr='Memory size (MB)',
             name='memsize',
             get=lambda o: get(o, 'config.memsize') * 1024 * 1024,
-            set=set_memsize,
+            set=lambda o, v: set(o, 'config.memsize', int(v / 1024 / 1024)),
             list=True,
             type=ValueType.SIZE,
             usage=_("Size of the Memory allocated to the VM")

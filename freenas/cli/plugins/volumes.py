@@ -778,7 +778,7 @@ class ReplicateCommand(Command):
                 raise CommandException('Compression level must be selected as one of: fast, default, best')
 
             transport_plugins.append({
-                '%type': 'compress-replication-transport-option',
+                '%type': 'CompressReplicationTransportOption',
                 'level': compress.upper()
             })
 
@@ -787,7 +787,7 @@ class ReplicateCommand(Command):
                 raise CommandException('Throttle must be a number representing maximum transfer per second')
 
             transport_plugins.append({
-                '%type': 'throttle-replication-transport-option',
+                '%type': 'ThrottleReplicationTransportOption',
                 'buffer_size': throttle
             })
 
@@ -796,7 +796,7 @@ class ReplicateCommand(Command):
                 raise CommandException('Encryption type must be selected as one of: AES128, AES192, AES256')
 
             transport_plugins.append({
-                '%type': 'encrypt-replication-transport-option',
+                '%type': 'EncryptReplicationTransportOption',
                 'type': encrypt
             })
 

@@ -39,6 +39,7 @@ from freenas.utils import query as q
 from freenas.cli.complete import NullComplete, EntitySubscriberComplete, EnumComplete, RpcComplete
 from freenas.cli.console import Console
 from freenas.utils import first_or_default
+from freenas.cli.plugins.vm import StartVMCommand, StopVMCommand, RebootVMCommand, ConsoleCommand, KillVMCommand
 
 
 t = gettext.translation('freenas-cli', fallback=True)
@@ -146,6 +147,14 @@ class DockerHostNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
         )
 
         self.primary_key = self.get_mapping('name')
+
+        self.entity_commands = lambda this: {
+            'start': StartVMCommand(this),
+            'stop': StopVMCommand(this),
+            'kill': KillVMCommand(this),
+            'reboot': RebootVMCommand(this),
+            'console': ConsoleCommand(this)
+        }
 
         self.entity_namespaces = lambda this: [
             DockerNetworkNamespace('network', self.context, this)

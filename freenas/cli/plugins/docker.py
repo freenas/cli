@@ -1720,7 +1720,7 @@ class DockerFetchPresetsCommand(Command):
 
     def complete(self, context, **kwargs):
         return [
-            EntitySubscriberComplete('collection=', 'docker.collection', lambda c: c['name'])
+            EntitySubscriberComplete('collection=', 'docker.collection', lambda c: c['name']),
             EnumComplete('force=', ['yes', 'no'])
         ]
 

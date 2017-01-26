@@ -94,8 +94,8 @@ class DockerHostNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
         self.add_property(
             descr='Memory size (MB)',
             name='memsize',
-            get=lambda o: q.get(o, 'memsize') * 1024 * 1024,
-            set=lambda o, v: q.set(o, 'memsize', int(v / 1024 / 1024)),
+            get=lambda o: q.get(o, 'config.memsize') * 1024 * 1024,
+            set=lambda o, v: q.set(o, 'config.memsize', int(v / 1024 / 1024)),
             list=True,
             type=ValueType.SIZE,
             usage=_("Size of the Memory allocated to the Docker host VM")

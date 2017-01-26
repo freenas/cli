@@ -1217,13 +1217,7 @@ class DockerImageDeleteCommand(Command):
 
     def complete(self, context, **kwargs):
         return [
-            EnumComplete(
-                'host=',
-                context.entity_subscribers['docker.host'].query(
-                    ('id', 'in', self.parent.entity['hosts']),
-                    select='name'
-                )
-            )
+            EntitySubscriberComplete('host=', 'docker.host', lambda i: q.get(i, 'name'))
         ]
 
 

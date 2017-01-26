@@ -1641,14 +1641,18 @@ class DockerContainerCommitCommand(Command):
 @description("Fetches presets from a given Docker collection")
 class DockerFetchPresetsCommand(Command):
     """
-    Usage: fetch_presets collection=<collection>
+    Usage: fetch_presets collection=<collection> <force>=force
 
     Example: fetch_presets
              fetch_presets collection=freenas
+             fetch_presets collection=freenas force=yes
 
     Fetch presets of a given Docker collection
     into CLI's cache for tab completion purposes
     around docker namespace.
+
+    When 'force' is set, command queries Dockerhub for fresh data,
+    even if local cache is considered still valid by FreeNAS.
 
     If 'collection' parameter is not provided, default collection is used.
     """
@@ -1673,9 +1677,12 @@ class DockerFetchPresetsCommand(Command):
             if not collection:
                 raise CommandException(_('Default Docker collection is not set'))
 
+        force = read_value(kwargs.get('force', False), ValueType.BOOLEAN)
+
         tid = context.submit_task(
             'docker.collection.get_presets',
             collection,
+            force,
             callback=update_default_images
         )
 
@@ -1684,6 +1691,7 @@ class DockerFetchPresetsCommand(Command):
     def complete(self, context, **kwargs):
         return [
             EntitySubscriberComplete('collection=', 'docker.collection', lambda c: c['name'])
+            EnumComplete('force=', ['yes', 'no'])
         ]
 
 

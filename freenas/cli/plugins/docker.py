@@ -26,7 +26,6 @@
 #####################################################################
 
 import gettext
-from freenas.dispatcher.rpc import RpcException
 from freenas.cli.namespace import (
     Namespace, EntityNamespace, Command, EntitySubscriberBasedLoadMixin,
     TaskBasedSaveMixin, CommandException, description, ConfigNamespace, RpcBasedLoadMixin
@@ -781,32 +780,6 @@ class DockerImageNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             'delete': DockerImageDeleteCommand(this)
         }
 
-    @staticmethod
-    def load_collection_images(context):
-        def refresh_images(i):
-            DockerImageNamespace.default_images.clear()
-            if isinstance(i, RpcException):
-                return
-            DockerImageNamespace.default_images.extend(list(i))
-
-        def fetch(collection):
-            if collection:
-                collection_entity = context.entity_subscribers['docker.collection'].query(
-                    ('id', '=', collection),
-                    single=True
-                )
-                if collection_entity:
-                    context.call_async(
-                        'docker.collection.get_entries',
-                        lambda r: refresh_images(r),
-                        collection
-                    )
-
-        context.call_async(
-            'docker.config.get_config',
-            lambda r: fetch(r.get('default_collection'))
-        )
-
 
 @description("Configure Docker general settings")
 class DockerConfigNamespace(ConfigNamespace):
@@ -873,11 +846,6 @@ class DockerConfigNamespace(ConfigNamespace):
             which later is being used in tab completion in other 'docker' namespaces.
             Collection equals to DockerHub username''')
         )
-
-    def load(self):
-        if self.saved:
-            DockerImageNamespace.load_collection_images(self.context)
-        super(DockerConfigNamespace, self).load()
 
 
 @description("Configure and manage Docker container collections")

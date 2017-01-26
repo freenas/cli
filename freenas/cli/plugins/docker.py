@@ -45,6 +45,24 @@ t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
 
 
+DOCKER_PRESETS_MAPPINGS = {
+    'autostart': 'autostart',
+    'bridge': {
+        'enable': 'bridged',
+        'dhcp': 'dhcp',
+    },
+    'capabilities_add': 'capabilities_add',
+    'capabilities_drop': 'capabilities_drop',
+    'command': 'command',
+    'expose_ports': 'expose_ports',
+    'interactive': 'interactive',
+    'ports': 'port',
+    'privileged': 'privileged',
+    'version': 'version',
+    'volumes': 'volume',
+}
+
+
 docker_names_pattern = 'a-zA-Z0-9._-'
 
 
@@ -1412,6 +1430,13 @@ class DockerContainerCreateCommand(Command):
         bridge = create_args.get('bridge')
         if bridge.get('enable') and not (bridge.get('dhcp') or bridge.get('address')):
             raise CommandException('Either dhcp or static address must be selected for bridged container')
+
+        for p in presets.get('immutable'):
+            if q.get(create_args, p) != q.get(presets, p):
+                raise CommandException(
+                    'Cannot change property: {0}. It was defined as immutable in the Dockerfile'.format(
+                        q.get(DOCKER_PRESETS_MAPPINGS, p))
+                )
 
         ns = get_item_stub(context, self.parent, name)
 

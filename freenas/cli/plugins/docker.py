@@ -32,7 +32,8 @@ from freenas.cli.namespace import (
 )
 from freenas.cli.output import ValueType, Table, Sequence, read_value
 from freenas.cli.utils import (
-    TaskPromise, post_save, EntityPromise, get_item_stub, objname2id, objid2name, set_name, check_name
+    TaskPromise, post_save, EntityPromise, get_item_stub, objname2id, objid2name, set_name, check_name,
+    get_related, set_related
 )
 from freenas.utils import query as q
 from freenas.cli.complete import NullComplete, EntitySubscriberComplete, EnumComplete, RpcComplete
@@ -48,7 +49,7 @@ docker_names_pattern = 'a-zA-Z0-9._-'
 
 
 @description("View information about Docker hosts")
-class DockerHostNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
+class DockerHostNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
     """
     The docker host namespace provides commands for listing data
     about Docker hosts available in the system.
@@ -57,15 +58,14 @@ class DockerHostNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         super(DockerHostNamespace, self).__init__(name, context)
         self.entity_subscriber_name = 'docker.host'
         self.primary_key_name = 'name'
-        self.allow_create = False
-        self.allow_edit = False
+        self.create_task = 'docker.host.create'
+        self.update_task = 'docker.host.update'
+        self.delete_task = 'docker.host.delete'
 
         self.add_property(
             descr='VM name',
             name='name',
             get='name',
-            set=None,
-            usersetable=False,
             list=True,
             usage=_('Name of Virtual Machine instance hosting a Docker service.')
         )
@@ -78,6 +78,36 @@ class DockerHostNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
             usersetable=False,
             list=True,
             usage=_('State of a Docker host service. Can be UP or DOWN.')
+        )
+
+        self.add_property(
+            descr='Datastore',
+            name='datastore',
+            get=lambda o: get_related(self.context, 'vm.datastore', o, 'target'),
+            set=lambda o, v: set_related(self.context, 'vm.datastore', o, 'target', v),
+            createsetable=True,
+            usersetable=False,
+            complete=EntitySubscriberComplete('datastore=', 'vm.datastore', lambda i: i['name']),
+            usage=_("The datastore on which the Docker host VM is stored")
+        )
+
+        self.add_property(
+            descr='Memory size (MB)',
+            name='memsize',
+            get=lambda o: q.get(o, 'memsize') * 1024 * 1024,
+            set=lambda o, v: q.set(o, 'memsize', int(v / 1024 / 1024)),
+            list=True,
+            type=ValueType.SIZE,
+            usage=_("Size of the Memory allocated to the Docker host VM")
+        )
+
+        self.add_property(
+            descr='CPU cores',
+            name='cores',
+            get='config.ncpus',
+            list=True,
+            type=ValueType.NUMBER,
+            usage=_("Number of cpu cores assigned to the Docker host VM")
         )
 
         self.add_property(

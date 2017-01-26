@@ -61,6 +61,7 @@ class DockerHostNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
         self.create_task = 'docker.host.create'
         self.update_task = 'docker.host.update'
         self.delete_task = 'docker.host.delete'
+        self.required_props = ['name', 'datastore']
 
         self.add_property(
             descr='VM name',

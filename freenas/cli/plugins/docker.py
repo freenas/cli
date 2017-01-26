@@ -1311,7 +1311,7 @@ class DockerContainerCreateCommand(Command):
         presets = image.get('presets') or {} if image else {}
         ports = presets.get('ports', [])
         volumes = presets.get('static_volumes', [])
-        command = read_value(kwargs.get('command', presets.get('command')), ValueType.SET)
+        command = read_value(kwargs.get('command', presets.get('command')), ValueType.ARRAY)
 
         for k, v in kwargs.items():
             if k.startswith('volume:'):

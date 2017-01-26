@@ -315,14 +315,14 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             opt = None
             if val != 'no':
                 opt = {
-                    '%type': 'compress-replication-transport-option',
+                    '%type': 'CompressReplicationTransportOption',
                     'level': val
                 }
             set_transport_option(obj, get_transport_option(obj, 'compress'), opt)
 
         def set_throttle(obj, val):
             opt = {
-                '%type': 'throttle-replication-transport-option',
+                '%type': 'ThrottleReplicationTransportOption',
                 'buffer_size': val
             }
             set_transport_option(obj, get_transport_option(obj, 'throttle'), opt)
@@ -331,7 +331,7 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             opt = None
             if val != 'no':
                 opt = {
-                    '%type': 'encrypt-replication-transport-option',
+                    '%type': 'EncryptReplicationTransportOption',
                     'type': val
                 }
             set_transport_option(obj, get_transport_option(obj, 'encrypt'), opt)

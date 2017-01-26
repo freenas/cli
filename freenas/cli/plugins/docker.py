@@ -406,6 +406,15 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
         )
 
         self.add_property(
+            descr='Health',
+            name='health',
+            get='health',
+            set=None,
+            usersetable=False,
+            usage=_('State of a health status of a container.')
+        )
+
+        self.add_property(
             descr='Image name',
             name='image',
             get='image',

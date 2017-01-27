@@ -1707,8 +1707,7 @@ class DockerFetchPresetsCommand(Command):
     """
     Usage: fetch_presets collection=<collection> <force>=force
 
-    Example: fetch_presets
-             fetch_presets collection=freenas
+    Example: fetch_presets collection=freenas
              fetch_presets collection=freenas force=yes
 
     Fetch presets of a given Docker collection
@@ -1717,8 +1716,6 @@ class DockerFetchPresetsCommand(Command):
 
     When 'force' is set, command queries Dockerhub for fresh data,
     even if local cache is considered still valid by FreeNAS.
-
-    If 'collection' parameter is not provided, default collection is used.
     """
     def run(self, context, args, kwargs, opargs):
         def update_default_images(state, task):

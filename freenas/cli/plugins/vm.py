@@ -494,6 +494,7 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             name='boot_device',
             get='config.boot_device',
             list=False,
+            condition=lambda o: 'id' in o or not o.get('template'),
             usage=_("The device from the devices namespace from which to boot from"),
             complete=RpcComplete(
                 'boot_device=',
@@ -507,6 +508,7 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             name='boot_directory',
             get='config.boot_directory',
             list=False,
+            condition=lambda o: 'id' in o or not o.get('template'),
             usage=_("The directory in VM's dataset under the files directory that contains grub.cfg")
         )
 
@@ -515,6 +517,7 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             name='boot_partition',
             get='config.boot_partition',
             list=False,
+            condition=lambda o: 'id' in o or not o.get('template'),
             usage=_("The partition on the os's boot device to boot from (i.e. msdos1 for the first partition of a BIOS partition layout)")
         )
 
@@ -524,6 +527,7 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             get='config.bootloader',
             list=False,
             enum=['BHYVELOAD', 'GRUB', 'UEFI', 'UEFI_CSM'],
+            condition=lambda o: 'id' in o or not o.get('template'),
             usage=_("Type of Bootloader"),
         )
 
@@ -532,6 +536,7 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             name='guest_type',
             get='guest_type',
             list=False,
+            condition=lambda o: 'id' in o or not o.get('template'),
             enum=[
                 'linux64',
                 'freebsd32',

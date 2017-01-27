@@ -1432,15 +1432,19 @@ class DockerContainerCreateCommand(Command):
             ]
         }
 
-        bridge = create_args.get('bridge')
-        if bridge.get('enable') and not (bridge.get('dhcp') or bridge.get('address')):
-            raise CommandException('Either dhcp or static address must be selected for bridged container')
-
         for p in presets.get('immutable'):
             if q.get(create_args, p) != q.get(presets, p):
                 raise CommandException(
                     'Cannot change property: {0}. It was defined as immutable in the Dockerfile'.format(DOCKER_PRESET_2_PROPERTY_MAP[p])
                 )
+
+        bridge = create_args.get('bridge')
+        if bridge.get('enable') and not (bridge.get('dhcp') or bridge.get('address')):
+            raise CommandException('Either dhcp or static address must be selected for bridged container')
+
+        if not bridge.get('enable') and (bridge.get('dhcp') or bridge.get('address') or bridge.get('macaddress')):
+            raise CommandException('Cannot set the "dhcp","address" and "macaddress" bridge properties when '
+                                   'bridge is not enabled')
 
         ns = get_item_stub(context, self.parent, name)
 

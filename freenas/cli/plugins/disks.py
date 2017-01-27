@@ -331,7 +331,6 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityN
         self.primary_key = self.get_mapping('name')
         self.allow_create = False
         self.entity_commands = lambda this: {
-            'format': FormatDiskCommand(this),
             'erase': EraseDiskCommand(this),
             'identify': IdentifyDiskCommand(this)
         }
@@ -497,22 +496,6 @@ class EnclosureDevicesCommand(Command):
             Table.Column('Slot description', 'name'),
             Table.Column('Slot status', 'status')
         ])
-
-
-@description("Formats given disk")
-class FormatDiskCommand(Command):
-    """
-    Usage: format
-
-    Formats the current disk.
-    """
-    def __init__(self, parent):
-        self.parent = parent
-
-    def run(self, context, args, kwargs, opargs):
-        fstype = kwargs.pop('fstype', 'freebsd-zfs')
-        tid = context.submit_task('disk.format.gpt', self.parent.entity['id'], fstype)
-        return TaskPromise(context, tid)
 
 
 @description("Identifies the disk in the enclosure")

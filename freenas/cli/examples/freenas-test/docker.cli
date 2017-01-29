@@ -38,7 +38,7 @@ function docker_destroy() {
 	@$(_container_obj delete)
 	maybe_barf(_success, "-docker#1", "Unable to delete docker container " + _container_name)
 	@$(_container_vm_obj delete)
-	maybe_barf(_success, "-docker#2", "Unable to delete docker vm " + _container_vm_name)
+	maybe_barf(_success, "-docker#2", "Unable to delete docker VM " + _container_vm_name)
 }
 
 function docker_hard_create() {

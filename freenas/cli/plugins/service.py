@@ -69,6 +69,31 @@ class ServiceManageCommand(Command):
         return TaskPromise(context, tid)
 
 
+@description("See logs of a service")
+class LogsCommand(Command):
+    """
+    Usage: logs
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        query = context.call_sync(
+            'syslog.query',
+            [('service', 'in', self.parent.entity['labels'])],
+            {
+                'limit': 20,
+                'sort': '-timestamp',
+                'reverse': True
+            }
+        )
+
+        return Table(query, [
+            Table.Column('Timestamp', 'timestamp', ValueType.DATE, 20),
+            Table.Column('Message', 'message')
+        ])
+
+
 @description("Configure OpenVPN general settings")
 class OpenVPNNamespace(NestedEntityMixin, ItemNamespace):
     """
@@ -2304,7 +2329,8 @@ class ServicesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Enti
             'start': ServiceManageCommand(this, 'start'),
             'stop': ServiceManageCommand(this, 'stop'),
             'restart': ServiceManageCommand(this, 'restart'),
-            'reload': ServiceManageCommand(this, 'reload')
+            'reload': ServiceManageCommand(this, 'reload'),
+            'logs': LogsCommand(this)
         }
 
     def child_serialize(self, this):

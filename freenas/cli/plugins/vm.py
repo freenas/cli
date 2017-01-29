@@ -679,7 +679,6 @@ class VMGuestNamespace(Namespace):
         return {
             'show': ShowGuestInfoCommand(self.parent),
             'ls': GuestLsCommand(self.parent),
-            'cat': GuestCatCommand(self.parent),
             'exec': GuestExecCommand(self.parent)
         }
 
@@ -1563,18 +1562,6 @@ class GuestLsCommand(Command):
             Table.Column('Type', 'type'),
             Table.Column('Size', 'size', ValueType.SIZE)
         ])
-
-
-class GuestCatCommand(Command):
-    """
-    Usage: ls <path>
-    """
-
-    def __init__(self, parent):
-        self.parent = parent
-
-    def run(self, context, args, kwargs, opargs):
-        return
 
 
 class GuestExecCommand(Command):

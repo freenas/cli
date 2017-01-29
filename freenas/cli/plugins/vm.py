@@ -1556,7 +1556,7 @@ class GuestLsCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        result = context.call_sync('vm.guest_ls', self.parent.entity['id'], args[0])
+        result = context.call_sync('vm.guest_ls', self.parent.entity['id'], args[0] if args else '/')
         return Table(result, [
             Table.Column('Name', 'name'),
             Table.Column('Type', 'type'),

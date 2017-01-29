@@ -48,50 +48,28 @@ class LogNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         self.allow_create = False
 
         self.add_property(
-            descr='ID',
-            name='id',
-            get='seqnum',
-            usage=_("""\
-            Log entry ID. Read-only value as
-            assigned by operating system."""),
-            set=None,
-            list=True
-        )
-
-        self.add_property(
             descr='Timestamp',
             name='timestamp',
-            get='created_at',
+            get='timestamp',
             usage=_("""\
             Time the log entry was created. Read-only value
             as assigned by operating system."""),
             set=None,
             list=True,
-            type=ValueType.TIME
+            type=ValueType.TIME,
+            width=10
         )
 
         self.add_property(
-            descr='Priority',
-            name='priority',
-            get='priority',
-            usage=_("""\
-            Log entry priority. Read-only value as
-            assigned by operating system. Possible values
-            are emerg, alert, crit, err, warning, notice,
-            info, and debug."""),
-            list=True,
-            set=None,
-        )
-
-        self.add_property(
-            descr='Program',
-            name='program',
-            get='program',
+            descr='Identifier',
+            name='identifier',
+            get='identifier',
             usage=_("""\
             Name of application which generated the log message. Read-only
             value as reported by operating system."""),
             list=True,
             set=None,
+            width=10
         )
 
         self.add_property(

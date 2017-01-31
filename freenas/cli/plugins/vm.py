@@ -847,6 +847,22 @@ class VMDeviceDiskPropertiesMixin(BaseVariantMixin):
     def add_properties(self):
         super(VMDeviceDiskPropertiesMixin, self).add_properties()
 
+        def get_target_path(o):
+            val = get(o, 'properties.target_path')
+            if get(o, 'properties.target_type') == 'DISK':
+                val = self.context.entity_subscribers['disk'].query(('id', '=', val), single=True, select='path')
+
+            return val
+
+        def set_target_path(o, v):
+            val = v
+            if get(o, 'properties.target_type') == 'DISK':
+                val = self.context.entity_subscribers['disk'].query(('path', '=', v), single=True, select='id')
+                if not val:
+                    raise CommandException('{0} not found'.format(v))
+
+            set(o, 'properties.target_path', val)
+
         self.add_property(
             descr='Disk mode',
             name='disk_mode',
@@ -879,7 +895,8 @@ class VMDeviceDiskPropertiesMixin(BaseVariantMixin):
         self.add_property(
             descr='Target path',
             name='target_path',
-            get='properties.target_path',
+            get=get_target_path,
+            set=set_target_path,
             list=False,
             condition=lambda o: o['type'] == 'DISK',
         )

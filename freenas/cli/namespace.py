@@ -611,7 +611,6 @@ class ItemNamespace(Namespace):
         def complete(self, context, **kwargs):
             return [create_completer(x) for x in self.parent.property_mappings if x.delete_arg]
 
-
     def __init__(self, name, context):
         super(ItemNamespace, self).__init__(name)
         self.name = name

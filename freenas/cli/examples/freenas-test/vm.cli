@@ -19,8 +19,6 @@ function vm_create() {
 	maybe_barf(_x == _vm_description, "+vm#3", "Description for " + _vm_name + " didn't match expected: " + _vm_description)
 	@$(_vm_object start)
 	maybe_barf(_success, "+vm#4", "Unable to start VM " + _vm_name)
-	@$(_vm_object kill)
-	maybe_barf(_success, "+vm#4", "Unable to kill kill kill VM " + _vm_name)
 }
 
 function vm_destroy() {
@@ -37,8 +35,6 @@ function vm_hard_create() {
 	       append(_vm_hard_arr, _x)
 	       @$(_x start)
 	       maybe_barf(_success, "+vm-hard#2", "Unable to start VM " + i)
-	       @$(_x kill)
-	       maybe_barf(_success, "+vm-hard#3", "Unable to kill kill kill VM " + i)
 	    }
 	    
 	}

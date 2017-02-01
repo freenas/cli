@@ -26,8 +26,9 @@ function volume_create() {
 	maybe_barf(_success, "+volume#6", "Unable to get current system dataset volume")
 	print(">>> Volume: FYI: System dataset was on " + SYS_DATASET_VOL)
 	@$(system system_dataset set volume=${VOL_NAME})
-	print(">>> Volume: FYI: System dataset now on " + VOL_NAME)
-	maybe_barf(_success, "+volume#7", "Unable to set system dataset volume")
+	if (not (maybe_barf(_success, "+volume#7", "Unable to set system dataset volume"))) {
+	    print(">>> Volume: FYI: System dataset now on " + VOL_NAME)
+	}
 
 	@$(VOL_OBJECT dataset create name=${VOL_NAME + "/" + _dataset_name})
 	maybe_barf(_success, "+volume#8", "Unable to create dataset " + _dataset_name)

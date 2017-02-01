@@ -172,8 +172,8 @@ class DockerNetworkNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin,
         self.parent = parent
         self.entity_subscriber_name = 'docker.network'
         self.create_task = 'docker.network.create'
+        self.update_task = 'docker.network.update'
         self.delete_task = 'docker.network.delete'
-        self.allow_edit = False
         self.extra_query_params = [('host', '=', self.parent.entity.get('id'))]
         self.primary_key_name = 'name'
         self.required_props = ['name']
@@ -228,7 +228,6 @@ class DockerNetworkNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin,
             name='name',
             get='name',
             set=lambda o, v: set_name(o, 'name', v, docker_names_pattern),
-            usersetable=False,
             list=True,
             usage=_('Name of a network.')
         )
@@ -248,7 +247,6 @@ class DockerNetworkNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin,
             name='subnet',
             get='subnet',
             list=True,
-            usersetable=False,
             usage=_("""\
             The subnet of the network in CIDR format. Specify the value between quotes.
             If left unspecified it will be selected by the docker engine
@@ -259,7 +257,6 @@ class DockerNetworkNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin,
             descr='Gateway',
             name='gateway',
             get='gateway',
-            usersetable=False,
             usage=_("""\
             IPv4 address of the network's default gateway.
             If left unspecified it will be selected by the docker engine
@@ -272,7 +269,6 @@ class DockerNetworkNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin,
             name='containers',
             get=lambda o: [objid2name(self.context, 'docker.container', id) for id in o.get('containers')],
             set=self.set_containers,
-            usersetable=False,
             usage=_("""\
             List of containers connected to the network.
             """),
@@ -726,6 +722,7 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
         commands = {
             'start': DockerContainerStartCommand(this),
             'stop': DockerContainerStopCommand(this),
+            'restart': DockerContainerRestartCommand(this),
             'console': DockerContainerConsoleCommand(this),
             'exec': DockerContainerExecConsoleCommand(this),
             'readme': DockerContainerReadmeCommand(this),
@@ -879,6 +876,26 @@ class DockerConfigNamespace(ConfigNamespace):
             usage=_('''\
             Used for enabling/disabling Docker HTTP API forwarding
             to FreeNAS's default network interface.''')
+        )
+
+        self.add_property(
+            descr='Default DockerHub collection',
+            name='default_collection',
+            get=lambda o: context.call_sync(
+                'docker.collection.query',
+                [('id', '=', o['default_collection'])],
+                {'single': True, 'select': 'name'}
+            ),
+            set=lambda o, v: q.set(o, 'default_collection', context.call_sync(
+                'docker.collection.query',
+                [('name', '=', v)],
+                {'single': True, 'select': 'id'}
+            )),
+            complete=RpcComplete('default_collection=', 'docker.collection.query', lambda o: o['name']),
+            usage=_('''\
+            Used for setting a default DockerHub container images collection,
+            which later is being used in tab completion in other 'docker' namespaces.
+            Collection equals to DockerHub username''')
         )
 
 
@@ -1412,19 +1429,15 @@ class DockerContainerCreateCommand(Command):
             ]
         }
 
-        for p in presets.get('immutable'):
-            if q.get(create_args, p) != q.get(presets, p):
-                raise CommandException(
-                    'Cannot change property: {0}. It was defined as immutable in the Dockerfile'.format(DOCKER_PRESET_2_PROPERTY_MAP[p])
-                )
-
         bridge = create_args.get('bridge')
         if bridge.get('enable') and not (bridge.get('dhcp') or bridge.get('address')):
             raise CommandException('Either dhcp or static address must be selected for bridged container')
 
-        if not bridge.get('enable') and (bridge.get('dhcp') or bridge.get('address') or bridge.get('macaddress')):
-            raise CommandException('Cannot set the "dhcp","address" and "macaddress" bridge properties when '
-                                   'bridge is not enabled')
+        for p in presets.get('immutable', []):
+            if q.get(create_args, p) != q.get(presets, p):
+                raise CommandException(
+                    'Cannot change property: {0}. It was defined as immutable in the Dockerfile'.format(DOCKER_PRESET_2_PROPERTY_MAP[p])
+                )
 
         ns = get_item_stub(context, self.parent, name)
 
@@ -1434,7 +1447,6 @@ class DockerContainerCreateCommand(Command):
     def complete(self, context, **kwargs):
         props = []
         immutable = []
-        presets = {}
         name = q.get(kwargs, 'kwargs.image')
         host_name = q.get(kwargs, 'kwargs.host')
         host_id = context.entity_subscribers['docker.host'].query(('name', '=', host_name), single=True, select='id')
@@ -1464,19 +1476,12 @@ class DockerContainerCreateCommand(Command):
         available_images += context.entity_subscribers['docker.image'].query(select='names.0')
         available_images = list(set(available_images))
 
-        bridge_enabled =  q.get(presets, 'bridge.enable')
-        if 'bridged' not in immutable and q.get(kwargs, 'kwargs.bridged') in ('yes','no'):
-            bridge_enabled = read_value(q.get(kwargs, 'kwargs.bridged'), ValueType.BOOLEAN)
-
         if 'autostart' not in immutable:
             props += [EnumComplete('autostart=', ['yes', 'no'])]
         if 'bridged' not in immutable:
             props += [EnumComplete('bridged=', ['yes', 'no'])]
-        if bridge_enabled:
-            props += [NullComplete('bridge_address=')]
-            props += [NullComplete('bridge_macaddress=')]
-            if 'dhcp' not in immutable:
-                props += [EnumComplete('dhcp=', ['yes', 'no'])]
+        if 'dhcp' not in immutable and 'bridged' not in immutable:
+            props += [EnumComplete('dhcp=', ['yes', 'no'])]
         if 'capabilities_add' not in immutable:
             props += [NullComplete('capabilities_add=')]
         if 'capabilities_drop' not in immutable:
@@ -1495,6 +1500,8 @@ class DockerContainerCreateCommand(Command):
         return props + [
             NullComplete('name='),
             NullComplete('hostname='),
+            NullComplete('bridge_address='),
+            NullComplete('bridge_macaddress='),
             NullComplete('volume:'),
             NullComplete('ro_volume:'),
             EnumComplete('image=', available_images),
@@ -1543,6 +1550,29 @@ class DockerContainerStopCommand(Command):
 
     def run(self, context, args, kwargs, opargs):
         tid = context.submit_task('docker.container.stop', self.parent.entity['id'])
+        return TaskPromise(context, tid)
+
+
+@description("Restart container")
+class DockerContainerRestartCommand(Command):
+    """
+    Usage: restart
+
+    Example:
+    Restart single container:
+        restart
+    Restart all containers on the system using CLI scripting:
+        for (i in $(docker container show)) { / docker container ${i["names"][0]} restart }
+
+    Restarts a container.
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        if not self.parent.entity['running']:
+            raise CommandException('Container {0} is not running'.format(self.parent.entity['name']))
+        tid = context.submit_task('docker.container.restart', self.parent.entity['id'])
         return TaskPromise(context, tid)
 
 
@@ -1707,7 +1737,8 @@ class DockerFetchPresetsCommand(Command):
     """
     Usage: fetch_presets collection=<collection> <force>=force
 
-    Example: fetch_presets collection=freenas
+    Example: fetch_presets
+             fetch_presets collection=freenas
              fetch_presets collection=freenas force=yes
 
     Fetch presets of a given Docker collection
@@ -1716,6 +1747,8 @@ class DockerFetchPresetsCommand(Command):
 
     When 'force' is set, command queries Dockerhub for fresh data,
     even if local cache is considered still valid by FreeNAS.
+
+    If 'collection' parameter is not provided, default collection is used.
     """
     def run(self, context, args, kwargs, opargs):
         def update_default_images(state, task):
@@ -1734,7 +1767,9 @@ class DockerFetchPresetsCommand(Command):
                 raise CommandException(_(f'Collection {collection_name} does not exist'))
 
         else:
-            raise CommandException(_('Collection name not specified'))
+            collection = context.call_sync('docker.config.get_config').get('default_collection')
+            if not collection:
+                raise CommandException(_('Default Docker collection is not set'))
 
         force = read_value(kwargs.get('force', False), ValueType.BOOLEAN)
 

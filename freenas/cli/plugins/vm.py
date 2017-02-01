@@ -639,6 +639,7 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
         yield TemplateNamespace('template', self.context)
         yield VMDatastoreNamespace('datastore', self.context)
         yield VMConfigNamespace('config', self.context)
+        yield VMSCSIPortsNamespace('scsi_port', self.context)
         for namespace in super(VMNamespace, self).namespaces():
             yield namespace
 
@@ -755,6 +756,38 @@ class VMDeviceGraphicsPropertiesMixin(BaseVariantMixin):
         return "VGA device with resolution {0}".format(get(o, 'properties.resolution'))
 
 
+class VMDeviceScsiPropertiesMixin(BaseVariantMixin):
+    """
+    The VM Device Usb namespace provides commands for managing USB resources
+    available on selected virtual machine
+    """
+    def add_properties(self):
+        super(VMDeviceScsiPropertiesMixin, self).add_properties()
+
+        self.add_property(
+            descr='Port number',
+            name='port',
+            get='properties.port',
+            list=False,
+            type=ValueType.NUMBER,
+            condition=lambda o: o['type'] == 'SCSI',
+        )
+
+        self.add_property(
+            descr='Initiator ID',
+            name='initiator_id',
+            get='properties.initiator_id',
+            list=False,
+            type=ValueType.NUMBER,
+            condition=lambda o: o['type'] == 'SCSI',
+        )
+
+    @staticmethod
+    def get_humanized_summary(o):
+        return "SCSI host bus adapter device"
+
+
+
 class VMDeviceUsbPropertiesMixin(BaseVariantMixin):
     """
     The VM Device Usb namespace provides commands for managing USB resources
@@ -847,6 +880,22 @@ class VMDeviceDiskPropertiesMixin(BaseVariantMixin):
     def add_properties(self):
         super(VMDeviceDiskPropertiesMixin, self).add_properties()
 
+        def get_target_path(o):
+            val = get(o, 'properties.target_path')
+            if get(o, 'properties.target_type') == 'DISK':
+                val = self.context.entity_subscribers['disk'].query(('id', '=', val), single=True, select='path')
+
+            return val
+
+        def set_target_path(o, v):
+            val = v
+            if get(o, 'properties.target_type') == 'DISK':
+                val = self.context.entity_subscribers['disk'].query(('path', '=', v), single=True, select='id')
+                if not val:
+                    raise CommandException('{0} not found'.format(v))
+
+            set(o, 'properties.target_path', val)
+
         self.add_property(
             descr='Disk mode',
             name='disk_mode',
@@ -872,14 +921,15 @@ class VMDeviceDiskPropertiesMixin(BaseVariantMixin):
             name='target_type',
             get='properties.target_type',
             list=False,
-            enum=['ZVOL', 'FILE', 'DISK'],
+            enum=['BLOCK', 'FILE', 'DISK'],
             condition=lambda o: o['type'] == 'DISK',
         )
 
         self.add_property(
             descr='Target path',
             name='target_path',
-            get='properties.target_path',
+            get=get_target_path,
+            set=set_target_path,
             list=False,
             condition=lambda o: o['type'] == 'DISK',
         )
@@ -914,7 +964,7 @@ class VMDeviceCdromPropertiesMixin(BaseVariantMixin):
 
 class VMDeviceNamespace(
     NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNamespace,
-    VMDeviceGraphicsPropertiesMixin, VMDeviceDiskPropertiesMixin,
+    VMDeviceGraphicsPropertiesMixin, VMDeviceDiskPropertiesMixin, VMDeviceScsiPropertiesMixin,
     VMDeviceUsbPropertiesMixin, VMDeviceNicPropertiesMixin, VMDeviceCdromPropertiesMixin,
     BaseVariantMixin
 ):
@@ -929,7 +979,7 @@ class VMDeviceNamespace(
         self.primary_key_name = 'name'
         self.parent = parent
         self.parent_path = 'devices'
-        self.extra_query_params = [('type', 'in', ('GRAPHICS', 'CDROM', 'NIC', 'USB', 'DISK'))]
+        self.extra_query_params = [('type', 'in', ('GRAPHICS', 'CDROM', 'NIC', 'USB', 'DISK', 'SCSI'))]
         self.required_props = ['name']
         self.skeleton_entity = {
             'name': None,
@@ -942,6 +992,7 @@ class VMDeviceNamespace(
             'CDROM': VMDeviceCdromPropertiesMixin.get_humanized_summary,
             'NIC': VMDeviceNicPropertiesMixin.get_humanized_summary,
             'USB': VMDeviceUsbPropertiesMixin.get_humanized_summary,
+            'SCSI': VMDeviceScsiPropertiesMixin.get_humanized_summary,
             'GRAPHICS': VMDeviceGraphicsPropertiesMixin.get_humanized_summary
         }
 
@@ -987,7 +1038,7 @@ class VMDeviceNamespace(
             get='type',
             set='type',
             list=True,
-            enum=['GRAPHICS', 'NIC', 'DISK', 'CDROM', 'USB']
+            enum=['GRAPHICS', 'NIC', 'DISK', 'CDROM', 'USB', 'SCSI']
         )
 
         self.add_property(
@@ -1003,11 +1054,12 @@ class VMDeviceNamespace(
 
     def save(self, this, new=False):
         types = {
-            'DISK': 'vm-device-disk',
-            'CDROM': 'vm-device-cdrom',
-            'NIC': 'vm-device-nic',
-            'USB': 'vm-device-usb',
-            'GRAPHICS': 'vm-device-graphics'
+            'DISK': 'VmDeviceDisk',
+            'CDROM': 'VmDeviceCdrom',
+            'NIC': 'VmDeviceNic',
+            'USB': 'VmDeviceUsb',
+            'GRAPHICS': 'VmDeviceGraphics',
+            'SCSI': 'VmDeviceScsi'
         }
 
         if new:
@@ -1626,6 +1678,38 @@ class DeleteTemplateCommand(Command):
         tid = context.submit_task('vm.template.delete', self.parent.entity['template']['name'])
         context.ml.cd_up()
         return TaskPromise(context, tid)
+
+
+class VMSCSIPortsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):
+    def __init__(self, name, context):
+        super(VMSCSIPortsNamespace, self).__init__(name, context)
+        self.primary_key_name = 'number'
+        self.entity_subscriber_name = 'vm.scsi.port'
+        self.create_task = 'vm.scsi.port.create'
+        self.update_task = 'vm.scsi.port.update'
+        self.delete_task = 'vm.scsi.port.delete'
+
+        self.add_property(
+            descr='Port number',
+            name='number',
+            get='number',
+            type=ValueType.NUMBER
+        )
+
+        self.add_property(
+            descr='Port description',
+            name='description',
+            get='description',
+        )
+
+        self.add_property(
+            descr='LUNs',
+            name='luns',
+            get='luns',
+            type=ValueType.ARRAY
+        )
+
+        self.primary_key = self.get_mapping('number')
 
 
 def _init(context):

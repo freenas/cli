@@ -27,7 +27,7 @@
 import os
 import platform
 import sys
-from setuptools import setup, find_packages
+from setuptools import setup
 from setuptools.command.install import install
 
 dependency_links = []

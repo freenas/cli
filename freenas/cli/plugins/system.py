@@ -924,55 +924,6 @@ class SystemDatasetNamespace(ConfigNamespace):
         )
 
 
-@description("View event history")
-class EventsNamespace(RpcBasedLoadMixin, EntityNamespace):
-    """
-    System events command, expands into commands to show events.
-    """
-
-    def __init__(self, name, context):
-        super(EventsNamespace, self).__init__(name, context)
-        self.allow_create = False
-        self.allow_edit = False
-        self.query_call = 'event.query'
-
-        self.add_property(
-            descr='Event ID',
-            name='id',
-            get='id',
-        )
-
-        self.add_property(
-            descr='Event Name',
-            name='name',
-            get=lambda t: events.translate(context, t['name'], t['args']),
-        )
-
-        self.add_property(
-            descr='Timestamp',
-            name='timestamp',
-            get='timestamp',
-            type=ValueType.TIME
-        )
-
-        self.add_property(
-            descr='Created at',
-            name='created',
-            get='created_at',
-        )
-
-        self.add_property(
-            descr='Updated at',
-            name='updated',
-            get='updated_at',
-        )
-
-        self.primary_key = self.get_mapping('id')
-
-    def serialize(self):
-        raise NotImplementedError()
-
-
 @description("System power management options")
 class SystemNamespace(ConfigNamespace):
     """
@@ -1071,7 +1022,6 @@ class SystemNamespace(ConfigNamespace):
             TimeNamespace('time', self.context),
             NTPServersNamespace('ntp', self.context),
             MailNamespace('mail', self.context),
-            EventsNamespace('event', self.context),
             SystemDatasetNamespace('system_dataset', self.context),
             ConfigDbNamespace('config'),
             DebugNamespace('debug')

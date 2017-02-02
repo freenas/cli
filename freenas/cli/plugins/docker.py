@@ -878,26 +878,6 @@ class DockerConfigNamespace(ConfigNamespace):
             to FreeNAS's default network interface.''')
         )
 
-        self.add_property(
-            descr='Default DockerHub collection',
-            name='default_collection',
-            get=lambda o: context.call_sync(
-                'docker.collection.query',
-                [('id', '=', o['default_collection'])],
-                {'single': True, 'select': 'name'}
-            ),
-            set=lambda o, v: q.set(o, 'default_collection', context.call_sync(
-                'docker.collection.query',
-                [('name', '=', v)],
-                {'single': True, 'select': 'id'}
-            )),
-            complete=RpcComplete('default_collection=', 'docker.collection.query', lambda o: o['name']),
-            usage=_('''\
-            Used for setting a default DockerHub container images collection,
-            which later is being used in tab completion in other 'docker' namespaces.
-            Collection equals to DockerHub username''')
-        )
-
 
 @description("Configure and manage Docker container collections")
 class DockerCollectionNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
@@ -1777,9 +1757,8 @@ class DockerFetchPresetsCommand(Command):
                 raise CommandException(_(f'Collection {collection_name} does not exist'))
 
         else:
-            collection = context.call_sync('docker.config.get_config').get('default_collection')
-            if not collection:
-                raise CommandException(_('Default Docker collection is not set'))
+            raise CommandException(_('Collection name not specified'))
+
 
         force = read_value(kwargs.get('force', False), ValueType.BOOLEAN)
 

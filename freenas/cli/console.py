@@ -25,12 +25,10 @@
 #
 #####################################################################
 
-import os
 import sys
 import tty
 import curses
 import termios
-import select
 from threading import Thread
 from freenas.dispatcher.shell import VMConsoleClient
 
@@ -41,34 +39,25 @@ class Console(object):
         self.id = id
         self.conn = None
         self.stdscr = None
-        eseq = bytes(self.context.variables.get('vm.console_interrupt'), 'utf-8').decode('unicode_escape')
-        self.esbytes = bytes(eseq, 'utf-8')
-        self.eof_r, self.eof_w = os.pipe()
 
     def on_data(self, data):
         sys.stdout.buffer.write(data)
         sys.stdout.buffer.flush()
 
-    def on_close(self):
-        try:
-            os.write(self.eof_w, b' ')
-        except OSError:
-            pass
-
     def connect(self):
         token = self.context.call_sync('containerd.console.request_console', self.id)
         self.conn = VMConsoleClient(self.context.hostname, token)
         self.conn.on_data(self.on_data)
-        self.conn.on_close(self.on_close)
         self.conn.open()
 
     def start(self):
         # process escape characters using runtime
-        eslen = len(self.esbytes)
+        eseq = bytes(self.context.variables.get('vm.console_interrupt'), 'utf-8').decode('unicode_escape')
+        esbytes = bytes(eseq, 'utf-8')
+        eslen = len(esbytes)
         esidx = 0   # stack pointer for sequence match...
 
         stdin_fd = sys.stdin.fileno()
-        r_list = [stdin_fd, self.eof_r]
         old_stdin_settings = termios.tcgetattr(stdin_fd)
         try:
             tty.setraw(stdin_fd)
@@ -76,30 +65,21 @@ class Console(object):
             connect_t.daemon = True
             connect_t.start()
             while True:
-                r, w, x = select.select(r_list, [], [])
+                ch = sys.stdin.read(1)
+                bch = bytes(ch, 'utf-8')[0]
 
-                if stdin_fd in r:
-                    ch = sys.stdin.read(1)
-                    bch = bytes(ch, 'utf-8')[0]
-
-                    if self.esbytes[esidx] == bch:
-                        esidx += 1
-                        if esidx == eslen:
-                            self.conn.close()
-                            break
-                    elif esidx > 0:
-                        # reset stack pointer...no match
-                        # BW: possibly write out characters up to this point if sequence not matched?
-                        #     or maybe we write the chars all along?
-                        esidx = 0
-                    else:
-                        self.conn.write(ch)
-
-                if self.eof_r in r:
-                    self.conn.close()
-                    break
+                if esbytes[esidx] == bch:
+                    esidx += 1
+                    if esidx == eslen:
+                        self.conn.close()
+                        break
+                elif esidx > 0:
+                    # reset stack pointer...no match
+                    # BW: possibly write out characters up to this point if sequence not matched?
+                    #     or maybe we write the chars all along?
+                    esidx = 0
+                else:
+                    self.conn.write(ch)
         finally:
             termios.tcsetattr(stdin_fd, termios.TCSADRAIN, old_stdin_settings)
             curses.wrapper(lambda x: x)
-            os.close(self.eof_r)
-            os.close(self.eof_w)

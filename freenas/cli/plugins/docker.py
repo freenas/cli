@@ -172,8 +172,8 @@ class DockerNetworkNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin,
         self.parent = parent
         self.entity_subscriber_name = 'docker.network'
         self.create_task = 'docker.network.create'
+        self.update_task = 'docker.network.update'
         self.delete_task = 'docker.network.delete'
-        self.allow_edit = False
         self.extra_query_params = [('host', '=', self.parent.entity.get('id'))]
         self.primary_key_name = 'name'
         self.required_props = ['name']
@@ -228,7 +228,6 @@ class DockerNetworkNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin,
             name='name',
             get='name',
             set=lambda o, v: set_name(o, 'name', v, docker_names_pattern),
-            usersetable=False,
             list=True,
             usage=_('Name of a network.')
         )
@@ -248,7 +247,6 @@ class DockerNetworkNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin,
             name='subnet',
             get='subnet',
             list=True,
-            usersetable=False,
             usage=_("""\
             The subnet of the network in CIDR format. Specify the value between quotes.
             If left unspecified it will be selected by the docker engine
@@ -259,7 +257,6 @@ class DockerNetworkNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin,
             descr='Gateway',
             name='gateway',
             get='gateway',
-            usersetable=False,
             usage=_("""\
             IPv4 address of the network's default gateway.
             If left unspecified it will be selected by the docker engine
@@ -272,7 +269,6 @@ class DockerNetworkNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin,
             name='containers',
             get=lambda o: [objid2name(self.context, 'docker.container', id) for id in o.get('containers')],
             set=self.set_containers,
-            usersetable=False,
             usage=_("""\
             List of containers connected to the network.
             """),

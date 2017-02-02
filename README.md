@@ -867,10 +867,10 @@ where `bridgeX` is name of previously created bridge interface.
 To create a BHyVe virtual machine called `myvm` running inside FreeNAS, use following command:
 
 ```
-127.0.0.1:>vm create name=myvm datastore=tank bootloader=GRUB
+127.0.0.1:>vm create name=myvm volume=tank bootloader=GRUB
 ```
 
-Pass volume name where you want your VM data disks to be stored as `datastore` parameter. You also need to set bootloader type: either `BHYVELOAD` (if you're installing a FreeBSD VM) or `GRUB` (which is suitable for most Linux distributions and FreeNAS).
+Pass volume name where you want your VM data disks to be stored as `volume` parameter. You also need to set bootloader type: either `BHYVELOAD` (if you're installing a FreeBSD VM) or `GRUB` (which is suitable for most Linux distributions and FreeNAS).
 
 When VM is created,  you can add data disk and CD images to the VM by going to `vm myvm disks` namespace:
 

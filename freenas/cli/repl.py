@@ -32,7 +32,6 @@ import sys
 import os
 import glob
 import argparse
-import imp
 import logging
 import errno
 import fnmatch
@@ -74,7 +73,7 @@ from freenas.cli.output import (
 from freenas.dispatcher.client import Client, ClientError
 from freenas.dispatcher.entity import EntitySubscriber
 from freenas.dispatcher.rpc import RpcException
-from freenas.utils import first_or_default, include, best_match
+from freenas.utils import first_or_default, include, best_match, load_module_from_file
 from freenas.utils.query import get
 from freenas.cli.commands import (
     ExitCommand, PrintoptCommand, SetoptCommand, SetenvCommand, PrintenvCommand,
@@ -568,7 +567,7 @@ class Context(object):
         self.logger.debug(_("Loading plugin from %s"), path)
         name, ext = os.path.splitext(os.path.basename(path))
         try:
-            plugin = imp.load_source(name, path)
+            plugin = load_module_from_file(name, path)
             if hasattr(plugin, '_init'):
                 plugin._init(self)
                 self.plugins[path] = plugin

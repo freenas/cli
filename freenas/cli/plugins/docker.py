@@ -722,7 +722,6 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
         commands = {
             'start': DockerContainerStartCommand(this),
             'stop': DockerContainerStopCommand(this),
-            'restart': DockerContainerRestartCommand(this),
             'console': DockerContainerConsoleCommand(this),
             'exec': DockerContainerExecConsoleCommand(this),
             'readme': DockerContainerReadmeCommand(this),
@@ -1550,29 +1549,6 @@ class DockerContainerStopCommand(Command):
 
     def run(self, context, args, kwargs, opargs):
         tid = context.submit_task('docker.container.stop', self.parent.entity['id'])
-        return TaskPromise(context, tid)
-
-
-@description("Restart container")
-class DockerContainerRestartCommand(Command):
-    """
-    Usage: restart
-
-    Example:
-    Restart single container:
-        restart
-    Restart all containers on the system using CLI scripting:
-        for (i in $(docker container show)) { / docker container ${i["names"][0]} restart }
-
-    Restarts a container.
-    """
-    def __init__(self, parent):
-        self.parent = parent
-
-    def run(self, context, args, kwargs, opargs):
-        if not self.parent.entity['running']:
-            raise CommandException('Container {0} is not running'.format(self.parent.entity['name']))
-        tid = context.submit_task('docker.container.restart', self.parent.entity['id'])
         return TaskPromise(context, tid)
 
 

@@ -680,7 +680,8 @@ class VMGuestNamespace(Namespace):
         return {
             'show': ShowGuestInfoCommand(self.parent),
             'ls': GuestLsCommand(self.parent),
-            'exec': GuestExecCommand(self.parent)
+            'exec': GuestExecCommand(self.parent),
+            'copy': GuestCpCommand(self.parent)
         }
 
 
@@ -1626,6 +1627,24 @@ class GuestExecCommand(Command):
 
     def run(self, context, args, kwargs, opargs):
         return context.call_sync('vm.guest_exec', self.parent.entity['id'], args[0], args[1:])
+
+class GuestCpCommand(Command):
+    """
+    Usage: cp host:<path> guest:<path>
+    """
+
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        tid = context.submit_task('vm.tools.copy', self.parent.entity['id'], args[0], args[1])
+        return TaskPromise(context, tid)
+
+    def complete(self, context, **kwargs):
+        return [
+            NullComplete('host:'),
+            NullComplete('guest:'),
+        ]
 
 
 @description("Deletes unused VM images from the local cache")

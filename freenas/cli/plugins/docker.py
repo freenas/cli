@@ -1447,6 +1447,7 @@ class DockerContainerCreateCommand(Command):
     def complete(self, context, **kwargs):
         props = []
         immutable = []
+        presets = {}
         name = q.get(kwargs, 'kwargs.image')
         host_name = q.get(kwargs, 'kwargs.host')
         host_id = context.entity_subscribers['docker.host'].query(('name', '=', host_name), single=True, select='id')
@@ -1476,12 +1477,19 @@ class DockerContainerCreateCommand(Command):
         available_images += context.entity_subscribers['docker.image'].query(select='names.0')
         available_images = list(set(available_images))
 
+        bridge_enabled = q.get(presets, 'bridge.enable')
+        if 'bridged' not in immutable and q.get(kwargs, 'kwargs.bridged') in ('yes', 'no'):
+            bridge_enabled = read_value(q.get(kwargs, 'kwargs.bridged'), ValueType.BOOLEAN)
+
         if 'autostart' not in immutable:
             props += [EnumComplete('autostart=', ['yes', 'no'])]
         if 'bridged' not in immutable:
             props += [EnumComplete('bridged=', ['yes', 'no'])]
-        if 'dhcp' not in immutable and 'bridged' not in immutable:
-            props += [EnumComplete('dhcp=', ['yes', 'no'])]
+        if bridge_enabled:
+            props += [NullComplete('bridge_address=')]
+            props += [NullComplete('bridge_macaddress=')]
+            if 'dhcp' not in immutable:
+                props += [EnumComplete('dhcp=', ['yes', 'no'])]
         if 'capabilities_add' not in immutable:
             props += [NullComplete('capabilities_add=')]
         if 'capabilities_drop' not in immutable:
@@ -1500,8 +1508,6 @@ class DockerContainerCreateCommand(Command):
         return props + [
             NullComplete('name='),
             NullComplete('hostname='),
-            NullComplete('bridge_address='),
-            NullComplete('bridge_macaddress='),
             NullComplete('volume:'),
             NullComplete('ro_volume:'),
             EnumComplete('image=', available_images),

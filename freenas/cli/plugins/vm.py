@@ -639,7 +639,6 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
         yield TemplateNamespace('template', self.context)
         yield VMDatastoreNamespace('datastore', self.context)
         yield VMConfigNamespace('config', self.context)
-        yield VMSCSIPortsNamespace('scsi_port', self.context)
         for namespace in super(VMNamespace, self).namespaces():
             yield namespace
 
@@ -1678,38 +1677,6 @@ class DeleteTemplateCommand(Command):
         tid = context.submit_task('vm.template.delete', self.parent.entity['template']['name'])
         context.ml.cd_up()
         return TaskPromise(context, tid)
-
-
-class VMSCSIPortsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):
-    def __init__(self, name, context):
-        super(VMSCSIPortsNamespace, self).__init__(name, context)
-        self.primary_key_name = 'number'
-        self.entity_subscriber_name = 'vm.scsi.port'
-        self.create_task = 'vm.scsi.port.create'
-        self.update_task = 'vm.scsi.port.update'
-        self.delete_task = 'vm.scsi.port.delete'
-
-        self.add_property(
-            descr='Port number',
-            name='number',
-            get='number',
-            type=ValueType.NUMBER
-        )
-
-        self.add_property(
-            descr='Port description',
-            name='description',
-            get='description',
-        )
-
-        self.add_property(
-            descr='LUNs',
-            name='luns',
-            get='luns',
-            type=ValueType.ARRAY
-        )
-
-        self.primary_key = self.get_mapping('number')
 
 
 def _init(context):

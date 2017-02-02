@@ -148,7 +148,6 @@ ENTITY_SUBSCRIBERS = [
     'vm',
     'vm.snapshot',
     'vm.datastore',
-    'vm.scsi.port',
     'syslog',
     'replication',
     'replication.host',

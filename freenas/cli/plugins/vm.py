@@ -755,38 +755,6 @@ class VMDeviceGraphicsPropertiesMixin(BaseVariantMixin):
         return "VGA device with resolution {0}".format(get(o, 'properties.resolution'))
 
 
-class VMDeviceScsiPropertiesMixin(BaseVariantMixin):
-    """
-    The VM Device Usb namespace provides commands for managing USB resources
-    available on selected virtual machine
-    """
-    def add_properties(self):
-        super(VMDeviceScsiPropertiesMixin, self).add_properties()
-
-        self.add_property(
-            descr='Port number',
-            name='port',
-            get='properties.port',
-            list=False,
-            type=ValueType.NUMBER,
-            condition=lambda o: o['type'] == 'SCSI',
-        )
-
-        self.add_property(
-            descr='Initiator ID',
-            name='initiator_id',
-            get='properties.initiator_id',
-            list=False,
-            type=ValueType.NUMBER,
-            condition=lambda o: o['type'] == 'SCSI',
-        )
-
-    @staticmethod
-    def get_humanized_summary(o):
-        return "SCSI host bus adapter device"
-
-
-
 class VMDeviceUsbPropertiesMixin(BaseVariantMixin):
     """
     The VM Device Usb namespace provides commands for managing USB resources
@@ -963,7 +931,7 @@ class VMDeviceCdromPropertiesMixin(BaseVariantMixin):
 
 class VMDeviceNamespace(
     NestedObjectLoadMixin, NestedObjectSaveMixin, EntityNamespace,
-    VMDeviceGraphicsPropertiesMixin, VMDeviceDiskPropertiesMixin, VMDeviceScsiPropertiesMixin,
+    VMDeviceGraphicsPropertiesMixin, VMDeviceDiskPropertiesMixin,
     VMDeviceUsbPropertiesMixin, VMDeviceNicPropertiesMixin, VMDeviceCdromPropertiesMixin,
     BaseVariantMixin
 ):
@@ -978,7 +946,7 @@ class VMDeviceNamespace(
         self.primary_key_name = 'name'
         self.parent = parent
         self.parent_path = 'devices'
-        self.extra_query_params = [('type', 'in', ('GRAPHICS', 'CDROM', 'NIC', 'USB', 'DISK', 'SCSI'))]
+        self.extra_query_params = [('type', 'in', ('GRAPHICS', 'CDROM', 'NIC', 'USB', 'DISK'))]
         self.required_props = ['name']
         self.skeleton_entity = {
             'name': None,
@@ -991,7 +959,6 @@ class VMDeviceNamespace(
             'CDROM': VMDeviceCdromPropertiesMixin.get_humanized_summary,
             'NIC': VMDeviceNicPropertiesMixin.get_humanized_summary,
             'USB': VMDeviceUsbPropertiesMixin.get_humanized_summary,
-            'SCSI': VMDeviceScsiPropertiesMixin.get_humanized_summary,
             'GRAPHICS': VMDeviceGraphicsPropertiesMixin.get_humanized_summary
         }
 
@@ -1037,7 +1004,7 @@ class VMDeviceNamespace(
             get='type',
             set='type',
             list=True,
-            enum=['GRAPHICS', 'NIC', 'DISK', 'CDROM', 'USB', 'SCSI']
+            enum=['GRAPHICS', 'NIC', 'DISK', 'CDROM', 'USB']
         )
 
         self.add_property(
@@ -1053,12 +1020,11 @@ class VMDeviceNamespace(
 
     def save(self, this, new=False):
         types = {
-            'DISK': 'VmDeviceDisk',
-            'CDROM': 'VmDeviceCdrom',
-            'NIC': 'VmDeviceNic',
-            'USB': 'VmDeviceUsb',
-            'GRAPHICS': 'VmDeviceGraphics',
-            'SCSI': 'VmDeviceScsi'
+            'DISK': 'vm-device-disk',
+            'CDROM': 'vm-device-cdrom',
+            'NIC': 'vm-device-nic',
+            'USB': 'vm-device-usb',
+            'GRAPHICS': 'vm-device-graphics'
         }
 
         if new:

@@ -456,7 +456,7 @@ class PeerNamespace(
             name='type',
             get='type',
             set=set_type,
-            enum=['ssh', 'amazon-s3', 'freenas', 'vmware', 'dropbox'],
+            enum=['ssh', 'amazon-s3', 'freenas', 'vmware'],
             usage=_('Type of a peer.')
         )
 

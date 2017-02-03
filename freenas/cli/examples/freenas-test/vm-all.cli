@@ -1,16 +1,23 @@
 _collection = "freenas"
 _count = 20
 _name = "test-vm"
-_total = 0
 _datastore="tank"
 
 _templates = $(vm template show)
-printf("Found %s templates\n", length(_templates))
+printf("Creating %d VMs from %d templates\n", _count, length(_templates))
 
-for (_x in _templates) {
-	for (i = 0; i < _count; i = i + 1) {
-		_total = _total + 1
-		vm create name=${_name + str(_total)} template=${_x["name"]} autostart=yes datastore=${_datastore}
+function vm_create_all() {
+	for (_x in _templates) {
+		for (i = 0; i < _count; i = i + 1) {
+			vm create name=${_name + str(i)} template=${_x["name"]} autostart=yes datastore=${_datastore}
+		}
 	}
 }
 
+function vm_destroy_all() {
+	for (_x in _templates) {
+		for (i = 0; i < _count; i = i + 1) {
+			vm ${_name + str(i)} delete
+		}
+	}
+}

@@ -397,6 +397,7 @@ class PeerNamespace(
         self.context = context
         self.entity_subscriber_name = 'peer'
         self.primary_key_name = 'name'
+        self.required_props = ['name', 'type']
         self.create_task = 'peer.create'
         self.update_task = 'peer.update'
         self.delete_task = 'peer.delete'

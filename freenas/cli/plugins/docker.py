@@ -878,26 +878,6 @@ class DockerConfigNamespace(ConfigNamespace):
             to FreeNAS's default network interface.''')
         )
 
-        self.add_property(
-            descr='Default DockerHub collection',
-            name='default_collection',
-            get=lambda o: context.call_sync(
-                'docker.collection.query',
-                [('id', '=', o['default_collection'])],
-                {'single': True, 'select': 'name'}
-            ),
-            set=lambda o, v: q.set(o, 'default_collection', context.call_sync(
-                'docker.collection.query',
-                [('name', '=', v)],
-                {'single': True, 'select': 'id'}
-            )),
-            complete=RpcComplete('default_collection=', 'docker.collection.query', lambda o: o['name']),
-            usage=_('''\
-            Used for setting a default DockerHub container images collection,
-            which later is being used in tab completion in other 'docker' namespaces.
-            Collection equals to DockerHub username''')
-        )
-
 
 @description("Configure and manage Docker container collections")
 class DockerCollectionNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace):
@@ -1429,15 +1409,19 @@ class DockerContainerCreateCommand(Command):
             ]
         }
 
-        bridge = create_args.get('bridge')
-        if bridge.get('enable') and not (bridge.get('dhcp') or bridge.get('address')):
-            raise CommandException('Either dhcp or static address must be selected for bridged container')
-
-        for p in presets.get('immutable', []):
+        for p in presets.get('immutable'):
             if q.get(create_args, p) != q.get(presets, p):
                 raise CommandException(
                     'Cannot change property: {0}. It was defined as immutable in the Dockerfile'.format(DOCKER_PRESET_2_PROPERTY_MAP[p])
                 )
+
+        bridge = create_args.get('bridge')
+        if bridge.get('enable') and not (bridge.get('dhcp') or bridge.get('address')):
+            raise CommandException('Either dhcp or static address must be selected for bridged container')
+
+        if not bridge.get('enable') and (bridge.get('dhcp') or bridge.get('address') or bridge.get('macaddress')):
+            raise CommandException('Cannot set the "dhcp","address" and "macaddress" bridge properties when '
+                                   'bridge is not enabled')
 
         ns = get_item_stub(context, self.parent, name)
 
@@ -1447,6 +1431,7 @@ class DockerContainerCreateCommand(Command):
     def complete(self, context, **kwargs):
         props = []
         immutable = []
+        presets = {}
         name = q.get(kwargs, 'kwargs.image')
         host_name = q.get(kwargs, 'kwargs.host')
         host_id = context.entity_subscribers['docker.host'].query(('name', '=', host_name), single=True, select='id')
@@ -1476,12 +1461,19 @@ class DockerContainerCreateCommand(Command):
         available_images += context.entity_subscribers['docker.image'].query(select='names.0')
         available_images = list(set(available_images))
 
+        bridge_enabled = q.get(presets, 'bridge.enable')
+        if 'bridged' not in immutable and q.get(kwargs, 'kwargs.bridged') in ('yes', 'no'):
+            bridge_enabled = read_value(q.get(kwargs, 'kwargs.bridged'), ValueType.BOOLEAN)
+
         if 'autostart' not in immutable:
             props += [EnumComplete('autostart=', ['yes', 'no'])]
         if 'bridged' not in immutable:
             props += [EnumComplete('bridged=', ['yes', 'no'])]
-        if 'dhcp' not in immutable and 'bridged' not in immutable:
-            props += [EnumComplete('dhcp=', ['yes', 'no'])]
+        if bridge_enabled:
+            props += [NullComplete('bridge_address=')]
+            props += [NullComplete('bridge_macaddress=')]
+            if 'dhcp' not in immutable:
+                props += [EnumComplete('dhcp=', ['yes', 'no'])]
         if 'capabilities_add' not in immutable:
             props += [NullComplete('capabilities_add=')]
         if 'capabilities_drop' not in immutable:
@@ -1500,8 +1492,6 @@ class DockerContainerCreateCommand(Command):
         return props + [
             NullComplete('name='),
             NullComplete('hostname='),
-            NullComplete('bridge_address='),
-            NullComplete('bridge_macaddress='),
             NullComplete('volume:'),
             NullComplete('ro_volume:'),
             EnumComplete('image=', available_images),
@@ -1737,8 +1727,7 @@ class DockerFetchPresetsCommand(Command):
     """
     Usage: fetch_presets collection=<collection> <force>=force
 
-    Example: fetch_presets
-             fetch_presets collection=freenas
+    Example: fetch_presets collection=freenas
              fetch_presets collection=freenas force=yes
 
     Fetch presets of a given Docker collection
@@ -1747,8 +1736,6 @@ class DockerFetchPresetsCommand(Command):
 
     When 'force' is set, command queries Dockerhub for fresh data,
     even if local cache is considered still valid by FreeNAS.
-
-    If 'collection' parameter is not provided, default collection is used.
     """
     def run(self, context, args, kwargs, opargs):
         def update_default_images(state, task):
@@ -1767,9 +1754,8 @@ class DockerFetchPresetsCommand(Command):
                 raise CommandException(_(f'Collection {collection_name} does not exist'))
 
         else:
-            collection = context.call_sync('docker.config.get_config').get('default_collection')
-            if not collection:
-                raise CommandException(_('Default Docker collection is not set'))
+            raise CommandException(_('Collection name not specified'))
+
 
         force = read_value(kwargs.get('force', False), ValueType.BOOLEAN)
 

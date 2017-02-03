@@ -87,5 +87,6 @@ function nuke_from_orbit() {
 	action_by_name("network host", _test_host + ".*", "delete")
 	action_by_name("vm", _vm_name + ".*", "delete")
 	action_by_name("docker container", _container_name + ".*", "delete")
+	clear_sentinel()
 }
 

@@ -1155,6 +1155,7 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
             name='mounted',
             get='mounted',
             list=True,
+            condition=lambda o: o['type'] != 'VOLUME',
             type=ValueType.BOOLEAN,
             usage=_("Tells if the volume is mounted or not.")
         )

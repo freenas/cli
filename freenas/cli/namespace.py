@@ -263,10 +263,14 @@ class PropertyMapping(object):
         self.delete_arg = kwargs.pop('delete_arg', False)
         self.width = kwargs.pop('width', None)
         self.strict = kwargs.pop('strict', True)
+        self.set_condition = kwargs.pop('set_condition', None)
 
     def can_set(self, obj):
         if not self.set:
             return False
+
+        if self.set_condition:
+            return self.set_condition(obj)
 
         if self.condition and not self.condition(obj):
             return False

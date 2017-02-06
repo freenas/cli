@@ -1056,6 +1056,7 @@ class MainLoop(object):
 
     def greet(self):
         output_msg(_("Welcome to the FreeNAS CLI! Type 'help' to get started."))
+        output_msg('')
 
     def cd(self, ns):
         if not self.cwd.on_leave():

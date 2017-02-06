@@ -545,10 +545,7 @@ class ShowUrlsCommand(Command):
                 else:
                     for x in my_ips:
                         urls.append({'url': '{0}://{1}:{2}'.format(proto.lower(), x, proto_port)})
-        return Sequence(
-            _("You may try the following URLs to access the web user interface:"),
-            Table(urls, [Table.Column(_('URLs (url)'), 'url')])
-        )
+        return Table(urls, [Table.Column(_('Web interface URLs'), 'url')])
 
 
 @description("Login to the CLI as the specified user")

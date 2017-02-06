@@ -1409,7 +1409,7 @@ class DockerContainerCreateCommand(Command):
             ]
         }
 
-        for p in presets.get('immutable'):
+        for p in presets.get('immutable', []):
             if q.get(create_args, p) != q.get(presets, p):
                 raise CommandException(
                     'Cannot change property: {0}. It was defined as immutable in the Dockerfile'.format(DOCKER_PRESET_2_PROPERTY_MAP[p])

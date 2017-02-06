@@ -197,7 +197,7 @@ class AsciiOutputFormatter(object):
         cols.append(Table.Column("Description", 'descr'))
         cols.append(Table.Column("Value", 'value'))
         if editable_column: 
-            cols.append(Table.Column("Editable", 'editable'))
+            cols.append(Table.Column("Settable", 'editable'))
 
         table = AsciiOutputFormatter.format_table(Table(values, cols))
         try:

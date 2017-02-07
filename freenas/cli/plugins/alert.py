@@ -212,6 +212,8 @@ class AlertFilterNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
     def __init__(self, name, context):
         super(AlertFilterNamespace, self).__init__(name, context)
         self.entity_subscriber_name = 'alert.filter'
+        self.primary_key_name = 'index'
+        self.default_sort = 'index'
         self.create_task = 'alert.filter.create'
         self.update_task = 'alert.filter.update'
         self.delete_task = 'alert.filter.delete'
@@ -223,11 +225,20 @@ class AlertFilterNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
         }
 
         self.add_property(
-            descr='Name',
-            name='name',
-            get='id',
+            descr='Index',
+            name='index',
+            get='index',
             list=True,
-            usage=_("Alert Filter name")
+            type=ValueType.NUMBER,
+            usage=_("Alert filter index")
+        )
+
+        self.add_property(
+            descr='Class',
+            name='class',
+            get='class',
+            list=True,
+            usage=_("Alert class to be matched")
         )
 
         self.add_property(
@@ -256,7 +267,7 @@ class AlertFilterNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             usage=_("Lists this Alert Filter's predicates")
         )
 
-        self.primary_key = self.get_mapping('name')
+        self.primary_key = self.get_mapping('index')
         self.entity_commands = lambda this: {
             'predicate': SetPredicateCommand(this)
         }

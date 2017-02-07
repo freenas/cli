@@ -29,6 +29,7 @@ import gettext
 from freenas.cli.namespace import (
     EntityNamespace, Command, EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, description
 )
+from freenas.cli.complete import RpcComplete, EnumComplete
 from freenas.cli.output import ValueType
 from freenas.cli.utils import TaskPromise
 
@@ -85,8 +86,11 @@ class SendAlertCommand(Command):
     Sends user-defined alert
     """
     def run(self, context, args, kwargs, opargs):
-        tid = context.submit_task('alert.send', args[0], kwargs.get('priority'))
+        tid = context.submit_task('alert.send', args[0], kwargs.get('priority', 'WARNING'))
         return TaskPromise(context, tid)
+
+    def complete(self, context, **kwargs):
+        return [EnumComplete('priority=', ('INFO', 'WARNING', 'ERROR'))]
 
 
 @description("Set predicates for alert filter")
@@ -238,6 +242,7 @@ class AlertFilterNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             name='class',
             get='class',
             list=True,
+            complete=RpcComplete('class=', 'alert.get_alert_classes'),
             usage=_("Alert class to be matched")
         )
 

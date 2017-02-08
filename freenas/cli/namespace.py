@@ -943,6 +943,11 @@ class SingleItemNamespace(ItemNamespace):
     def load(self):
         if self.saved:
             self.entity = self.parent.get_one(self.get_name())
+
+            for mapping in self.property_mappings:
+                if self.entity.get(mapping.name) is None:
+                    self.entity[mapping.name] = read_value(None, mapping.type)
+
             self.orig_entity = copy.deepcopy(self.entity)
         else:
             # This is in case the task failed!

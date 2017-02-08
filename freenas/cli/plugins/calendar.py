@@ -216,8 +216,9 @@ class CalendarTasksNamespaceBaseClass(EntitySubscriberBasedLoadMixin, TaskBasedS
 
     @staticmethod
     def get_schedule(entity):
-        row = entity['schedule']
-        sched = dict({k: v for k, v in row.items() if v != "*" and not isinstance(v, bool)})
+        if not entity.get('schedule'):
+            return {}
+        sched = dict({k: v for k, v in entity.get('schedule', {}).items() if v != "*" and not isinstance(v, bool)})
         sched.pop('timezone')
         return sched
 

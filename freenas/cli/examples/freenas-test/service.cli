@@ -11,19 +11,17 @@ function service_create() {
 	maybe_barf(_success, "+service#1", "service " + _service + " did not start")
 	@$(service ${_service} config set enable=no)
 	maybe_barf(_success, "+service#2", "Unable to disable " + _service + " service")
-	_pid = $(service ${_service} get pid)
-	maybe_barf(_pid == null, "+service#3", "pid of " + _service + " disabled but pid still set to " + str(_pid))
 	@$(service ${_service} config set enable=yes)
-	maybe_barf(_success, "+service#4", "Unable to enable " + _service + " service")
+	maybe_barf(_success, "+service#3", "Unable to enable " + _service + " service")
 	_pid = $(service ${_service} get pid)
-	maybe_barf(_pid, "+service#5", "pid of " + _service + " not set when enabled")
+	maybe_barf(_pid, "+service#4", "pid of " + _service + " not set when enabled")
 
 	_level = $(service sshd config get sftp_log_level)
-	maybe_barf(_success, "+service#6", "unable to get sftp_log_level property of sshd service")
+	maybe_barf(_success, "+service#5", "unable to get sftp_log_level property of sshd service")
 	@$(service sshd config set sftp_log_level=QUIET)
-	maybe_barf(_success, "+service#7", "unable to set sftp_log_level property of sshd service")
+	maybe_barf(_success, "+service#6", "unable to set sftp_log_level property of sshd service")
 	@$(service sshd config set sftp_log_level=${_level})
-	maybe_barf(_success, "+service#8", "unable to restore sftp_log_level property of sshd service")
+	maybe_barf(_success, "+service#7", "unable to restore sftp_log_level property of sshd service")
 }
 
 function service_destroy() {

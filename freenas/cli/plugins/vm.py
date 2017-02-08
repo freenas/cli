@@ -375,10 +375,10 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
         self.required_props = ['name', 'datastore']
         self.primary_key_name = 'name'
         self.localdoc['CreateEntityCommand'] = ("""\
-            Usage: create <name> volume=<volume> <property>=<value> ...
+            Usage: create <name> datastore=<volume> <property>=<value> ...
 
-            Examples: create myvm volume=myvolume
-                      create myfreebsd volume=myvolume template=freebsd-11-zfs
+            Examples: create myvm datastore=myvolume
+                      create myfreebsd datastore=myvolume template=freebsd-11-zfs
 
             Creates a virtual machine. For a list of properties, see 'help properties'.
             For a list of templates see '/ vm template show'""")

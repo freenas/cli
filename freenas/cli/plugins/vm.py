@@ -1458,6 +1458,16 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
         )
 
         self.add_property(
+            descr='Minimal memory limit (MB)',
+            name='minmemsize',
+            get='config.minmemsize',
+            usersetable=False,
+            list=False,
+            type=ValueType.NUMBER,
+            usage=_("Minimal size of the Memory to be used by template")
+        )
+
+        self.add_property(
             descr='Memory size (MB)',
             name='memsize',
             get='config.memsize',

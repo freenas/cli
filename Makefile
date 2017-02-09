@@ -22,3 +22,14 @@ run:
 	${VENV_PIP} install -U --egg ${BE_ROOT}/py-filewrap
 	${VENV_PIP} install -U --egg ${BE_ROOT}/dispatcher-client/python
 	PYTHONPATH=. ${VENV_PYTHON} -m freenas.cli.repl ${ARGS}
+
+sync:
+.if defined(dir)
+	rsync -avl \
+		--rsync-path="sudo rsync" \
+		--delete \
+		--exclude '.git' \
+		--exclude '.idea' . ${host}:${dir}/
+.else
+.error Error: Undefined target directory
+.endif

@@ -32,7 +32,6 @@ from freenas.cli.namespace import (
     RpcBasedLoadMixin, EntityNamespace, TaskBasedSaveMixin
 )
 from freenas.cli.output import Object, Table, Sequence, ValueType, format_value, output_msg
-from freenas.cli.descriptions import events
 from freenas.cli.utils import TaskPromise, post_save, parse_timedelta, set_related, get_related
 from freenas.cli.complete import NullComplete, EntitySubscriberComplete, RpcComplete
 from freenas.dispatcher.fd import FileDescriptor

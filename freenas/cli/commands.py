@@ -47,7 +47,7 @@ from freenas.cli.namespace import (
 )
 from freenas.cli.output import (
     Table, ValueType, output_less, format_value,
-    Sequence, read_value, format_output, output_msg
+    Sequence, read_value, format_output
 )
 from freenas.cli.output import Object as output_obj, get_terminal_size
 from freenas.cli.descriptions.tasks import translate as translate_task

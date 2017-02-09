@@ -461,6 +461,20 @@ class RsyncNamespace(CalendarTasksNamespaceBaseClass):
     Rsync calendar namespace provides commands to create `rsync` type calendar tasks.
     An `rsync` task requires various parameters to be specified for the actual rsync push/pull
     operation.
+    It also requires public keys to be exachged between hosts for ssh transport.
+
+    Usage:
+        create <name> user=<user> path=<path> direction=<PUSH|PULL> mode=<SSH|MODULE>
+            remote_host=<remote_host> remote_user=<remote_user> remote_path=<remote_path>
+            remote_module=<remote_module> remote_ssh_port=<remote_ssh_port_number>
+            recursive=<yes|no> compress=<yes|no> times=<yes|no> archive=<yes|no>
+            rsync_delete=<yes|no> preserve_permissions=<yes|no> preserve_attributes=<yes|no>
+            delay_updates=<yes|no> extra=<string containing extra rsync options>
+            <property>=<value>
+
+    Examples:
+        create myrsync user=myuser path=/mnt/mypool/sourcedir direction=PUSH mode=SSH remote_host=myremotehost
+            remote_user=myremoteuser remote_path=/mnt/mypool/targetdir schedule={"day":"1,3,5"}
     """
 
     def get_rsync_args(self, entity, name):
@@ -486,6 +500,9 @@ class RsyncNamespace(CalendarTasksNamespaceBaseClass):
                     <property>=<value>
 
             Examples:
+                create myrsync user=myuser path=/mnt/mypool/sourcedir direction=PUSH mode=SSH remote_host=myotherhost
+                    remote_user=myremoteuser remote_path=/mnt/mypool/targetdir
+
         """)
 
         self.entity_localdoc['SetEntityCommand'] = ("""\

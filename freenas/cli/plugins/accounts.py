@@ -228,8 +228,8 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
         self.add_property(
             descr='Password',
             name='password',
-            get=None,
-            set='password',
+            type=ValueType.PASSWORD,
+            get='password',
             usage=_("""\
             Mandatory unless "password_disabled=true" is
             specified when creating the user. Passwords

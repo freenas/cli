@@ -1019,6 +1019,7 @@ class IPMINamespace(RpcBasedLoadMixin, EntityNamespace):
             quotes."""), 
             get=None,
             set='password',
+            type=ValueType.PASSWORD,
             list=False
         )
 

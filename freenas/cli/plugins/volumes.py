@@ -32,6 +32,7 @@ from freenas.cli.namespace import (
     EntityNamespace, Command, CommandException, SingleItemNamespace,
     EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, description
 )
+from freenas.dispatcher import Password
 from freenas.cli.complete import NullComplete, EnumComplete, EntitySubscriberComplete
 from freenas.cli.output import Table, ValueType, output_tree, format_value, read_value, Sequence
 from freenas.cli.utils import TaskPromise, EntityPromise, post_save, iterate_vdevs, vdev_by_path, mirror_by_path
@@ -410,6 +411,9 @@ class ImportVolumeCommand(Command):
             encryption = {}
             password = None
 
+        if password is not None:
+            password = Password(password)
+
         ns = get_item_stub(context, self.parent, None)
 
         tid = context.submit_task(
@@ -509,6 +513,9 @@ class UnlockVolumeCommand(Command):
         if password and not password_encrypted:
             raise CommandException('Volume is not encrypted by password.')
 
+        if password is not None:
+            password = Password(password)
+
         name = self.parent.entity['id']
         tid = context.submit_task('volume.unlock', name, password, callback=lambda s, t: post_save(self.parent, s, t))
         return TaskPromise(context, tid)
@@ -563,6 +570,8 @@ class RekeyVolumeCommand(Command):
         password = kwargs.get('password', None)
         key_encrypted = read_value(kwargs.pop('key_encrypted', 'yes'), ValueType.BOOLEAN)
         name = self.parent.entity['id']
+        if password is not None:
+            password = Password(password)
         tid = context.submit_task('volume.rekey', name, key_encrypted, password)
         return TaskPromise(context, tid)
 
@@ -609,7 +618,7 @@ class BackupVolumeMasterKeyCommand(Command):
         name = self.parent.entity['id']
         result = context.call_task_sync('volume.keys.backup_to_file', name, path)
         return Sequence("Backup password:",
-                        str(result['result']))
+                        str(result['result'].secret))
 
     def complete(self, context, **kwargs):
         return [
@@ -643,6 +652,9 @@ class RestoreVolumeMasterKeyCommand(Command):
         password = kwargs.get('password', None)
         if password is None:
             raise CommandException('You must provide a password protecting a backup file')
+
+        if password is not None:
+            password = Password(password)
 
         name = self.parent.entity['id']
         tid = context.submit_task('volume.keys.restore_from_file', name, path, password)
@@ -1583,6 +1595,9 @@ class CreateVolumeCommand(Command):
                 'Automatic volume unlock can be selected for volumes using only key based encryption.'
             ))
 
+        if password is not None:
+            password = Password(password)
+
         cache_disks = kwargs.pop('cache', [])
         log_disks = kwargs.pop('log', [])
         if cache_disks is None:
@@ -1912,6 +1927,7 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
             descr='Password',
             name='password',
             get=None,
+            type=ValueType.PASSWORD,
             set='0',
             update_arg=True,
             list=False,

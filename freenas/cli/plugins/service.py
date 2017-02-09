@@ -593,9 +593,8 @@ class UPSNamespace(NestedEntityMixin, ItemNamespace):
             descr='Monitor Password',
             name='monitor_password',
             usage=_(""""""),
-            get=None,
-            set='monitor_password',
-            type=ValueType.STRING,
+            type=ValueType.PASSWORD,
+            get='monitor_password'
         )
         self.add_property(
             descr='Allow Remote Connections',
@@ -1631,8 +1630,8 @@ class DynDnsNamespace(NestedEntityMixin, ItemNamespace):
             usage=_("""
             Password used to logon to the provider and update the
             record."""),
-            get=None,
-            set='password'
+            get='password',
+            type=ValueType.PASSWORD
         )
         self.add_property(
             descr='Update period',
@@ -1952,10 +1951,9 @@ class SNMPNamespace(NestedEntityMixin, ItemNamespace):
             usage=_("""
             Only set if 'v3' is set. Specify a password of
             at least 8 characters."""),
-            set='v3_password',
-            get=None,
-            list=False,
-            type=ValueType.STRING
+            get='v3_password',
+            type=ValueType.PASSWORD,
+            list=False
         )
         self.add_property(
             descr='SNMPv3 Auth Type',

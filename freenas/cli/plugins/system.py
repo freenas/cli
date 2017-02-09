@@ -635,8 +635,8 @@ class MailNamespace(ConfigNamespace):
             SMTP authentication. Requires 'auth' to be set
             to yes. For security reasons, the password is
             not displayed by get or edit."""),
-            get=None,
-            set='pass',
+            type=ValueType.PASSWORD,
+            get='pass',
         )
 
 

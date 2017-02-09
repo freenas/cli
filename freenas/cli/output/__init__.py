@@ -40,6 +40,7 @@ import collections
 from freenas.utils.permissions import get_unix_permissions, string_to_int
 from freenas.cli import config
 from freenas.utils import first_or_default
+from freenas.dispatcher import Password
 from threading import Lock, Thread
 
 
@@ -358,7 +359,7 @@ def read_value(value, tv=ValueType.STRING):
         return get_unix_permissions(value)
 
     if tv == ValueType.PASSWORD:
-        return str(value)
+        return Password(str(value))
 
     raise ValueError(_("Invalid value '{0}', expected {1} value".format(value, str(tv).split('ValueType.')[-1].lower())))
 

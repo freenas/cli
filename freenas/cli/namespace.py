@@ -1433,6 +1433,8 @@ class NestedEntityMixin(object):
     @property
     def entity(self):
         if hasattr(self.parent, 'entity') and self.parent_entity_path in self.parent.entity:
+            if self.parent.entity[self.parent_entity_path] is None:
+                self.parent.entity[self.parent_entity_path] = {}
             return self.parent.entity[self.parent_entity_path]
         else:
             return None

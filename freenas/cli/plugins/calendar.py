@@ -510,6 +510,7 @@ class RsyncNamespace(CalendarTasksNamespaceBaseClass):
             name='user',
             get=lambda obj: self.get_rsync_args(obj, 'user'),
             set=lambda obj, val: self.set_rsync_args(obj, 'user', val),
+            list=False,
             type=ValueType.STRING,
             usage=_('Username underwhich the rsync task should be executed')
         )
@@ -520,6 +521,7 @@ class RsyncNamespace(CalendarTasksNamespaceBaseClass):
             get=lambda obj: self.get_rsync_args(obj, 'remote_user'),
             set=lambda obj, val: self.set_rsync_args(obj, 'remote_user', val),
             type=ValueType.STRING,
+            list=False,
             usage=_(
                 'Username underwhich the rsync operation should be carried out'
                 ' at the remote host (could very well be a local user if the'
@@ -533,6 +535,7 @@ class RsyncNamespace(CalendarTasksNamespaceBaseClass):
             get=lambda obj: self.get_rsync_args(obj, 'rsync_direction'),
             set=lambda obj, val: self.set_rsync_args(obj, 'rsync_direction', val),
             type=ValueType.STRING,
+            list=True,
             enum=['PUSH', 'PULL'],
             usage=_('States and Controls whether this rsync task is a PUSH or a PULL')
         )
@@ -543,6 +546,7 @@ class RsyncNamespace(CalendarTasksNamespaceBaseClass):
             get=lambda obj: self.get_rsync_args(obj, 'rsync_mode'),
             set=lambda obj, val: self.set_rsync_args(obj, 'rsync_mode', val),
             type=ValueType.STRING,
+            list=False,
             enum=['MODULE', 'SSH'],
             usage=_('States and Controls the transport medium for this rsync task')
         )
@@ -553,6 +557,7 @@ class RsyncNamespace(CalendarTasksNamespaceBaseClass):
             get=lambda obj: self.get_rsync_args(obj, 'remote_host'),
             set=lambda obj, val: self.set_rsync_args(obj, 'remote_host', val),
             type=ValueType.STRING,
+            list=False,
             usage=_(
                 'Specifies the remote host for this rsync task'
                 ' (could very well be the localhost itself if'
@@ -566,6 +571,7 @@ class RsyncNamespace(CalendarTasksNamespaceBaseClass):
             get=lambda obj: self.get_rsync_args(obj, 'path'),
             set=lambda obj, val: self.set_rsync_args(obj, 'path', val),
             type=ValueType.STRING,
+            list=True,
             usage=_('Specifies the path on the localhost to copy to/from for this rsync task')
         )
 
@@ -576,6 +582,7 @@ class RsyncNamespace(CalendarTasksNamespaceBaseClass):
             set=lambda obj, val: self.set_rsync_args(obj, 'remote_path', val),
             type=ValueType.STRING,
             condition=lambda obj: q.get(obj['args'][0], 'rsync_mode') == 'SSH',
+            list=False,
             usage=_(
                 'Specifies the path on the Remote Host to copy'
                 ' to/from for this rsync task (could very well '
@@ -606,6 +613,7 @@ class RsyncNamespace(CalendarTasksNamespaceBaseClass):
             set=lambda obj, val: self.set_rsync_args(obj, 'remote_module', val),
             type=ValueType.STRING,
             condition=lambda obj: q.get(obj['args'][0], 'rsync_mode') == 'MODULE',
+            list=False,
             usage=_(
                 'Specifies the module on the Remote Host to copy'
                 ' to/from for this rsync task (could very well '

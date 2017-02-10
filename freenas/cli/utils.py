@@ -321,7 +321,7 @@ def set_name(obj, field, name, charset):
 
 
 def check_name(name, charset):
-    if not re.match(r'[{0}]*$'.format(charset), name):
+    if not re.match('{0}'.format(charset), name):
         from freenas.cli.namespace import CommandException
         raise CommandException(_(
             'Invalid name: {0}. Only {1} characters are allowed'.format(name, charset)

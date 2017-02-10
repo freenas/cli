@@ -60,7 +60,7 @@ DOCKER_PRESET_2_PROPERTY_MAP = {
 }
 
 
-docker_names_pattern = 'a-zA-Z0-9._-'
+docker_names_pattern = '^[a-zA-Z0-9]+[a-zA-Z0-9._-]*'
 
 
 @description("View information about Docker hosts")

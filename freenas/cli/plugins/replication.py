@@ -395,7 +395,7 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             get=lambda o: get_peer(o, 'master'),
             set=lambda o, v: set_peer(o, v, 'master'),
             usersetable=False,
-            list=False,
+            list=True,
             complete=PeerComplete('master='),
             usage=_('Name of FreeNAS machine (peer) acting as a sending side.')
         )

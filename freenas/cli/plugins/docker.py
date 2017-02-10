@@ -36,7 +36,7 @@ from freenas.cli.utils import (
     get_related, set_related
 )
 from freenas.utils import query as q
-from freenas.cli.complete import NullComplete, EntitySubscriberComplete, EnumComplete, RpcComplete
+from freenas.cli.complete import NullComplete, EntitySubscriberComplete, EnumComplete
 from freenas.cli.console import Console
 from freenas.utils import first_or_default
 from freenas.cli.plugins.vm import StartVMCommand, StopVMCommand, RebootVMCommand, ConsoleCommand, KillVMCommand

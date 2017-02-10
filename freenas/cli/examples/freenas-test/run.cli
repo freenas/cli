@@ -23,7 +23,7 @@ if (not defined("_batch")) {
 const TOP_DIR = ${cli_src_path+"/examples/freenas-test/"}
 
 # Set this to yes if you want to run the more stressy-tests
-test_me_harder=false
+test_me_harder=true
 
 # Where to log test result output to
 if (not defined("output_file")) {
@@ -111,9 +111,9 @@ function run_all() {
 		if (_batch == "yes") {
 			x="yes"
 		} else {
-			x = readline("Also run stress tests? (y or [n]) ")
+			x = readline("Also run stress tests? ([y] or n) ")
 		}
-		test_me_harder = (x == "yes" or x == "y")
+		test_me_harder = (x == "yes" or x == "y" or x == "")
 		print(">>> Also logging results to " + output_file)
 		create_all()
 		destroy_all()

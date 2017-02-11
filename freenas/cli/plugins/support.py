@@ -30,6 +30,7 @@ from freenas.cli.namespace import (
     Namespace, Command, CommandException, description,
 )
 from freenas.utils import query as q
+from freenas.cli.utils import TaskPromise
 from freenas.cli.complete import NullComplete, EnumComplete
 from freenas.cli.output import Sequence
 
@@ -77,12 +78,9 @@ class CreateSupportTicketCommand(Command):
             )
 
         kwargs['category'] = self.ticket_categories[kwargs['category']]
+        tid = context.submit_task('support.submit', kwargs)
+        return TaskPromise(context, tid)
 
-        ticket_result = context.call_task_sync('support.submit', kwargs)
-        if ticket_result.get('result') and ticket_result['result'][0] is not None:
-            return Sequence(
-                'Submitted ticket number:{0}. {1}'.format(ticket_result['result'][0], ticket_result['result'][1])
-            )
 
     def complete(self, context, **kwargs):
         props = []

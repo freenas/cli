@@ -31,7 +31,7 @@ from freenas.cli.namespace import (
 )
 from freenas.cli.complete import RpcComplete, EnumComplete
 from freenas.cli.output import ValueType
-from freenas.cli.utils import TaskPromise
+from freenas.cli.utils import EntityPromise, get_item_stub, post_save
 
 
 t = gettext.translation('freenas-cli', fallback=True)
@@ -85,9 +85,19 @@ class SendAlertCommand(Command):
 
     Sends user-defined alert
     """
+    def __init__(self, parent):
+        self.parent = parent
+
     def run(self, context, args, kwargs, opargs):
-        tid = context.submit_task('alert.send', args[0], kwargs.get('priority', 'WARNING'))
-        return TaskPromise(context, tid)
+        ns = get_item_stub(context, self.parent, None)
+        tid = context.submit_task(
+            'alert.send',
+            args[0],
+            kwargs.get('priority', 'WARNING'),
+            callback=lambda s, t: post_save(ns, s, t)
+        )
+
+        return EntityPromise(context, tid, ns)
 
     def complete(self, context, **kwargs):
         return [EnumComplete('priority=', ('INFO', 'WARNING', 'ERROR'))]
@@ -199,7 +209,7 @@ class AlertNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         }
 
         self.extra_commands = {
-            'send': SendAlertCommand(),
+            'send': SendAlertCommand(self),
             'dismiss_all': DismissAllAlertsCommand()
         }
 
@@ -221,6 +231,7 @@ class AlertFilterNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
         self.create_task = 'alert.filter.create'
         self.update_task = 'alert.filter.update'
         self.delete_task = 'alert.filter.delete'
+        self.required_props = ['emitter']
         self.skeleton_entity = {
             'predicates': [],
             'parameters': {

@@ -303,7 +303,6 @@ class ActiveDirectoryPropertiesNamespace(BaseDirectoryPropertiesNamespace):
             name='realm',
             get='realm',
             usage=_("Active Directory realm. For example: 'contoso.com'")
-
         )
 
         self.add_property(
@@ -336,6 +335,13 @@ class ActiveDirectoryPropertiesNamespace(BaseDirectoryPropertiesNamespace):
             usage=_("""\
             Active Directory traffic encryption mode.
             Supported values : 'PLAIN', 'SIGN', 'SEAL' """)
+        )
+
+        self.add_property(
+            descr='ID map type',
+            name='idmap_type',
+            get='idmap_type',
+            enum=['RID', 'UNIX']
         )
 
 

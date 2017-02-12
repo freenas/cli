@@ -270,6 +270,7 @@ class BootPoolNamespace(Namespace):
             'show_disks': BootPoolShowDisksCommand(),
             'attach_disk': BootPoolAttachDiskCommand(),
             'detach_disk': BootPoolDetachDiskCommand(),
+            'replace_disk': BootPoolReplaceDiskCommand(),
             'show': BootPoolShowCommand(),
             'scrub': BootPoolScrubCommand(),
         }
@@ -328,8 +329,8 @@ class BootPoolShowDisksCommand(Command):
     """
 
     def run(self, context, args, kwargs, opargs):
-        volume = context.call_sync('zfs.pool.get_boot_pool')
-        result = list(iterate_vdevs(volume['groups']))
+        volume = context.call_sync('boot.pool.get_config')
+        result = list(iterate_vdevs(volume['topology']))
         return Table(result, [
             Table.Column('Name', 'path'),
             Table.Column('Status', 'status')
@@ -351,22 +352,53 @@ class BootPoolAttachDiskCommand(Command):
     """
     def run(self, context, args, kwargs, opargs):
         if not args:
-            output_msg("attach_disk requires more arguments.\n{0}".format(inspect.getdoc(self)))
-            return
+            raise CommandException('Not enough arguments provided')
+
         disk = args.pop(0)
-        # The all_disks below is a temporary fix, use this after "select" is working
-        # all_disks = context.call_sync('disk.query', [], {"select":"path"})
-        all_disks = [d["path"] for d in context.call_sync("disk.query")]
+        all_disks = context.call_sync('disk.query', [], {"select":"path"})
         available_disks = context.call_sync('volume.get_available_disks')
         disk = correct_disk_path(disk)
+
         if disk not in all_disks:
             output_msg("Disk " + disk + " does not exist.")
             return
+
         if disk not in available_disks:
             output_msg("Disk " + disk + " is not usable.")
             return
 
         tid = context.submit_task('boot.disk.attach', disk)
+        return TaskPromise(context, tid)
+
+
+@description("Attach a device to the boot pool")
+class BootPoolReplaceDiskCommand(Command):
+    """
+    Usage: replace_disk <disk>
+
+    Example: replace_disk ada1 ada2
+
+    Replace the specified device in the boot pool.
+    """
+    def run(self, context, args, kwargs, opargs):
+        if len(args) < 2:
+            raise CommandException('Not enough arguments provided')
+
+        olddisk = args.pop(0)
+        disk = args.pop(0)
+        all_disks = context.call_sync('disk.query', [], {"select": "path"})
+        available_disks = context.call_sync('volume.get_available_disks')
+        disk = correct_disk_path(disk)
+
+        if disk not in all_disks:
+            output_msg("Disk " + disk + " does not exist.")
+            return
+
+        if disk not in available_disks:
+            output_msg("Disk " + disk + " is not usable.")
+            return
+
+        tid = context.submit_task('boot.disk.replace', olddisk, disk)
         return TaskPromise(context, tid)
 
 
@@ -385,7 +417,8 @@ class BootPoolDetachDiskCommand(Command):
     """
     def run(self, context, args, kwargs, opargs):
         if not args:
-            raise CommandException("detach_disk requires more arguments.\n{0}".format(inspect.getdoc(self)))
+            raise CommandException('Not enough arguments provided')
+
         disk = args.pop(0)
         disk = correct_disk_path(disk)
         tid = context.submit_task('boot.disk.detach', disk)

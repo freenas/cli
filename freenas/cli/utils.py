@@ -168,9 +168,7 @@ def to_list(item):
 
 
 def correct_disk_path(disk):
-    if not re.match("^\/dev\/", disk):
-        disk = "/dev/" + disk
-    return disk
+    return os.path.join('/dev', disk)
 
 
 def describe_task_state(task):

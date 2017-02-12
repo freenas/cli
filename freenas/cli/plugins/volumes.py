@@ -873,6 +873,9 @@ class OpenFilesCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
+        if self.parent.entity['type'] != 'FILESYSTEM':
+            raise CommandException('Cannot read open files on non-filesystem datasets')
+
         files = context.call_sync('filesystem.get_open_files', self.parent.entity['mountpoint'])
         return Table(files, [
             Table.Column('Process name', 'process_name'),

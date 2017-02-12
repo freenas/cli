@@ -408,7 +408,7 @@ class InterfacesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, En
             get='status.capabilities',
             set=None,
             list=False,
-            usage="Shows capabilities NIC supported by the NIC",
+            usage="Shows capabilities supported by the NIC",
             type=ValueType.SET
         )
 

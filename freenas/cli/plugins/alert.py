@@ -251,7 +251,7 @@ class AlertFilterNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
         self.add_property(
             descr='Class',
             name='class',
-            get='class',
+            get='clazz',
             list=True,
             complete=RpcComplete('class=', 'alert.get_alert_classes'),
             usage=_("Alert class to be matched")
@@ -262,8 +262,8 @@ class AlertFilterNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             name='emitter',
             get='emitter',
             list=True,
-            enum=['EMAIL'],
-            usage=_("Alert Filter's method of notification (currently only EMAIL is allowed)")
+            enum=['email'],
+            usage=_("Alert Filter's method of notification (currently only 'email' is allowed)")
         )
 
         self.add_property(
@@ -271,8 +271,8 @@ class AlertFilterNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             name='email',
             get='parameters.addresses',
             type=ValueType.SET,
-            condition=lambda o: o.get('emitter') == 'EMAIL',
-            usgae=_("Destination email address(es) if EMAIL is the chose notification (emitter) type")
+            condition=lambda o: o.get('emitter') == 'email',
+            usgae=_("Destination email address(es) if email is the chose notification (emitter) type")
         )
 
         self.add_property(

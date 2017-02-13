@@ -3,7 +3,7 @@
 _sentinel_tag="_running_tests"
 
 function maybe_barf(flag, test, str) {
-	if (flag != true) {
+	if (not flag) {
 	    printf("ERROR %s in %s (\"%s\" : task #%d)\n", str, test, _error, _last_task_id)
 	    fprintf(output_handle, "ERROR %s in %s (\"%s\" : task #%d)\n", str, test, _error, _last_task_id)
 	    if (_exit_on_error == "yes") {
@@ -14,7 +14,7 @@ function maybe_barf(flag, test, str) {
 }
 
 function maybe_die(flag, test, str) {
-	if (flag != true) {
+	if (not flag) {
 	    printf("FATAL error %s in %s (\"%s\" : task #%d)\n", str, test, _error, _last_task_id)
 	    fprintf(output_handle, "FATAL error %s in %s (\"%s\" : task #%d)\n", str, test, _error, _last_task_id)
 	    exit 2

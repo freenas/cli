@@ -262,8 +262,8 @@ class AlertFilterNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             name='emitter',
             get='emitter',
             list=True,
-            enum=['email'],
-            usage=_("Alert Filter's method of notification (currently only 'email' is allowed)")
+            enum=['email', 'pushbullet'],
+            usage=_("Alert Filter's method of notification")
         )
 
         self.add_property(

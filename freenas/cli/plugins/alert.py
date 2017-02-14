@@ -392,8 +392,8 @@ class AlertEmitterNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, 
             to yes. For security reasons, the password is
             not displayed by get or edit."""),
             type=ValueType.PASSWORD,
-            set='config.password',
             condition=lambda o: o['name'] == 'email',
+            get='config.password',
             list=False
         )
 

@@ -145,6 +145,7 @@ ENTITY_SUBSCRIBERS = [
     'calendar_task',
     'alert',
     'alert.filter',
+    'alert.emitter',
     'vm',
     'vm.snapshot',
     'vm.datastore',

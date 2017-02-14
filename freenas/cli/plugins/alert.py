@@ -26,9 +26,8 @@
 #####################################################################
 
 import gettext
-from freenas.cli.namespace import (
-    EntityNamespace, Command, EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, description
-)
+from freenas.cli.namespace import EntityNamespace, Command, EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin
+from freenas.cli.namespace import ConfigNamespace, description
 from freenas.cli.complete import RpcComplete, EnumComplete
 from freenas.cli.output import ValueType
 from freenas.cli.utils import EntityPromise, get_item_stub, post_save
@@ -215,6 +214,7 @@ class AlertNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
 
     def namespaces(self):
         yield AlertFilterNamespace('filter', self.context)
+        yield AlertEmitterNamespace('emitter', self.context)
         for ns in super(AlertNamespace, self).namespaces():
             yield ns
 
@@ -290,6 +290,122 @@ class AlertFilterNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
 
     def get_predicates(self, obj):
         return ['{property} {operator} {value}'.format(**v) for v in obj['predicates']]
+
+
+class AlertEmitterNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityNamespace):
+    def __init__(self, name, context):
+        super(AlertEmitterNamespace, self).__init__(name, context)
+        self.entity_subscriber_name = 'alert.emitter'
+        self.primary_key_name = 'name'
+        self.update_task = 'alert.emitter.update'
+        self.allow_create = False
+        self.allow_delete = False
+
+        self.add_property(
+            descr='Emitter name',
+            name='name',
+            get='name',
+            set=None
+        )
+
+        self.add_property(
+            descr='Email address',
+            name='email',
+            usage=_("""\
+            Use set or edit to set the from email address to be
+            used when sending email notifications. When using set,
+            enclose the email address between double quotes."""),
+            get='config.from_address',
+            set='from',
+            condition=lambda o: o['name'] == 'email',
+            list=False
+        )
+
+        self.add_property(
+            descr='Email server',
+            name='server',
+            usage=_("""\
+            Use set or edit to set the hostname or IP address of
+            the SMTP server. When using set, enclose the value
+            between double quotes."""),
+            get='config.server',
+            condition=lambda o: o['name'] == 'email',
+            list=False
+        )
+
+        self.add_property(
+            descr='SMTP port',
+            name='port',
+            usage=_("""\
+            Use set or edit to set the number of the SMTP port.
+            Typically set to 25, 465 (secure SMTP), or 587
+            (submission)."""),
+            get='config.port',
+            type=ValueType.NUMBER,
+            condition=lambda o: o['name'] == 'email',
+            list=False
+        )
+
+        self.add_property(
+            descr='Authentication required',
+            name='auth',
+            usage=_("""\
+            Can be set to yes or no. When set to yes,
+            enables SMTP AUTH using PLAIN SASL and requires both
+            'username' and 'password' to be set."""),
+            get='config.auth',
+            type=ValueType.BOOLEAN,
+            condition=lambda o: o['name'] == 'email',
+            list=False
+        )
+
+        self.add_property(
+            descr='Encryption type',
+            name='encryption',
+            usage=_("""\
+            Use set or edit to set to PLAIN (no encryption),
+            TLS, or SSL.."""),
+            get='config.encryption',
+            enum=['PLAIN', 'TLS', 'SSL'],
+            condition=lambda o: o['name'] == 'email',
+            list=False
+        )
+
+        self.add_property(
+            descr='Username for Authentication',
+            name='username',
+            usage=_("""\
+            Use set or edit to set the username used by
+            SMTP authentication. Requires 'auth' to be set
+            to yes."""),
+            get='config.user',
+            condition=lambda o: o['name'] == 'email',
+            list=False
+        )
+
+        self.add_property(
+            descr='Password for Authentication',
+            name='password',
+            usage=_("""\
+            Use set to set the password used by
+            SMTP authentication. Requires 'auth' to be set
+            to yes. For security reasons, the password is
+            not displayed by get or edit."""),
+            get=None,
+            set='config.password',
+            condition=lambda o: o['name'] == 'email',
+            list=False
+        )
+
+        self.add_property(
+            descr='Pushbullet API key',
+            name='api_key',
+            get='config.api_key',
+            condition=lambda o: o['name'] == 'pushbullet',
+            list=False
+        )
+
+        self.primary_key = self.get_mapping('name')
 
 
 def _init(context):

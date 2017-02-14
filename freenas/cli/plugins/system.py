@@ -551,95 +551,6 @@ class TimeNamespace(ConfigNamespace):
         )
 
 
-@description("Mail configuration")
-class MailNamespace(ConfigNamespace):
-    """
-    System mail command, expands into commands for configuring email settings.
-    """
-
-    def __init__(self, name, context):
-        super(MailNamespace, self).__init__(name, context)
-        self.context = context
-        self.config_call = 'mail.get_config'
-        self.update_task = 'mail.update'
-
-        self.add_property(
-            descr='Email address',
-            name='email',
-            usage=_("""\
-            Use set or edit to set the from email address to be
-            used when sending email notifications. When using set,
-            enclose the email address between double quotes."""),
-            get='from',
-            set='from',
-        )
-
-        self.add_property(
-            descr='Email server',
-            name='server',
-            usage=_("""\
-            Use set or edit to set the hostname or IP address of
-            the SMTP server. When using set, enclose the value
-            between double quotes."""),
-            get='server',
-        )
-
-        self.add_property(
-            descr='SMTP port',
-            name='port',
-            usage=_("""\
-            Use set or edit to set the number of the SMTP port.
-            Typically set to 25, 465 (secure SMTP), or 587
-            (submission)."""),
-            get='port',
-            type=ValueType.NUMBER,
-        )
-
-        self.add_property(
-            descr='Authentication required',
-            name='auth',
-            usage=_("""\
-            Can be set to yes or no. When set to yes,
-            enables SMTP AUTH using PLAIN SASL and requires both
-            'username' and 'password' to be set."""),
-            get='auth',
-            type=ValueType.BOOLEAN,
-        )
-
-        self.add_property(
-            descr='Encryption type',
-            name='encryption',
-            usage=_("""\
-            Use set or edit to set to PLAIN (no encryption),
-            TLS, or SSL.."""),
-            get='encryption',
-            enum=['PLAIN', 'TLS', 'SSL']
-        )
-
-        self.add_property(
-            descr='Username for Authentication',
-            name='username',
-            usage=_("""\
-            Use set or edit to set the username used by
-            SMTP authentication. Requires 'auth' to be set
-            to yes."""),
-            get='user',
-            set='user',
-        )
-
-        self.add_property(
-            descr='Password for Authentication',
-            name='password',
-            usage=_("""\
-            Use set to set the password used by
-            SMTP authentication. Requires 'auth' to be set
-            to yes. For security reasons, the password is
-            not displayed by get or edit."""),
-            get=None,
-            set='pass',
-        )
-
-
 @description("System GUI settings and information")
 class SystemUINamespace(ConfigNamespace):
     """
@@ -1021,7 +932,6 @@ class SystemNamespace(ConfigNamespace):
             AdvancedNamespace('advanced', self.context),
             TimeNamespace('time', self.context),
             NTPServersNamespace('ntp', self.context),
-            MailNamespace('mail', self.context),
             SystemDatasetNamespace('system_dataset', self.context),
             ConfigDbNamespace('config'),
             DebugNamespace('debug')
@@ -1033,4 +943,3 @@ def _init(context):
     context.map_tasks('system.general.*', SystemNamespace)
     context.map_tasks('system.advanced.*', AdvancedNamespace)
     context.map_tasks('system.ui.*', SystemUINamespace)
-    context.map_tasks('mail.*', MailNamespace)

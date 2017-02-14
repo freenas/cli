@@ -342,7 +342,7 @@ class AlertEmitterNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, 
             (submission)."""),
             get='config.port',
             type=ValueType.NUMBER,
-            condition=lambda o: o['name'] == 'email',
+            condition=lambda o: o.get('name') == 'email',
             list=False
         )
 

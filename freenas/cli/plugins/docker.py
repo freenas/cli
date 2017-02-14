@@ -777,6 +777,16 @@ class DockerImageNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         )
 
         self.add_property(
+            descr='Parent image',
+            name='parent',
+            get=lambda o: context.entity_subscribers['docker.image'].query(('id', '=', o['parent']), select='names.0'),
+            set=None,
+            usersetable=False,
+            list=True,
+            usage=_('Name of the source image.')
+        )
+
+        self.add_property(
             descr='Size',
             name='size',
             get='size',

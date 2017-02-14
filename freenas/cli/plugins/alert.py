@@ -317,7 +317,7 @@ class AlertEmitterNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, 
             enclose the email address between double quotes."""),
             get='config.from_address',
             set='from',
-            condition=lambda o: o['name'] == 'email',
+            condition=lambda o: o.get('name') == 'email',
             list=False
         )
 
@@ -329,7 +329,7 @@ class AlertEmitterNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, 
             the SMTP server. When using set, enclose the value
             between double quotes."""),
             get='config.server',
-            condition=lambda o: o['name'] == 'email',
+            condition=lambda o: o.get('name') == 'email',
             list=False
         )
 
@@ -355,7 +355,7 @@ class AlertEmitterNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, 
             'username' and 'password' to be set."""),
             get='config.auth',
             type=ValueType.BOOLEAN,
-            condition=lambda o: o['name'] == 'email',
+            condition=lambda o: o.get('name') == 'email',
             list=False
         )
 
@@ -367,7 +367,7 @@ class AlertEmitterNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, 
             TLS, or SSL.."""),
             get='config.encryption',
             enum=['PLAIN', 'TLS', 'SSL'],
-            condition=lambda o: o['name'] == 'email',
+            condition=lambda o: o.get('name') == 'email',
             list=False
         )
 
@@ -379,7 +379,7 @@ class AlertEmitterNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, 
             SMTP authentication. Requires 'auth' to be set
             to yes."""),
             get='config.user',
-            condition=lambda o: o['name'] == 'email',
+            condition=lambda o: o.get('name') == 'email',
             list=False
         )
 
@@ -393,7 +393,7 @@ class AlertEmitterNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, 
             not displayed by get or edit."""),
             get=None,
             set='config.password',
-            condition=lambda o: o['name'] == 'email',
+            condition=lambda o: o.get('name') == 'email',
             list=False
         )
 
@@ -401,7 +401,7 @@ class AlertEmitterNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, 
             descr='Pushbullet API key',
             name='api_key',
             get='config.api_key',
-            condition=lambda o: o['name'] == 'pushbullet',
+            condition=lambda o: o.get('name') == 'pushbullet',
             list=False
         )
 

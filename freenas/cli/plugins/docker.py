@@ -1280,25 +1280,26 @@ class DockerContainerCreateCommand(Command):
                   port:<CONTAINER_PORT>/<PROTOCOL>=<HOST_PORT>
                   volume:<CONTAINER_PATH>=<HOST_PATH>
 
-    Examples: create my-ubuntu-container image=ubuntu:latest interactive=yes
-              create my-ubuntu-container image=ubuntu:latest interactive=yes
-                     VAR1=VALUE1 VAR2=2
-              create my-container image=dockerhub_image_name
-                     host=docker_host_vm_name hostname=container_hostname
-              create my-container image=dockerhub_image_name autostart=yes
-              create my-container image=dockerhub_image_name
+    Examples: create interactive-container image=ubuntu:latest interactive=yes
+              create autostarting-container image=freenas/busybox
+                     host=docker_host_0 hostname=busybox primary_network_mode=NAT
+                     autostart=yes
+              create exposed-ports image=dockerhub_image_name
                      port:8443/TCP=8443 port:1234/UDP=12356
                      expose_ports=yes
-              create my-container image=dockerhub_image_name
+              create volume-mapping image=dockerhub_image_name
                      volume:/container/directory=/mnt/my_pool/container_data
               create bridged-and-static-ip image=ubuntu:latest interactive=yes
-                     bridged=yes bridge_address=10.20.0.180
+                     primary_network_mode=BRIDGED bridge_address=10.20.0.180
               create bridged-and-dhcp image=ubuntu:latest interactive=yes
-                     bridged=yes dhcp=yes
+                     primary_network_mode=BRIDGED dhcp=yes
               create bridged-and-dhcp-macaddr image=ubuntu:latest interactive=yes
-                     bridged=yes dhcp=yes bridge_macaddress=01:02:03:04:05:06
+                     primary_network_mode=BRIDGED dhcp=yes bridge_macaddress=01:02:03:04:05:06
               create create-and-connect image=dockerhub_image_name host=docker_host_0
                      networks=mynetwork1,mynetwork2
+              create with-host-networking-stack image=freenas/busybox primary_network_mode=HOST
+              create disabled-networking image=freenas/busybox primary_network_mode=NONE
+
 
     Environment variables are provided as any number of uppercase KEY=VALUE
     elements.

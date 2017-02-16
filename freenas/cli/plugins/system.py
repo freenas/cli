@@ -500,6 +500,17 @@ class NTPServersNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespace
             type=ValueType.BOOLEAN
         )
 
+        self.add_property(
+            descr='Force save',
+            name='force',
+            get=None,
+            list=False,
+            set='0',
+            usage=_("""Can be yes or no, if yes the NTP server will be saved without attempting to query it."""),
+            create_arg=True,
+            type=ValueType.BOOLEAN
+        )
+
         self.primary_key = self.get_mapping('address')
 
         self.entity_commands = lambda this: {

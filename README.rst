@@ -57,7 +57,7 @@ There are a number of different ways to access the cli:
 * From the console of the physical/VM box that you installed freenas on.
   By default, the cli is directly accessible from the console.
 
-* By sshing to the box and typing :command:`cli` from the shell.
+* By sshing to the box and typing **`cli`** from the shell.
 
 * By accessing it from the webgui's console page:
   **freenas_10_ip/console**
@@ -89,7 +89,7 @@ to your freenas box's webgui.
    interface.
 
 At any point, if you want to see these urls again just type
-:command:`showurls` on the interactive cli prompt (from anywhere in the
+**`showurls`** on the interactive cli prompt (from anywhere in the
 cli) to print them out again:
 
 .. code-block:: none
@@ -100,7 +100,7 @@ cli) to print them out again:
    http://192.168.221.152           http://fe80::20c:29ff:fe23:3169
 
 If you are running the cli from the shell (post sshing into the
-machine), you can exit it using :command:`exit` at any time.
+machine), you can exit it using **`exit`** at any time.
 
 .. code-block:: none
 
@@ -141,9 +141,9 @@ the output of this **List Command** from the **RootNamespace**:
 Help command
 ************
 
-The :command:`help` command is there to assist you with commands in the
+The **`help`** command is there to assist you with commands in the
 cli.  To get an overview of the available commands, simply type
-:command:`help`:
+**`help`**:
 
 .. code-block:: none
 
@@ -240,8 +240,8 @@ System information
 ==================
 
 You can get information and change various system settings with the
-:command:`system` top level command.  For instance, you can see your
-hardware specs with :command:`system info`:
+**`system`** top level command.  For instance, you can see your
+hardware specs with **`system info`**:
 
 .. code-block:: none
 
@@ -250,7 +250,7 @@ hardware specs with :command:`system info`:
    cpu_clockrate=3400  memory_size=6413496320
 
 You can get information about your version of FreeNAS with
-:command:`system version`:
+**`system version`**:
 
 .. code-block:: none
 
@@ -268,14 +268,14 @@ You can get information about your version of FreeNAS with
                                           amd64
 
 If you want to know things like system up-time and the number of things
-connected to the middlware, use :command:`system status`:
+connected to the middlware, use **`system status`**:
 
 .. code-block:: none
 
    127.0.0.1:>system status
    middleware-connections=12  started-at=1448327368.791504  up-since=18 minutes ago
 
-You can view system events with the :command:`system event` top level
+You can view system events with the **`system event`** top level
 command:
 
 .. code-block:: none
@@ -300,11 +300,11 @@ command:
 System configuration
 ====================
 
-The :command:`system` top level command also has commands for
+The **`system`** top level command also has commands for
 configuring various aspects of your system.  At the
-:command:`system` level you can configure things like *hostname*,
+**`system`** level you can configure things like *hostname*,
 *timezone*, *syslog server*, and *language* options with
-:command:`set`:
+**`set`**:
 
 .. code-block:: none
 
@@ -318,10 +318,10 @@ configuring various aspects of your system.  At the
    Console Keymap (console_keymap)   us.iso
 
 If you need help figuring out what time zone options are available, you
-can use the :command:`system timezones` command, this will give you a
+can use the **`system timezones`** command, this will give you a
 scrollable list of valid options.
 
-To configure email options, use the :command:`system mail` command:
+To configure email options, use the **`system mail`** command:
 
 .. code-block:: none
 
@@ -338,7 +338,7 @@ To configure email options, use the :command:`system mail` command:
    Username for Authentication (username)   admin@foo.com
 
 And finally for powerusers, there is a set of advanced options in
-:command:`system advanced`:
+**`system advanced`**:
 
 .. code-block:: none
 
@@ -378,8 +378,8 @@ There is also a namespace in the FreeNAS CLI specifically for dealing
 with connected sessions, which administrators may find very useful.
 
 You can view connected session information and history with the
-:command:`session` top level command, or limit that information to just
-logged-in sessions with the :command:`w` command:
+**`session`** top level command, or limit that information to just
+logged-in sessions with the **`w`** command:
 
 .. code-block:: none
 
@@ -401,7 +401,7 @@ logged-in sessions with the :command:`w` command:
     1978                root                unix,2133           22 hours ago
     1981                root                unix,6020           21 minutes ago
 
-You can also use the :command:`session` command to send messages to all
+You can also use the **`session`** command to send messages to all
 logged in users, e.g.
 
 .. code-block:: none
@@ -409,10 +409,10 @@ logged in users, e.g.
    session wall "Hey, hosers! I'm shutting the system down in 5 minutes!"
 
 As well as to send a message to a specific logged-in user; just get the
-session ID from the :command:`w` command and then
-:command:`session id send <some text>`.
+session ID from the **`w`** command and then
+**`session id send <some text>`**.
 
-You can also use the :command:`session id` sub-namespace to query
+You can also use the **`session id`** sub-namespace to query
 individual attributes of a session and, in the future, to terminate a
 session with great prejudice.
 
@@ -441,7 +441,7 @@ Then create an alias with the IP you wish to set your system's IP to:
 
    127.0.0.1:>network interface em0 alias create address=10.0.0.150 netmask=255.255.255.0
 
-If you run :command:`network interface em0 show`, you will see that
+If you run **`network interface em0 show`**, you will see that
 DHCP is disabled and it is listening on the static IP:
 
 .. code-block:: none
@@ -510,7 +510,7 @@ Volume creation and management
 
 Before you create a volume, you should probably find out the names of
 the disks you will be creating the volume with. You can do this by
-using :command:`disk show`:
+using **`disk show`**:
 
 .. code-block:: none
 
@@ -528,7 +528,7 @@ see the allocation status of these disks.  Be sure to only use
 *unallocated* disks since those are ones that are not currently being
 used.
 
-The command to create a volume is :command:`volume create`.  This
+The command to create a volume is **`volume create`**.  This
 command takes as arguments the name of the volume, the type of volume
 you are creating, and the disks you are assigning to the volume.  For
 example:
@@ -538,7 +538,7 @@ example:
    127.0.0.1:>volume create tank type=raidz1 disks=ada1,ada2,ada3
 
 To see the topology of the newly created volume,
-use :command:`show_topology`:
+use **`show_topology`**:
 
 .. code-block:: none
 
@@ -549,7 +549,7 @@ use :command:`show_topology`:
             |-- /dev/ada2 (disk)
             `-- /dev/ada3 (disk)
 
-If you type :command:`disk show` again you will see that these disks
+If you type **`disk show`** again you will see that these disks
 are now marked as allocated to tank:
 
 .. code-block:: none
@@ -585,7 +585,7 @@ you use a multiple of 3 disks you get a stripe of *raidz1*).
             `-- /dev/ada4 (disk)
 
 If you want to make some kind of custom configuration or add disks to a
-volume later you can use :command:`add_vdev` to add another set of
+volume later you can use **`add_vdev`** to add another set of
 disks. For example, we created a mirror but then wanted to have a second
 mirror striped to it:
 
@@ -607,7 +607,7 @@ mirror striped to it:
             |-- /dev/ada3 (disk)
             `-- /dev/ada4 (disk)
 
-You can use :command:`extend_vdev` to add a disk to an existing mirror,
+You can use **`extend_vdev`** to add a disk to an existing mirror,
 for example assume we have a tank with a single mirror that we wish to
 extend:
 
@@ -623,14 +623,14 @@ extend:
             `-- /dev/ada3 (disk)
 
 If at any time you wish to delete your volume, you can do this with
-:command:`delete`:
+**`delete`**:
 
 .. code-block:: none
 
    127.0.0.1:>volume delete tank
 
 To offline or online a disk within a Volume you can use
-:command:`offline` and :command:`online`:
+**`offline`** and **`online`**:
 
 .. code-block:: none
 
@@ -651,15 +651,15 @@ To offline or online a disk within a Volume you can use
    /dev/ada1   ONLINE
    /dev/ada2   ONLINE
 
-To run a scrub on your volume, use :command:`scrub`:
+To run a scrub on your volume, use **`scrub`**:
 
 .. code-block:: none
 
    127.0.0.1:>volume tank scrub
 
-To detatch/export a volume, use the :command:`detach` volume command.
+To detatch/export a volume, use the **`detach`** volume command.
 After detaching, you will notice it is no longer visible in
-:command:`volume show`:
+**`volume show`**:
 
 .. code-block:: none
 
@@ -672,8 +672,8 @@ After detaching, you will notice it is no longer visible in
    127.0.0.1:>volume show
    Volume name   Status   Mount point   Last scrub time   Last scrub errors
 
-If you wish to import your volume tank, first use :command:`find` to see
-if your volume is visible then use :command:`import` to import it:
+If you wish to import your volume tank, first use **`find`** to see
+if your volume is visible then use **`import`** to import it:
 
 .. code-block:: none
 
@@ -706,7 +706,7 @@ AFP shares
 
 One basic type of share you can create are AFP shares. AFP is typically
 used for sharing files with Macintosh computers. AFP shares are created
-with :command:`share afp create`. A basic AFP share can be created as
+with **`share afp create`**. A basic AFP share can be created as
 follows:
 
 .. code-block:: none
@@ -726,7 +726,7 @@ the shares overview and the afp share namespace.
    Share name   Target volume   Compression   Read only   Time machine
    foo          tank            lz4           no          no
 
-To see more details on the AFP share, you can use :command:`show` on the
+To see more details on the AFP share, you can use **`show`** on the
 share itself:
 
 .. code-block:: none
@@ -744,7 +744,7 @@ share itself:
    Time machine (time_machine)            no
 
 If you want to set one of these properties of your share, use
-:command:`set`:
+**`set`**:
 
 .. code-block:: none
 
@@ -775,7 +775,7 @@ Now that you have a share, you must enable the AFP service:
    State (state)         RUNNING
    Process ID (pid)      none
 
-You can further configure the AFP service by using :command:`set`:
+You can further configure the AFP service by using **`set`**:
 
 .. code-block:: none
 
@@ -793,7 +793,7 @@ You can further configure the AFP service by using :command:`set`:
    Bind Addresses (bind_addresses)         192.168.1.50
    Database Path (dbpath)                  none
 
-And finally, to delete an AFP share, simply use :command:`delete`, but
+And finally, to delete an AFP share, simply use **`delete`**, but
 be aware this will also delete the dataset that the share is on:
 
 .. code-block:: none
@@ -808,7 +808,7 @@ NFS Shares
 
 Another basic type of share you can create are NFS shares. NFS is
 typically used for sharing files with Unix systems. NFS shares are
-created with :command:`share nfs create`. A basic NFS share can be
+created with **`share nfs create`**. A basic NFS share can be
 created as follows:
 
 .. code-block:: none
@@ -828,7 +828,7 @@ and the NFS share namespace.
                   volume         n          ories
    bar          tank         lz4          no           no          none
 
-To see more details on the NFS share you can use :command:`show` on the
+To see more details on the NFS share you can use **`show`** on the
 share itself:
 
 .. code-block:: none
@@ -848,7 +848,7 @@ share itself:
    Security (security)              none
 
 If you want to set one of these properties of your share, use
-:command:`set`:
+**`set`**:
 
 .. code-block:: none
 
@@ -880,7 +880,7 @@ Now that you have a share, you must enable the NFS service:
    State (state)         RUNNING
    Process ID (pid)      5760
 
-You can further configure the NFS service by using :command:`set`:
+You can further configure the NFS service by using **`set`**:
 
 .. code-block:: none
 
@@ -897,7 +897,7 @@ You can further configure the NFS service by using :command:`set`:
    RPC statd port (rpcstatd_port)        none
    RPC Lockd port (rpclockd_port)        none
 
-And finally, to delete an NFS share, simply use :command:`delete`.
+And finally, to delete an NFS share, simply use **`delete`**.
 Please be aware this will also delete the dataset that the share is on:
 
 .. code-block:: none
@@ -912,7 +912,7 @@ Account management
 
 FreeNAS has users and groups with various permissions similar to those
 you would find on a Unix platform. In this section you will learn how to
-manage users and groups using the :command:`account` top level command.
+manage users and groups using the **`account`** top level command.
 
 .. index:: users
 .. _Users:
@@ -920,9 +920,9 @@ manage users and groups using the :command:`account` top level command.
 Users
 =====
 
-Under the :command:`account user` command you can create and set
+Under the **`account user`** command you can create and set
 properties of a user.  To create a user, use
-:command:`account user create`:
+**`account user create`**:
 
 .. code-block:: none
 
@@ -946,7 +946,7 @@ property **password_disabled** turned on. If you do not specify a group
 for your user upon creation it will attempt to create a group with the
 same name as the username for that user.
 
-If you want to change a property of a user, use :command:`set`:
+If you want to change a property of a user, use **`set`**:
 
 .. code-block:: none
 
@@ -965,7 +965,7 @@ If you want to change a property of a user, use :command:`set`:
    Sudo allowed (sudo)                     no
    SSH public key (pubkey)                 none
 
-To delete a user, use :command:`delete`:
+To delete a user, use **`delete`**:
 
 .. code-block:: none
 
@@ -977,8 +977,8 @@ To delete a user, use :command:`delete`:
 Groups
 ======
 
-Groups are managed by the :command:`account group` commands. To create
-a group use :command:`account group create`:
+Groups are managed by the **`account group`** commands. To create
+a group use **`account group create`**:
 
 .. code-block:: none
 
@@ -988,14 +988,14 @@ a group use :command:`account group create`:
    Group ID (gid)            1001
    Builtin group (builtin)   no
 
-To change a group's name use :command:`set`:
+To change a group's name use **`set`**:
 
 .. code-block:: none
 
    127.0.0.1:>account group bar set name=baz
 
 User to group relationships are handled at the user level, so if to add
-a user to a group, you must use :command:`account user`. Users have 2
+a user to a group, you must use **`account user`**. Users have 2
 properties for groups, *group* and *groups*. The singular *group*
 property contains the user's primary group, and *groups* is a set
 property that contains the auxiliary groups.
@@ -1014,7 +1014,7 @@ the *wheel* group:
 
    127.0.0.1:>account user foo set groups=wheel
 
-The user should then look like this after running :command:`show`:
+The user should then look like this after running **`show`**:
 
 .. code-block:: none
 
@@ -1032,7 +1032,7 @@ The user should then look like this after running :command:`show`:
    Sudo allowed (sudo)                     no
    SSH public key (pubkey)                 none
 
-And finally, to delete a group, use :command:`delete`:
+And finally, to delete a group, use **`delete`**:
 
 .. code-block:: none
 
@@ -1121,7 +1121,7 @@ how to configure and control these services through the CLI.
 Controlling Services
 ====================
 
-The :command:`service show` command gives you a list of all the
+The **`service show`** command gives you a list of all the
 currently running services:
 
 .. code-block:: none
@@ -1136,7 +1136,7 @@ currently running services:
    tftpd          STOPPED   none
 
 To view the status of an individual service, use
-:command:`service <service name> show`. For example:
+**`service <service name> show`**. For example:
 
 .. code-block:: none
 
@@ -1146,7 +1146,7 @@ To view the status of an individual service, use
    Process ID (pid)      none
 
 To enable the service, use
-:command:`service <service name> config set enable=true`. For exmaple:
+**`service <service name> config set enable=true`**. For exmaple:
 
 .. code-block:: none
 
@@ -1158,7 +1158,7 @@ To enable the service, use
 
 Notice when the service is enabled, it is also started. If you want to
 stop the service but leave it enabled upon reboot, use
-:command:`service <service name> stop`. For example:
+**`service <service name> stop`**. For example:
 
 .. code-block:: none
 
@@ -1169,7 +1169,7 @@ stop the service but leave it enabled upon reboot, use
    Process ID (pid)      none
 
 To start the service back up, use
-:command:`service <service name> start`:
+**`service <service name> start`**:
 
 .. code-block:: none
 
@@ -1179,7 +1179,7 @@ To start the service back up, use
    State (state)         RUNNING
    Process ID (pid)      4218
 
-To restart a servce, use :command:`service <service name> restart`:
+To restart a servce, use **`service <service name> restart`**:
 
 .. code-block:: none
 
@@ -1191,7 +1191,7 @@ To restart a servce, use :command:`service <service name> restart`:
 
 Notice that it has a different *pid* since the service was restarted.
 To have a service do a graceful reload, use
-:command:`service <service name> reload`:
+**`service <service name> reload`**:
 
 .. code-block:: none
 
@@ -1207,7 +1207,7 @@ Configuring Services
 ====================
 
 To view the configuration of a service, use
-:command:`service <service name> config show`:
+**`service <service name> config show`**:
 
 .. code-block:: none
 
@@ -1224,7 +1224,7 @@ To view the configuration of a service, use
 
 Along with being able to enable a service from this namespace, you are
 also able to set various properties of the service with
-:command:`service <service name> config set`:
+**`service <service name> config set`**:
 
 .. code-block:: none
 

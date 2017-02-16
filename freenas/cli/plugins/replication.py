@@ -53,10 +53,10 @@ class SyncCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        name = self.parent.entity['name']
+        id = self.parent.entity['id']
         tid = context.submit_task(
             'replication.sync',
-            name,
+            id,
             callback=lambda s, t: post_save(self.parent, s, t)
         )
 
@@ -79,7 +79,7 @@ class SwitchCommand(Command):
         if not self.parent.entity.get('bidirectional'):
             raise CommandException('This replication link is not bi-directional')
 
-        name = self.parent.entity['name']
+        id = self.parent.entity['id']
         partners = self.parent.entity['partners']
         master = self.parent.entity['master']
         for partner in partners:
@@ -89,7 +89,7 @@ class SwitchCommand(Command):
 
         tid = context.submit_task(
             'replication.update',
-            name,
+            id,
             {'master': master},
             callback=lambda s, t: post_save(self.parent, s, t)
         )
@@ -162,12 +162,11 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
                 )
 
         self.primary_key_name = 'name'
-        self.save_key_name = 'name'
         self.entity_subscriber_name = 'replication'
         self.create_task = 'replication.create'
         self.update_task = 'replication.update'
         self.delete_task = 'replication.delete'
-        self.required_props = ['name', 'datasets', 'master', 'slave']
+        self.required_props = ['datasets', 'master', 'slave']
 
         self.localdoc['CreateEntityCommand'] = ("""\
             Usage: create <name> master=<master> slave=<slave> recursive=<recursive>

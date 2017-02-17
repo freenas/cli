@@ -1417,7 +1417,7 @@ class DockerContainerCreateCommand(Command):
                 ValueType.BOOLEAN
             ),
             'primary_network_mode': read_value(
-                kwargs.get('primary_network_mode', q.get(presets, 'primary_network_mode', '')),
+                kwargs.get('primary_network_mode', q.get(presets, 'primary_network_mode', None)),
                 ValueType.STRING
             ),
             'networks': [

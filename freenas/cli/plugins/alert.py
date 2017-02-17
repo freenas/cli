@@ -27,7 +27,7 @@
 
 import gettext
 from freenas.cli.namespace import EntityNamespace, Command, EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin
-from freenas.cli.namespace import ConfigNamespace, description
+from freenas.cli.namespace import description
 from freenas.cli.complete import RpcComplete, EnumComplete
 from freenas.cli.output import ValueType
 from freenas.cli.utils import EntityPromise, get_item_stub, post_save
@@ -391,9 +391,9 @@ class AlertEmitterNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, 
             SMTP authentication. Requires 'auth' to be set
             to yes. For security reasons, the password is
             not displayed by get or edit."""),
-            get=None,
-            set='config.password',
+            type=ValueType.PASSWORD,
             condition=lambda o: o.get('name') == 'email',
+            get='config.password',
             list=False
         )
 

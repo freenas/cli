@@ -31,8 +31,9 @@ from freenas.cli.namespace import (
 )
 from freenas.utils import query as q
 from freenas.cli.utils import TaskPromise
+from freenas.dispatcher import Password
 from freenas.cli.complete import NullComplete, EnumComplete
-from freenas.cli.output import Sequence
+
 
 t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
@@ -78,9 +79,9 @@ class CreateSupportTicketCommand(Command):
             )
 
         kwargs['category'] = self.ticket_categories[kwargs['category']]
+        kwargs['password'] = Password(kwargs['password'])
         tid = context.submit_task('support.submit', kwargs)
         return TaskPromise(context, tid)
-
 
     def complete(self, context, **kwargs):
         props = []
@@ -88,7 +89,11 @@ class CreateSupportTicketCommand(Command):
         password = q.get(kwargs, 'kwargs.password')
         if username and password:
             if not self.ticket_categories:
-                self.ticket_categories.update(context.call_sync('support.categories', str(username), str(password)))
+                self.ticket_categories.update(context.call_sync(
+                    'support.categories',
+                    str(username),
+                    Password(str(password))
+                ))
 
         if self.ticket_categories:
             props += [EnumComplete('category=', list(self.ticket_categories.keys()))]

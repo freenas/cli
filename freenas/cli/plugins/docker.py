@@ -48,7 +48,6 @@ _ = t.gettext
 
 DOCKER_PRESET_2_PROPERTY_MAP = {
     'autostart': 'autostart',
-    'bridge.enable': 'bridged',
     'bridge.dhcp': 'dhcp',
     'capabilities_add': 'capabilities_add',
     'capabilities_drop': 'capabilities_drop',
@@ -56,6 +55,7 @@ DOCKER_PRESET_2_PROPERTY_MAP = {
     'expose_ports': 'expose_ports',
     'interactive': 'interactive',
     'ports': 'port',
+    'primary_network_mode': 'primary_network_mode',
     'privileged': 'privileged',
 }
 
@@ -655,7 +655,7 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             get='bridge.dhcp',
             list=False,
             type=ValueType.BOOLEAN,
-            condition=lambda o: q.get(o, 'bridge.enable'),
+            condition=lambda o: q.get(o, 'primary_network_mode') == 'BRIDGED',
             usage=_('''\
             Defines if container will have it's IP address acquired via DHCP.'''),
         )
@@ -665,7 +665,7 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             name='address',
             get='bridge.address',
             list=False,
-            condition=lambda o: q.get(o, 'bridge.enable'),
+            condition=lambda o: q.get(o, 'primary_network_mode') == 'BRIDGED',
             usage=_('''\
             IP address of a container when it's set to a bridged mode.'''),
         )
@@ -675,19 +675,27 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             name='macaddress',
             get='bridge.macaddress',
             list=False,
-            condition=lambda o: q.get(o, 'bridge.enable'),
+            condition=lambda o: q.get(o, 'primary_network_mode') == 'BRIDGED',
             usage=_('''\
             IP address of a container when it's set to a bridged mode.'''),
         )
 
         self.add_property(
-            descr='Bridged',
-            name='bridged',
-            get='bridge.enable',
+            descr='Primary Network Mode',
+            name='primary_network_mode',
+            get='primary_network_mode',
             list=True,
-            type=ValueType.BOOLEAN,
+            type=ValueType.STRING,
+            enum=['NAT', 'BRIDGED', 'HOST', 'NONE'],
             usage=_('''\
-            Defines if container is in bridged mode.'''),
+            Defines mode of container's primary networking.
+            NAT means that container is connected to default docker bridge network "docker0" and external
+            access is achieved via NAT. In this mode container can be connected to user-defined internal networks.
+            BRIDGED means that container's primary interface is bridged to default box interface and either
+            static IP is set or DHCP option is selected. In this mode container can be connected to
+            user-defined internal networks
+            HOST means that container is using the docker host network stack.
+            NONE means that container's networking is disabled.'''),
         )
 
         self.add_property(
@@ -1272,25 +1280,26 @@ class DockerContainerCreateCommand(Command):
                   port:<CONTAINER_PORT>/<PROTOCOL>=<HOST_PORT>
                   volume:<CONTAINER_PATH>=<HOST_PATH>
 
-    Examples: create my-ubuntu-container image=ubuntu:latest interactive=yes
-              create my-ubuntu-container image=ubuntu:latest interactive=yes
-                     VAR1=VALUE1 VAR2=2
-              create my-container image=dockerhub_image_name
-                     host=docker_host_vm_name hostname=container_hostname
-              create my-container image=dockerhub_image_name autostart=yes
-              create my-container image=dockerhub_image_name
+    Examples: create interactive-container image=ubuntu:latest interactive=yes
+              create autostarting-container image=freenas/busybox
+                     host=docker_host_0 hostname=busybox primary_network_mode=NAT
+                     autostart=yes
+              create exposed-ports image=dockerhub_image_name
                      port:8443/TCP=8443 port:1234/UDP=12356
                      expose_ports=yes
-              create my-container image=dockerhub_image_name
+              create volume-mapping image=dockerhub_image_name
                      volume:/container/directory=/mnt/my_pool/container_data
               create bridged-and-static-ip image=ubuntu:latest interactive=yes
-                     bridged=yes bridge_address=10.20.0.180
+                     primary_network_mode=BRIDGED bridge_address=10.20.0.180
               create bridged-and-dhcp image=ubuntu:latest interactive=yes
-                     bridged=yes dhcp=yes
+                     primary_network_mode=BRIDGED dhcp=yes
               create bridged-and-dhcp-macaddr image=ubuntu:latest interactive=yes
-                     bridged=yes dhcp=yes bridge_macaddress=01:02:03:04:05:06
+                     primary_network_mode=BRIDGED dhcp=yes bridge_macaddress=01:02:03:04:05:06
               create create-and-connect image=dockerhub_image_name host=docker_host_0
                      networks=mynetwork1,mynetwork2
+              create with-host-networking-stack image=freenas/busybox primary_network_mode=HOST
+              create disabled-networking image=freenas/busybox primary_network_mode=NONE
+
 
     Environment variables are provided as any number of uppercase KEY=VALUE
     elements.
@@ -1388,10 +1397,6 @@ class DockerContainerCreateCommand(Command):
                 ValueType.BOOLEAN
             ),
             'bridge': {
-                'enable': read_value(
-                    kwargs.get('bridged', q.get(presets, 'bridge.enable', False)),
-                    ValueType.BOOLEAN
-                ),
                 'dhcp': read_value(
                     kwargs.get('dhcp', q.get(presets, 'bridge.dhcp', False)),
                     ValueType.BOOLEAN
@@ -1411,6 +1416,10 @@ class DockerContainerCreateCommand(Command):
                 kwargs.get('privileged', q.get(presets, 'privileged', False)),
                 ValueType.BOOLEAN
             ),
+            'primary_network_mode': read_value(
+                kwargs.get('primary_network_mode', q.get(presets, 'primary_network_mode', '')),
+                ValueType.STRING
+            ),
             'networks': [
                 objname2id(context, 'docker.network', name) for name in read_value(
                     kwargs.get('networks'),
@@ -1426,10 +1435,11 @@ class DockerContainerCreateCommand(Command):
                 )
 
         bridge = create_args.get('bridge')
-        if bridge.get('enable') and not (bridge.get('dhcp') or bridge.get('address')):
+        bridge_enabled = create_args.get('primary_network_mode') == 'BRIDGED'
+        if bridge_enabled and not (bridge.get('dhcp') or bridge.get('address')):
             raise CommandException('Either dhcp or static address must be selected for bridged container')
 
-        if not bridge.get('enable') and (bridge.get('dhcp') or bridge.get('address') or bridge.get('macaddress')):
+        if not bridge_enabled and (bridge.get('dhcp') or bridge.get('address') or bridge.get('macaddress')):
             raise CommandException('Cannot set the "dhcp","address" and "macaddress" bridge properties when '
                                    'bridge is not enabled')
 
@@ -1471,14 +1481,14 @@ class DockerContainerCreateCommand(Command):
         available_images += context.entity_subscribers['docker.image'].query(select='names.0')
         available_images = list(set(available_images))
 
-        bridge_enabled = q.get(presets, 'bridge.enable')
-        if 'bridged' not in immutable and q.get(kwargs, 'kwargs.bridged') in ('yes', 'no'):
-            bridge_enabled = read_value(q.get(kwargs, 'kwargs.bridged'), ValueType.BOOLEAN)
+        bridge_enabled = q.get(presets, 'primary_network_mode') == 'BRIDGED'
+        if 'primary_network_mode' not in immutable and q.get(kwargs, 'kwargs.primary_network_mode') in ('NAT', 'BRIDGED', 'HOST', 'NONE'):
+            bridge_enabled = read_value(q.get(kwargs, 'kwargs.primary_network_mode'), ValueType.STRING) == 'BRIDGED'
 
         if 'autostart' not in immutable:
             props += [EnumComplete('autostart=', ['yes', 'no'])]
-        if 'bridged' not in immutable:
-            props += [EnumComplete('bridged=', ['yes', 'no'])]
+        if 'primary_network_mode' not in immutable:
+            props += [EnumComplete('primary_network_mode=', ['NAT', 'BRIDGED', 'HOST', 'NONE'])]
         if bridge_enabled:
             props += [NullComplete('bridge_address=')]
             props += [NullComplete('bridge_macaddress=')]

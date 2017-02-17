@@ -913,8 +913,9 @@ class VMDeviceDiskPropertiesMixin(BaseVariantMixin):
             get='properties.size',
             type=ValueType.SIZE,
             list=False,
-            usage=_("States the size of the disk"),
+            usage=_("States the size of the disk and allows to set size for the BLOCK or FILE disk type"),
             condition=lambda o: o['type'] == 'DISK',
+            usersetable=lambda o: get(o, 'properties.target_type') in ('BLOCK', 'FILE')
         )
 
         self.add_property(

@@ -253,11 +253,14 @@ class ReplaceCommand(Command):
         old_disk = correct_disk_path(args[0])
         new_disk = correct_disk_path(args[1])
         vdev = vdev_by_path(self.parent.entity['topology'], old_disk)
+        disk_id = context.entity_subscribers['disk'].query(('path', '=', new_disk), single=True, select='id')
+        if not disk_id:
+            raise CommandException('Cannot find disk {0}'.format(new_disk))
 
         if not vdev:
             raise CommandException('Cannot find vdev for disk {0}'.format(old_disk))
 
-        tid = context.submit_task('volume.vdev.replace', self.parent.entity['id'], vdev['guid'], new_disk)
+        tid = context.submit_task('volume.vdev.replace', self.parent.entity['id'], vdev['guid'], disk_id)
         return TaskPromise(context, tid)
 
 

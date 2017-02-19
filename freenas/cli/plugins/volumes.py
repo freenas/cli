@@ -1179,6 +1179,15 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
         )
 
         self.add_property(
+            descr='Hidden',
+            name='hidden',
+            get='hidden',
+            list=True,
+            condition=lambda o: o['type'] != 'VOLUME',
+            type=ValueType.BOOLEAN,
+        )
+
+        self.add_property(
             descr='Temporary mountpoint',
             name='temp_mount',
             get='temp_mountpoint',

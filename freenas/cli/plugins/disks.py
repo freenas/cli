@@ -342,12 +342,11 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityN
 
     def query(self, params, options):
         ret = super(DisksNamespace, self).query(params, options)
-        disks = [d['path'] for d in ret]
-        allocations = self.context.call_sync('volume.get_disks_allocation', disks)
+        allocations = self.context.call_sync('volume.get_disks_allocation', [d['id'] for d in ret])
 
         return [extend(d, {
-                'allocation': allocations.get(d['path']) if d['online'] else None
-            }) for d in ret]
+            'allocation': allocations.get(d['id']) if d['online'] else None
+        }) for d in ret]
 
     def get_one(self, name):
         ret = self.context.entity_subscribers[self.entity_subscriber_name].query(
@@ -360,9 +359,8 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityN
 
         ret['allocation'] = self.context.call_sync(
             'volume.get_disks_allocation',
-            [ret['path']]
-        ).get(ret['path'])
-
+            [ret['id']]
+        ).get(ret['id'])
         return ret
 
     def get_allocation(self, entity):

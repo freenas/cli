@@ -164,6 +164,14 @@ class OpenVPNNamespace(NestedEntityMixin, ItemNamespace):
 
         )
         self.add_property(
+            descr='Static routes',
+            name='push_routes',
+            get='push_routes',
+            set='push_routes',
+            type=ValueType.SET,
+            list=False
+        )
+        self.add_property(
             descr='Symmetric cipher used by OpenVPN',
             name='cipher',
             get='cipher',
@@ -200,63 +208,24 @@ class OpenVPNNamespace(NestedEntityMixin, ItemNamespace):
                 Peer down argument of keepalive directive ''')
         )
         self.add_property(
-            descr='Server Bridge',
-            name='server_bridge',
-            get='server_bridge',
-            set='server_bridge',
-            type=ValueType.BOOLEAN,
-            usage=_('''\
-            True/False - allows to enable bridge like behaviour
-            on the OpenVPN interface''')
-        )
-        self.add_property(
-            descr='Starting address of user defined ip range',
-            name='server_bridge_range_begin',
-            get='server_bridge_range_begin',
-            set='server_bridge_range_begin',
+            descr='Address of user defined VPN network',
+            name='server_ip',
+            get='server_ip',
+            set='server_ip',
             type=ValueType.STRING,
             usage=_('''\
             User defined ip range cannot interfere
             with bridge IP or existing local network''')
         )
         self.add_property(
-            descr='Ending address of user defined ip range',
-            name='server_bridge_range_end',
-            get='server_bridge_range_end',
-            set='server_bridge_range_end',
+            descr='Netmask of the user defined VPN network',
+            name='server_netmask',
+            get='server_netmask',
+            set='server_netmask',
             type=ValueType.STRING,
             usage=_('''\
             User defined ip range cannot interfere
             with bridge IP or existing local network''')
-        )
-        self.add_property(
-            descr='Netmask for user defined ip range',
-            name='server_bridge_netmask',
-            get='server_bridge_netmask',
-            set='server_bridge_netmask',
-            type=ValueType.STRING,
-            usage=_('''\
-            User defined ip range cannot interfere
-            with bridge IP or existing local network''')
-        )
-        self.add_property(
-            descr='Server Bridge extend',
-            name='server_bridge_extended',
-            get='server_bridge_extended',
-            set='server_bridge_extended',
-            type=ValueType.BOOLEAN,
-            usage=_('''\
-            True/False - allows to enable user defined ip range''')
-        )
-        self.add_property(
-            descr='IP Address for VPN bridge ',
-            name='server_bridge_ip',
-            get='server_bridge_ip',
-            set='server_bridge_ip',
-            type=ValueType.STRING,
-            usage=_('''\
-             User defined bridge ip cannot interfere
-             with user defined range or existing local network'''),
         )
         self.add_property(
             descr='OpenVPN port',

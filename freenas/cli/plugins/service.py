@@ -155,13 +155,21 @@ class OpenVPNNamespace(NestedEntityMixin, ItemNamespace):
         )
         self.add_property(
             descr='Persist-tun option',
-            name='persist-tun',
-            get='persist-tun',
-            set='persist-tun',
+            name='persist_tun',
+            get='persist_tun',
+            set='persist_tun',
             type=ValueType.BOOLEAN,
             usage=_('''\
              Don't close and reopen tap/tun device across restart.''')
 
+        )
+        self.add_property(
+            descr='Static routes',
+            name='push_routes',
+            get='push_routes',
+            set='push_routes',
+            type=ValueType.SET,
+            list=False
         )
         self.add_property(
             descr='Symmetric cipher used by OpenVPN',
@@ -200,63 +208,24 @@ class OpenVPNNamespace(NestedEntityMixin, ItemNamespace):
                 Peer down argument of keepalive directive ''')
         )
         self.add_property(
-            descr='Server Bridge',
-            name='server_bridge',
-            get='server_bridge',
-            set='server_bridge',
-            type=ValueType.BOOLEAN,
-            usage=_('''\
-            True/False - allows to enable bridge like behaviour
-            on the OpenVPN interface''')
-        )
-        self.add_property(
-            descr='Starting address of user defined ip range',
-            name='server_bridge_range_begin',
-            get='server_bridge_range_begin',
-            set='server_bridge_range_begin',
+            descr='Address of user defined VPN network',
+            name='server_ip',
+            get='server_ip',
+            set='server_ip',
             type=ValueType.STRING,
             usage=_('''\
             User defined ip range cannot interfere
             with bridge IP or existing local network''')
         )
         self.add_property(
-            descr='Ending address of user defined ip range',
-            name='server_bridge_range_end',
-            get='server_bridge_range_end',
-            set='server_bridge_range_end',
+            descr='Netmask of the user defined VPN network',
+            name='server_netmask',
+            get='server_netmask',
+            set='server_netmask',
             type=ValueType.STRING,
             usage=_('''\
             User defined ip range cannot interfere
             with bridge IP or existing local network''')
-        )
-        self.add_property(
-            descr='Netmask for user defined ip range',
-            name='server_bridge_netmask',
-            get='server_bridge_netmask',
-            set='server_bridge_netmask',
-            type=ValueType.STRING,
-            usage=_('''\
-            User defined ip range cannot interfere
-            with bridge IP or existing local network''')
-        )
-        self.add_property(
-            descr='Server Bridge extend',
-            name='server_bridge_extended',
-            get='server_bridge_extended',
-            set='server_bridge_extended',
-            type=ValueType.BOOLEAN,
-            usage=_('''\
-            True/False - allows to enable user defined ip range''')
-        )
-        self.add_property(
-            descr='IP Address for VPN bridge ',
-            name='server_bridge_ip',
-            get='server_bridge_ip',
-            set='server_bridge_ip',
-            type=ValueType.STRING,
-            usage=_('''\
-             User defined bridge ip cannot interfere
-             with user defined range or existing local network'''),
         )
         self.add_property(
             descr='OpenVPN port',
@@ -358,30 +327,10 @@ class OpenVPNNamespace(NestedEntityMixin, ItemNamespace):
     def commands(self):
         ret = super(OpenVPNNamespace, self).commands()
         return extend(ret, {
-            'bridge': OpenVPNBridgeCommand(),
             'generate_crypto': OpenVPNCryptoCommand(),
             'provide_client_config': OpenVPNClientConfigCommand(),
             'provide_static_key': OpenVPNStaticKeyCommand()
         })
-
-
-@description("Allows to bridge openvpn interface to the main interface")
-class OpenVPNBridgeCommand(Command):
-    """
-    Usage: bridge
-
-    Allows to bridge openvpn interface to the main interface.
-    This property is only allowed in pki mode.
-
-    """
-
-    def run(self, context, args, kwargs, opargs):
-        vpn_confg = context.call_sync('service.openvpn.get_config')
-        if vpn_confg['mode'] == 'psk':
-            raise CommandException(_('Bridging to main interface is possible only in pki mode.'))
-
-        tid = context.submit_task('service.openvpn.bridge')
-        return TaskPromise(context, tid)
 
 
 @description("Allows to generate OpenVPN cryptographic properties")
@@ -421,7 +370,7 @@ class OpenVPNClientConfigCommand(Command):
     """
 
     def run(self, context, args, kwargs, opargs):
-        vpn_client_confg = context.call_sync('service.openvpn.client_config.provide_config')
+        vpn_client_confg = context.call_sync('service.openvpn.client_config.get_config')
         return Sequence(vpn_client_confg)
 
 

@@ -327,30 +327,10 @@ class OpenVPNNamespace(NestedEntityMixin, ItemNamespace):
     def commands(self):
         ret = super(OpenVPNNamespace, self).commands()
         return extend(ret, {
-            'bridge': OpenVPNBridgeCommand(),
             'generate_crypto': OpenVPNCryptoCommand(),
             'provide_client_config': OpenVPNClientConfigCommand(),
             'provide_static_key': OpenVPNStaticKeyCommand()
         })
-
-
-@description("Allows to bridge openvpn interface to the main interface")
-class OpenVPNBridgeCommand(Command):
-    """
-    Usage: bridge
-
-    Allows to bridge openvpn interface to the main interface.
-    This property is only allowed in pki mode.
-
-    """
-
-    def run(self, context, args, kwargs, opargs):
-        vpn_confg = context.call_sync('service.openvpn.get_config')
-        if vpn_confg['mode'] == 'psk':
-            raise CommandException(_('Bridging to main interface is possible only in pki mode.'))
-
-        tid = context.submit_task('service.openvpn.bridge')
-        return TaskPromise(context, tid)
 
 
 @description("Allows to generate OpenVPN cryptographic properties")

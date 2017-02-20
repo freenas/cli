@@ -370,7 +370,7 @@ class OpenVPNClientConfigCommand(Command):
     """
 
     def run(self, context, args, kwargs, opargs):
-        vpn_client_confg = context.call_sync('service.openvpn.client_config.provide_config')
+        vpn_client_confg = context.call_sync('service.openvpn.client_config.get_config')
         return Sequence(vpn_client_confg)
 
 

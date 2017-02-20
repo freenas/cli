@@ -155,9 +155,9 @@ class OpenVPNNamespace(NestedEntityMixin, ItemNamespace):
         )
         self.add_property(
             descr='Persist-tun option',
-            name='persist-tun',
-            get='persist-tun',
-            set='persist-tun',
+            name='persist_tun',
+            get='persist_tun',
+            set='persist_tun',
             type=ValueType.BOOLEAN,
             usage=_('''\
              Don't close and reopen tap/tun device across restart.''')

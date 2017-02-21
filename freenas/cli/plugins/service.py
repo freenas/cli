@@ -1949,13 +1949,13 @@ class SNMPNamespace(NestedEntityMixin, ItemNamespace):
 
 
 @description("Configure and manage smartd service")
-class SMARTDNamespace(NestedEntityMixin, ItemNamespace):
+class NetdataNamespace(NestedEntityMixin, ItemNamespace):
     """
     The smartd service namespace allows to configure and manage smartd service.
     """
 
     def __init__(self, name, context, parent):
-        super(SMARTDNamespace, self).__init__(name, context)
+        super(NetdataNamespace, self).__init__(name, context)
         self.parent = parent
         self.parent_entity_path = 'config'
 
@@ -1965,64 +1965,6 @@ class SMARTDNamespace(NestedEntityMixin, ItemNamespace):
             get='enable',
             list=True,
             type=ValueType.BOOLEAN
-        )
-        self.add_property(
-            descr='Interval',
-            name='interval',
-            usage=_("""
-            Number representing how often, in minutes, to wake
-            up smartd to check to see if any tests have been
-            configured to run."""),
-            get='interval',
-            type=ValueType.NUMBER
-        )
-        self.add_property(
-            descr='Power mode',
-            name='power_mode',
-            usage=_("""
-            Configured tests are not performed if the system enters
-            the specified power mode. Values are: NEVER, SLEEP,
-            STANDBY, or IDLE."""),
-            get='power_mode',
-            enum=[
-                'NEVER',
-                'SLEEP',
-                'STANDBY',
-                'IDLE',
-            ],
-            type=ValueType.STRING
-        )
-        self.add_property(
-            descr='Temperature difference',
-            name='temp_difference',
-            usage=_("""
-            Default of 0 disables this check. Otherwise, reports if
-            the temperature of a drive has changed by the specified
-            number of degrees Celsius since last report."""),
-            get='temp_difference',
-            type=ValueType.NUMBER
-        )
-        self.add_property(
-            descr='Temperature informational',
-            name='temp_informational',
-            usage=_("""
-            By default, this check is disabled. If set, will log
-            an entry of LOG_INFO if the temperature is higher than
-            the specified number of degrees Celsius since the last
-            report."""),
-            get='temp_informational',
-            type=ValueType.NUMBER
-        )
-        self.add_property(
-            descr='Temperature critical',
-            name='temp_critical',
-            usage=_("""
-            By default, this check is disabled. If set, will log
-            an entry of LOG_CRIT and will send an email if the
-            temperature is higher than the specified number of degrees
-            Celsius since the last report."""),
-            get='temp_critical',
-            type=ValueType.NUMBER
         )
 
 
@@ -2246,7 +2188,7 @@ class ServicesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Enti
                 'iscsi': ISCSINamespace,
                 'lldp': LLDPNamespace,
                 'snmp': SNMPNamespace,
-                'smartd': SMARTDNamespace,
+                'netdata': NetdataNamespace,
                 'webdav': WebDAVNamespace,
                 'rsyncd': RsyncdNamespace,
                 'simulator': SimulatorNamespace,

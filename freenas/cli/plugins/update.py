@@ -144,7 +144,7 @@ class CheckNowCommand(Command):
             return _("No new updates available.")
 
 
-@description("Downloads New Updates and saves them for apllying later")
+@description("Downloads available updates without applying them")
 class DownloadNowCommand(Command):
     """
     Usage: download
@@ -152,7 +152,7 @@ class DownloadNowCommand(Command):
     Examples:
         download
 
-    Downloads and Saves the latest update available.
+    Downloads and saves the latest update available.
     """
 
     def run(self, context, args, kwargs, opargs):

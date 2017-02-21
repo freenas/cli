@@ -316,7 +316,6 @@ class AlertEmitterNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, 
             used when sending email notifications. When using set,
             enclose the email address between double quotes."""),
             get='config.from_address',
-            set='from',
             condition=lambda o: o.get('name') == 'email',
             list=False
         )

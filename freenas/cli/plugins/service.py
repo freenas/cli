@@ -2215,8 +2215,6 @@ class ServicesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Enti
         self.allow_create = False
         self.entity_serialize = self.child_serialize
         self.entity_commands = lambda this: {
-            'start': ServiceManageCommand(this, 'start'),
-            'stop': ServiceManageCommand(this, 'stop'),
             'restart': ServiceManageCommand(this, 'restart'),
             'reload': ServiceManageCommand(this, 'reload'),
             'logs': LogsCommand(this)

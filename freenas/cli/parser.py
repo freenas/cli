@@ -1106,6 +1106,13 @@ def parse(s, filename, recover_errors=False):
     return parser.parse(s, lexer=lexer, tracking=True)
 
 
+def maybe_quote(s):
+    if not re.match(r'[\w_\-\+\*\:#\/][\w_\.\/#@\:\-\+\*\/]*', s):
+        return '"{0}"'.format(s)
+
+    return s
+
+
 def unparse(token, indent=0, oneliner=False):
     def ind(s):
         if oneliner:
@@ -1162,7 +1169,7 @@ def unparse(token, indent=0, oneliner=False):
         return ind(''.join([token.left, token.op, unparse(token.right)]))
 
     if isinstance(token, Symbol):
-        return ind(token.name)
+        return ind(maybe_quote(token.name))
 
     if isinstance(token, CommandCall):
         return ind(' '.join(unparse(i) for i in token.args))

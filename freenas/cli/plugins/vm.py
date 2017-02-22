@@ -44,12 +44,6 @@ t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
 
 
-def get_template_version(o):
-    val = get(o, 'template.updated_at')
-    if val:
-        return str(val.date()).replace('-', '')
-
-
 class StartVMCommand(Command):
     """
     Usage: start
@@ -435,7 +429,7 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
         self.add_property(
             descr='Template version',
             name='template_version',
-            get=get_template_version,
+            get='template.template_version',
             set=None,
             usage=_("Version of the template used to create the VM from")
         )
@@ -1436,7 +1430,7 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
         self.add_property(
             descr='Template version',
             name='template_version',
-            get=get_template_version,
+            get='template.template_version',
             set=None,
             list=False,
             usage=_("Version of the template")

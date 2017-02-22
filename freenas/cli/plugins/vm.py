@@ -180,8 +180,9 @@ class ConsoleVGACommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
+        config = context.call_sync('system.general.get_config')
         url = context.call_sync('containerd.console.request_webvnc_console', self.parent.entity['id'])
-        return url
+        return 'http://{0}{1}'.format(config['hostname'], url)
 
 
 @description("Import virtual machine from volume")

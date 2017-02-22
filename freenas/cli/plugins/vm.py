@@ -428,6 +428,14 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
         )
 
         self.add_property(
+            descr='Template version',
+            name='template_version',
+            get='template.template_version',
+            set=None,
+            usage=_("Version of the template used to create the VM from")
+        )
+
+        self.add_property(
             descr='State',
             name='state',
             get='status.state',
@@ -1418,6 +1426,15 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
             list=True,
             type=ValueType.SIZE,
             usage=_("Size of the template")
+        )
+
+        self.add_property(
+            descr='Template version',
+            name='template_version',
+            get='template.template_version',
+            set=None,
+            list=False,
+            usage=_("Version of the template")
         )
 
         self.add_property(

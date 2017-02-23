@@ -122,8 +122,8 @@ class AddVdevCommand(Command):
 
         if 'disks' not in kwargs:
             raise CommandException(_("Please specify one or more disks using the disks property"))
-        else:
-            disks = check_disks(context, to_list(kwargs.pop('disks')))[0]
+
+        disks = to_list(kwargs.pop('disks'))
 
         if len(disks) < disks_per_type[typ]:
             raise CommandException(_(
@@ -207,9 +207,6 @@ class ExtendVdevCommand(Command):
             raise CommandException(_("Invalid input: {0}".format(args)))
 
         disk = correct_disk_path(args[0])
-        if disk not in context.call_sync('volume.get_available_disks'):
-            raise CommandException(_("Disk {0} is not available".format(disk)))
-
         vdev = mirror_by_path(self.parent.entity['topology'], vdev_ident)
 
         if not vdev:
@@ -1503,39 +1500,6 @@ class VMwareDatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin
         self.primary_key = self.get_mapping('name')
 
 
-def check_disks(context, disks, cache_disks=None, log_disks=None):
-    all_disks = [disk["path"] for disk in context.call_sync("disk.query")]
-    available_disks = context.call_sync('volume.get_available_disks')
-    if cache_disks is not None:
-        for disk in cache_disks:
-            disk = correct_disk_path(disk)
-            if disk not in all_disks:
-                raise CommandException(_("Disk {0} does not exist.".format(disk)))
-            if disk in available_disks:
-                available_disks.remove(disk)
-            else:
-                raise CommandException(_("Disk {0} is not available.".format(disk)))
-    if log_disks is not None:
-        for disk in log_disks:
-            disk = correct_disk_path(disk)
-            if disk not in all_disks:
-                raise CommandException(_("Disk {0} does not exist.".format(disk)))
-            if disk in available_disks:
-                available_disks.remove(disk)
-            else:
-                raise CommandException(_("Disk {0} is not available.".format(disk)))
-    if 'auto' in disks:
-        return 'auto', cache_disks, log_disks
-    else:
-        for disk in disks:
-            disk = correct_disk_path(disk)
-            if disk not in all_disks:
-                raise CommandException(_("Disk {0} does not exist.".format(disk)))
-            if disk not in available_disks:
-                raise CommandException(_("Disk {0} is not available.".format(disk)))
-    return disks, cache_disks, log_disks
-
-
 @description("Creates new volume")
 class CreateVolumeCommand(Command):
     """
@@ -1628,8 +1592,6 @@ class CreateVolumeCommand(Command):
         ns.orig_entity = copy.deepcopy(self.parent.skeleton_entity)
         ns.entity = copy.deepcopy(self.parent.skeleton_entity)
         ns.entity['id'] = name
-
-        disks, cache_disks, log_disks = check_disks(context, disks, cache_disks, log_disks)
 
         if disks != 'auto':
             if len(disks) < DISKS_PER_TYPE[volume_type]:

@@ -79,10 +79,14 @@ class AddVdevCommand(Command):
     Example:
             add_vdev type=mirror disks=ada3,ada4
             add_vdev type=mirror disks=ada3,ada4 password=secret
+            add_vdev type=raidz1 disks=ada3,ada4,ada5
+            add_vdev type=cache disks=da0
+            add_vdev type=log disks=da1
 
     Valid types are: mirror disk raidz1 raidz2 raidz3 cache log
     If volume is encrypted by password you have to provide
-    the current valid password to this command.
+    the current valid password to this command.  See '/ disk show'
+    for the list of disks on your system.
 
     Adds a new vdev to volume
     """
@@ -187,12 +191,15 @@ class AddVdevCommand(Command):
 class ExtendVdevCommand(Command):
     """
     Usage:
-        extend_vdev vdev=<disk> <newdisk1> <newdisk2>
+        extend_vdev vdev=<disk> <newdisk>
 
     Example:
         extend_vdev vdev=ada1 ada2
 
-    Adds new disk to existing mirror or converts single disk stripe to a mirror
+    Adds new disk to existing mirror or converts single disk stripe to a 
+    mirror. See '/ disk show' for the list of disks on your system.  See
+    '/ volume <volume_name> show_topology' for a list of vdevs on the
+    volume.
     """
     def __init__(self, parent):
         self.parent = parent
@@ -207,7 +214,7 @@ class ExtendVdevCommand(Command):
             raise CommandException(_("Invalid input: {0}".format(args)))
 
         disk = correct_disk_path(args[0])
-        vdev = mirror_by_path(self.parent.entity['topology'], vdev_ident)
+        vdev = vdev_by_path(self.parent.entity['topology'], vdev_ident)
 
         if not vdev:
             raise CommandException('Cannot find vdev for disk {0}'.format(vdev_ident))
@@ -237,8 +244,9 @@ class ReplaceCommand(Command):
     Example:
         replace ada1 ada2
 
-    Replaces <olddisk> with <newdisk> in a volume. If <newdisk> is a spare of current volume,
-    it will be removed from the spares list.
+    Replaces <olddisk> with <newdisk> in a volume. If <newdisk> is a spare 
+    of current volume, it will be removed from the spares list.  See '/ disk 
+    show' for the list of disks on your system.
     """
     def __init__(self, parent):
         self.parent = parent
@@ -412,7 +420,7 @@ class ImportVolumeCommand(Command):
             password = None
 
         if password is not None:
-            password = Password(password)
+            password = Password(str(password))
 
         ns = get_item_stub(context, self.parent, None)
 
@@ -514,7 +522,7 @@ class UnlockVolumeCommand(Command):
             raise CommandException('Volume is not encrypted by password.')
 
         if password is not None:
-            password = Password(password)
+            password = Password(str(password))
 
         name = self.parent.entity['id']
         tid = context.submit_task('volume.unlock', name, password, callback=lambda s, t: post_save(self.parent, s, t))
@@ -571,7 +579,7 @@ class RekeyVolumeCommand(Command):
         key_encrypted = read_value(kwargs.pop('key_encrypted', 'yes'), ValueType.BOOLEAN)
         name = self.parent.entity['id']
         if password is not None:
-            password = Password(password)
+            password = Password(str(password))
         tid = context.submit_task('volume.rekey', name, key_encrypted, password)
         return TaskPromise(context, tid)
 
@@ -654,7 +662,7 @@ class RestoreVolumeMasterKeyCommand(Command):
             raise CommandException('You must provide a password protecting a backup file')
 
         if password is not None:
-            password = Password(password)
+            password = Password(str(password))
 
         name = self.parent.entity['id']
         tid = context.submit_task('volume.keys.restore_from_file', name, path, password)
@@ -1524,9 +1532,12 @@ class CreateVolumeCommand(Command):
     be used individually.
 
     For more advanced pool topologies, create a volume with a single vdev
-    using the 'type' option with one of the following options: disk, mirror, raidz1,
-    raidz2 or raidz3.  You may then use the 'volume add_vdev' command to build on 
-    this topology.
+    using the 'type' option with one of the following options: disk, mirror, 
+    raidz1, raidz2 or raidz3.  You may then use the '/ volume add_vdev' command
+    to build on this topology.  Additionally if you wish to extend a vdev by 
+    adding more disks to it you can also use '/ volume extend_vdev'.  
+    For more information on either of these commands see the help text for 
+    these commands.  For a list of available disks, see  '/ disk show'.
     """
 
     def __init__(self, parent):
@@ -1575,7 +1586,7 @@ class CreateVolumeCommand(Command):
             ))
 
         if password is not None:
-            password = Password(password)
+            password = Password(str(password))
 
         cache_disks = kwargs.pop('cache', [])
         log_disks = kwargs.pop('log', [])
@@ -1936,7 +1947,6 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
             'show_disks': ShowDisksCommand(this),
             'scrub': ScrubCommand(this),
             'add_vdev': AddVdevCommand(this),
-            'delete_vdev': DeleteVdevCommand(this),
             'offline': OfflineVdevCommand(this),
             'online': OnlineVdevCommand(this),
             'extend_vdev': ExtendVdevCommand(this),

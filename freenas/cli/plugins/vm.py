@@ -1758,6 +1758,33 @@ class VMSCSIPortsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
         )
 
         self.primary_key = self.get_mapping('number')
+        self.entity_namespaces = lambda this: [
+            VMSCSILunsNamespace('lun', self.context, this)
+        ]
+
+
+class VMSCSILunsNamespace(NestedObjectSaveMixin, NestedObjectLoadMixin, EntityNamespace):
+    def __init__(self, name, context, parent):
+        super(VMSCSILunsNamespace, self).__init__(name, context)
+        self.parent = parent
+        self.parent_path = 'luns'
+        self.primary_key_name = 'number'
+
+        self.add_property(
+            descr='LUN number',
+            name='number',
+            get='number',
+            type=ValueType.NUMBER
+        )
+
+        self.add_property(
+            descr='Share name',
+            name='name',
+            get=lambda o: get_related(self.context, 'share', o, 'lun_id'),
+            set=lambda o, v: set_related(self.context, 'share', o, 'lun_id', v)
+        )
+
+        self.primary_key = self.get_mapping('number')
 
 
 def _init(context):

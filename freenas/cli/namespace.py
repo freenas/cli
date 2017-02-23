@@ -1409,7 +1409,7 @@ class NestedObjectSaveMixin(object):
             q.get(self.parent.entity, self.parent_path).append(this.entity)
         else:
             entity = first_or_default(
-                lambda a: a[self.primary_key_name] == this.entity['name'],
+                lambda a: a[self.primary_key_name] == this.entity[self.primary_key_name],
                 q.get(self.parent.entity, self.parent_path)
             )
             entity.update(this.entity)

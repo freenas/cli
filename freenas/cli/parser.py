@@ -1107,7 +1107,7 @@ def parse(s, filename, recover_errors=False):
 
 
 def maybe_quote(s):
-    if not re.match(r'[\w_\-\+\*\:#\/][\w_\.\/#@\:\-\+\*\/]*', s):
+    if isinstance(s, str) and not re.match(r'[\w_\-\+\*\:#\/][\w_\.\/#@\:\-\+\*\/]*', s):
         return '"{0}"'.format(s)
 
     return s

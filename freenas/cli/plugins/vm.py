@@ -1626,7 +1626,7 @@ class ShowGuestInfoCommand(Command):
             return Object(
                 Object.Item('Load average', 'load_avg', guest_info['load_avg'], ValueType.ARRAY),
                 Object.Item('Network configuration', 'interfaces', addresses, ValueType.SET),
-                Object.Item('VM-tools version', 'vm_tools_version', guest_info['version'])
+                Object.Item('VM-tools version', 'vm_tools_version', guest_info['version'], ValueType.STRING)
             )
 
 

@@ -1307,6 +1307,9 @@ class DockerContainerCreateCommand(Command):
     and volume:<CONTAINER_PATH>=<HOST_PATH> elements.
 
     Creates a Docker container. For a list of properties, see 'help properties'.
+    For image presets to be correctly applied to the container the '/ docker fetch_presets'
+    command should be used first to fetch the presets for given collection
+    (e.g. '/docker fetch_presets collection=frenas')
     """
     def __init__(self, parent):
         self.parent = parent
@@ -1317,6 +1320,13 @@ class DockerContainerCreateCommand(Command):
 
         if not kwargs.get('image'):
             raise CommandException('image is a required property')
+
+        try:
+            collection = kwargs['image'].split('/')[0]
+        except:
+            collection = ""
+        if collection == 'freenas' and not DockerImageNamespace.default_images:
+            raise CommandException('Freenas collection presets not fetched')
 
         name = kwargs.get('name') or args[0]
 

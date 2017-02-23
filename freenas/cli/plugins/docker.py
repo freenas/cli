@@ -1321,10 +1321,7 @@ class DockerContainerCreateCommand(Command):
         if not kwargs.get('image'):
             raise CommandException('image is a required property')
 
-        try:
-            collection = kwargs['image'].split('/')[0]
-        except:
-            collection = ""
+        collection = kwargs['image'].split('/')[0]
         if collection == 'freenas' and not DockerImageNamespace.default_images:
             raise CommandException('Freenas collection presets not fetched')
 

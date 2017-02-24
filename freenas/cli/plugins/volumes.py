@@ -1511,8 +1511,9 @@ class VMwareDatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin
 @description("Creates new volume")
 class CreateVolumeCommand(Command):
     """
-    Usage: create <name> disks=<disks> layout=<layout> key_encryption=<key_encryption>
-            password=<password> cache=<disks> log=<disks> auto_unlock=<auto_unlock>
+    Usage: create <name> type=<type> disks=<disks> layout=<layout> 
+            key_encryption=<key_encryption> password=<password> cache=<disks> 
+            log=<disks> auto_unlock=<auto_unlock>
 
     Example: create mypool disks=ada1,ada2
              create mypool disks=ada1,ada2 key_encryption=yes
@@ -1522,6 +1523,8 @@ class CreateVolumeCommand(Command):
              create mypool disks=auto layout=virtualization
              create mypool disks=ada1,ada2 cache=ada3 log=ada4
              create mypool disks=auto cache=ada3 log=ada4
+             create mypool type=mirror disks=ada0,ada1
+             create mypool type=raidz1 disks=ada0,ada1,ada2
 
     Creating a volume requires some number of disks and an optional layout
     preset. The 'layout' preset allows the following values: stripe, mirror,

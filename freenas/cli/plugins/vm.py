@@ -357,6 +357,15 @@ class VMDatastoreNamespace(
             list=True
         )
 
+        self.add_property(
+            descr='State',
+            name='state',
+            get='state',
+            set=None,
+            usersettable=False,
+            list=True
+        )
+
         self.add_properties()
         self.primary_key = self.get_mapping('name')
 

@@ -521,7 +521,7 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
             descr='Host',
             name='host',
             get=lambda o: objid2name(context, 'docker.host', o['host']),
-            set=lambda o, v: q.set(o, 'host', objname2id(context, 'docker.host', v)),
+            set=None,
             list=True,
             complete=EntitySubscriberComplete('host=', 'docker.host', lambda d: d['name']),
             usage=_('''\

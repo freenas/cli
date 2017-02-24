@@ -432,6 +432,7 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             descr='Template name',
             name='template',
             get='template.name',
+            usersettable=False,
             complete=RpcComplete('template=', 'vm.template.query', lambda i: get(i, 'template.name')),
             usage=_("Name of the template used to create the VM from")
         )

@@ -1030,7 +1030,7 @@ class EchoCommand(Command):
                     echo_seq.append(', '.join(item))
                 else:
                     echo_seq.append(item)
-            return Sequence(*echo_seq)
+            return ' '.join(echo_seq)
 
 
 @description("Display list of pending tasks")

@@ -1144,7 +1144,7 @@ class VMVolumeNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityName
             name='type',
             get='properties.type',
             enum=['VT9P'],
-            usage=_("I'd tell you, but then I'd have to kill you")
+            usage=_("The type of volume, available types: VT9P")
         )
 
         self.add_property(

@@ -656,7 +656,7 @@ class DirectoriesNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, E
         self.add_property(
             descr='Error code',
             name='error_code',
-            get=lambda o: str(errno.errorcode.get(get(o, 'status.status_code'))),
+            get=lambda o: errno.errorcode.get(get(o, 'status.status_code')),
             set=None,
             list=True,
             condition=lambda o: get(o, 'status.state') == 'FAILURE',

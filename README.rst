@@ -945,18 +945,21 @@ properties of a user.  To create a user, use
 
    127.0.0.1:>account user create foo password=mypassword
    127.0.0.1:>account user foo show
-   User ID (uid)                           1000
-   User name (username)                    foo
-   Full name (fullname)                    User &
-   Primary group (group)                   foo
-   Auxilliary groups (groups)              empty
-   Login shell (shell)                     /bin/sh
-   Home directory (home)                   /nonexistent
-   Password Disabled (password_disabled)   no
-   Locked (locked)                         no
-   Email address (email)                   none
-   Sudo allowed (sudo)                     no
-   SSH public key (pubkey)                 none
+      Property              Description             Value       Settable
+  uid                 User ID                    1002           yes
+  name                User name                  foo            yes
+  fullname            Full name                  User &         yes
+  group               Primary group              foo            yes
+  groups              Auxiliary groups           <empty>        yes
+  shell               Login shell                /bin/sh        yes
+  home                Home directory             /nonexistent   yes
+  password            Password                   none           yes
+  password_disabled   Password Disabled          none           yes
+  locked              Locked                     none           yes
+  email               Email address              none           yes
+  administrator       Administrator privileges   no             yes
+  pubkey              SSH public key             none           yes
+  domain              Domain                     local          no
 
 An account must either have a password set upon creation or have the
 property **password_disabled** turned on. If you do not specify a group
@@ -969,18 +972,21 @@ If you want to change a property of a user, use **`set`**:
 
    127.0.0.1:>account user foo set email=foo@foobar.com
    127.0.0.1:>account user foo show
-   User ID (uid)                           1000
-   User name (username)                    foo
-   Full name (fullname)                    User &
-   Primary group (group)                   foo
-   Auxilliary groups (groups)              empty
-   Login shell (shell)                     /bin/sh
-   Home directory (home)                   /nonexistent
-   Password Disabled (password_disabled)   no
-   Locked (locked)                         no
-   Email address (email)                   foo@foobar.com
-   Sudo allowed (sudo)                     no
-   SSH public key (pubkey)                 none
+      Property              Description              Value        Settable
+  uid                 User ID                    1002             yes
+  name                User name                  foo              yes
+  fullname            Full name                  User &           yes
+  group               Primary group              foo              yes
+  groups              Auxiliary groups           <empty>          yes
+  shell               Login shell                /bin/sh          yes
+  home                Home directory             /nonexistent     yes
+  password            Password                   none             yes
+  password_disabled   Password Disabled          none             yes
+  locked              Locked                     none             yes
+  email               Email address              foo@foobar.com   yes
+  administrator       Administrator privileges   no               yes
+  pubkey              SSH public key             none             yes
+  domain              Domain                     local            no
 
 To delete a user, use **`delete`**:
 
@@ -1036,18 +1042,21 @@ The user should then look like this after running **`show`**:
 .. code-block:: none
 
    127.0.0.1:>account user foo show
-   User ID (uid)                           1000
-   User name (username)                    foo
-   Full name (fullname)                    User &
-   Primary group (group)                   baz
-   Auxilliary groups (groups)              wheel
-   Login shell (shell)                     /bin/sh
-   Home directory (home)                   /nonexistent
-   Password Disabled (password_disabled)   no
-   Locked (locked)                         no
-   Email address (email)                   none
-   Sudo allowed (sudo)                     no
-   SSH public key (pubkey)                 none
+    Property              Description              Value        Settable
+  uid                 User ID                    1002             yes
+  name                User name                  foo              yes
+  fullname            Full name                  User &           yes
+  group               Primary group              foo              yes
+  groups              Auxiliary groups           wheel            yes
+  shell               Login shell                /bin/sh          yes
+  home                Home directory             /nonexistent     yes
+  password            Password                   none             yes
+  password_disabled   Password Disabled          none             yes
+  locked              Locked                     none             yes
+  email               Email address              foo@foobar.com   yes
+  administrator       Administrator privileges   no               yes
+  pubkey              SSH public key             none             yes
+  domain              Domain                     local            no
 
 And finally, to delete a group, use **`delete`**:
 

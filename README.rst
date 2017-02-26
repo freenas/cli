@@ -212,37 +212,37 @@ You can also get the properties of a namespace by adding the keyword
 .. code-block:: none
 
    127.0.0.1:>help account user properties
-Property                                 Usage
+  Property                                 Usage
 
- uid                                    An unused number greater than 1000 and less than 65535.
- name                                   Maximum 16 characters, though a maximum of 8 is recommended for interoperability.
-                                        Can not begin with a hyphen or contain a space, a tab, a double quote, or any of
-                                        these characters: , : + & # % ^ & ( ) ! @ ~ * ? < > = If a $ is used, it can only be
-                                        the last character.
- fullname                               Place within double quotes if contains a space.
- group                                  By default when a user is created, a primary group with the same name as the user is
-                                        also created. When specifying a different group name, that group must already exist.
- groups                                 List of additional groups the user is a member of. To add the user to other groups,
-                                        enclose a space delimited list between double quotes and ensure the groups already
-                                        exist.
- shell                                  Default is "/bin/sh". Can be set to full path of an existing shell. Type 'shells' to
-                                        see the list of available shells.
- home                                   By default when a user is created, their home directory is not created. To create
-                                        one, specify the full path to an existing dataset between double quotes.
- password                               Mandatory unless "password_disabled=true" is specified when creating the user.
-                                        Passwords cannot contain a question mark.
- password_disabled                      Can be set to true or false. When set to true, disables password logins and
-                                        authentication to CIFS shares but still allows key-based logins.
- locked                                 Can be set to true or false. While set to true, the account is disabled.
- email                                  Specify email address, enclosed between double quotes, to send that user's
-                                        notifications to.
- administrator                          Can be set to true or false. When set to true, the user is allowed to use sudo to
-                                        run commands with administrative permissions.
- pubkey                                 To configure key-based authentication, use the 'set' command to paste the user's SSH
-                                        public key.
- domain                                 Domain, read_only string value
- delete_own_group                       Delete own group, accepts boolean values
- delete_home_directory                  Delete home directory, accepts boolean values
+  uid                                    An unused number greater than 1000 and less than 65535.
+  name                                   Maximum 16 characters, though a maximum of 8 is recommended for interoperability.
+                                         Can not begin with a hyphen or contain a space, a tab, a double quote, or any of
+                                         these characters: , : + & # % ^ & ( ) ! @ ~ * ? < > = If a $ is used, it can only be
+                                         the last character.
+  fullname                               Place within double quotes if contains a space.
+  group                                  By default when a user is created, a primary group with the same name as the user is
+                                         also created. When specifying a different group name, that group must already exist.
+  groups                                 List of additional groups the user is a member of. To add the user to other groups,
+                                         enclose a space delimited list between double quotes and ensure the groups already
+                                         exist.
+  shell                                  Default is "/bin/sh". Can be set to full path of an existing shell. Type 'shells' to
+                                         see the list of available shells.
+  home                                   By default when a user is created, their home directory is not created. To create
+                                         one, specify the full path to an existing dataset between double quotes.
+  password                               Mandatory unless "password_disabled=true" is specified when creating the user.
+                                         Passwords cannot contain a question mark.
+  password_disabled                      Can be set to true or false. When set to true, disables password logins and
+                                         authentication to CIFS shares but still allows key-based logins.
+  locked                                 Can be set to true or false. While set to true, the account is disabled.
+  email                                  Specify email address, enclosed between double quotes, to send that user's
+                                         notifications to.
+  administrator                          Can be set to true or false. When set to true, the user is allowed to use sudo to
+                                         run commands with administrative permissions.
+  pubkey                                 To configure key-based authentication, use the 'set' command to paste the user's SSH
+                                         public key.
+  domain                                 Domain, read_only string value
+  delete_own_group                       Delete own group, accepts boolean values
+  delete_home_directory                  Delete home directory, accepts boolean values
 
 .. index:: system information and configuration
 .. _System information and configuration:

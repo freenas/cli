@@ -273,8 +273,8 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
         )
 
         self.add_property(
-            descr='Sudo allowed',
-            name='sudo',
+            descr='Administrator privileges',
+            name='administrator',
             get='sudo',
             usage=_("""\
             Can be set to true or false. When set to true, the

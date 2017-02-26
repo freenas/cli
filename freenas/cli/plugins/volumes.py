@@ -214,7 +214,9 @@ class ExtendVdevCommand(Command):
             raise CommandException(_("Invalid input: {0}".format(args)))
 
         disk = correct_disk_path(args[0])
-        vdev = vdev_by_path(self.parent.entity['topology'], vdev_ident)
+        vdev = mirror_by_path(self.parent.entity['topology'], vdev_ident)
+        if not vdev:
+            vdev = vdev_by_path(self.parent.entity['topology'], vdev_ident)
 
         if not vdev:
             raise CommandException('Cannot find vdev for disk {0}'.format(vdev_ident))

@@ -1577,8 +1577,6 @@ class CreateVolumeCommand(Command):
             raise CommandException(_("Please specify one or more disks using the disks property"))
         else:
             disks = kwargs.pop('disks')
-            if isinstance(disks, six.string_types):
-                disks = [disks]
 
         key_encryption = read_value(kwargs.pop('key_encryption', False), ValueType.BOOLEAN)
         password = kwargs.get('password')
@@ -1599,10 +1597,6 @@ class CreateVolumeCommand(Command):
             cache_disks = []
         if log_disks is None:
             log_disks = []
-        if isinstance(cache_disks, six.string_types):
-            cache_disks = [cache_disks]
-        if isinstance(log_disks, six.string_types):
-            log_disks = [log_disks]
 
         ns = SingleItemNamespace(name, self.parent, context)
         ns.orig_entity = copy.deepcopy(self.parent.skeleton_entity)

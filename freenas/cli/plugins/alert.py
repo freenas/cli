@@ -269,7 +269,7 @@ class AlertFilterNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
         self.add_property(
             descr='Destination e-mail addresses',
             name='email',
-            get='parameters.addresses',
+            get='parameters.to',
             type=ValueType.SET,
             condition=lambda o: o.get('emitter') == 'email',
             usgae=_("Destination email address(es) if email is the chose notification (emitter) type")

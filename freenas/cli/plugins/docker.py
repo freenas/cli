@@ -1323,7 +1323,8 @@ class DockerContainerCreateCommand(Command):
 
         collection = kwargs['image'].split('/')[0]
         if collection == 'freenas' and not DockerImageNamespace.default_images:
-            raise CommandException('Freenas collection presets not fetched')
+            raise CommandException('The "freenas" collection presets are not fetched.'
+                                   ' Type "/ docker help fetch_presets" for details')
 
         name = kwargs.get('name') or args[0]
 
@@ -1752,14 +1753,15 @@ class DockerContainerCommitCommand(Command):
 @description("Fetches presets from a given Docker collection")
 class DockerFetchPresetsCommand(Command):
     """
-    Usage: fetch_presets collection=<collection> <force>=force
+    Usage: / docker fetch_presets collection=<collection> <force>=force
 
-    Example: fetch_presets collection=freenas
-             fetch_presets collection=freenas force=yes
+    Example: / docker fetch_presets collection=freenas
+             / docker fetch_presets collection=freenas force=yes
 
     Fetch presets of a given Docker collection
     into CLI's cache for tab completion purposes
-    around docker namespace.
+    around docker namespace and correct handling of
+    the default values for container properties.
 
     When 'force' is set, command queries Dockerhub for fresh data,
     even if local cache is considered still valid by FreeNAS.

@@ -78,9 +78,24 @@ class LogsCommand(Command):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
+        def get_labels(service):
+            if service.get('labels'):
+                return service['labels']
+
+            if service.get('dependencies'):
+                ret = []
+                for i in service['dependencies']:
+                    svc = context.entity_subscribers['service'].get(i)
+                    if svc:
+                        ret += get_labels(svc)
+
+                return ret
+
+            raise CommandException('No logs available')
+
         query = context.call_sync(
             'syslog.query',
-            [('service', 'in', self.parent.entity['labels'])],
+            [('service', 'in', get_labels(self.parent.entity))],
             {
                 'limit': 20,
                 'sort': '-timestamp',

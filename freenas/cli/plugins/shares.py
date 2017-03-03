@@ -313,6 +313,16 @@ class BaseSharesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, En
             create_arg=True
         )
 
+        self.add_property(
+            descr='Delete associated dataset',
+            name='delete_dataset',
+            get=None,
+            list=False,
+            set='0',
+            delete_arg=True,
+            type=ValueType.BOOLEAN
+        )
+
         self.primary_key = self.get_mapping('name')
         self.primary_key_name = 'name'
         self.save_key_name = 'id'

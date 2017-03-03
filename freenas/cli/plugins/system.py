@@ -916,7 +916,12 @@ class SystemNamespace(ConfigNamespace):
             usage=_("""\
                 Use set or edit to change the console keyboard
                 layout."""),
-            get='console_keymap'
+            get='console_keymap',
+            complete=RpcComplete(
+                'console_keymap=',
+                'system.general.keymaps',
+                lambda i: i[0]
+            )
         )
 
         self.extra_commands = {

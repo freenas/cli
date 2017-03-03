@@ -278,7 +278,7 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
         def get_transport_option(obj, name):
             options = obj['transport_options']
             for o in options:
-                if o['name'] == name:
+                if name in o['%type'].lower():
                     return o
 
             return None

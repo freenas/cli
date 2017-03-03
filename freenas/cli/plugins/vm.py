@@ -1422,7 +1422,7 @@ class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
         self.add_property(
             descr='Source',
             name='source',
-            get='template.driver',
+            get='template.source',
             usersetable=False,
             list=True,
             usage=_("The source of the template's json file (i.e. git, ipfs, etc.)")

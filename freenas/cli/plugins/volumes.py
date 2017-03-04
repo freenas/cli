@@ -271,14 +271,32 @@ class ReplaceCommand(Command):
         return TaskPromise(context, tid)
 
 
-@description("Removes vdev from volume")
+@description("Removes vdev from the volume")
 class DeleteVdevCommand(Command):
     def __init__(self, parent):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
-        if self.parent.saved:
-            raise CommandException('Cannot delete vdev from existing volume')
+        for disk in args:
+            disk = correct_disk_path(disk)
+
+            for i in ('data', 'cache'):
+                for vd in list(self.parent.entity['topology'][i]):
+                    if vd['path'] == disk:
+                        self.parent.entity['topology'][i].remove(vd)
+
+                    if vd.get('children'):
+                        for cvd in list(vd['children']):
+                            if cvd['path'] == disk:
+                                vd['children'].remove(cvd)
+
+            for i in ('log', 'spare'):
+                for vd in list(self.parent.entity['topology'][i]):
+                    if vd['path'] == disk:
+                        self.parent.entity['topology'][i].remove(vd)
+
+            self.parent.modified = True
+            self.parent.save()
 
 
 @description("Offlines a disk in a volume")
@@ -298,12 +316,10 @@ class OfflineVdevCommand(Command):
             raise CommandException(_("Please specify a disk"))
         disk = args[0]
         volume = self.parent.entity
-
         disk = correct_disk_path(disk)
 
-        vdevs = list(iterate_vdevs(volume['topology']))
         guid = None
-        for vdev in vdevs:
+        for vdev in iterate_vdevs(volume['topology']):
             if vdev['path'] == disk:
                 guid = vdev['guid']
                 break
@@ -1955,6 +1971,7 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
             'show_disks': ShowDisksCommand(this),
             'scrub': ScrubCommand(this),
             'add_vdev': AddVdevCommand(this),
+            'delete_vdev': DeleteVdevCommand(this),
             'offline': OfflineVdevCommand(this),
             'online': OnlineVdevCommand(this),
             'extend_vdev': ExtendVdevCommand(this),

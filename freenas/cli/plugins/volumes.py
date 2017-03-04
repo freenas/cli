@@ -1155,6 +1155,15 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
         )
 
         self.add_property(
+            descr='Record size',
+            name='recordsize',
+            get='properties.recordsize.parsed',
+            list=False,
+            type=ValueType.SIZE,
+            usage=_("Native record size of a dataset")
+        )
+
+        self.add_property(
             descr='Volume size',
             name='volsize',
             get='volsize',

@@ -681,7 +681,7 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
             'guest_info': ShowGuestInfoCommand(this)
         }
 
-        if hasattr(this, 'entity') and this.entity is not None:
+        if this.entity:
             if first_or_default(lambda d: d['type'] == 'GRAPHICS', this.entity['devices']):
                 commands['console_vga'] = ConsoleVGACommand(this)
 
@@ -1548,13 +1548,12 @@ class TemplateNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         self.entity_commands = self.get_entity_commands
 
     def get_entity_commands(self, this):
-        this.load() if hasattr(this, 'load') else None
         commands = {
             'download': DownloadImagesCommand(this),
             'readme': ReadmeCommand(this, 'template')
         }
 
-        if hasattr(this, 'entity') and this.entity is not None:
+        if this.entity:
             template = this.entity.get('template')
             if template:
                 if template.get('cached', False):

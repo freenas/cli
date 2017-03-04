@@ -403,13 +403,6 @@ class ItemNamespace(Namespace):
                 )
                 values.append(value)
 
-            if self.parent.leaf_entity:
-                leaf_res = ListCommand(self.parent).run(context, args, kwargs, opargs, filtering)
-                return Sequence(
-                    values,
-                    "-- {0} --".format(self.parent.leaf_ns.description),
-                    leaf_res
-                )
             return values
 
     @description("Prints single item value")
@@ -622,7 +615,6 @@ class ItemNamespace(Namespace):
             self.description = name
         self.context = context
         self.entity = None
-        self.leaf_entity = False
         self.orig_entity = None
         self.allow_edit = True
         self.modified = False
@@ -723,9 +715,7 @@ class ItemNamespace(Namespace):
             if self.has_editable_string():
                 base['edit'] = self.EditEntityCommand(self)
 
-        if self.commands is not None:
-            base.update(self.subcommands)
-
+        base.update(self.subcommands)
         return base
 
     def namespaces(self):
@@ -740,9 +730,6 @@ class ItemNamespace(Namespace):
                 ret = i.ns(self)
                 if ret:
                     yield ret
-
-    def update_commands(self):
-        pass
 
 
 class ConfigNamespace(ItemNamespace):
@@ -819,24 +806,10 @@ class SingleItemNamespace(ItemNamespace):
         self.saved = name is not None
         self.property_mappings = parent.property_mappings
         self.localdoc = parent.entity_localdoc
-        self.leaf_harborer = False
-        self.leaf_entity = kwargs.get('leaf_entity', False)
-        self.leaf_entity_namespace = self.parent.leaf_entity_namespace
-        self.leaf_ns = None
         self.password = None
         self.create_args = []
         self.update_args = []
         self.delete_args = []
-
-        if parent.entity_commands:
-            self.subcommands = parent.entity_commands(self)
-
-        if parent.leaf_entity_namespace:
-            self.leaf_ns = parent.leaf_entity_namespace(self)
-            if self.nslist:
-                self.nslist.append(self.leaf_ns)
-            else:
-                self.nslist = [self.leaf_ns]
 
         if hasattr(parent, 'allow_edit'):
             self.allow_edit = parent.allow_edit
@@ -845,10 +818,6 @@ class SingleItemNamespace(ItemNamespace):
         return (
             "{0} '{1}', expands into commands for managing this entity.".format
             (self.parent.get_name().title(), self.get_name()))
-
-    def update_commands(self):
-        if self.parent.entity_commands:
-            self.subcommands = self.parent.entity_commands(self)
 
     @property
     def primary_key(self):
@@ -961,35 +930,17 @@ class SingleItemNamespace(ItemNamespace):
         return self.parent.save(self, not self.saved)
 
     def commands(self):
-        command_set = super(SingleItemNamespace, self).commands()
-        if self.parent.leaf_harborer:
-            if self.leaf_ns.allow_create:
-                command_set.update({
-                    'create': CreateEntityCommand(self),
-                })
-
+        base = super(SingleItemNamespace, self).commands()
         if self.parent.allow_create:
-            command_set['delete'] = self.DeleteEntityCommand(self)
+            base['delete'] = self.DeleteEntityCommand(self)
 
-        return command_set
+        base.update(self.parent.entity_commands(self))
+        return base
 
     def namespaces(self):
         self.load()
-
-        if not self.leaf_entity:
-            yield from super(SingleItemNamespace, self).namespaces()
-            yield from iter(self.parent.entity_namespaces(self))
-            return
-
-        if self.leaf_ns.primary_key is None:
-            return
-
-        # for some reason yield does not work below
-        nslst = self.parent.entity_namespaces(self)
-        for i in self.leaf_ns.query([], {}):
-            name = self.leaf_ns.primary_key.do_get(i)
-            nslst.append(SingleItemNamespace(name, self.leaf_ns, self.context, leaf_entity=self.leaf_harborer))
-        return nslst
+        yield from super(SingleItemNamespace, self).namespaces()
+        yield from iter(self.parent.entity_namespaces(self))
 
 
 @description("Lists <entity>s")
@@ -1006,10 +957,7 @@ class BaseListCommand(FilteringCommand):
     Lists items in current namespace, optinally doing filtering and sorting.
     """
     def __init__(self, parent):
-        if hasattr(parent, 'leaf_entity') and parent.leaf_entity:
-            self.parent = parent.leaf_ns
-        else:
-            self.parent = parent
+        self.parent = parent
 
     def __map_filter_properties(self, expr):
         for i in expr:
@@ -1099,10 +1047,7 @@ class CreateEntityCommand(Command):
     For a list of properties for the current namespace, see 'help properties'.
     """
     def __init__(self, parent):
-        if hasattr(parent, 'leaf_entity') and parent.leaf_entity:
-            self.parent = parent.leaf_ns
-        else:
-            self.parent = parent
+        self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
         ns = SingleItemNamespace(None, self.parent, context)
@@ -1209,15 +1154,13 @@ class EntityNamespace(Namespace):
         super(EntityNamespace, self).__init__(name)
         self.context = context
         self.primary_key = None
-        self.entity_commands = None
+        self.entity_commands = lambda _: {}
         self.entity_namespaces = lambda _: []
         self.entity_serialize = None
         self.allow_edit = True
         self.allow_create = True
         self.skeleton_entity = {}
         self.entity_localdoc = {}
-        self.leaf_harborer = False
-        self.leaf_entity_namespace = None
         self.large = False
         self.has_entities_in_subnamespaces_only = False
 
@@ -1263,7 +1206,7 @@ class EntityNamespace(Namespace):
 
         item = self.get_one(name)
         if item:
-            return SingleItemNamespace(name, self, self.context, leaf_entity=self.leaf_harborer)
+            return SingleItemNamespace(name, self, self.context)
 
     def namespaces(self, name=None):
         if self.primary_key is None or self.large:
@@ -1271,7 +1214,7 @@ class EntityNamespace(Namespace):
 
         for i in self.query([], {'limit': 100}):
             name = self.primary_key.do_get(i)
-            yield SingleItemNamespace(name, self, self.context, leaf_entity=self.leaf_harborer)
+            yield SingleItemNamespace(name, self, self.context)
 
 
 class RpcBasedLoadMixin(object):

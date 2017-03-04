@@ -1273,7 +1273,6 @@ class DatasetsNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Enti
         return super(DatasetsNamespace, self).save(this, new)
 
     def get_entity_commands(self, this):
-        this.load()
         commands = {
             'snapshot': SnapshotCommand(this),
             'replicate': ReplicateCommand(this),

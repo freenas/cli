@@ -1062,6 +1062,15 @@ class VMDeviceNamespace(
         )
 
         self.add_property(
+            descr='Device status',
+            name='status',
+            get='status',
+            set=None,
+            list=True,
+            enum=['CONNECTED', 'DISCONNECTED', 'ERROR', 'UNKNOWN']
+        )
+
+        self.add_property(
             descr="Device summary",
             name='device_summary',
             get=get_humanized_summary,

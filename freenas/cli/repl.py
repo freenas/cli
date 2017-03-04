@@ -147,6 +147,7 @@ ENTITY_SUBSCRIBERS = [
     'alert.filter',
     'alert.emitter',
     'vm',
+    'vm.template',
     'vm.snapshot',
     'vm.datastore',
     'vm.scsi.port',

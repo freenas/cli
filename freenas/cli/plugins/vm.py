@@ -29,8 +29,7 @@ import gettext
 from freenas.cli.output import Sequence, Table
 from freenas.cli.namespace import (
     EntityNamespace, Command, NestedObjectLoadMixin, NestedObjectSaveMixin, EntitySubscriberBasedLoadMixin,
-    RpcBasedLoadMixin, TaskBasedSaveMixin, description, CommandException, ConfigNamespace, BaseVariantMixin,
-    Namespace
+    TaskBasedSaveMixin, description, CommandException, ConfigNamespace, BaseVariantMixin, Namespace
 )
 from freenas.cli.output import Object, ValueType, get_humanized_size
 from freenas.cli.utils import TaskPromise, post_save, EntityPromise, get_item_stub, get_related, set_related
@@ -1389,10 +1388,10 @@ class CloneVMSnapshotCommand(Command):
 
 
 @description("Container templates operations")
-class TemplateNamespace(RpcBasedLoadMixin, EntityNamespace):
+class TemplateNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
     def __init__(self, name, context):
         super(TemplateNamespace, self).__init__(name, context)
-        self.query_call = 'vm.template.query'
+        self.entity_subscriber_name = 'vm.template'
         self.primary_key_name = 'template.name'
         self.allow_create = False
 

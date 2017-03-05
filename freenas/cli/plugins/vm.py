@@ -1105,16 +1105,16 @@ class VMVolumeNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityName
         }
         self.required_props = ['name']
         self.localdoc['CreateEntityCommand'] = ("""\
-            Usage: create <name> destination=<destination> <property>=<value> ...
+            Usage: create <name> path=<destination> <property>=<value> ...
 
-            Examples: create myvolume destination=/mnt/tank/vmvolume
+            Examples: create myvolume path=/mnt/tank/vmvolume
 
             Creates a VM volume. For a list of properties, see 'help properties.'""")
         self.entity_localdoc['SetEntityCommand'] = ("""\
             Usage: set <property>=<value> ...
 
             Examples: set auto=yes
-                      set destination=/mnt/tank/newdest
+                      set path=/mnt/tank/newdest
 
             Sets a VM volume property. For a list of properties, see 'help properties'.""")
         self.entity_localdoc['DeleteEntityCommand'] = ("""\
@@ -1148,7 +1148,7 @@ class VMVolumeNamespace(NestedObjectLoadMixin, NestedObjectSaveMixin, EntityName
 
         self.add_property(
             descr='Destination path',
-            name='destination',
+            name='path',
             get='properties.destination',
             usage=_("The path on the filesystem where the volume is stored")
         )

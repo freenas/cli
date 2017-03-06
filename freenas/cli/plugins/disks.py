@@ -71,17 +71,6 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityN
             return '{description} ({name})'.format(**enclosure)
 
         self.add_property(
-            descr='Path',
-            name='path',
-            get='path',
-            usage=_("""\
-            Full path of disk device. Read-only value is
-            assigned by operating system."""),
-            set=None,
-            list=True
-        )
-
-        self.add_property(
             descr='Name',
             name='name',
             get=lambda row: os.path.basename(row.get('path')),

@@ -1267,8 +1267,8 @@ class OlderThanPipeCommand(PipeCommand):
 
     def serialize_filter(self, context, args, kwargs, opargs):
         return {"filter": [
-            ('started_at', '!=', None),
-            ('started_at', '<=', datetime.now() - parse_timedelta(args[0]))
+            ('timestamp', '!=', None),
+            ('timestamp', '<=', datetime.now() - parse_timedelta(args[0]))
         ]}
 
 
@@ -1289,9 +1289,37 @@ class NewerThanPipeCommand(PipeCommand):
 
     def serialize_filter(self, context, args, kwargs, opargs):
         return {"filter": [
-            ('started_at', '!=', None),
-            ('started_at', '>=', datetime.now() - parse_timedelta(args[0]))
+            ('timestamp', '!=', None),
+            ('timestamp', '>=', datetime.now() - parse_timedelta(args[0]))
         ]}
+
+
+@description("Selects last n items")
+class TailPipeCommand(PipeCommand):
+    """
+    Usage: <command> | tail <n>
+
+    Example: log show | tail 10
+
+    Returns last n entries of a list (entity must have the "timestamp" property).
+    """
+    def run(self, context, args, kwargs, opargs, input=None):
+        return input
+
+    def serialize_filter(self, context, args, kwargs, opargs):
+        if len(args) == 0:
+            raise CommandException(_("Please specify a number to limit."))
+
+        if not isinstance(args[0], int) or len(args) > 1:
+            raise CommandException(_(
+                "Invalid syntax {0}. For help see 'help <command>'".format(args)
+            ))
+
+        return {'params': {
+            'sort': ['-timestamp'],
+            'limit': args[0],
+            'reverse': True
+        }}
 
 
 @description("Exclude results which match specified condition")
@@ -1349,8 +1377,10 @@ class SortPipeCommand(PipeCommand):
 class LimitPipeCommand(PipeCommand):
     """
     Usage: <command> | limit <n>
+           <command> | head <n>
 
     Example: account user show | limit 10
+             network interface show | head 2
 
     Return only the specified number of elements in a list.
     """

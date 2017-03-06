@@ -991,6 +991,10 @@ class BaseListCommand(FilteringCommand):
                     options['limit'] = int(v)
                     continue
 
+                if k == 'reverse':
+                    options['reverse'] = v
+                    continue
+
                 if k == 'sort':
                     for sortkey in v:
                         neg = ''
@@ -1165,7 +1169,7 @@ class EntityNamespace(Namespace):
         self.has_entities_in_subnamespaces_only = False
 
     def has_property(self, prop):
-        return any([x for x in self.property_mappings if x.name == prop])
+        return any(x for x in self.property_mappings if x.name == prop)
 
     def get_mapping(self, prop):
         return first_or_default(lambda x: x.name == prop, self.property_mappings)

@@ -199,6 +199,17 @@ class TasksNamespace(EntitySubscriberBasedLoadMixin, EntityNamespace):
         )
 
         self.add_property(
+            descr='Created at',
+            name='timestamp',
+            usage=_("""\
+            When the task was created. Read-only value assigned by the
+            operating system."""),
+            get='created_at',
+            list=False,
+            type=ValueType.TIME
+        )
+
+        self.add_property(
             descr='Started at',
             name='started_at',
             usage=_("""\

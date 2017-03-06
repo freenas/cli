@@ -57,7 +57,7 @@ from freenas.cli import functions
 from freenas.cli import config
 from freenas.cli.namespace import (
     Namespace, EntityNamespace, RootNamespace, SingleItemNamespace, ConfigNamespace, Command,
-    FilteringCommand, PipeCommand, CommandException,
+    FilteringCommand, PipeCommand, CommandException
 )
 from freenas.cli.parser import (
     parse, unparse, Symbol, Literal, BinaryParameter, UnaryExpr, BinaryExpr, PipeExpr, AssignmentStatement,
@@ -79,7 +79,7 @@ from freenas.cli.commands import (
     ExitCommand, PrintoptCommand, SetoptCommand, SetenvCommand, PrintenvCommand,
     ShellCommand, HelpCommand, ShowUrlsCommand, ShowIpsCommand, TopCommand, ClearCommand,
     HistoryCommand, SaveoptCommand, EchoCommand, SourceCommand, MorePipeCommand,
-    SearchPipeCommand, ExcludePipeCommand, SortPipeCommand, LimitPipeCommand,
+    SearchPipeCommand, ExcludePipeCommand, SortPipeCommand, LimitPipeCommand, TailPipeCommand,
     SelectPipeCommand, FindPipeCommand, LoginCommand, DumpCommand, WhoamiCommand, PendingCommand,
     WaitCommand, OlderThanPipeCommand, NewerThanPipeCommand, IndexCommand, AliasCommand,
     UnaliasCommand, ListVarsCommand, AttachDebuggerCommand, ChangeNamespaceCommand,
@@ -970,6 +970,8 @@ class MainLoop(object):
         'exclude': ExcludePipeCommand,
         'sort': SortPipeCommand,
         'limit': LimitPipeCommand,
+        'head': LimitPipeCommand,
+        'tail': TailPipeCommand,
         'select': SelectPipeCommand,
         'find': FindPipeCommand,
         'more': MorePipeCommand,

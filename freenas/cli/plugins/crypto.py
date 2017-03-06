@@ -87,36 +87,65 @@ class ImportCertificateCommand(Command):
         ]
 
 
-@description("Exports Certificate/CA")
-class ExportCertificateCommand(Command):
+@description("Exports private key for selected Certificate/CA to a file")
+class ExportPrivatekeyCommand(Command):
     """
-    Exports a Certificate / CA and a related privatekey to a user specified location.
-    Name of the certificate and privatekey files will be the same as certificate name,
-    with suffixes '.crt' and '.key' respectively
+    Exports privatekey of selected Certificate / CA to a user specified location.
+    Name of the privatekey file will be the same as certificate name with suffix '.key'
 
     Usage:
-        export path=/abs/path/to/target/dir
+        export_privatekey path=/abs/path/to/target/dir
 
     Examples:
-        /crypto certificate mycert export path=/mnt/mypool/myexported_certs/
+        /crypto mycert export_privatekey path=/mnt/mypool/myexported_certs/
     """
     def __init__(self, parent):
         self.parent = parent
 
     def run(self, context, args, kwargs, opargs):
         if not kwargs:
-            raise CommandException(_("Export requires more arguments. For help see 'help export'"))
+            raise CommandException(_("Export requires more arguments."
+                                     " For help see '/ crypto <certname> help export_privatekey'"))
         if 'path' not in kwargs:
             raise CommandException(_("Please specify path where the certificate should be exported. "
-                                     "For help see 'help import'"))
-        if self.parent.entity['certificate']:
-            p = Path(PurePath(kwargs['path']).joinpath(self.parent.entity['name']).with_suffix('.crt'))
-            with p.open('w') as f:
-                f.writelines(self.parent.entity['certificate'])
+                                     "For help see '/ crypto <certname> help export_privatekey'"))
         if self.parent.entity['privatekey']:
             p = Path(PurePath(kwargs['path']).joinpath(self.parent.entity['name']).with_suffix('.key'))
             with p.open('w') as f:
                 f.writelines(self.parent.entity['privatekey'])
+
+    def complete(self, context, **kwargs):
+        return [
+            NullComplete('path='),
+        ]
+
+
+@description("Exports Certificate/CA")
+class ExportCertificateCommand(Command):
+    """
+    Exports a Certificate / CA to a user specified location.
+    Name of the certificate file will be the same as certificate name with suffix '.crt'
+
+    Usage:
+        export_certificate path=/abs/path/to/target/dir
+
+    Examples:
+        /crypto mycert export_certificate path=/mnt/mypool/myexported_certs/
+    """
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        if not kwargs:
+            raise CommandException(_("Export requires more arguments."
+                                     " For help see '/ crypto <certname> help export_certificate'"))
+        if 'path' not in kwargs:
+            raise CommandException(_("Please specify path where the certificate should be exported. "
+                                     "For help see '/ crypto <certname> help export_certificate'"))
+        if self.parent.entity['certificate']:
+            p = Path(PurePath(kwargs['path']).joinpath(self.parent.entity['name']).with_suffix('.crt'))
+            with p.open('w') as f:
+                f.writelines(self.parent.entity['certificate'])
 
     def complete(self, context, **kwargs):
         return [
@@ -185,7 +214,8 @@ class CryptoNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Entity
             """)
 
         self.entity_commands = lambda this: {
-            'export': ExportCertificateCommand(this)
+            'export_certificate': ExportCertificateCommand(this),
+            'export_privatekey': ExportPrivatekeyCommand(this)
         }
 
         self.extra_commands = {

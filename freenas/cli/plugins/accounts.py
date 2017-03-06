@@ -768,8 +768,7 @@ class ActiveDirectoryPropertiesNamespace(BaseDirectoryPropertiesNamespace):
         self.add_property(
             descr='Password',
             name='password',
-            get=None,
-            set='password',
+            get='password',
             type=ValueType.PASSWORD,
             usage=_("Active Directory privileged user password")
         )
@@ -820,8 +819,7 @@ class FreeIPAPropertiesNamespace(BaseDirectoryPropertiesNamespace):
         self.add_property(
             descr='Password',
             name='password',
-            get=None,
-            set='password',
+            get='password',
             type=ValueType.PASSWORD,
             usage=_("FreeIPA privileged user password")
         )
@@ -862,8 +860,7 @@ class LDAPPropertiesNamespace(BaseDirectoryPropertiesNamespace):
         self.add_property(
             descr='Bind password',
             name='password',
-            get=None,
-            set='password',
+            get='password',
             type=ValueType.PASSWORD,
             usage=_("LDAP privileged user password")
         )

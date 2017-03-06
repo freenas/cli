@@ -34,6 +34,7 @@ from freenas.cli.namespace import (
     ConfigNamespace, ItemNamespace, NestedEntityMixin
 )
 from freenas.cli.output import ValueType, Sequence
+from freenas.dispatcher import Password
 from freenas.utils.query import get
 
 
@@ -231,7 +232,8 @@ class UsersNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityN
             descr='Password',
             name='password',
             type=ValueType.PASSWORD,
-            get='password',
+            get=lambda o: Password(''),
+            set='password',
             usage=_("""\
             Mandatory unless "password_disabled=true" is
             specified when creating the user. Passwords

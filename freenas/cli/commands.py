@@ -54,6 +54,7 @@ from freenas.cli.descriptions.tasks import translate as translate_task
 from freenas.cli.utils import TaskPromise, describe_task_state, parse_timedelta, add_tty_formatting, quote
 from freenas.dispatcher.shell import ShellClient
 from freenas.utils.url import wrap_address
+from urllib.parse import urlparse
 
 
 if platform.system() != 'Windows':
@@ -466,7 +467,13 @@ class ShellCommand(Command):
         name = ' '.join(str(i) for i in args) if len(args) > 0 else '/bin/sh'
         size = get_terminal_size()
         token = context.call_sync('shell.spawn', name, size[1], size[0])
-        shell = ShellClient(context.hostname, token)
+        port = 80
+        path = 'dispatcher/shell'
+        if urlparse(context.uri).scheme == 'unix':
+            port = 5000
+            path = 'shell'
+
+        shell = ShellClient(context.hostname, token, port, path)
         shell.on_data(read)
         shell.on_close(close)
         shell.open()

@@ -32,6 +32,7 @@ import curses
 import termios
 import select
 from threading import Thread
+from urllib.parse import urlparse
 from freenas.dispatcher.shell import VMConsoleClient
 
 
@@ -57,7 +58,13 @@ class Console(object):
 
     def connect(self):
         token = self.context.call_sync('containerd.console.request_console', self.id)
-        self.conn = VMConsoleClient(self.context.hostname, token)
+        port = 80
+        path = 'containerd/console'
+        if urlparse(self.context.uri).scheme == 'unix':
+            path = 'console'
+            port = 5500
+
+        self.conn = VMConsoleClient(self.context.hostname, token, port, path)
         self.conn.on_data(self.on_data)
         self.conn.on_close(self.on_close)
         self.conn.open()

@@ -1007,9 +1007,12 @@ a group use **`account group create`**:
 
    127.0.0.1:>account group create bar
    127.0.0.1:>account group bar show
-   Group name (name)         bar
-   Group ID (gid)            1001
-   Builtin group (builtin)   no
+          Property                 Description          Value   Settable
+  name                       Group name                 bar     yes
+  gid                        Group ID                   1001    yes
+  administrator_privileges   Administrator privileges   no      yes
+  builtin                    Builtin group              no      no
+  domain                     Domain                     local   no
 
 To change a group's name use **`set`**:
 

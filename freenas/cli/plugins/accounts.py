@@ -457,6 +457,18 @@ class GroupsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entity
         )
 
         self.add_property(
+            descr='Administrator privileges',
+            name='administrator_privileges',
+            get='sudo',
+            usage=_("""\
+            Can be set to true or false. When set to true, the
+            group is allowed to use sudo to run commands
+            with administrative permissions."""),
+            list=False,
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
             descr='Builtin group',
             name='builtin',
             get='builtin',

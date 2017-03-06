@@ -778,6 +778,13 @@ class AdvancedNamespace(ConfigNamespace):
         )
 
         self.add_property(
+            descr='Home directory root',
+            name='home_directory_root',
+            get='home_directolry_root',
+            usage=_("""Parent directory for directory service users' homes""")
+        )
+
+        self.add_property(
             descr='Remote Graphite servers',
             name='graphite_servers',
             get='graphite_servers',

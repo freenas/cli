@@ -330,8 +330,7 @@ class BootPoolShowDisksCommand(Command):
 
     def run(self, context, args, kwargs, opargs):
         volume = context.call_sync('boot.pool.get_config')
-        result = list(iterate_vdevs(volume['topology']))
-        return Table(result, [
+        return Table(volume['disks'], [
             Table.Column('Name', 'path'),
             Table.Column('Status', 'status')
         ])

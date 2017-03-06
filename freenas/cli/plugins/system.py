@@ -780,7 +780,7 @@ class AdvancedNamespace(ConfigNamespace):
         self.add_property(
             descr='Home directory root',
             name='home_directory_root',
-            get='home_directolry_root',
+            get='home_directory_root',
             usage=_("""Parent directory for directory service users' homes""")
         )
 

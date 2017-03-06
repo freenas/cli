@@ -796,10 +796,13 @@ class SmartNamespace(CalendarTasksNamespaceBaseClass):
         )
 
     def get_disks(self, obj):
-        return self.context.entity_subscribers['disk'].query(
-            ('id', 'in', self.get_task_args(obj, 'disks')),
-            select='name'
-        )
+        try:
+            return self.context.entity_subscribers['disk'].query(
+                ('id', 'in', self.get_task_args(obj, 'disks')),
+                select='name'
+            )
+        except:
+            return []
 
     def set_disks(self, obj, disk_names):
         all_disks = self.context.entity_subscribers['disk'].query(select='name')

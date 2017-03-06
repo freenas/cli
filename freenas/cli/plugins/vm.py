@@ -500,11 +500,12 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
         )
 
         self.add_property(
-            descr='Start on boot',
+            descr='Autostart',
             name='autostart',
             get='config.autostart',
             type=ValueType.BOOLEAN,
-            usage=_("Property that controls whether the VM is autostarted on System Boot up")
+            usage=_("Property that controls whether the VM is autostarted on System Boot up, after VM crash"
+                    " and after VM create operations.")
         )
 
         self.add_property(

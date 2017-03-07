@@ -138,8 +138,12 @@ class InfoCommand(Command):
                             namespace.name == 'volume':
                 output_dict[namespace.name] = get_show(namespace)
 
-            elif namespace.name == 'directoryservice':
-                for nested_namespace in namespace.namespaces():
+            elif namespace.name == 'account':
+                for account_nested_namespace in namespace.namespaces():
+                    if account_nested_namespace.name == 'directoryservice':
+                        directory_namespace = account_nested_namespace
+
+                for nested_namespace in directory_namespace.namespaces():
                     if nested_namespace.name == 'directories':
                         output_dict[nested_namespace.name] = get_show(nested_namespace)
                     if nested_namespace.name == 'kerberos':

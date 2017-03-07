@@ -26,6 +26,7 @@
 #####################################################################
 
 import gettext
+import math
 from pathlib import Path
 from freenas.cli.namespace import (
     Namespace, ConfigNamespace, Command, CommandException, description,
@@ -38,6 +39,14 @@ from freenas.dispatcher.fd import FileDescriptor
 
 t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
+
+
+def set_swapondrive(entity, swapondrive):
+    if isinstance(swapondrive, int):
+        swapondrive = math.ceil(swapondrive / (1024 * 1024 * 1024))
+        entity['swapondrive'] = int(swapondrive)
+    else:
+        raise CommandException(_('Invalid input: {0}'.format(swapondrive)))
 
 
 @description("Shuts the system down")
@@ -727,8 +736,9 @@ class AdvancedNamespace(ConfigNamespace):
             usage=_("""\
             Non-zero number representing the default swap size, for each
             formatted disk, in GiB."""),
-            get='swapondrive',
-            type=ValueType.NUMBER
+            set=set_swapondrive,
+            get=lambda o: o['swapondrive'] * 1024 * 1024 * 1024,
+            type=ValueType.SIZE
         )
 
         self.add_property(

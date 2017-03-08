@@ -531,12 +531,11 @@ class DirectoryServicesConfigNamespace(ConfigNamespace):
         self.config_call = "directoryservice.get_config"
         self.update_task = 'directoryservice.update'
 
-
         self.add_property(
             descr='Search order',
             name='search_order',
             get='search_order',
-            type=ValueType.SET,
+            type=ValueType.ARRAY,
             usage=_('''\
             Serach order for the directory service connections
             created within 'directories' namespace.''')

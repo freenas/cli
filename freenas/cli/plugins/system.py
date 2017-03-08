@@ -110,8 +110,6 @@ class InfoCommand(Command):
     """
 
     def run(self, context, args, kwargs, opargs):
-        if context.docgen_run:
-            return
         root_namespaces = context.root_ns.namespaces()
         output_dict = {}
         output = Sequence()

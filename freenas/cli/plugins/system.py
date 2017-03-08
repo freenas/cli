@@ -141,16 +141,14 @@ class InfoCommand(Command):
             elif namespace.name == 'account':
                 for account_nested_namespace in namespace.namespaces():
                     if account_nested_namespace.name == 'directoryservice':
-                        directory_namespace = account_nested_namespace
-
-                for nested_namespace in directory_namespace.namespaces():
-                    if nested_namespace.name == 'directories':
-                        output_dict[nested_namespace.name] = get_show(nested_namespace)
-                    if nested_namespace.name == 'kerberos':
-                        for kerberos_namespace in nested_namespace.namespaces():
-                            if kerberos_namespace.name == 'keytab' or \
-                                            kerberos_namespace.name == 'realm':
-                                output_dict[kerberos_namespace.name] = get_show(kerberos_namespace)
+                        for nested_namespace in account_nested_namespace.namespaces():
+                            if nested_namespace.name == 'directories':
+                                output_dict[nested_namespace.name] = get_show(nested_namespace)
+                            if nested_namespace.name == 'kerberos':
+                                for kerberos_namespace in nested_namespace.namespaces():
+                                    if kerberos_namespace.name == 'keytab' or \
+                                                    kerberos_namespace.name == 'realm':
+                                        output_dict[kerberos_namespace.name] = get_show(kerberos_namespace)
 
             elif namespace.name == 'network':
                 for nested_namespace in namespace.namespaces():

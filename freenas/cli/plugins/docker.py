@@ -1785,7 +1785,6 @@ class DockerFetchPresetsCommand(Command):
         else:
             raise CommandException(_('Collection name not specified'))
 
-
         force = read_value(kwargs.get('force', False), ValueType.BOOLEAN)
 
         tid = context.submit_task(

@@ -435,10 +435,15 @@ class DockerContainerNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixi
 
             o['volumes'] = volumes
 
+        def set_name(o, v):
+            check_name(v, docker_names_pattern)
+            q.set(o, 'names.0', v)
+
         self.add_property(
             descr='Name',
             name='name',
             get='names.0',
+            set=set_name,
             list=True,
             usage=_('Name of a container instance.')
         )

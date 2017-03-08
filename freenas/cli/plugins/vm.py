@@ -1676,6 +1676,7 @@ class GuestExecCommand(Command):
     def run(self, context, args, kwargs, opargs):
         return context.call_sync('vm.guest_exec', self.parent.entity['id'], args[0], args[1:])
 
+
 class GuestCpCommand(Command):
     """
     Usage: cp host:<path> guest:<path>
@@ -1755,6 +1756,9 @@ class VMSCSIPortsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
         self.create_task = 'vm.scsi.port.create'
         self.update_task = 'vm.scsi.port.update'
         self.delete_task = 'vm.scsi.port.delete'
+        self.skeleton_entity = {
+            'luns': []
+        }
 
         self.add_property(
             descr='Port number',

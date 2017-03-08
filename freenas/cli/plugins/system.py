@@ -130,12 +130,7 @@ class InfoCommand(Command):
                 output.append(output_dict[key])
 
         for namespace in root_namespaces:
-            if namespace.name == 'system' or \
-                            namespace.name == 'service' or \
-                            namespace.name == 'vm' or \
-                            namespace.name == 'disk' or \
-                            namespace.name == 'share' or \
-                            namespace.name == 'volume':
+            if namespace.name in ('system', 'service', 'vm', 'disk', 'share', 'volume'):
                 output_dict[namespace.name] = get_show(namespace)
 
             elif namespace.name == 'account':

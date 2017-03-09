@@ -1,0 +1,11 @@
+# Hide all datasets matching a specific name.  In this example, we attempt
+# to hide all of the .vm internal datasets.
+
+match="\.vm"
+
+for (vol in $(volume show)) {
+        for (dset in $(volume ${vol["name"]} dataset show | search name ~= ${match})) {
+                printf("setting hidden attribute on %s\n", dset["name"])
+                $(volume ${vol["name"]} dataset ${dset["name"]} set hidden=yes)
+        }
+}

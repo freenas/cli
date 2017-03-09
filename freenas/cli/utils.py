@@ -167,6 +167,13 @@ def to_list(item):
     return [item]
 
 
+def to_ascii(data):
+    if os.getenv('LANG', 'C') == 'C':
+        utf = data.decode('utf-8')
+        data = utf.encode('ascii', 'replace')
+
+    return data.decode('utf-8')
+
 def correct_disk_path(disk):
     return os.path.join('/dev', disk)
 

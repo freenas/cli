@@ -51,7 +51,7 @@ from freenas.cli.output import (
 )
 from freenas.cli.output import Object as output_obj, get_terminal_size
 from freenas.cli.descriptions.tasks import translate as translate_task
-from freenas.cli.utils import TaskPromise, describe_task_state, parse_timedelta, add_tty_formatting, quote
+from freenas.cli.utils import TaskPromise, describe_task_state, parse_timedelta, add_tty_formatting, quote, to_ascii
 from freenas.dispatcher.shell import ShellClient
 from freenas.utils.url import wrap_address
 from urllib.parse import urlparse
@@ -457,7 +457,7 @@ class ShellCommand(Command):
             self.resize = True
 
         def read(data):
-            sys.stdout.write(data.decode('utf8'))
+            sys.stdout.write(to_ascii(data))
             sys.stdout.flush()
 
         def close():

@@ -279,13 +279,6 @@ class UPSNamespace(NestedEntityMixin, ItemNamespace):
             type=ValueType.BOOLEAN,
         )
         self.add_property(
-            descr='Auxiliary Users',
-            name='auxiliary_users',
-            usage=_(""""""),
-            get='auxiliary_users',
-            type=ValueType.STRING,
-        )
-        self.add_property(
             descr='Propagate UPS alerts',
             name='propagate_alerts',
             usage=_("""

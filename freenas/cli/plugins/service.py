@@ -1728,9 +1728,14 @@ class WebDAVNamespace(NestedEntityMixin, ItemNamespace):
             name='certificate',
             usage=_("""The SSL certificate to be used for Secure WebDAV
             connections. Enclose the certificate between double quotes"""),
-            get='certificate',
+            get=lambda o: get_related(self.context, 'crypto.certificate', o, 'certificate'),
+            set=lambda o, v: set_related(self.context, 'crypto.certificate', o, 'certificate', v),
+            complete=EntitySubscriberComplete(
+                'certificate=',
+                'crypto.certificate',
+                lambda o: o['name'] if o['type'] != 'CERT_CSR' else None
+            ),
             type=ValueType.STRING,
-            complete=EntitySubscriberComplete('certificate=', 'crypto.certificate', lambda o: o['name']),
             list=True
         )
         self.add_property(

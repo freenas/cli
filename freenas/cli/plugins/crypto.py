@@ -112,7 +112,7 @@ class ExportPrivatekeyCommand(Command):
         if self.parent.entity['privatekey']:
             p = Path(PurePath(kwargs['path']).joinpath(self.parent.entity['name']).with_suffix('.key'))
             with p.open('w') as f:
-                f.writelines(self.parent.entity['privatekey'])
+                f.writelines(self.parent.entity['privatekey'].secret)
 
     def complete(self, context, **kwargs):
         return [
@@ -303,7 +303,7 @@ class CryptoNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, Entity
             usage=_("""\
             Private key associated with the certificate.
             """),
-            type=ValueType.TEXT_FILE,
+            type=ValueType.PASSWORD,
             createsetable=False,
             usersetable=lambda e: e['type'] in ('CA_EXISTING', 'CERT_EXISTING'),
             list=False,

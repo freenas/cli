@@ -509,11 +509,11 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             name='compression',
             get=get_compress,
             set=set_compress,
-            enum=['no', 'fast', 'default', 'best'],
+            enum=['no', 'FAST', 'DEFAULT', 'BEST'],
             list=False,
             usage=_('''\
             Compression algorithm used during replication stream send operation.
-            Can be one of: 'no', 'fast', 'default', 'best'.''')
+            Can be one of: 'no', 'FAST', 'DEFAULT', 'BEST'.''')
         )
 
         self.add_property(

@@ -137,6 +137,7 @@ class HistoryCommand(Command):
                 Table.Column('Started', 'started_at', ValueType.TIME),
                 Table.Column('Ended', 'ended_at', ValueType.TIME),
                 Table.Column('Status', 'status'),
+                Table.Column('Message', 'message'),
                 Table.Column('Send size', lambda row: human_readable_bytes(row['size'])),
                 Table.Column('Transfer speed', lambda row: human_readable_bytes(row['speed'], '/s')),
             ]

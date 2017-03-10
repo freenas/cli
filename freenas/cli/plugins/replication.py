@@ -309,7 +309,7 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
             if oldval:
                 obj['transport_options'].remove(oldval)
             if val:
-                obj.append(val)
+                obj['transport_options'].append(val)
 
         def set_compress(obj, val):
             opt = None

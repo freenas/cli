@@ -312,6 +312,9 @@ def read_value(value, tv=ValueType.STRING):
         if tv == ValueType.SET:
             return set()
 
+        if tv == ValueType.BOOLEAN:
+            return False
+
         return value
 
     if tv in (ValueType.STRING, ValueType.TEXT_FILE):

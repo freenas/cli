@@ -74,9 +74,6 @@ function clear_sentinel() {
 function nuke_from_orbit() {
 	setopt abort_on_errors=no
 	volume ${VOL_NAME} snapshot ${VOL_NAME + "@" + _snap_name} delete
-	# This should take care of snapshots / datasets / VMs / containers too
-	volume ${VOL_NAME} delete
-
 	action_by_name("account user", TEST_USER + ".*", "delete")
 	action_by_name("account group", TEST_USER + ".*", "delete")
 	action_by_name("account group", TEST_GROUP + ".*", "delete")
@@ -91,6 +88,7 @@ function nuke_from_orbit() {
 	action_by_name("vm", _vm_name + ".*", "delete")
 	action_by_name("docker container", _container_name + ".*", "delete")
 	action_by_name("vm", _container_vm_name, "delete")
+	volume ${VOL_NAME} delete
 	clear_sentinel()
 }
 

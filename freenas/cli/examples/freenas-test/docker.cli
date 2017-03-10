@@ -16,22 +16,20 @@ function docker_create() {
 	@$(docker fetch_presets collection=freenas)
 	_container_vm_obj = @$(vm create name=${_container_vm_name} template=boot2docker datastore=${VOL_NAME})
 	maybe_barf(_success, "+docker#1", "Unable to create vm " + _container_vm_name + " for containers.")
-	@$(_container_vm_obj start)
-	maybe_barf(_success, "+docker#2", "Unable to start vm " + _container_vm_name + " for containers.")
 	_container_obj = @$(docker container create image=${_image_name} name=${_container_name} command="/bin/sh" interactive=yes host=${_container_vm_name})
-	maybe_barf(_success, "+docker#3", "Unable to create docker container " + _container_name)
+	maybe_barf(_success, "+docker#2", "Unable to create docker container " + _container_name)
 	@$(docker container create image=${_image_name} name=${_container_name_bad} command="/bin/sh" interactive=yes host=${_container_vm_name})
-	maybe_barf(_success == false, "+docker#4", "Creating known bad docker container " + _container_name_bad + " succeeded.")
+	maybe_barf(_success == false, "+docker#3", "Creating known bad docker container " + _container_name_bad + " succeeded.")
 	_x = $(_container_obj get name)
 	if (_x != _container_name) {
-	    maybe_barf(_success, "+docker#5", "docker container name is not " + _container_name)
+	    maybe_barf(_success, "+docker#4", "docker container name is not " + _container_name)
 	}
 	_y = $(docker image show | find name ~= ${_image_name})
-	maybe_barf(_y == _image_name, "+docker#6", "docker image for " + _image_name + " not found")
+	maybe_barf(_y == _image_name, "+docker#5", "docker image for " + _image_name + " not found")
 	@$(_container_obj start)
-	maybe_barf(_success, "+docker#7", "Unable to start docker container " + _container_name)
+	maybe_barf(_success, "+docker#6", "Unable to start docker container " + _container_name)
 	@$(_container_obj stop)
-	maybe_barf(_success, "+docker#8", "Unable to stop docker container " + _container_name)
+	maybe_barf(_success, "+docker#7", "Unable to stop docker container " + _container_name)
 }
 
 function docker_destroy() {

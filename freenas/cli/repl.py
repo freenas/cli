@@ -82,7 +82,7 @@ from freenas.cli.commands import (
     SearchPipeCommand, ExcludePipeCommand, SortPipeCommand, LimitPipeCommand, TailPipeCommand,
     SelectPipeCommand, FindPipeCommand, LoginCommand, DumpCommand, WhoamiCommand, PendingCommand,
     WaitCommand, OlderThanPipeCommand, NewerThanPipeCommand, IndexCommand, AliasCommand,
-    UnaliasCommand, ListVarsCommand, AttachDebuggerCommand, ChangeNamespaceCommand,
+    UnaliasCommand, ListVarsCommand, AttachDebuggerCommand,
     WCommand, TimeCommand, RemoteCommand, BuiltinCommand
 )
 from freenas.cli.docgen import CliDocGen
@@ -1005,7 +1005,6 @@ class MainLoop(object):
         'unalias': UnaliasCommand,
         'vars': ListVarsCommand,
         'attach_debugger': AttachDebuggerCommand,
-        'cd': ChangeNamespaceCommand,
         'w': WCommand,
         'time': TimeCommand,
         'remote': RemoteCommand,

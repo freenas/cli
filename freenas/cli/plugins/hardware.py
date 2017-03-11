@@ -64,9 +64,10 @@ class ShowHardwareCommand(Command):
                 raise CommandException(_("Namespace {0} does not have 'show' command".format(obj.name)))
 
         def append_out(key):
-            if len(output_dict[key]) > 0:
+            if key == 'ipmi' or len(output_dict[key]) > 0:
                 output.append("\nData about {0}:".format(key))
                 output.append(output_dict[key])
+
 
         for namespace in namespaces:
             output_dict[namespace.name] = get_show(namespace)

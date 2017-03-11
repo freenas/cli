@@ -354,17 +354,11 @@ class BootPoolAttachDiskCommand(Command):
             raise CommandException('Not enough arguments provided')
 
         disk = args.pop(0)
-        all_disks = context.call_sync('disk.query', [], {"select":"path"})
-        available_disks = context.call_sync('volume.get_available_disks')
         disk = correct_disk_path(disk)
+        all_disks = context.entity_subscribers['disk'].query(select='path')
 
         if disk not in all_disks:
-            output_msg("Disk " + disk + " does not exist.")
-            return
-
-        if disk not in available_disks:
-            output_msg("Disk " + disk + " is not usable.")
-            return
+            raise CommandException(f"Disk {disk} does not exist.")
 
         tid = context.submit_task('boot.disk.attach', disk)
         return TaskPromise(context, tid)
@@ -385,17 +379,11 @@ class BootPoolReplaceDiskCommand(Command):
 
         olddisk = args.pop(0)
         disk = args.pop(0)
-        all_disks = context.call_sync('disk.query', [], {"select": "path"})
-        available_disks = context.call_sync('volume.get_available_disks')
         disk = correct_disk_path(disk)
+        all_disks = context.entity_subscribers['disk'].query(select='path')
 
         if disk not in all_disks:
-            output_msg("Disk " + disk + " does not exist.")
-            return
-
-        if disk not in available_disks:
-            output_msg("Disk " + disk + " is not usable.")
-            return
+            raise CommandException(f"Disk {disk} does not exist.")
 
         tid = context.submit_task('boot.disk.replace', olddisk, disk)
         return TaskPromise(context, tid)

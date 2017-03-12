@@ -99,7 +99,7 @@ class SendAlertCommand(Command):
         return EntityPromise(context, tid, ns)
 
     def complete(self, context, **kwargs):
-        return [EnumComplete('priority=', ('INFO', 'WARNING', 'ERROR'))]
+        return [EnumComplete('priority=', ('INFO', 'WARNING', 'CRITICAL'))]
 
 
 @description("Set predicates for alert filter")

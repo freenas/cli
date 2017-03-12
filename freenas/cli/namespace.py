@@ -427,11 +427,12 @@ class ItemNamespace(Namespace):
             self.parent.load()
 
             entity = self.parent.entity
-            value = self.parent.get_property(args[0], entity)
+            mapping = self.parent.get_mapping(args[0])
+            value = mapping.do_get(entity)
             if value is None:
                 return PrintableNone()
 
-            return value
+            return format_value(value, mapping.type)
 
         def complete(self, context, **kwargs):
             if 'kwargs' in kwargs:

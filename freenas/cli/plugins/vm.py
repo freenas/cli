@@ -481,7 +481,7 @@ class VMNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, EntityName
         )
 
         self.add_property(
-            descr='Memory size (MB)',
+            descr='Memory size',
             name='memsize',
             get=lambda o: get(o, 'config.memsize') * 1024 * 1024,
             set=lambda o, v: set(o, 'config.memsize', int(v / 1024 / 1024)),

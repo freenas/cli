@@ -101,6 +101,19 @@ class StatusCommand(Command):
         )
 
 
+@description("Resumes FreeNAS 9.x migration task post passphrase encrypted volumes import")
+class ResumeMigrationCommand(Command):
+    """
+    Usage: resume_migration
+
+    Resumes FreeNAS 9.x migration task post passphrase encrypted volumes import
+    """
+
+    def run(self, context, args, kwargs, opargs):
+        tid = context.submit_task('migration.mastermigrate', True)
+        return TaskPromise(context, tid)
+
+
 @description("Provides information about running system")
 class InfoCommand(Command):
     """
@@ -808,6 +821,10 @@ class AdvancedNamespace(ConfigNamespace):
             used by peers of a type 'freenas'.
             This value is expressed in seconds."""),
         )
+
+        self.extra_commands = {
+            'resume_migration': ResumeMigrationCommand(self)
+        }
 
 
 @description("Configuration database operations")

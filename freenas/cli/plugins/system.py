@@ -763,6 +763,16 @@ class AdvancedNamespace(ConfigNamespace):
         )
 
         self.add_property(
+            descr='Enable Debug UI',
+            name='debugui',
+            usage=_("""\
+            Can be set to yes or no. When set to yes, debug ui will
+            appear on port 8180 on your machine.  Requires a reboot."""),
+            get='debugui',
+            type=ValueType.BOOLEAN
+        )
+
+        self.add_property(
             descr='Automatically upload crash dumps to iXsystems',
             name='uploadcrash',
             usage=_("""\

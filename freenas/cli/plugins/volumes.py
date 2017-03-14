@@ -455,6 +455,75 @@ class ImportVolumeCommand(Command):
         return EntityPromise(context, tid, ns)
 
 
+@description("Imports given volume from FreeNAS 9.x passphrase encryted volume(s)")
+class MigrationImportVolumeCommand(Command):
+    """
+    Usage: migration_import <name> password=<password>
+
+    Example: migration_import crypty passphrase="lolers"
+            migration_import name=ency passphrase=mysupersecretpassphrase
+
+    Imports passphrase encrypted FreeNAS 9.x volume
+    The volume name and passphrase are both required
+    """
+
+    def __init__(self, parent):
+        self.parent = parent
+
+    def run(self, context, args, kwargs, opargs):
+        if not args and not kwargs:
+            raise CommandException(_(
+                "{0} requires more arguments, see 'help {0}' for more information".format(
+                    "migration_import"
+                )
+            ))
+        if len(args) > 1:
+            raise CommandException(_(
+                "Wrong syntax for {0}, see 'help {0}' for more information".format(
+                    "migration_import"
+                )
+            ))
+
+        # This magic below make either `migration_import foo` or `migration_import name=foo` work
+        if len(args) == 1:
+            # However, do not allow user to specify name as both implicit
+            # and explicit parameter as this suggests a mistake
+            if 'name' in kwargs:
+                raise CommandException(_(
+                    "Both implicit and explicit 'name' parameters are specified."
+                ))
+            else:
+                kwargs[self.parent.primary_key.name] = str(args.pop(0))
+
+        name = kwargs.get('name')
+        if name is None:
+            raise CommandException(_('Please specify a name for your pool'))
+
+        passphrase = kwargs.get('passphrase')
+        if passphrase is None:
+            raise CommandException(
+                'You have to provide passphrase when importing FreeNAS 9.x encrypted volume'
+            )
+
+        passphrase = Password(str(passphrase))
+
+        ns = get_item_stub(context, self.parent, None)
+
+        tid = context.submit_task(
+            'migration.import_encvolume',
+            [{
+                'name': name,
+                'passphrase': passphrase
+            }],
+            callback=lambda s, t: post_save(ns, s, t)
+        )
+
+        return EntityPromise(context, tid, ns)
+
+    def complete(self, context, **kwargs):
+        return [NullComplete('name='), NullComplete('passphrase=')]
+
+
 @description("Imports items from a given volume")
 class ImportFromVolumeCommand(Command):
     """
@@ -1949,7 +2018,8 @@ class VolumesNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, Entit
         self.primary_key = self.get_mapping('name')
         self.extra_commands = {
             'find': FindVolumesCommand(),
-            'import': ImportVolumeCommand(self)
+            'import': ImportVolumeCommand(self),
+            'migration_import': MigrationImportVolumeCommand(self)
         }
 
         self.entity_commands = self.get_entity_commands

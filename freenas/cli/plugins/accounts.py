@@ -832,6 +832,24 @@ class FreeIPAPropertiesNamespace(BaseDirectoryPropertiesNamespace):
             usage=_("FreeIPA server IP address")
         )
 
+        self.add_property(
+            descr='Encryption',
+            name='encryption',
+            get='encryption',
+            enum=['OFF', 'SSL', 'TLS'],
+            usage=_("""\
+            LDAP traffic encryption mode.
+            Supported values : 'OFF', 'SSL', 'TLS' """)
+        )
+
+        self.add_property(
+            descr='Verify certificate',
+            name='verify_certificate',
+            get='verify_certificate',
+            type=ValueType.BOOLEAN,
+            usage=_("CA certificate verification")
+        )
+
 
 class LDAPPropertiesNamespace(BaseDirectoryPropertiesNamespace):
     def __init__(self, name, context, parent):
@@ -891,18 +909,11 @@ class LDAPPropertiesNamespace(BaseDirectoryPropertiesNamespace):
         )
 
         self.add_property(
-            descr='CA Certificate',
-            name='certificate',
-            get='certificate',
-            usage=_("LDAP server CA certificate")
-        )
-
-        self.add_property(
             descr='Verify certificate',
             name='verify_certificate',
             get='verify_certificate',
             type=ValueType.BOOLEAN,
-            usage=_("LDAP server CA certificate veryfication")
+            usage=_("LDAP server CA certificate verification")
         )
 
         self.add_property(
@@ -991,8 +1002,6 @@ class KerberosRealmsNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin
             Examples:
                 show
                 show | search name == foo""")
-
-
 
         self.add_property(
             descr='Realm name',

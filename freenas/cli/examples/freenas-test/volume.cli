@@ -33,21 +33,27 @@ function volume_create() {
 	@$(VOL_OBJECT dataset create name=${VOL_NAME + "/" + _dataset_name})
 	maybe_barf(_success, "+volume#8", "Unable to create dataset " + _dataset_name)
 
+	@$(VOL_OBJECT dataset ${VOL_NAME + "/" + _dataset_name} set name=${VOL_NAME + "/" + _dataset_name + "_mod"})
+	maybe_barf(_success, "+volume#9", "Unable to rename dataset " + _dataset_name)
+
+	_dataset_obj = $(VOL_OBJECT dataset show | find name==${VOL_NAME + "/" + _dataset_name + "_mod"})
+	maybe_barf(_success, "+volume#10", "Unable to find renamed dataset for volume " + VOL_NAME + " named " + _dataset_name)
+
 	_snap_obj = @$(VOL_OBJECT snapshot create dataset=${VOL_NAME} name=${VOL_NAME + "@" + _snap_name})
-	maybe_barf(_success, "+volume#9", "Unable to create snapshot for volume " + VOL_NAME + " named " + _snap_name)
+	maybe_barf(_success, "+volume#11", "Unable to create snapshot for volume " + VOL_NAME + " named " + _snap_name)
 	_x = $(VOL_OBJECT snapshot show | find name==${VOL_NAME + "@" + _snap_name})
-	maybe_barf(_success, "+volume#10", "Unable to find created snapshot for volume " + VOL_NAME + " named " + _snap_name)
+	maybe_barf(_success, "+volume#12", "Unable to find created snapshot for volume " + VOL_NAME + " named " + _snap_name)
 	maybe_barf(_x == $(_snap_obj get name), "+volume11", "Snapshot names do not agree: " + _x + " and " + $(_snap_obj get name))
 
 	_x = $(VOL_OBJECT get guid)
-	maybe_barf(_success, "+volume12", "Unable to get guid for volume " + VOL_NAME)
+	maybe_barf(_success, "+volume13", "Unable to get guid for volume " + VOL_NAME)
 }
 
 function volume_destroy() {
 	print(">>> Finishing volume tests")
 	@$(_snap_obj delete)
 	maybe_barf(_success, "-volume#1", "Unable to delete snapshot " + _snap_name + " from volume " + VOL_NAME)
-	@$(volume ${VOL_NAME} dataset ${VOL_NAME + "/" + _dataset_name} delete)
+	@$(volume ${VOL_NAME} dataset ${VOL_NAME + "/" + _dataset_name + "_mod"} delete)
 	maybe_barf(_success, "-volume#2", "Unable to delete dataset " + _dataset_name)
 	@$(system system_dataset set volume=${SYS_DATASET_VOL})
 	print(">>> Volume: FYI: System dataset back on " + SYS_DATASET_VOL)

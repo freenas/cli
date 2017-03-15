@@ -32,7 +32,9 @@ from freenas.cli.namespace import (
     Namespace, ConfigNamespace, Command, CommandException, description,
     RpcBasedLoadMixin, EntityNamespace, TaskBasedSaveMixin
 )
-from freenas.cli.output import Object, Table, Sequence, ValueType, format_value, output_msg
+from freenas.cli.output import (
+    Object, Table, Sequence, ValueType, format_value, output_msg, read_value
+)
 from freenas.cli.utils import TaskPromise, post_save, parse_timedelta, set_related, get_related
 from freenas.cli.complete import NullComplete, EntitySubscriberComplete, RpcComplete
 from freenas.dispatcher.fd import FileDescriptor
@@ -104,14 +106,34 @@ class StatusCommand(Command):
 @description("Resumes FreeNAS 9.x migration task post passphrase encrypted volumes import")
 class ResumeMigrationCommand(Command):
     """
-    Usage: resume_migration
+    Usage:
+        resume_migration
+        resume_migration ignore_volumes=yes
+        resume_migration ignore_volumes=false
 
     Resumes FreeNAS 9.x migration task post passphrase encrypted volumes import
+
+    If you have passphrase encrypted volumes still left to be manually imported
+    this task will emit an alert stating that migration is stopped till you do so.
+
+    To override this behavior (maybe your encrypted volume is on the shelf and
+    you do not want to import it right now) then you should set the `ignore_volumes`
+    flag to true
     """
 
     def run(self, context, args, kwargs, opargs):
-        tid = context.submit_task('migration.mastermigrate', True)
+        ignore_volumes = read_value(kwargs.pop('ignore_volumes', False), tv=ValueType.BOOLEAN)
+        if args or kwargs:
+            raise CommandException(_(
+                "Wrong syntax for {0}, see 'help {0}' for more information".format(
+                    "migration_resume"
+                )
+            ))
+        tid = context.submit_task('migration.mastermigrate', True, ignore_volumes)
         return TaskPromise(context, tid)
+
+    def complete(self, context, **kwargs):
+        return [NullComplete('ignore_volumes=')]
 
 
 @description("Provides information about running system")

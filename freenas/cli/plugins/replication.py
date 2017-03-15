@@ -459,6 +459,16 @@ class ReplicationNamespace(TaskBasedSaveMixin, EntitySubscriberBasedLoadMixin, E
         )
 
         self.add_property(
+            descr='One time',
+            name='one_time',
+            get='one_time',
+            usersetable=False,
+            list=False,
+            type=ValueType.BOOLEAN,
+            usage=_('One time replications are automatically deleted after first successful run.')
+        )
+
+        self.add_property(
             descr='Recursive',
             name='recursive',
             get='recursive',

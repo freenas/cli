@@ -888,7 +888,7 @@ class SMBSharesNamespace(BaseSharesNamespace):
             usage=_("""\
             ea support property allow clients to attempt to store OS/2
             style Extended attributes on a share."""),
-            get='properties.store_dos_attributes',
+            get='properties.ea_support',
             list=False,
             type=ValueType.BOOLEAN
         )

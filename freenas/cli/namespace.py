@@ -432,6 +432,9 @@ class ItemNamespace(Namespace):
             if value is None:
                 return PrintableNone()
 
+            if isinstance(value, (str, int, float, bool, list, dict)):
+                return value
+
             return format_value(value, mapping.type)
 
         def complete(self, context, **kwargs):

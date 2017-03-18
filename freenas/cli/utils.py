@@ -291,6 +291,9 @@ def add_tty_formatting(context, input):
 def quote(value):
     value = str(value)
 
+    if len(value) == 0:
+        return ""
+
     if not value.isdigit() and value[0].isdigit():
         return '"{0}"'.format(value)
 

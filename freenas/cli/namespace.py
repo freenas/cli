@@ -832,7 +832,7 @@ class SingleItemNamespace(ItemNamespace):
 
     def get_name(self):
         name = self.primary_key if self.entity else self.name
-        if not name and name != 0:
+        if name is None:
             name = 'unnamed'
 
         return name

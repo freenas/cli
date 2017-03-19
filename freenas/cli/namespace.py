@@ -432,6 +432,9 @@ class ItemNamespace(Namespace):
             if value is None:
                 return PrintableNone()
 
+            if isinstance(value, (str, int, float, bool, list, dict)):
+                return value
+
             return format_value(value, mapping.type)
 
         def complete(self, context, **kwargs):
@@ -829,7 +832,7 @@ class SingleItemNamespace(ItemNamespace):
 
     def get_name(self):
         name = self.primary_key if self.entity else self.name
-        if not name and name != 0:
+        if name is None:
             name = 'unnamed'
 
         return name

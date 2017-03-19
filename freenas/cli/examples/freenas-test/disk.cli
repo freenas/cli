@@ -18,7 +18,7 @@ function disk_create() {
 	}
 	maybe_die(_unalloc > 0, "disk#2", "Unable to find any unallocated disks; subsequent volume tests will fail.")
 
-	_disk_to_fondle=$(disk show | find path ~= "/dev/a?da0")
+	_disk_to_fondle=$(disk show | find name ~= "a?da0")
 	maybe_barf(_success, "+disk#3", "Unable to find any boot disks")
 	maybe_barf(_disk_to_fondle == "da0" or _disk_to_fondle == "ada0", "+disk#4", "No disk was ada0 or da0")
 

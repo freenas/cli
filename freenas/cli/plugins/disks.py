@@ -73,7 +73,7 @@ class DisksNamespace(EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, EntityN
         self.add_property(
             descr='Name',
             name='name',
-            get=lambda row: os.path.basename(row.get('path')),
+            get='name',
             usage=_("""\
             Name of disk device. Read-only value is
             assigned by operating system."""),

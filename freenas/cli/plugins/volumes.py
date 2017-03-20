@@ -257,6 +257,18 @@ class ReplaceCommand(Command):
         if len(args) != 2:
             raise CommandException("Please specify old and new disk names as positional arguments")
 
+        password = kwargs.get('password')
+        password_encrypted = self.parent.entity.get('password_encrypted', False)
+
+        if password_encrypted and not password:
+            raise CommandException('Volume is password encrypted. You have to provide a password.')
+
+        if password and not password_encrypted:
+            raise CommandException('Volume is not encrypted by password.')
+
+        if password:
+            password = Password(password)
+
         old_disk = correct_disk_path(args[0])
         new_disk = correct_disk_path(args[1])
         vdev = vdev_by_path(self.parent.entity['topology'], old_disk)
@@ -267,8 +279,13 @@ class ReplaceCommand(Command):
         if not vdev:
             raise CommandException('Cannot find vdev for disk {0}'.format(old_disk))
 
-        tid = context.submit_task('volume.vdev.replace', self.parent.entity['id'], vdev['guid'], disk_id)
+        tid = context.submit_task('volume.vdev.replace', self.parent.entity['id'], vdev['guid'], disk_id, password)
         return TaskPromise(context, tid)
+
+    def complete(self, context, **kwargs):
+        return [
+            NullComplete('password=')
+        ]
 
 
 @description("Removes vdev from the volume")

@@ -455,8 +455,7 @@ class NFSSharesNamespace(BaseSharesNamespace):
             descr='Allowed hosts/networks',
             name='hosts',
             usage=_("""\
-            Space delimited list of allowed IP addresses or hostnames,
-            enclosed between double quotes."""),
+            A list of allowed IP addresses or hostnames."""),
             get='properties.hosts',
             list=False,
             type=ValueType.SET
@@ -509,8 +508,7 @@ class AFPSharesNamespace(BaseSharesNamespace):
             descr='Allowed hosts/networks',
             name='hosts_allow',
             usage=_("""\
-            Space delimited list, enclosed within double quotes, of
-            allowed hostnames or IP addresses. Note that setting this
+            A list of allowed hostnames or IP addresses. Note that setting this
             property will deny any host/IP that is not specified."""),
             get='properties.hosts_allow',
             list=False,
@@ -521,8 +519,7 @@ class AFPSharesNamespace(BaseSharesNamespace):
             descr='Denied hosts/networks',
             name='hosts_deny',
             usage=_("""\
-            Space delimited list, enclosed within double quotes, of
-            denied hostnames or IP addresses. Note that setting this
+            A list of denied hostnames or IP addresses. Note that setting this
             property will allow any host/IP that is not specified."""),
             get='properties.hosts_deny',
             list=False,
@@ -533,8 +530,7 @@ class AFPSharesNamespace(BaseSharesNamespace):
             descr='Allowed users',
             name='users_allow',
             usage=_("""\
-            Space delimited list, enclosed within double quotes, of
-            allowed users. Note that setting this property will deny
+            A list of allowed users. Note that setting this property will deny
             any user that is not specified."""),
             get='properties.users_allow',
             list=False,
@@ -545,8 +541,7 @@ class AFPSharesNamespace(BaseSharesNamespace):
             descr='Allowed groups',
             name='groups_allow',
             usage=_("""\
-            Space delimited list, enclosed within double quotes, of
-            allowed groups. Note that setting this property will deny
+            A list of allowed groups. Note that setting this property will deny
             any group that is not specified."""),
             get='properties.groups_allow',
             list=False,
@@ -557,8 +552,7 @@ class AFPSharesNamespace(BaseSharesNamespace):
             descr='Denied users',
             name='users_deny',
             usage=_("""\
-            Space delimited list, enclosed within double quotes, of
-            denied users. Note that setting this property will allow
+            A list ofdenied users. Note that setting this property will allow
             any user that is not specified."""),
             get='properties.users_deny',
             list=False,
@@ -569,8 +563,7 @@ class AFPSharesNamespace(BaseSharesNamespace):
             descr='Denied groups',
             name='groups_deny',
             usage=_("""\
-            Space delimited list, enclosed within double quotes, of
-            denied groups. Note that setting this property will allow
+            A list of denied groups. Note that setting this property will allow
             any group that is not specified."""),
             get='properties.groups_deny',
             list=False,
@@ -704,8 +697,7 @@ class SMBSharesNamespace(BaseSharesNamespace):
             descr='Allowed hosts',
             name='hosts_allow',
             usage=_("""\
-            Space delimited list, enclosed within double quotes, of
-            allowed hostnames or IP addresses. Note that setting this
+            A list of allowed hostnames or IP addresses. Note that setting this
             property will deny any host/IP that is not specified."""),
             get='properties.hosts_allow',
             list=False,
@@ -716,10 +708,53 @@ class SMBSharesNamespace(BaseSharesNamespace):
             descr='Denied hosts',
             name='hosts_deny',
             usage=_("""\
-            Space delimited list, enclosed within double quotes, of
-            denied hostnames or IP addresses. Note that setting this
+            A list of denied hostnames or IP addresses. Note that setting this
             property will allow any host/IP that is not specified."""),
             get='properties.hosts_deny',
+            list=False,
+            type=ValueType.SET
+        )
+
+        self.add_property(
+            descr='Allowed users',
+            name='users_allow',
+            usage=_("""\
+            A list of allowed users. Note that setting this property will deny
+            any user that is not specified."""),
+            get='properties.users_allow',
+            list=False,
+            type=ValueType.SET
+        )
+
+        self.add_property(
+            descr='Allowed groups',
+            name='groups_allow',
+            usage=_("""\
+            A list of allowed groups. Note that setting this property will deny
+            any group that is not specified."""),
+            get='properties.groups_allow',
+            list=False,
+            type=ValueType.SET
+        )
+
+        self.add_property(
+            descr='Denied users',
+            name='users_deny',
+            usage=_("""\
+            A list of denied users. Note that setting this property will allow
+            any user that is not specified."""),
+            get='properties.users_deny',
+            list=False,
+            type=ValueType.SET
+        )
+
+        self.add_property(
+            descr='Denied groups',
+            name='groups_deny',
+            usage=_("""\
+            A list of denied groups. Note that setting this property will allow
+            any group that is not specified."""),
+            get='properties.groups_deny',
             list=False,
             type=ValueType.SET
         )
@@ -808,8 +843,7 @@ class SMBSharesNamespace(BaseSharesNamespace):
             descr='VFS objects',
             name='vfs_objects',
             usage=_("""\
-            Space delimited list, enclosed within double quotes,
-            of additional vfs objects."""),
+            A list of additional vfs objects."""),
             get='properties.vfs_objects',
             list=False,
             type=ValueType.SET

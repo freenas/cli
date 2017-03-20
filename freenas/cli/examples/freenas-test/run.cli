@@ -92,10 +92,10 @@ function destroy_all() {
 	if (test_and_set_sentinel() == false) {
 	    setopt abort_on_errors=no
 	    for (i = length(TEST_SET) - 1; i >= 0; i = i - 1) {
-		eval(TEST_SET[i] + "_destroy()")
 		if (test_me_harder == true) {
 		   eval(TEST_SET[i] + "_hard_destroy()")
 		}
+		eval(TEST_SET[i] + "_destroy()")
 	    }
 	    clear_sentinel()
 	}

@@ -748,9 +748,70 @@ class BaseDirectoryPropertiesNamespace(NestedEntityMixin, ItemNamespace):
         self.parent_entity_path = 'parameters'
 
 
+class ActiveDirectoryIdmapNamespace(NestedEntityMixin, ItemNamespace):
+    def __init__(self, name, context, parent):
+        super(ActiveDirectoryIdmapNamespace, self).__init__(name, context)
+        self.parent = parent
+        self.parent_entity_path = 'idmap'
+
+        self.add_property(
+            descr='RID base',
+            name='rid_base',
+            get='base_rid',
+            type=ValueType.NUMBER,
+            condition=lambda o: self.parent.entity['idmap_type'] == 'RID'
+        )
+
+        self.add_property(
+            descr='RID range start',
+            name='rid_start',
+            get='range_start',
+            type=ValueType.NUMBER,
+            condition=lambda o: self.parent.entity['idmap_type'] == 'RID'
+        )
+
+        self.add_property(
+            descr='RID range end',
+            name='rid_end',
+            get='range_end',
+            type=ValueType.NUMBER,
+            condition=lambda o: self.parent.entity['idmap_type'] == 'RID'
+        )
+
+        self.add_property(
+            descr='Unix schema type',
+            name='unix_type',
+            get='schema',
+            enum=['RFC2307', 'SFU', 'SFU20'],
+            condition=lambda o: self.parent.entity['idmap_type'] == 'UNIX'
+        )
+
+
 class ActiveDirectoryPropertiesNamespace(BaseDirectoryPropertiesNamespace):
     def __init__(self, name, context, parent):
         super(ActiveDirectoryPropertiesNamespace, self).__init__(name, context, parent)
+
+        def set_idmap_type(o, v):
+            if v == 'RID' and o['idmap_type'] != 'RID':
+                o['idmap'] = {
+                    '%type': 'WinbindIdmapRidConfig',
+                    'base_rid': 0,
+                    'range_start': 20000,
+                    'range_end': 10000000
+                }
+
+            if v == 'UNIX' and o['idmap_type'] != 'UNIX':
+                o['idmap'] = {
+                    '%type': 'WinbindIdmapUnixConfig',
+                    'schema': 'RFC2307'
+                }
+
+            if v == 'APPLE' and o['idmap_type'] != 'APPLE':
+                o['idmap'] = {
+                    '%type': 'WinbindIdmapAppleConfig'
+                }
+
+            o['idmap_type'] = v
 
         self.add_property(
             descr='Realm',
@@ -795,8 +856,12 @@ class ActiveDirectoryPropertiesNamespace(BaseDirectoryPropertiesNamespace):
             descr='ID map type',
             name='idmap_type',
             get='idmap_type',
-            enum=['RID', 'UNIX']
+            set=set_idmap_type,
+            enum=['RID', 'UNIX']  # 'APPLE': not yet
         )
+
+    def namespaces(self):
+        yield ActiveDirectoryIdmapNamespace('idmap', self.context, self)
 
 
 class FreeIPAPropertiesNamespace(BaseDirectoryPropertiesNamespace):

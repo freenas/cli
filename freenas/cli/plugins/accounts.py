@@ -34,6 +34,7 @@ from freenas.cli.namespace import (
     ConfigNamespace, ItemNamespace, NestedEntityMixin
 )
 from freenas.cli.output import ValueType, Sequence
+from freenas.cli.utils import TaskPromise
 from freenas.dispatcher import Password
 from freenas.utils.query import get
 
@@ -54,6 +55,19 @@ class ShellsCommand(Command):
 
     def run(self, context, args, kwargs, opargs):
         return Sequence(*context.call_sync('shell.get_shells'))
+
+
+@description("Flushes directory service cache")
+class FlushCacheCommand(Command):
+    """
+    Usage: flush_cache
+
+    Examples: flush_cache
+    """
+
+    def run(self, context, args, kwargs, opargs):
+        tid = context.submit_task('directoryservice.flush_cache')
+        return TaskPromise(context, tid)
 
 
 @description(_("Manage local users"))
@@ -519,6 +533,11 @@ class DirectoryServiceNamespace(Namespace):
             DirectoriesNamespace('directories', self.context),
             KerberosNamespace('kerberos', self.context)
         ]
+
+    def commands(self):
+        return {
+            'flush_cache': FlushCacheCommand()
+        }
 
 
 class DirectoryServicesConfigNamespace(ConfigNamespace):

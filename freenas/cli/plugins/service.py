@@ -1377,6 +1377,7 @@ class NFSNamespace(NestedEntityMixin, ItemNamespace):
             list=True,
             type=ValueType.BOOLEAN
         )
+
         self.add_property(
             descr='Number of servers',
             name='servers',
@@ -1387,6 +1388,7 @@ class NFSNamespace(NestedEntityMixin, ItemNamespace):
             get='servers',
             type=ValueType.NUMBER
         )
+
         self.add_property(
             descr='Enable UDP',
             name='udp',
@@ -1396,6 +1398,7 @@ class NFSNamespace(NestedEntityMixin, ItemNamespace):
             get='udp',
             type=ValueType.BOOLEAN
         )
+
         self.add_property(
             descr='Enable NFSv4',
             name='v4',
@@ -1405,6 +1408,7 @@ class NFSNamespace(NestedEntityMixin, ItemNamespace):
             get='v4',
             type=ValueType.BOOLEAN
         )
+
         self.add_property(
             descr='Enable NFSv4 Kerberos',
             name='v4_kerberos',
@@ -1415,6 +1419,7 @@ class NFSNamespace(NestedEntityMixin, ItemNamespace):
             get='v4_kerberos',
             type=ValueType.BOOLEAN
         )
+
         self.add_property(
             descr='Bind addresses',
             name='bind_addresses',
@@ -1425,6 +1430,7 @@ class NFSNamespace(NestedEntityMixin, ItemNamespace):
             get='bind_addresses',
             type=ValueType.SET
         )
+
         self.add_property(
             descr='Mountd port',
             name='mountd_port',
@@ -1433,6 +1439,7 @@ class NFSNamespace(NestedEntityMixin, ItemNamespace):
             get='mountd_port',
             type=ValueType.NUMBER
         )
+
         self.add_property(
             descr='RPC statd port',
             name='rpcstatd_port',
@@ -1441,6 +1448,7 @@ class NFSNamespace(NestedEntityMixin, ItemNamespace):
             get='rpcstatd_port',
             type=ValueType.NUMBER
         )
+
         self.add_property(
             descr='RPC Lockd port',
             name='rpclockd_port',
@@ -1448,6 +1456,13 @@ class NFSNamespace(NestedEntityMixin, ItemNamespace):
             Number representing the port for rpclockd(8) to bind to."""),
             get='rpclockd_port',
             type=ValueType.NUMBER
+        )
+
+        self.add_property(
+            descr='Over 16 groups support',
+            name='over_16_groups',
+            get='over_16_groups',
+            type=ValueType.BOOLEAN
         )
 
 

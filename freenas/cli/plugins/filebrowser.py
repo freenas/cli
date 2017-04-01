@@ -268,4 +268,5 @@ class FilebrowserNamespace(Namespace):
 
 
 def _init(context):
-    context.attach_namespace('/', FilebrowserNamespace('filebrowser', context))
+    #context.attach_namespace('/', FilebrowserNamespace('filebrowser', context))
+    pass

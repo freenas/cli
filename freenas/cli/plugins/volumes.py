@@ -272,7 +272,13 @@ class ReplaceCommand(Command):
         old_disk = correct_disk_path(args[0])
         new_disk = correct_disk_path(args[1])
         vdev = vdev_by_path(self.parent.entity['topology'], old_disk)
-        disk_id = context.entity_subscribers['disk'].query(('path', '=', new_disk), single=True, select='id')
+        disk_id = context.entity_subscribers['disk'].query(
+            ('path', '=', new_disk),
+            ('online', '=', True),
+            single=True,
+            select='id'
+        )
+
         if not disk_id:
             raise CommandException('Cannot find disk {0}'.format(new_disk))
 

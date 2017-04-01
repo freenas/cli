@@ -54,7 +54,7 @@ class ImportCertificateCommand(Command):
 
     Examples:
     Import existing server certificate from files:
-        import type=CERT_EXISTINGS name=importedFromFiles
+        import type=CERT_EXISTING name=importedFromFiles
         certificate_path=/abs/path/cert.crt privatekey_path=/abs/path/cert.key
     Import existing CA from files:
         import type=CA_EXISTING name=importedFromFiles

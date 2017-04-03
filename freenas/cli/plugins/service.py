@@ -1228,14 +1228,6 @@ class SMBNamespace(NestedEntityMixin, ItemNamespace):
             list=True,
             type=ValueType.SET
         )
-        self.add_property(
-            descr='Auxiliary',
-            name='auxiliary',
-            usage=_("""
-            Optional, additional smb.conf parameters. Separate multiple
-            parameters by a space and enclose them between double quotes."""),
-            get='auxiliary'
-        )
 
 
 @description("Configure and manage dyndns service")

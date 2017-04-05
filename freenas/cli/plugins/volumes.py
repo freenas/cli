@@ -27,7 +27,6 @@
 
 import copy
 import gettext
-import six
 from freenas.cli.namespace import (
     EntityNamespace, Command, CommandException, SingleItemNamespace,
     EntitySubscriberBasedLoadMixin, TaskBasedSaveMixin, description
@@ -38,6 +37,7 @@ from freenas.cli.output import Table, ValueType, output_tree, format_value, read
 from freenas.cli.utils import TaskPromise, EntityPromise, post_save, iterate_vdevs, vdev_by_path, mirror_by_path
 from freenas.cli.utils import to_list, correct_disk_path, get_related, set_related, get_item_stub
 from freenas.utils import query as q
+from freenas.utils.password import unpassword
 
 t = gettext.translation('freenas-cli', fallback=True)
 _ = t.gettext
@@ -735,8 +735,7 @@ class BackupVolumeMasterKeyCommand(Command):
 
         name = self.parent.entity['id']
         result = context.call_task_sync('volume.keys.backup_to_file', name, path)
-        return Sequence("Backup password:",
-                        str(result['result'].secret))
+        return Sequence("Backup password:", str(unpassword(result['result'])))
 
     def complete(self, context, **kwargs):
         return [

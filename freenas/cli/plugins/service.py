@@ -1129,17 +1129,6 @@ class SMBNamespace(NestedEntityMixin, ItemNamespace):
             type=ValueType.PERMISSIONS
         )
         self.add_property(
-            descr='Empty password logons',
-            name='empty_password',
-            usage=_("""
-            Can be set to yes or no. If set to yes,
-            users can just press Enter when prompted for a
-            password. Requires that the username/password be the
-            same as the Windows user account."""),
-            get='empty_password',
-            type=ValueType.BOOLEAN
-        )
-        self.add_property(
             descr='UNIX Extensions',
             name='unixext',
             usage=_("""

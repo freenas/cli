@@ -1104,9 +1104,11 @@ class ISCSIPortalsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespa
             name='listen',
             usage=_("""\
             Mandatory setting. IP address or wildcard of 0.0.0.0.
-            Separate multiple listen addresses with a space and enclose
-            between double quotes. To change the default listen port of
-            3260, add a colon and the port number after the IP address."""),
+            To change the default listen port of 3260,
+            add a colon and the port number after the IP address.
+            When setting multiple address:port values, place each address:port
+            pair within double quotes and a comma with space between
+            each address."""),
             get=self.get_portals,
             set=self.set_portals,
             type=ValueType.SET

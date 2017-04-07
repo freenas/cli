@@ -1058,8 +1058,13 @@ class MainLoop(object):
         return self.context.variables.get('prompt').format(**variables)
 
     def greet(self):
-        output_msg(_("Welcome to the FreeNAS CLI! Type 'help' to get started."))
-        output_msg('')
+        # output_msg(
+        #     _("Welcome to the FreeNAS CLI! Type 'help' to get started."))
+        output_msg(self.context.connection.call_sync(
+            'system.general.cowsay',
+            "Welcome to the FreeNAS CLI! Type 'help' to get started."
+        )[0])
+        output_msg("")
 
     def cd(self, ns):
         if not self.cwd.on_leave():

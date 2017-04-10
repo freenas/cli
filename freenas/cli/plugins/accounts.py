@@ -521,7 +521,7 @@ class DirectoryStatusCommand(Command):
 class DirectoryServiceNamespace(Namespace):
     """
     The directoryservice namespace contains namespaces for managing
-    the client site of FreeIPA, ActiveDirecory, LDAP and NIS directory services.
+    the client side of FreeIPA, ActiveDirecory, LDAP and NIS directory services.
     """
     def __init__(self, name, context):
         super(DirectoryServiceNamespace, self).__init__(name)

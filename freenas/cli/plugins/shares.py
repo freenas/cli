@@ -1069,7 +1069,7 @@ class ISCSIPortalsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespa
 
             Examples:
                 create myiscsi listen=192.168.1.10
-                create someiscsi listen=127.0.0.1,192.168.1.10:8888
+                create someiscsi listen="127.0.0.1", "192.168.1.10:8888"
 
             Creates an iSCSI portal. For a list of properties, see
             'help properties'.""")
@@ -1077,7 +1077,7 @@ class ISCSIPortalsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespa
             Usage: set <property>=<value> ...
 
             Examples: set discovery_auth_group=somegroup
-                      set listen=127.0.0.1,192.168.1.10:8888
+                      set listen="127.0.0.1", "192.168.1.10:8888"
 
             Sets a iSCSI portal property. For a list of properties, see
             'help properties'.""")
@@ -1104,9 +1104,11 @@ class ISCSIPortalsNamespace(RpcBasedLoadMixin, TaskBasedSaveMixin, EntityNamespa
             name='listen',
             usage=_("""\
             Mandatory setting. IP address or wildcard of 0.0.0.0.
-            Separate multiple listen addresses with a space and enclose
-            between double quotes. To change the default listen port of
-            3260, add a colon and the port number after the IP address."""),
+            To change the default listen port of 3260,
+            add a colon and the port number after the IP address.
+            When setting multiple address:port values, place each address:port
+            pair within double quotes and a comma with space between
+            each address."""),
             get=self.get_portals,
             set=self.set_portals,
             type=ValueType.SET

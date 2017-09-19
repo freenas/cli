@@ -1,3 +1,9 @@
+.. warning:: This repository is for FreeNAS Corral (aka FreeNAS 10).
+   This version is not supported and should not be used. Please see
+   http://www.freenas.org/ for information on the current supported
+   version of FreeNAS.
+
+
 Welcome to the FreeNAS X CLI!
 
 .. index:: table of contents
